@@ -1,0 +1,129 @@
+{
+    "directed": false,
+    "multigraph": false,
+    "graph": {},
+    "nodes": [
+        {
+            "class": 5,
+            "text": "free/JJ",
+            "id": 52744
+        },
+        {
+            "class": 1,
+            "text": "independence/NN",
+            "id": 54587
+        },
+        {
+            "class": 2,
+            "text": "liberty/NN",
+            "id": 58532
+        },
+        {
+            "class": 5,
+            "text": "freeing/VBG",
+            "id": 38561
+        },
+        {
+            "class": 2,
+            "text": "freedom/NN",
+            "id": 22760
+        },
+        {
+            "class": 5,
+            "text": "free/VB",
+            "id": 99660
+        },
+        {
+            "class": 5,
+            "text": "free/VBP",
+            "id": 29525
+        },
+        {
+            "class": 5,
+            "text": "freed/VBN",
+            "id": 65079
+        },
+        {
+            "class": 0,
+            "text": "exempt/JJ",
+            "id": 44155
+        },
+        {
+            "class": 1,
+            "text": "autonomy/NN",
+            "id": 18417
+        },
+        {
+            "class": 0,
+            "text": "sovereignty/NN",
+            "id": 18666
+        },
+        {
+            "class": 2,
+            "text": "liberties/NNS",
+            "id": 1489
+        }
+    ],
+    "links": [
+        {
+            "weight": 276,
+            "source": 52744,
+            "target": 65079
+        },
+        {
+            "weight": 237,
+            "source": 52744,
+            "target": 99660
+        },
+        {
+            "weight": 226,
+            "source": 52744,
+            "target": 29525
+        },
+        {
+            "weight": 277,
+            "source": 54587,
+            "target": 18417
+        },
+        {
+            "weight": 321,
+            "source": 58532,
+            "target": 22760
+        },
+        {
+            "weight": 225,
+            "source": 58532,
+            "target": 1489
+        },
+        {
+            "weight": 369,
+            "source": 38561,
+            "target": 99660
+        },
+        {
+            "weight": 322,
+            "source": 38561,
+            "target": 65079
+        },
+        {
+            "weight": 258,
+            "source": 38561,
+            "target": 29525
+        },
+        {
+            "weight": 434,
+            "source": 99660,
+            "target": 65079
+        },
+        {
+            "weight": 360,
+            "source": 99660,
+            "target": 29525
+        },
+        {
+            "weight": 341,
+            "source": 29525,
+            "target": 65079
+        }
+    ]
+}
