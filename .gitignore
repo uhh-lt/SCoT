@@ -130,4 +130,7 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# json
+package-lock.json
+
 # End of https://www.gitignore.io/api/python
