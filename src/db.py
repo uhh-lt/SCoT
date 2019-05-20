@@ -25,58 +25,45 @@ class Database:
 		time_ids
 		):
 		if not time_diff:
-			nodes = {}
-			# get direct paradigms to target word
-			target_word_id = self.db.query(
-				'SELECT id FROM words WHERE word=:tw',
-				tw=target_word)[0]['id']
-			node_ids = self.get_neighbouring_nodes(
-				target_word_id,
+			nodes = set()
+			direct_neighbours = self.get_neighbouring_nodes(
+				target_word,
 				paradigms,
 				time_ids
 				)
-			nodes = self.add_id_and_text(node_ids)
-			print(nodes)
-			
-			# get indirect paradigms to target word
-			for node_id in node_ids:
-				pnode_ids = self.get_neighbouring_nodes(
-					node_id,
+			nodes.update(direct_neighbours)
+			for node in direct_neighbours:
+				neighbouring_nodes = self.get_neighbouring_nodes(
+					node,
 					pparadigms,
 					time_ids
 					)
-				pnodes = self.add_id_and_text(pnode_ids)
-				nodes.update(pnodes)
-			print(len(nodes))
+				nodes.update(neighbouring_nodes)
 			return nodes
 		else:
 			pass
 
+
 	def get_neighbouring_nodes(
 		self,
-		target_word_id,
+		target_word,
 		size,
 		time_ids
 		):
-		node_ids = set()
-		for tid in time_ids:
-			target_word_senses = self.db.query(
-				'SELECT word1 FROM similar_words ' 
-				'WHERE word2=:tw AND time_id=:t AND word1!=word2 '
-				'ORDER BY COUNT DESC LIMIT :p',
-				tw=target_word_id, t=tid, p=size
-				)
-			for row in target_word_senses:
-				node_ids.add(row['word1'])
-		return node_ids
-
-	def add_id_and_text(self, node_ids):
-		nodes = {}
-		for node_id in node_ids:
-			text = self.db.query('SELECT word FROM words WHERE id=:i',
-				i=node_id)[0]['word']
-			nodes[node_id] = text
+		nodes = set()
+		target_word_senses = self.db.query(
+			'SELECT word1, time_id FROM similar_words ' 
+			'WHERE word2=:tw '
+			'ORDER BY score DESC',
+			tw=target_word
+			)
+		#print(target_word_senses)
+		for row in target_word_senses:
+			if not row['word1'] == target_word and row['time_id'] in time_ids and len(nodes)<=size:
+				nodes.add(row['word1'])
+		#print(nodes)
 		return nodes
+
 
 	def get_edges(self, time_diff, nodes, density, time_ids):
 		edges = []
@@ -94,15 +81,15 @@ class Database:
 			# -> word1 and word2 in nodes! -> density is the problem: density = density*len(nodes)?
 			#for node_id in nodes:
 			con = self.db.query(
-				'SELECT word1, word2, count, time_id '
-				'FROM similar_words WHERE time_id IN :t '
-				'AND word1 IN :nodes AND word2 IN :nodes '
-				'AND word1!=word2 '
-				'ORDER BY COUNT DESC LIMIT :dens',
-				t=time_ids, nodes=list(nodes.keys()), dens=density*len(nodes))
+				'SELECT word1, word2, score, time_id '
+				'FROM similar_words '
+				'WHERE word1 IN :nodes AND word2 IN :nodes '
+				'ORDER BY score DESC',
+				nodes=list(nodes))
 
 			for row in con:
-				connections.append([row['word1'], row['word2'], row['count'], row['time_id']])
+				if not row['word1']==row['word2'] and row['time_id'] in time_ids and len(connections)<=density*len(nodes):
+					connections.append([row['word1'], row['word2'], row['score']])
 			
 			potential_edges = {}
 			for c in connections:

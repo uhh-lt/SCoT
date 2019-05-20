@@ -19,11 +19,11 @@ app.config.from_object(__name__)
 
 @app.route('/', methods=['GET', 'POST'])
 def get_clustered_graph(
-	target_word="freedom/NN",
+	target_word="crisis/NN",
 	start_year=1909,
 	end_year=1972,
-	paradigms=5,
-	pparadigms=5,
+	paradigms=10,
+	pparadigms=10,
 	density=5,
 	time_diff=False
 	):
@@ -40,7 +40,9 @@ def get_clustered_graph(
 		):
 		db = Database()
 		time_ids = db.get_time_ids(start_year, end_year)
+		#print(time_ids)
 		nodes = db.get_nodes(time_diff, target_word, paradigms, pparadigms, time_ids)
+		print(nodes)
 		edges = db.get_edges(time_diff, nodes, density, time_ids)
 		return chineseWhispers.chinese_whispers(nodes, edges)
 
@@ -51,7 +53,7 @@ def get_clustered_graph(
 		pparadigms,
 		density,
 		time_diff)
-
+	#print(clustered_graph)
 	return jsonify(clustered_graph)
 
 if __name__ == '__main__':
