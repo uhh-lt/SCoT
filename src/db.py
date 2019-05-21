@@ -32,6 +32,7 @@ class Database:
 				time_ids
 				)
 			nodes.update(direct_neighbours)
+			print(nodes)
 			for node in direct_neighbours:
 				neighbouring_nodes = self.get_neighbouring_nodes(
 					node,
@@ -53,13 +54,13 @@ class Database:
 		nodes = set()
 		target_word_senses = self.db.query(
 			'SELECT word1, time_id FROM similar_words ' 
-			'WHERE word2=:tw '
-			'ORDER BY score DESC',
-			tw=target_word
+			'WHERE word2=:tw AND word1!=word2 '
+			'ORDER BY score DESC LIMIT 1000',
+			tw=target_word 
 			)
 		#print(target_word_senses)
 		for row in target_word_senses:
-			if not row['word1'] == target_word and row['time_id'] in time_ids and len(nodes)<=size:
+			if row['time_id'] in time_ids and len(nodes)<=size:
 				nodes.add(row['word1'])
 		#print(nodes)
 		return nodes

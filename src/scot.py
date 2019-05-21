@@ -3,7 +3,7 @@
 # 2. Rework Flask architecture
 # 3. Check CW implementation for WSI
 
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, render_template, request, Response
 from flask_cors import CORS
 
 from db import Database
@@ -16,15 +16,18 @@ app = Flask(__name__)
 app.config.from_object(__name__)
 
 #CORS(app, resources={r'/*':{'origins': '*'}})
+@app.route('/')
+def index():
+	return render_template('index.html')
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/graph')
 def get_clustered_graph(
-	target_word="crisis/NN",
+	target_word="freedom/NN",
 	start_year=1909,
 	end_year=1972,
-	paradigms=10,
-	pparadigms=10,
-	density=5,
+	paradigms=5,
+	pparadigms=5,
+	density=10,
 	time_diff=False
 	):
 	#if request.method == "POST":
@@ -42,7 +45,7 @@ def get_clustered_graph(
 		time_ids = db.get_time_ids(start_year, end_year)
 		#print(time_ids)
 		nodes = db.get_nodes(time_diff, target_word, paradigms, pparadigms, time_ids)
-		print(nodes)
+		#print(nodes)
 		edges = db.get_edges(time_diff, nodes, density, time_ids)
 		return chineseWhispers.chinese_whispers(nodes, edges)
 
@@ -53,8 +56,10 @@ def get_clustered_graph(
 		pparadigms,
 		density,
 		time_diff)
-	#print(clustered_graph)
-	return jsonify(clustered_graph)
+
+	c_graph = json.dumps(clustered_graph, sort_keys=False, indent=4)
+	
+	return c_graph
 
 if __name__ == '__main__':
 	app.run()

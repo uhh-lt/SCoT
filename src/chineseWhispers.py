@@ -12,7 +12,7 @@ def construct_graph(nodes_set, edges):
 	# initialize the class of each node
 	for v, n in enumerate(nodes):
 		graph.node[n]['class'] = v
-		print(graph.node[n])
+		#print(graph.node[n])
 		#graph.node[n]['text'] = nodes[v]
 	# [(1,2), (2,3), ...]
 	graph.add_edges_from(edges)
@@ -23,7 +23,7 @@ def chinese_whispers(nodes, edges, iterations=2):
 
 	for i in range(0, iterations):
 		graph_nodes = list(graph.nodes())
-		print(graph_nodes)
+		#print(graph_nodes)
 		# random starting point
 		random.shuffle(graph_nodes)
 		for node in graph_nodes:
@@ -42,6 +42,6 @@ def chinese_whispers(nodes, edges, iterations=2):
 					max = classes[c]
 					maxclass = c
 			graph.node[node]['class'] = maxclass
-			print(graph.nodes.data('class'))
+			#print(graph.nodes.data('class'))
 
 	return  nx.readwrite.json_graph.node_link_data(graph)
