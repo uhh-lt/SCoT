@@ -8,7 +8,7 @@ class Database:
 	def get_time_ids(self, start_year, end_year):
 		time_ids = []
 
-		t= self.db.query(
+		t = self.db.query(
 		'SELECT id FROM time_slices WHERE start_year>=:start AND end_year<=:end',
 		start=start_year, end=end_year)
 
@@ -21,7 +21,6 @@ class Database:
 		time_diff,
 		target_word,
 		paradigms,
-		pparadigms,
 		time_ids
 		):
 		if not time_diff:
@@ -32,14 +31,6 @@ class Database:
 				time_ids
 				)
 			nodes.update(direct_neighbours)
-			print(nodes)
-			for node in direct_neighbours:
-				neighbouring_nodes = self.get_neighbouring_nodes(
-					node,
-					pparadigms,
-					time_ids
-					)
-				nodes.update(neighbouring_nodes)
 			return nodes
 		else:
 			pass
@@ -70,17 +61,6 @@ class Database:
 		edges = []
 		if not time_diff:
 			connections = []
-			# con = db.query(
-			# 	'SELECT DISTINCT word1, word2, count, time_id '
-			# 	'FROM similar_words WHERE time_id IN :time_ids AND word1 IN :nodes AND word1!=word2 '
-			# 	'ORDER BY COUNT DESC LIMIT :dens',
-			# 	time_ids=time_ids,
-			# 	nodes=list(nodes.keys()),
-			# 	dens=DENSITY
-			# 	)
-
-			# -> word1 and word2 in nodes! -> density is the problem: density = density*len(nodes)?
-			#for node_id in nodes:
 			con = self.db.query(
 				'SELECT word1, word2, score, time_id '
 				'FROM similar_words '
