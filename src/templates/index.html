@@ -3,6 +3,8 @@
 
 <!-- import D3.js -->
 <script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="static/call_graph.js"></script>
+<script src="static/render_sense_graph.js"></script>
 
 <style>
 text {
@@ -14,69 +16,52 @@ text {
 }
 </style>
 
+<!-- better get the data directly from the db! -> flexible -->
+<form>
+<div class="parameter_input">
+	<div class="target_word_input">
+		I want to explore the word senses of: <br>
+		<input type="search" name="target_word">
+	</div>
+	<div class="start_year">
+		Starting at year: <br>
+		<input type="radio" name="start_year" value=1520> 1520 <br>
+		<input type="radio" name="start_year" value=1909> 1909 <br>
+		<input type="radio" name="start_year" value=1954> 1954 <br>
+		<input type="radio" name="start_year" value=1973> 1973 <br>
+		<input type="radio" name="start_year" value=1987> 1987 <br>
+		<input type="radio" name="start_year" value=1996> 1996 <br>
+		<input type="radio" name="start_year" value=2002> 2002 <br>
+		<input type="radio" name="start_year" value=2006> 2006
+	</div>
+	<div class="end_year">
+		Ending at year: <br>
+		<input type="radio" name="end_year" value=1908> 1908 <br>
+		<input type="radio" name="end_year" value=1953> 1953 <br>
+		<input type="radio" name="end_year" value=1972> 1972 <br>
+		<input type="radio" name="end_year" value=1986> 1986 <br>
+		<input type="radio" name="end_year" value=1995> 1995 <br>
+		<input type="radio" name="end_year" value=2001> 2001 <br>
+		<input type="radio" name="end_year" value=2005> 2005 <br>
+		<input type="radio" name="end_year" value=2008> 2008
+	</div>
+	<div class="direct_neighbours">
+		How many direct senses: <br>
+		<input type="number" name="direct_neighbours">
+	</div>
+	<div class="density">
+		Maximal number of edges from each node: <br>
+		<input type="number" name="density">
+	</div>
+	<div class="mode">
+		<input type="radio" name="mode" value=False> Sense Clusters (CW) <br>
+		<input type="radio" name="mode" value=True> Time diff
+	</div>
+	<div class="submit">
+		<input type="button" onclick="call_graph()" value="Render Graph">
+	</div>
+</div>
+</form>
+
 <body>
-<!-- D3 Code -->
-<script>
-	var width = 960;
-	var height = 600;
-
-
-	var color = d3.scaleOrdinal(d3.schemeCategory20)
-	/* Set up the SVG elements*/
-	var svg = d3.select("body")
-		.append("svg")
-		.attr("width", width)
-		.attr("height", height);
-
-	/* Load and bind data */
-	d3.json("/graph", function(error, graph) {
-		if (error) throw error;
-
-		var nodes = graph.nodes;
-		var links = graph.links;
-
-		var simulation = d3.forceSimulation(nodes)
-			.force("link", d3.forceLink(links).id(function(d) { return d.id; }))
-			.force('charge', d3.forceManyBody())
-			.force('center', d3.forceCenter(width/2, height/2))
-			.on('tick', ticked);
-
-		var link = svg.append("g")
-				.attr("stroke", "#999")
-				.attr("stroke-opacity", 0.6)
-			.selectAll("line")
-			.data(links)
-			.enter().append("line")
-				.attr("stroke-width", function(d) { return Math.sqrt(d.weight/10); });
-
-		var node = svg.append("g")
-		    	.attr("stroke", "#fff")
-		    	.attr("stroke-width", 1.5)
-		    .selectAll("g")
-		    .data(nodes)
-		    .enter().append("g");
-
-		var circles = node.append("circle")
-			.attr("r", 5)
-			.attr("fill", function(d) { return color(d.class); });
-
-     	var labels = node.append("text")
-			.text(function(d) { return d.id; })
-			.attr('x', 6)
-			.attr('y', 3);
-
-		simulation.on("tick", ticked)
-
-		function ticked() {
-		  link
-				.attr("x1", function(d) { return d.source.x; })
-				.attr("y1", function(d) { return d.source.y; })
-				.attr("x2", function(d) { return d.target.x; })
-				.attr("y2", function(d) { return d.target.y; });
-
-			node
-				.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
-			};
-	});
-</script>
 </body>
