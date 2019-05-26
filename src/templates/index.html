@@ -3,6 +3,7 @@
 
 <!-- import D3.js -->
 <script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 <script src="static/call_graph.js"></script>
 <script src="static/render_sense_graph.js"></script>
 
@@ -14,10 +15,15 @@ text {
 	stroke: black;
 	stroke-width: 0px;
 }
+.selected {
+	stroke: red;
+	stroke-width: 1px;
+}
 </style>
-
+<body>
 <!-- better get the data directly from the db! -> flexible -->
 <form>
+<div id="app">
 <div class="parameter_input">
 	<div class="target_word_input">
 		I want to explore the word senses of: <br>
@@ -62,6 +68,5 @@ text {
 	</div>
 </div>
 </form>
-
-<body>
+</div>
 </body>
