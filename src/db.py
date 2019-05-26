@@ -4,6 +4,14 @@ class Database:
 	def __init__(self):
 		self.db = records.Database('mysql://inga@localhost/scot')
 
+	def get_all_years(position):
+		years = {}
+		t = self.db.query(
+			'SELECT :year_type FROM time_slices',
+			year_type=position)
+		for row in t:
+			years["value"] = row[position]
+		return years
 
 	def get_time_ids(self, start_year, end_year):
 		time_ids = []
@@ -51,7 +59,7 @@ class Database:
 			)
 		#print(target_word_senses)
 		for row in target_word_senses:
-			if row['time_id'] in time_ids and len(nodes)<=size:
+			if row['time_id'] in time_ids and len(nodes)<=size-1:
 				nodes.add(row['word1'])
 		#print(nodes)
 		return nodes
