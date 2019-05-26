@@ -15,7 +15,14 @@ import json
 DEBUG = True
 PARAMETERS = {}
 
-app = Flask(__name__)
+class CustomFlask(Flask):
+    jinja_options = Flask.jinja_options.copy()
+    jinja_options.update(dict(
+        variable_start_string='%%',  # Default is '{{', I'm changing this because Vue.js uses '{{' / '}}'
+        variable_end_string='%%',
+    ))
+
+app = CustomFlask(__name__)  # This replaces your existing "app = Flask(__name__)"
 app.config.from_object(__name__)
 
 #CORS(app, resources={r'/*':{'origins': '*'}})
@@ -23,7 +30,20 @@ app.config.from_object(__name__)
 def index():
 	return render_template('index.html')
 
-#/<target_word>/<int:start_year>/<int:end_year>/<int:direct_neighbours>/<int:indirect_neighbours>/<int:density>/<mode>
+
+@app.route('/start_years')
+def get_start_years():
+	db = Database()
+	start_years = db.get_all_years("start_year")
+	return start_years
+
+@app.route('/end_years')
+def get_end_years():
+	db = Database()
+	end_years = db.get_all_years("end_year")
+	return end_years
+
+
 @app.route('/sense_graph/<path:target_word>/<int:start_year>/<int:end_year>/<int:direct_neighbours>/<int:density>/<mode>')
 def get_clustered_graph(target_word, start_year, end_year, direct_neighbours, density, mode):
 	target_word = str(urllib.parse.unquote(target_word))
