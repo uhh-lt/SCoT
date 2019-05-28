@@ -18,7 +18,7 @@ def construct_graph(nodes_set, edges):
 	graph.add_edges_from(edges)
 	return graph
 
-def chinese_whispers(nodes, edges, iterations=2):
+def chinese_whispers(nodes, edges, target_word, iterations=2):
 	graph = construct_graph(nodes, edges)
 
 	for i in range(0, iterations):
@@ -43,5 +43,8 @@ def chinese_whispers(nodes, edges, iterations=2):
 					maxclass = c
 			graph.node[node]['class'] = maxclass
 			#print(graph.nodes.data('class'))
+
+	#graph.add_node(target_word)
+	#graph.node[target_word]['class'] = -1
 
 	return  nx.readwrite.json_graph.node_link_data(graph)

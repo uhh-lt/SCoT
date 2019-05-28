@@ -29,8 +29,12 @@ function render_graph(url) {
 
 
 	/* Load and bind data */
-	d3.json(url, function(error, graph) {
+	d3.json(url, function(error, data) {
 		if (error) throw error;
+		
+		var graph = data[0];
+		var target = [data[1]];
+		console.log(target)
 
 		var nodes = graph.nodes;
 		var links = graph.links;
@@ -40,13 +44,21 @@ function render_graph(url) {
 		    d.previouslySelected = false;
 		  });
 
+		var t = svg.append("g")
+			.data(target)
+
+		t.append("text")
+			.attr("class", "target")
+			.attr("x", (width/2))
+			.attr("y", (height/2))
+			.text(function(d) { return d.target_word; })
+
 		var brush = svg.append("g")
 			.attr("class", "brush");
 
-
 		var simulation = d3.forceSimulation(nodes)
 			.force("link", d3.forceLink(links).id(function(d) { return d.id; }))
-			.force('charge', d3.forceManyBody())
+			.force('charge', d3.forceManyBody().strength(-15))
 			.force('center', d3.forceCenter(width/2, height/2))
 			//.on('tick', ticked);
 
@@ -89,8 +101,8 @@ function render_graph(url) {
 		brush.call(d3.brush()
 		    .extent([[0, 0], [width, height]])
 		    .on("start", brushstarted)
-		    .on("brush", brushed));
-		    //.on("end", brushended));
+		    .on("brush", brushed)
+		    .on("end", brushended));
 
 		function brushstarted(){
 			if (d3.event.sourceEvent.type !== "end") {
@@ -134,7 +146,8 @@ function render_graph(url) {
 				.attr("y2", function(d) { return d.target.y; });
 
 			node
-				.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
+				.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+
 		};
 
 		function dragstart(d, i) {
@@ -154,6 +167,7 @@ function render_graph(url) {
 			ticked();
 		}
 
+		
 	});
 
 }
