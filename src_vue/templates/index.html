@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+
+<title>SCOT - Sense Clustering over Time</title>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="static/call_graph.js"></script>
+<script src="static/render_sense_graph.js"></script>
+ <!-- Required Stylesheets -->
+<link
+  type="text/css"
+  rel="stylesheet"
+  href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css"
+/>
+<link
+  type="text/css"
+  rel="stylesheet"
+  href="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.css"
+/>
+
+<!-- Required scripts -->
+<script src="https://unpkg.com/vue"></script>
+<script src="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.js"></script>
+</head>
+<!-- import D3.js -->
+
+<style>
+.target {
+	font-family: sans-serif;
+	font-size: 15px;
+	fill: lightgrey;
+	stroke: black;
+	stroke-width: 0px;
+}
+text {
+	font-family: sans-serif;
+	font-size: 10px;
+	fill: black;
+	stroke: black;
+	stroke-width: 0px;
+}
+.selected {
+	stroke: red;
+	stroke-width: 1px;
+}
+.input_options {
+	font: sans-serif;
+	font-size: 12px;
+	text-align: left;
+	word-spacing: -10px;
+}
+
+</style>
+
+<body>
+<div id="vue-app">
+<b-container fluid>
+<b-navbar type="dark" variant="dark">
+    <b-navbar-brand tag="h1">SCoT</b-navbar-brand>
+</b-navbar>
+</b-container>
+
+<b-container id="body-container" class="body">
+  <b-row id="rows">
+    <b-col id="input-options" class="input_options" sm="2">
+    	<b-form-group vertical label="Enter target word">  
+		<b-form-input v-model="target_word" placeholder="target word" size="sm"></b-form-input>
+		</b-form-group>
+
+		<!-- TODO: add test to make sure start date < end date-->
+		<b-form-group vertical label="Select a start year">
+		<b-form-select v-model="start_year" :options="start_years" size="sm"></b-form-select>
+		</b-from-group>
+
+		<b-form-group vertical label="Select an end year">
+		<b-form-select v-model="end_year" :options="end_years" size="sm"></b-form-select>
+		</b-from-group>
+
+		<b-form-group vertical label="Number of senses">  
+		<b-form-input type="number" v-model="senses" min="0" placeholder="number of senses" size="sm"></b-form-input>
+		</b-form-group>
+
+		<b-form-group vertical label="Max. number of edges per node">  
+		<b-form-input type="number" v-model="edges" min="0" placeholder="number of edges" size="sm"></b-form-input>
+		</b-form-group>
+
+		<b-form-group label="Individual radios">
+	      <b-form-radio v-model="time_diff" name="time_diff" value="false"> sense clustering (CW) </b-form-radio>
+	      <b-form-radio v-model="time_diff" name="time_diff" value="true">time diff</b-form-radio>
+    	</b-form-group>
+
+    	<b-button v-on:click="getURL()">Render Graph</b-button>
+    </b-col>
+    <b-col id="graph_display" sm="10">
+    	<div id="graph2"></div>
+    </b-col>
+  </b-row>
+</b-container> 
+</div>
+<script src="static/vue.js"></script>
+</body>
+
+</html>
