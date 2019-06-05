@@ -1,7 +1,8 @@
 # TODOs
-# 1. Improve database query performance
-# 2. Rework Flask architecture
-# 3. How to include the target word 
+# 1. How to include the target word 
+# 2. Gravity
+# 3. Time Diff Graph
+# 4. Integrate Graph in vue.js to make it better editable?
 # and show the relationships between words better?
 
 from flask import Flask, jsonify, render_template, request, Response
@@ -47,10 +48,20 @@ def get_end_years():
 	return end_years
 
 
-@app.route('/sense_graph/<path:target_word>/<int:start_year>/<int:end_year>/<int:direct_neighbours>/<int:density>/<mode>')
-def get_clustered_graph(target_word, start_year, end_year, direct_neighbours, density, mode):
+@app.route('/sense_graph/<path:target_word>/<int:start_year>/<int:end_year>/<int:direct_neighbours>/<int:density>/<mode>/<int:birth_start>/<int:birth_end>/<int:death_start>/<int:death_end>')
+def get_clustered_graph(
+		target_word,
+		start_year,
+		end_year,
+		direct_neighbours,
+		density,
+		mode,
+		birth_start,
+		birth_end,
+		death_start,
+		death_end):
 	target_word = str(urllib.parse.unquote(target_word))
-	print(target_word, start_year, end_year, direct_neighbours, density, mode)
+	#print(target_word, start_year, end_year, direct_neighbours, density, mode)
 	paradigms = direct_neighbours
 	if mode == "false":
 		time_diff = False
@@ -63,12 +74,16 @@ def get_clustered_graph(target_word, start_year, end_year, direct_neighbours, de
 		end_year,
 		paradigms,
 		density,
-		time_diff
+		time_diff,
+		birth_start,
+		birth_end,
+		death_start,
+		death_end
 		):
 		db = Database()
 		time_ids = db.get_time_ids(start_year, end_year)
 		#print(time_ids)
-		nodes = db.get_nodes(time_diff, target_word, paradigms, time_ids)
+		nodes = db.get_nodes(time_diff, target_word, paradigms, time_ids, birth_start, birth_end, death_start, death_end)
 
 		#print(nodes)
 		edges = db.get_edges(time_diff, nodes, density, time_ids)
@@ -79,7 +94,11 @@ def get_clustered_graph(target_word, start_year, end_year, direct_neighbours, de
 		end_year,
 		paradigms,
 		density,
-		time_diff)
+		time_diff,
+		birth_start,
+		birth_end,
+		death_start,
+		death_end)
 
 	c_graph = json.dumps([clustered_graph, {'target_word': target_word}], sort_keys=False, indent=4)
 	

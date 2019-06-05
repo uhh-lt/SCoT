@@ -51,50 +51,81 @@ text {
 	font-size: 12px;
 	text-align: left;
 	word-spacing: -10px;
+	background: #343a40;
+	color: white;
+	margin-left: 10px;
+}
+
+.body {
+	margin: 0px;
+	padding-left: 0px;
+	padding-right: 0px;
+}
+
+.input {
+	padding-top: 0ex;
 }
 
 </style>
 
 <body>
 <div id="vue-app">
-<b-container fluid>
-<b-navbar type="dark" variant="dark">
-    <b-navbar-brand tag="h1">SCoT</b-navbar-brand>
-</b-navbar>
-</b-container>
+<!-- <b-container fluid> -->
 
-<b-container id="body-container" class="body">
+<!-- </b-container> -->
+
+<b-container id="body-container" class="body" fluid>
+<b-navbar type="dark" variant="dark">
+<b-navbar-brand tag="h1">SCoT</b-navbar-brand>
+</b-navbar>
   <b-row id="rows">
     <b-col id="input-options" class="input_options" sm="2">
-    	<b-form-group vertical label="Enter target word">  
+
+    	<b-form-group class="input" label="Enter target word">  
 		<b-form-input v-model="target_word" placeholder="target word" size="sm"></b-form-input>
 		</b-form-group>
 
 		<!-- TODO: add test to make sure start date < end date-->
-		<b-form-group vertical label="Select a start year">
+		<b-form-group class="input" label="Select a start year">
 		<b-form-select v-model="start_year" :options="start_years" size="sm"></b-form-select>
 		</b-from-group>
 
-		<b-form-group vertical label="Select an end year">
+		<b-form-group class="input" label="Select an end year">
 		<b-form-select v-model="end_year" :options="end_years" size="sm"></b-form-select>
 		</b-from-group>
 
-		<b-form-group vertical label="Number of senses">  
+		<b-form-group class="input" label="Number of senses">  
 		<b-form-input type="number" v-model="senses" min="0" placeholder="number of senses" size="sm"></b-form-input>
 		</b-form-group>
 
-		<b-form-group vertical label="Max. number of edges per node">  
+		<b-form-group class="input" label="Max. number of edges per node">  
 		<b-form-input type="number" v-model="edges" min="0" placeholder="number of edges" size="sm"></b-form-input>
 		</b-form-group>
 
-		<b-form-group label="Individual radios">
+		<b-form-group class="input" label="Individual radios">
 	      <b-form-radio v-model="time_diff" name="time_diff" value="false"> sense clustering (CW) </b-form-radio>
 	      <b-form-radio v-model="time_diff" name="time_diff" value="true">time diff</b-form-radio>
     	</b-form-group>
 
+    	<b-form-group v-if="time_diff"  class="input" label="Birth years (Start year)">
+    		<b-form-select v-model="birth_start" :options="start_years"></b-form-select>
+    	</b-form-group>
+
+    	<b-form-group v-if="time_diff" class="input" label="Birth years (End year)">
+    		<b-form-select v-model="birth_end" :options="end_years"></b-form-select>
+    	</b-form-group>
+
+    	<b-form-group v-if="time_diff" class="input" label="Death years (Start year)">
+    		<b-form-select v-model="death_start" :options="start_years"></b-form-select>
+    	</b-form-group>
+
+    	<b-form-group v-if="time_diff" class="input" label="Death years (End year)">
+    		<b-form-select v-model="death_end" :options="end_years"></b-form-select>
+    	</b-form-group>
+
     	<b-button v-on:click="getURL()">Render Graph</b-button>
     </b-col>
-    <b-col id="graph_display" sm="10">
+    <b-col id="graph_display" sm="9">
     	<div id="graph2"></div>
     </b-col>
   </b-row>

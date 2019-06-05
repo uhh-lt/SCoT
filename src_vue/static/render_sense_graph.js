@@ -1,4 +1,4 @@
-function render_graph(url) {
+function render_graph(url, time_diff) {
 	console.log("start rendering graph")
 
 	var width = 960;
@@ -89,6 +89,7 @@ function render_graph(url) {
 
 		var circles = node.append("circle")
 			.attr("r", 5)
+			.attr("cluster", function(d) {return d.class; })
 			.attr("fill", function(d) { return color(d.class); });
 
 	 	var labels = node.append("text")

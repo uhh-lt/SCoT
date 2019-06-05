@@ -29,7 +29,11 @@ class Database:
 		time_diff,
 		target_word,
 		paradigms,
-		time_ids
+		time_ids,
+		birth_start,
+		birth_end,
+		death_start,
+		death_end
 		):
 		if not time_diff:
 			nodes = set()
@@ -41,7 +45,48 @@ class Database:
 			nodes.update(direct_neighbours)
 			return nodes
 		else:
-			pass
+			#birth_nodes = set()
+			nodes = set()
+			#death_nodes = set()
+			birth_years = get_time_ids(birth_start, birth_end)
+			death_years = get_time_ids(death_start, death_end)
+			normal_years = get_time_ids(birth_end+1, death_start-1)
+
+			# { word: [time_id, ...]}
+			direct_neighbours = self.get_neighbouring_nodes_time_diff(
+				target_word,
+				paradigms,
+				time_ids
+				)
+
+
+			# find all tupels of the same word e.g. find all ('happiness/NN', 1) ('happiness/NN', 2)
+			# check if all of their time_ids are either in birth years or death years
+			# flag the node accordingly.
+			return nodes
+
+	def get_neighbouring_nodes_time_diff(
+			target_word,
+			paradigms,
+			time_ids):
+
+		nodes = {}
+		target_word_senses = self.db.query(
+		'SELECT word1, time_id FROM similar_words ' 
+		'WHERE word2=:tw AND word1!=word2 '
+		'ORDER BY score DESC LIMIT 1000',
+		tw=target_word 
+		)
+		#print(target_word_senses)
+		for row in target_word_senses:
+			if row['time_id'] in time_ids and len(nodes)<=size-1:
+				if nodes[row['word1']]:
+					if not row['time_id'] in nodes[row['word1']]:
+						nodes[row['word1']].append(row['time_id'])
+				else:
+					nodes[row['word1']] = [row['time_id']]
+		print(nodes)
+		return nodes
 
 
 	def get_neighbouring_nodes(
