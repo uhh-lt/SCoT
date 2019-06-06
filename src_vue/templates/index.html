@@ -38,14 +38,17 @@
 text {
 	font-family: sans-serif;
 	font-size: 10px;
-	fill: black;
-	stroke: black;
 	stroke-width: 0px;
 }
 .selected {
 	stroke: red;
 	stroke-width: 1px;
 }
+
+.header {
+	word-spacing: -10px;
+}
+
 .input_options {
 	font: sans-serif;
 	font-size: 12px;
@@ -76,7 +79,7 @@ text {
 
 <b-container id="body-container" class="body" fluid>
 <b-navbar type="dark" variant="dark">
-<b-navbar-brand tag="h1">SCoT</b-navbar-brand>
+<b-navbar-brand tag="h1" class="header">SCoT senseviewer</b-navbar-brand>
 </b-navbar>
   <b-row id="rows">
     <b-col id="input-options" class="input_options" sm="2">
@@ -84,15 +87,6 @@ text {
     	<b-form-group class="input" label="Enter target word">  
 		<b-form-input v-model="target_word" placeholder="target word" size="sm"></b-form-input>
 		</b-form-group>
-
-		<!-- TODO: add test to make sure start date < end date-->
-		<b-form-group class="input" label="Select a start year">
-		<b-form-select v-model="start_year" :options="start_years" size="sm"></b-form-select>
-		</b-from-group>
-
-		<b-form-group class="input" label="Select an end year">
-		<b-form-select v-model="end_year" :options="end_years" size="sm"></b-form-select>
-		</b-from-group>
 
 		<b-form-group class="input" label="Number of senses">  
 		<b-form-input type="number" v-model="senses" min="0" placeholder="number of senses" size="sm"></b-form-input>
@@ -102,26 +96,18 @@ text {
 		<b-form-input type="number" v-model="edges" min="0" placeholder="number of edges" size="sm"></b-form-input>
 		</b-form-group>
 
-		<b-form-group class="input" label="Individual radios">
-	      <b-form-radio v-model="time_diff" name="time_diff" value="false"> sense clustering (CW) </b-form-radio>
-	      <b-form-radio v-model="time_diff" name="time_diff" value="true">time diff</b-form-radio>
+		<b-form-group class="input" label="Mode">
+	      <b-form-radio v-model="time_diff" name="time_diff" v-bind:value="false"> sense clustering (CW) </b-form-radio>
+	      <b-form-radio v-model="time_diff" name="time_diff" v-bind:value="true">time diff</b-form-radio>
     	</b-form-group>
 
-    	<b-form-group v-if="time_diff"  class="input" label="Birth years (Start year)">
-    		<b-form-select v-model="birth_start" :options="start_years"></b-form-select>
-    	</b-form-group>
+    	<b-form-group class="input" label="Select a start year">
+		<b-form-select v-model="start_year" :options="start_years" size="sm"></b-form-select>
+		</b-from-group>
 
-    	<b-form-group v-if="time_diff" class="input" label="Birth years (End year)">
-    		<b-form-select v-model="birth_end" :options="end_years"></b-form-select>
-    	</b-form-group>
-
-    	<b-form-group v-if="time_diff" class="input" label="Death years (Start year)">
-    		<b-form-select v-model="death_start" :options="start_years"></b-form-select>
-    	</b-form-group>
-
-    	<b-form-group v-if="time_diff" class="input" label="Death years (End year)">
-    		<b-form-select v-model="death_end" :options="end_years"></b-form-select>
-    	</b-form-group>
+		<b-form-group class="input" label="Select an end year">
+		<b-form-select v-model="end_year" :options="end_years" size="sm"></b-form-select>
+		</b-from-group>
 
     	<b-button v-on:click="getURL()">Render Graph</b-button>
     </b-col>

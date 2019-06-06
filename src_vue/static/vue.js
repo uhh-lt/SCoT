@@ -8,10 +8,6 @@ new Vue({
      	senses : 0,
      	edges : 0,
      	time_diff : false,
-     	birth_start : 0,
-     	birth_end : 0,
-     	death_start : 0,
-     	death_end : 0,
      	start_years : [{
      		value : 1520, text: "1520"
      	}, {
@@ -57,13 +53,12 @@ new Vue({
 			var edges = this.edges;
 			var time_diff = this.time_diff;
 
-			var birth_start = this.birth_start;
-			var birth_end = this.birth_end;
-			var death_start = this.death_start;
-			var death_end = this.death_end;
+			// var birth_start = this.birth_start;
+			// var birth_end = this.birth_end;
+			// var death_start = this.death_start;
+			// var death_end = this.death_end;
 
-
-			var url = '/sense_graph' + '/' + encodeURIComponent(target_word) + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges + '/' + time_diff + '/' + birth_start + '/' + birth_end + '/' + death_start + '/' +death_end;
+			var url = '/sense_graph' + '/' + encodeURIComponent(target_word) + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges + '/' + time_diff;
 
 			render_graph(url, time_diff);
 		}
