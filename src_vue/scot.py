@@ -48,18 +48,14 @@ def get_end_years():
 	return end_years
 
 
-@app.route('/sense_graph/<path:target_word>/<int:start_year>/<int:end_year>/<int:direct_neighbours>/<int:density>/<mode>/<int:birth_start>/<int:birth_end>/<int:death_start>/<int:death_end>')
+@app.route('/sense_graph/<path:target_word>/<int:start_year>/<int:end_year>/<int:direct_neighbours>/<int:density>/<mode>')
 def get_clustered_graph(
 		target_word,
 		start_year,
 		end_year,
 		direct_neighbours,
 		density,
-		mode,
-		birth_start,
-		birth_end,
-		death_start,
-		death_end):
+		mode):
 	target_word = str(urllib.parse.unquote(target_word))
 	#print(target_word, start_year, end_year, direct_neighbours, density, mode)
 	paradigms = direct_neighbours
@@ -74,31 +70,23 @@ def get_clustered_graph(
 		end_year,
 		paradigms,
 		density,
-		time_diff,
-		birth_start,
-		birth_end,
-		death_start,
-		death_end
+		time_diff
 		):
 		db = Database()
 		time_ids = db.get_time_ids(start_year, end_year)
 		#print(time_ids)
-		nodes = db.get_nodes(time_diff, target_word, paradigms, time_ids, birth_start, birth_end, death_start, death_end)
+		nodes, nodes_anno = db.get_nodes(time_diff, target_word, paradigms, time_ids)
 
 		#print(nodes)
-		edges = db.get_edges(time_diff, nodes, density, time_ids)
-		return chineseWhispers.chinese_whispers(nodes, edges, target_word)
+		edges = db.get_edges(nodes, density, time_ids)
+		return chineseWhispers.chinese_whispers(time_diff, nodes, nodes_anno, edges, target_word)
 
 	clustered_graph = clusters(target_word,
 		start_year,
 		end_year,
 		paradigms,
 		density,
-		time_diff,
-		birth_start,
-		birth_end,
-		death_start,
-		death_end)
+		time_diff)
 
 	c_graph = json.dumps([clustered_graph, {'target_word': target_word}], sort_keys=False, indent=4)
 	
