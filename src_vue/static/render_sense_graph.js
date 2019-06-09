@@ -15,6 +15,7 @@ function render_graph(url, time_diff) {
 		.on("keyup.brush", keyupped)
 		.each(function() { this.focus(); })
 		.append("svg")
+		.attr("id", "svg")
 		.attr("width", width)
 		.attr("height", height);
 
@@ -65,6 +66,7 @@ function render_graph(url, time_diff) {
 		var link = svg.append("g")
 				.attr("stroke", "#999")
 				.attr("stroke-opacity", 0.6)
+				.attr("class", "link")
 			.selectAll("line")
 			.data(links)
 			.enter().append("line")
@@ -81,6 +83,7 @@ function render_graph(url, time_diff) {
 		var node = svg.append("g")
 		    	.attr("stroke", "#fff")
 		    	.attr("stroke-width", 1.5)
+		    	.attr("class", "node")
 		    .selectAll("g")
 		    .data(nodes)
 		    .enter().append("g")
@@ -199,7 +202,7 @@ function render_graph(url, time_diff) {
 	        return "translate(" + d.x + "," + d.y + ")";
 	    }
 
-	    // build a dictionary of nodes that are linked
+	// build a dictionary of nodes that are linked
     var linkedByIndex = {};
     links.forEach(function(d) {
         linkedByIndex[d.source.id + "," + d.target.id] = 1;

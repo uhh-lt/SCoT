@@ -7,6 +7,7 @@
 <title>SCoT - Sense Clustering over Time</title>
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
 <script src="static/call_graph.js"></script>
 <script src="static/render_sense_graph.js"></script>
  <!-- Required Stylesheets -->
@@ -69,6 +70,16 @@ text {
 	padding-top: 0ex;
 }
 
+#download_button {
+	position: absolute;
+	right: 10%;
+}
+
+#load_button {
+	position: absolute;
+	right: 0;
+}
+
 </style>
 
 <body>
@@ -80,6 +91,8 @@ text {
 <b-container id="body-container" class="body" fluid>
 <b-navbar type="dark" variant="dark">
 <b-navbar-brand tag="h1" class="header">SCoT senseviewer</b-navbar-brand>
+<b-button id="download_button" variant="success" v-on:click="saveGraph()" download="graph.json" href="">Save Graph</b-button>
+<b-button id="load_button" variant="danger" v-on:click="loadGraph()">Load Graph</b-button>
 </b-navbar>
   <b-row id="rows">
     <b-col id="input-options" class="input_options" sm="2">

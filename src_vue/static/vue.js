@@ -42,6 +42,7 @@ new Vue({
      	}, {
      		value : 2008, text: "2008"
      	}]
+
 	},
 	methods: {
 		getURL: function() {
@@ -60,7 +61,44 @@ new Vue({
 
 			var url = '/sense_graph' + '/' + encodeURIComponent(target_word) + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges + '/' + time_diff;
 
-			render_graph(url, time_diff);
+			render_graph(url, time_diff)
+		},
+		saveGraph: function() {
+			var svg = d3.select("#svg");
+
+			var links = svg.selectAll(".link");
+			var nodes = svg.selectAll(".node");
+
+			var graph_links = [];
+			var graph_nodes = [];
+
+			links.selectAll("line").each(function(d, i) {graph_links.push(this)} );
+
+			nodes.selectAll("g").each(function(d,i) {
+				graph_nodes.push(this)
+			})
+
+
+			var graph;
+			graph = {};
+			graph['links'] = graph_links;
+			graph['nodes'] = graph_nodes;
+			graph['target'] = this.target_word;
+
+			var data = JSON.stringify(graph);
+			var blob = new Blob([data], {type: 'text/plain'});
+
+			const a = document.createElement('a');
+		    document.body.appendChild(a);
+		    const url = window.URL.createObjectURL(blob);
+		    a.href = url;
+		    a.download = "graph.json";
+		    a.click();
+		    setTimeout(() => {
+		      window.URL.revokeObjectURL(url);
+		      document.body.removeChild(a);
+		    }, 0)
+
 		}
 	}
 
