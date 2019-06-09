@@ -7,7 +7,6 @@ function render_graph(url, time_diff) {
 	var radius = 5;
 
 	var color = d3.scaleOrdinal(d3.schemeCategory20)
-	/* Set up the SVG elements*/
 
 	d3.select("#graph2").select("svg").remove()
 
