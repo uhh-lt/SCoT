@@ -6,7 +6,7 @@
 # and show the relationships between words better?
 
 from flask import Flask, jsonify, render_template, request, Response
-from flask_cors import CORS
+#from flask_cors import CORS
 
 from db import Database
 import chineseWhispers
@@ -93,4 +93,4 @@ def get_clustered_graph(
 	return c_graph
 
 if __name__ == '__main__':
-	app.run()
+	app.run(host="0.0.0.0")

@@ -2,7 +2,7 @@ import records
 
 class Database:
 	def __init__(self):
-		self.db = records.Database('mysql://inga@localhost/scot')
+		self.db = records.Database('mysql://inga@127.0.0.1/scot')
 
 	def get_all_years(self, position):
 		years = {}

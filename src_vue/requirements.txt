@@ -1,0 +1,4 @@
+Flask
+records
+networkx
+mysqlclient
