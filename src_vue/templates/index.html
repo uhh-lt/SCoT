@@ -72,12 +72,23 @@ text {
 
 #download_button {
 	position: absolute;
-	right: 10%;
+	right: 7%;
+	text-align: center;
+	font-size: 10px;
+	word-spacing: -10px;
 }
 
 #load_button {
 	position: absolute;
 	right: 0;
+	text-align: center;
+	font-size: 10px;
+	word-spacing: -10px;
+	margin-right: 10px;
+}
+
+.form-popup {
+	display: none;
 }
 
 </style>
@@ -92,7 +103,17 @@ text {
 <b-navbar type="dark" variant="dark">
 <b-navbar-brand tag="h1" class="header">SCoT senseviewer</b-navbar-brand>
 <b-button id="download_button" variant="success" v-on:click="saveGraph()" download="graph.json" href="">Save Graph</b-button>
-<b-button id="load_button" variant="danger" v-on:click="loadGraph()">Load Graph</b-button>
+<b-button id="load_button" variant="danger" v-on:click="displayForm()">Load Graph</b-button>
+<div class="form-popup" id="loadpopup">
+<b-form-file
+    v-model="file"
+    :state="Boolean(file)"
+    placeholder="Choose a file..."
+    drop-placeholder="Drop file here...">
+</b-form-file>
+<b-button id="renderfile_button" variant="success" v-on:click="loadGraph()">Render graph from files</b-button>
+    <b-button id="cancel_button" variant="danger" v-on:click="closeForm()">Close</b-button>
+</div>
 </b-navbar>
   <b-row id="rows">
     <b-col id="input-options" class="input_options" sm="2">

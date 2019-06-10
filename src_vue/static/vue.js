@@ -41,7 +41,8 @@ new Vue({
      		value : 2005, text: "2005"
      	}, {
      		value : 2008, text: "2008"
-     	}]
+     	}],
+     	file : null
 
 	},
 	methods: {
@@ -99,6 +100,15 @@ new Vue({
 		      document.body.removeChild(a);
 		    }, 0)
 
+		},
+		loadGraph: function() {
+			document.getElementById("loadpopup").style.display = "none";
+		},
+		closeForm: function() {
+			document.getElementById("loadpopup").style.display = "none";
+		},
+		displayForm: function() {
+			document.getElementById("loadpopup").style.display = "block";
 		}
 	}
 
