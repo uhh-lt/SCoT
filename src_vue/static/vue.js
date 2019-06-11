@@ -42,7 +42,8 @@ new Vue({
      	}, {
      		value : 2008, text: "2008"
      	}],
-     	file : null
+     	file : null,
+     	read_graph: null
 
 	},
 	methods: {
@@ -103,6 +104,17 @@ new Vue({
 		},
 		loadGraph: function() {
 			document.getElementById("loadpopup").style.display = "none";
+			const file = this.file;
+			console.log(file)
+			const reader = new FileReader() 
+			reader.onload = function(e) {
+			  this.read_graph = JSON.parse(reader.result);
+
+			  render_graph_from_file(this.read_graph);
+			}
+
+			reader.readAsText(file);
+
 		},
 		closeForm: function() {
 			document.getElementById("loadpopup").style.display = "none";
