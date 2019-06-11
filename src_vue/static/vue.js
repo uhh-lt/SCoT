@@ -74,10 +74,71 @@ new Vue({
 			var graph_links = [];
 			var graph_nodes = [];
 
-			links.selectAll("line").each(function(d, i) {graph_links.push(this)} );
+			links.selectAll("line").each(function(d, i) { graph_links.push(this) });
 
 			nodes.selectAll("g").each(function(d,i) {
-				graph_nodes.push(this)
+				var node = {};
+				text_obj = {};
+				//console.log(this)
+				node["node"] = this;
+				childnodes = this.childNodes;
+				//console.log(childnodes)
+				childnodes.forEach(function(d,i) {
+					var circle = {};
+					var text = [];
+
+					if (d.tagName === "circle") {
+						console.log("it's a circle!")
+						var attrs = d.attributes;
+						for(var k = attrs.length - 1; k >= 0; k--) {
+							//console.log("length: " + attrs.length)
+
+							var name = attrs[k].name;
+							var value = attrs[k].value;
+							console.log(name);
+							console.log(value);
+							circle[name] = value;
+						}
+					node['circle'] = circle;
+					} else if (d.tagName === "text") {
+						console.log("it's a text!");
+
+						attrs = d.attributes;
+
+						for(var i = attrs.length - 1; i >= 0; i--) {
+							console.log("length: " + attrs.length)
+
+							var name = attrs[i].name;
+							var value = attrs[i].value;
+							
+							if (name === "style") {
+								console.log("Have some Style!");
+								var value_list = value.split(";");
+								
+								var formatted_obj = {};
+								
+								for (var j = value_list.length - 1; j >= 0; j--) {
+									var name_value = value_list[j].split(":");
+									var n = String(name_value[0]).replace(" ", "").replace(";", "");
+									var v = String(name_value[1]).replace(" ", "").replace(";", "");
+									
+									if (n !== "") {
+										formatted_obj[n] = v;
+									}
+								}
+
+								text_obj['style'] = formatted_obj;
+
+							} else {
+							text_obj[name] = value;
+							}
+						}
+					}
+					node['label']= text_obj;
+				})
+				//node.push(childnodes)
+				graph_nodes.push(node);
+				
 			})
 
 
@@ -104,17 +165,15 @@ new Vue({
 		},
 		loadGraph: function() {
 			document.getElementById("loadpopup").style.display = "none";
+
 			const file = this.file;
-			console.log(file)
-			const reader = new FileReader() 
+			const reader = new FileReader()
+
 			reader.onload = function(e) {
 			  this.read_graph = JSON.parse(reader.result);
-
 			  render_graph_from_file(this.read_graph);
 			}
-
 			reader.readAsText(file);
-
 		},
 		closeForm: function() {
 			document.getElementById("loadpopup").style.display = "none";
