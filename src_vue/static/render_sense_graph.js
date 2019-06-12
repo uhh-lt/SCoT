@@ -34,7 +34,7 @@ function render_graph(url, time_diff) {
 		
 		var graph = data[0];
 		var target = [data[1]];
-		console.log(target)
+		//console.log(target)
 
 		var nodes = graph.nodes;
 		var links = graph.links;
