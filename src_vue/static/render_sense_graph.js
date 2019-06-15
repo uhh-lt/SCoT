@@ -1,8 +1,8 @@
 function render_graph(url, time_diff) {
 	console.log("start rendering graph")
 
-	var width = 1000;
-	var height = 1000;
+	var width = 900;
+	var height = 700;
 	var shiftKey;
 	var radius = 5;
 
@@ -15,9 +15,14 @@ function render_graph(url, time_diff) {
 		.on("keyup.brush", keyupped)
 		.each(function() { this.focus(); })
 		.append("svg")
-		.attr("id", "svg")
-		.attr("width", width)
-		.attr("height", height);
+			.attr("id", "svg")
+			.attr("width", width)
+			.attr("height", height)
+		.call(d3.zoom().on("zoom", function () {
+    		svg.attr("transform", d3.event.transform)
+ 			}))
+ 		.append("g");
+
 
 	function keydowned(){
 		shiftKey = d3.event.shiftKey || d3.event.metaKey;
@@ -78,7 +83,7 @@ function render_graph(url, time_diff) {
 			.on("drag", function() {
 				d3.selectAll('.selected').each(dragmove); })
 			.on("end", function() {
-				d3.selectAll('.selected').each(dragend); });
+				d3.selectAll('.selected').each(dragend); });	
 
 		var node = svg.append("g")
 		    	.attr("stroke", "#fff")
@@ -137,7 +142,6 @@ function render_graph(url, time_diff) {
 		    .on("start", brushstarted)
 		    .on("brush", brushed)
 		    .on("end", brushended));
-
 
 		function brushstarted(){
 			if (d3.event.sourceEvent.type !== "end") {

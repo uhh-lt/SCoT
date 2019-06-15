@@ -2,8 +2,8 @@ function render_graph_from_file(graph) {
 	console.log("start rendering graph");
 	console.log(graph)
 
-	var width = 1000;
-	var height = 1000;
+	var width = 900;
+	var height = 700;
 	var shiftKey;
 
 	d3.select("#graph2").select("svg").remove()
@@ -15,7 +15,11 @@ function render_graph_from_file(graph) {
 		.append("svg")
 			.attr("id", "svg")
 			.attr("width", width)
-			.attr("height", height);
+			.attr("height", height)
+		.call(d3.zoom().on("zoom", function () {
+    		svg.attr("transform", d3.event.transform)
+ 			}))
+ 		.append("g");
 
 	function keydowned(){
 		shiftKey = d3.event.shiftKey || d3.event.metaKey;
