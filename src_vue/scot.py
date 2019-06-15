@@ -93,4 +93,6 @@ def get_clustered_graph(
 	return c_graph
 
 if __name__ == '__main__':
-	app.run(host="0.0.0.0")
+	with open('config.json') as config_file:
+		config = json.load(config_file)
+	app.run(host=config['host'])

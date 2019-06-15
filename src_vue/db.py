@@ -1,8 +1,11 @@
 import records
+import json
 
 class Database:
 	def __init__(self):
-		self.db = records.Database('mysql://inga@127.0.0.1/scot')
+		with open('config.json') as config_file:
+			config = json.load(config_file)
+		self.db = records.Database(config['database'])
 
 	def get_all_years(self, position):
 		years = {}
