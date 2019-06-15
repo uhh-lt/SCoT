@@ -52,7 +52,7 @@ function render_graph_from_file(graph) {
 
 	var drag_nodes = d3.drag()
 		.on("drag", function() {
-    		d3.selectAll(".selected_hey").each(dragmove); })
+    		d3.selectAll(".selected").each(dragmove); })
 
 	var node = svg.append("g")
 			.attr("stroke", "#fff")
@@ -91,7 +91,7 @@ function render_graph_from_file(graph) {
 
 	function brushstarted(){
 		if (d3.event.sourceEvent.type !== "end") {
-			node.classed("selected_hey", function(d) {
+			node.classed("selected", function(d) {
 				//console.log("d.selected: " + d.selected)
 				return d.node.__data__.selected = d.node.__data__.previouslySelected = shiftKey && d.node.__data__.selected;
 			})
@@ -102,7 +102,7 @@ function render_graph_from_file(graph) {
 		if (d3.event.sourceEvent.type !== "end") {
 			var selection = d3.event.selection;
 
-			node.classed("selected_hey", function(d) {
+			node.classed("selected", function(d) {
 				return d.node.__data__.selected = d.node.__data__.previouslySelected ^ (selection != null && selection[0][0] <= d.node.__data__.x && d.node.__data__.x < selection[1][0]
 				&& selection[0][1] <= d.node.__data__.y && d.node.__data__.y < selection[1][1]);
 			})
