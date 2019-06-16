@@ -55,8 +55,7 @@ function render_graph_from_file(graph) {
 		.attr("stroke-width", function(d) { return Math.sqrt(d.__data__.weight/10); });
 
 	var drag_nodes = d3.drag()
-		.on("drag", function() {
-    		d3.selectAll(".selected").each(dragmove); })
+		.on("drag", dragmove)
 
 	var node = svg.append("g")
 			.attr("stroke", "#fff")
@@ -122,12 +121,12 @@ function render_graph_from_file(graph) {
 
 	function mousedowned(d){
 		if (shiftKey) {
-			d3.select(this).classed("selected_hey", function(d) {
+			d3.select(this).classed("selected", function(d) {
 				return !d.node.__data__.selected
 			});
 			d3.event.stopImmediatePropagation();
 		} else if (!d.node.__data__.selected) {
-			node.classed("selected_hey", function(p) {
+			node.classed("selected", function(p) {
 				if (d === p) {
 					p.node.__data__.selected = true;
 					return p.node.__data__.selected;
@@ -189,7 +188,13 @@ function render_graph_from_file(graph) {
 		node.filter(function(d) { return d.node.__data__.selected; })
 			.attr("x", function(d) { return d.node.__data__.x += dx; })
 			.attr("y", function(d) { return d.node.__data__.y += dy; })
-			.attr("transform", function(d) { return "translate(" + d.node.__data__.x + "," + d.node.__data__.y + ")"; })
+			//.attr("px" function(d) { return d.px += dx; })
+			//.attr("py", function(d) { return d.py += dy; })
+			.attr("transform", function(d) {
+				var node_x = d.node.__data__.x;
+				var node_y = d.node.__data__.y;
+				return "translate(" + node_x + "," + node_y + ")";
+			});
 
 		// find source node id in links, find node in nodes, check selected. if so update link positions to node source node position
 		var selected_nodes = node.filter(function(d) { return d.node.__data__.selected; });
