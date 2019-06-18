@@ -20,3 +20,6 @@ CREATE TABLE similar_words (
 	time_id INT UNSIGNED NOT NULL REFERENCES time_slices(id),
 	PRIMARY KEY (id)
 );
+
+CREATE INDEX word1_idx ON similar_words(word1);
+CREATE INDEX word2_idx ON similar_words(word2);
