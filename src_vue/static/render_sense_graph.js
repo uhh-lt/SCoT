@@ -21,8 +21,7 @@ function render_graph(url, time_diff) {
 		.call(d3.zoom().on("zoom", function () {
     		svg.attr("transform", d3.event.transform)
  			}))
- 		.append("g");
-
+ 		.append("g")
 
 	function keydowned(){
 		shiftKey = d3.event.shiftKey || d3.event.metaKey;
@@ -154,6 +153,7 @@ function render_graph(url, time_diff) {
 		function brushed() {
 			if (d3.event.sourceEvent.type !== "end") {
 				var selection = d3.event.selection;
+
 				node.classed("selected", function(d) {
 					return d.selected = d.previouslySelected ^ (selection != null && selection[0][0] <= d.x && d.x < selection[1][0]
 					&& selection[0][1] <= d.y && d.y < selection[1][1]);
@@ -267,5 +267,4 @@ function render_graph(url, time_diff) {
 
 		
 	});
-
 }

@@ -1,4 +1,4 @@
-new Vue({
+app = new Vue({
    el: "#vue-app",
    data: {
    		target_word : "",
@@ -43,11 +43,42 @@ new Vue({
      		value : 2008, text: "2008"
      	}],
      	file : null,
-     	read_graph: null
+     	read_graph: null,
+     	graph_rendered : false,
+     	clusters : []
+     	//got_clusters : false,
 
 	},
 	methods: {
+		get_clusters: function() {
+			//this.got_clusters = false;
+			var timeout;
+			if (this.senses < 100) {
+				timeout = 1000;
+			} else {
+				timeout = this.senses * 10;
+			}
+			setTimeout(function() {
+				var clusters = [];
+				var circles = document.getElementsByTagName("circle")
+				for(var i=0; i < circles.length; i++) {
+					var cluster = circles[i].getAttribute("cluster");
+					if (! clusters.includes(cluster)) {
+						clusters.push(cluster);
+					}
+				}
+				console.log(clusters);
+				//this.clusters = clusters;
+				for (var i=0; i < clusters.length; i++) {
+					Vue.set(app.clusters, i, clusters[i]);
+				}
+				console.log(this.clusters);
+				//this.got_clusters = true;
+				//console.log(this.got_clusters);
+			}, timeout);
+		},
 		getURL: function() {
+			this.render_graph = false;
 			console.log(this.target_word)
 			var target_word = this.target_word;
 			var start_year = this.start_year;
@@ -64,6 +95,8 @@ new Vue({
 			var url = '/sense_graph' + '/' + encodeURIComponent(target_word) + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges + '/' + time_diff;
 
 			render_graph(url, time_diff)
+
+			this.graph_rendered = true;
 		},
 		saveGraph: function() {
 			var svg = d3.select("#svg");
@@ -78,7 +111,7 @@ new Vue({
 
 			nodes.selectAll("g").each(function(d,i) {
 				var node = {};
-				text_obj = {};
+				var text_obj = {};
 				//console.log(this)
 				node["node"] = this;
 				childnodes = this.childNodes;
@@ -148,7 +181,7 @@ new Vue({
 			graph['nodes'] = graph_nodes;
 			graph['target'] = this.target_word;
 
-			var data = JSON.stringify(graph);
+			var data = JSON.stringify(graph, null, 2);
 			var blob = new Blob([data], {type: 'text/plain'});
 
 			const a = document.createElement('a');

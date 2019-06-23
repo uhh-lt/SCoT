@@ -8,9 +8,13 @@
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 
-<script src="static/call_graph.js"></script>
+<!-- <script src="static/call_graph.js"></script>
 <script src="static/render_sense_graph.js"></script>
 <script src="static/render_graph_from_file.js"></script>
+-->
+<script type="text/javascript" src="%% url_for('static', filename='render_sense_graph.js') %%"></script>
+<script type="text/javascript" src="%% url_for('static', filename='render_graph_from_file.js') %%"></script>
+
  <!-- Required Stylesheets -->
 <link
   type="text/css"
@@ -43,19 +47,19 @@ text {
 	stroke-width: 0px;
 }
 .selected {
-	stroke: red;
-	stroke-width: 1px;
+	stroke: #E34234;
+	stroke-width: 2.5px;
 }
 
 .header {
-	word-spacing: -10px;
+	/*word-spacing: -10px;*/
 }
 
 .input_options {
 	font: sans-serif;
 	font-size: 12px;
 	text-align: left;
-	word-spacing: -10px;
+	/*word-spacing: -10px;*/
 	background: #343a40;
 	color: white;
 	margin-left: 10px;
@@ -79,7 +83,7 @@ text {
 	right: 7%;
 	text-align: center;
 	font-size: 10px;
-	word-spacing: -10px;
+	/*word-spacing: -10px;*/
 	margin-right:10px; 
 }
 
@@ -88,7 +92,7 @@ text {
 	right: 0;
 	text-align: center;
 	font-size: 10px;
-	word-spacing: -10px;
+	/*word-spacing: -10px;*/
 	margin-right: 10px;
 	margin-left:10px;
 }
@@ -96,21 +100,21 @@ text {
 #render_button {
 	margin-top: 10px;
 	text-align: center;
-	word-spacing: -10px;
+	/*word-spacing: -10px;*/
 	font-size: 10px;
 }
 
 #render_file_button {
 	margin-top: 10px;
 	margin-bottom: 10px;
-	word-spacing: -10px;
+	/*word-spacing: -10px;*/
 	font-size: 10px;
 }
 
 #cancel_button {
 	margin-top: 10px;
 	margin-bottom: 10px;
-	word-spacing: -10px;
+	/*word-spacing: -10px;*/
 	font-size: 10px;
 }
 
@@ -128,7 +132,7 @@ text {
 	max-width: 300px;
   	padding: 10px;
   	background-color: lightgrey;
-  	word-spacing: -10px;
+  	/*word-spacing: -10px;*/
   	font-size: 12px;
 }
 
@@ -176,7 +180,8 @@ text {
 
     	<b-button id="render_button" v-on:click="getURL()">Render Graph</b-button>
     </b-col>
-    <b-col id="graph_display" sm="9">
+
+    <b-col id="graph_display" sm="7">
 	    <b-card class="form-popup" id="loadpopup">
 		<b-card-text>
 		Select a .json file to render graph from
@@ -191,6 +196,18 @@ text {
 	    <b-button id="cancel_button" href="#" variant="danger" v-on:click="closeForm()">Close</b-button>
 		</b-card>
     	<div id="graph2"></div>
+    </b-col>
+
+    <b-col id="graph_params" sm="2">
+    	<p hidden v-if="graph_rendered"> {{ get_clusters() }}</p>
+    	<b-card v-if="graph_rendered" class="name_clusters" id="assign_popup">
+    		<b-card-text> Graph clusters </b-card-text>
+    		<ul v-if="clusters.length" id="clusters">
+			  <li v-for="cluster in clusters">
+			    {{ cluster }}
+			  </li>
+			</ul>
+    	</b-card>
     </b-col>
   </b-row>
 </b-container> 
