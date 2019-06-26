@@ -1,8 +1,8 @@
 function render_graph(url, time_diff) {
 	console.log("start rendering graph")
 
-	var width = 900;
-	var height = 700;
+	var width = 800;
+	var height = 600;
 	var shiftKey;
 	var radius = 5;
 
@@ -132,7 +132,8 @@ function render_graph(url, time_diff) {
 				}
 			})
 			.attr('x', 6)
-			.attr('y', 3);
+			.attr('y', 3)
+			.attr("text", function(d) { return d.id; });
 
 		simulation.on("tick", ticked)
 
@@ -218,8 +219,8 @@ function render_graph(url, time_diff) {
     }
 
     // fade nodes on hover
-    function mouseOver(opacity) {
-        return function(d) {
+    function mouseOver(d, opacity) {
+		return function(d) {
             // check all other nodes to see if they're connected
             // to this one. if so, keep the opacity at 1, otherwise
             // fade
@@ -238,7 +239,7 @@ function render_graph(url, time_diff) {
             link.style("stroke", function(o){
                 return o.source === d || o.target === d ? o.source.colour : "#ddd";
             });
-        };
+        };        
     }
 
     function mouseOut() {

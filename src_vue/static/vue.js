@@ -50,6 +50,12 @@ app = new Vue({
 
 	},
 	methods: {
+		showEditNameMask: function() {
+			return true;
+		},
+		showNodesList: function() {
+			document.getElementById("cluster_nodes").style.display = "block";
+		},
 		get_clusters: function() {
 			//this.got_clusters = false;
 			var timeout;
@@ -60,19 +66,61 @@ app = new Vue({
 			}
 			setTimeout(function() {
 				var clusters = [];
-				var circles = document.getElementsByTagName("circle")
-				for(var i=0; i < circles.length; i++) {
-					var cluster = circles[i].getAttribute("cluster");
-					if (! clusters.includes(cluster)) {
-						clusters.push(cluster);
+				
+				// var circles = document.getElementsByTagName("circle")
+				// for(var i=0; i < circles.length; i++) {
+				// 	var cluster = circles[i].getAttribute("cluster");
+				// 	if (! clusters.includes(cluster)) {
+				// 		clusters.push(cluster);
+				// 	}
+				// }
+				// console.log(clusters);
+				var svg = d3.select("#svg");
+				var nodes = svg.selectAll(".node");
+
+				nodes.selectAll("g").each(function(d,i) {
+					var cluster = {};
+					var exists = false;
+					var cluster_name;
+					var colour;
+					var text;
+					childnodes = this.childNodes;
+					childnodes.forEach(function(d,i) {
+						
+						if (d.tagName === "circle") {
+							cluster_name = d.getAttribute("cluster");
+							colour = d.getAttribute("fill")
+						}
+
+						if (d.tagName === "text") {
+							text = d.getAttribute("text");
+						}
+
+					});
+
+					clusters.forEach(function(c,i) {
+						if (c.cluster_name === cluster_name) {
+							exists = true;
+							c.labels.push(text)
+
+						}
+					});
+
+					if (! exists) {
+						cluster["cluster_name"] = cluster_name;
+						cluster["colour"] = colour;
+						cluster["labels"] = [text];
+						clusters.push(cluster)
 					}
-				}
-				console.log(clusters);
+
+					console.log(clusters);
+			 	});
+
 				//this.clusters = clusters;
 				for (var i=0; i < clusters.length; i++) {
 					Vue.set(app.clusters, i, clusters[i]);
 				}
-				console.log(this.clusters);
+				console.log(app.clusters);
 				//this.got_clusters = true;
 				//console.log(this.got_clusters);
 			}, timeout);
@@ -137,6 +185,7 @@ app = new Vue({
 						console.log("it's a text!");
 
 						attrs = d.attributes;
+						console.log(attrs)
 
 						for(var i = attrs.length - 1; i >= 0; i--) {
 							console.log("length: " + attrs.length)
@@ -207,6 +256,7 @@ app = new Vue({
 			  render_graph_from_file(this.read_graph);
 			}
 			reader.readAsText(file);
+			app.graph_rendered = true;
 		},
 		closeForm: function() {
 			document.getElementById("loadpopup").style.display = "none";

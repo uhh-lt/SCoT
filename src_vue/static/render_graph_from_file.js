@@ -1,13 +1,14 @@
 function render_graph_from_file(graph) {
-	console.log("start rendering graph");
-	console.log(graph)
-
+	// set svg parameters
 	var width = 900;
 	var height = 700;
 	var shiftKey;
 
+	// if there is already an svg element, remove it
+	// otherwise a new svg element will always be appended to the DOM
 	d3.select("#graph2").select("svg").remove()
 
+	// set up svg
 	var svg = d3.select("#graph2")
 		.on("keydown.brush", keydowned)
 		.on("keyup.brush", keyupped)
@@ -21,6 +22,7 @@ function render_graph_from_file(graph) {
  			}))
  		.append("g");
 
+ 	// define shiftKey
 	function keydowned(){
 		shiftKey = d3.event.shiftKey || d3.event.metaKey;
 	}
@@ -33,15 +35,21 @@ function render_graph_from_file(graph) {
 	var links = graph.links;
 	var target = graph.target;
 
+	
+	// add target word to the center of svg
 	target_word = svg.append("g").append("text")
 		.attr("class", "target")
 		.attr("x", (width/2))
 		.attr("y", (height/2))
 		.text(target);
 
+	
+	// add a brush for selecting nodes to svg
 	var brush = svg.append("g")
 		.attr("class", "brush");
 
+
+	// set up the links
 	var link = svg.append("g")
 			.attr("stroke", "#999")
 			.attr("stroke-opacity", 0.6)
@@ -54,37 +62,45 @@ function render_graph_from_file(graph) {
 		.attr("y2", function(d) { return d.__data__.target.y })
 		.attr("stroke-width", function(d) { return Math.sqrt(d.__data__.weight/10); });
 
+
+	// define node behaviour on dragging it
 	var drag_nodes = d3.drag()
 		.on("drag", dragmove)
 
+	// set up the nodes
 	var node = svg.append("g")
 			.attr("stroke", "#fff")
 			.attr("stroke-width", 1.5)
 			.attr("class", "node")
 		.selectAll("g")
 		.data(nodes).enter().append("g")
-		.attr("transform", function(d) { return "translate(" + d.node.__data__.x + "," + d.node.__data__.y + ")"; })
-		.attr("x", function(d) { return d.node.__data__.x; })
-		.attr("y", function(d) { return d.node.__data__.y; })
-		.attr("id", function(d) { return d.node.__data__.id; })
-    .on("mousedown", mousedowned)
-    	.call(drag_nodes)
-    .on("mouseover", mouseOver(0.2))
-    .on("mouseout", mouseOut);
+			.attr("transform", function(d) { return "translate(" + d.node.__data__.x + "," + d.node.__data__.y + ")"; })
+			.attr("x", function(d) { return d.node.__data__.x; })
+			.attr("y", function(d) { return d.node.__data__.y; })
+			.attr("id", function(d) { return d.node.__data__.id; })
+	    .on("mousedown", mousedowned)
+	    	.call(drag_nodes)
+	    .on("mouseover", mouseOver(0.2))
+	    .on("mouseout", mouseOut);
 
+	// add circle elements to nodes
 	var circles = node.append("circle")
 		.attr("r", function(d) { return d.circle.r; })
 		.attr("cluster", function(d) { return d.circle.cluster; })
 		.attr("fill", function(d) { return d.circle.fill; })
 
 
+	// add text elements for the labels to nodes
 	var labels = node.append("text")
 		.text(function(d) { return d.node.__data__.id; })
 		.style('fill', function(d) { return d.label.style.fill; })
 		.style('stroke', function(d) {return d.label.style.stroke; })
 		.attr('x', function(d) {return d.label.x; })
-		.attr('y', function(d) {return d.label.y; });
+		.attr('y', function(d) {return d.label.y; })
+		.attr('text', function(d) { return d.label.text });
 
+	
+	// define brush behaviour
 	brush.call(d3.brush()
 	    .extent([[0, 0], [width, height]])
 	    .on("start", brushstarted)
@@ -119,12 +135,17 @@ function render_graph_from_file(graph) {
 	}
 
 
+	// define behaviour of a node on mouse down
 	function mousedowned(d){
+
+		// if node is selected release node from selected
 		if (shiftKey) {
 			d3.select(this).classed("selected", function(d) {
 				return !d.node.__data__.selected
 			});
 			d3.event.stopImmediatePropagation();
+
+		// if node was not selected, select the node
 		} else if (!d.node.__data__.selected) {
 			node.classed("selected", function(p) {
 				if (d === p) {
@@ -173,6 +194,7 @@ function render_graph_from_file(graph) {
         };
     }
 
+    // return style of links and nodes to normal
     function mouseOut() {
         node.style("stroke-opacity", 1);
         node.style("fill-opacity", 1);

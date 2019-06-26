@@ -1,213 +1,114 @@
 <!DOCTYPE html>
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 
-<title>SCoT - Sense Clustering over Time</title>
-<script src="https://d3js.org/d3.v4.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+	<title>SCoT - Sense Clustering over Time</title>
 
-<!-- <script src="static/call_graph.js"></script>
-<script src="static/render_sense_graph.js"></script>
-<script src="static/render_graph_from_file.js"></script>
--->
-<script type="text/javascript" src="%% url_for('static', filename='render_sense_graph.js') %%"></script>
-<script type="text/javascript" src="%% url_for('static', filename='render_graph_from_file.js') %%"></script>
+	<!-- D3 and vue.js -->
+	<script src="https://d3js.org/d3.v4.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 
- <!-- Required Stylesheets -->
-<link
-  type="text/css"
-  rel="stylesheet"
-  href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css"
-/>
-<link
-  type="text/css"
-  rel="stylesheet"
-  href="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.css"
-/>
+	<script type="text/javascript" src="%% url_for('static', filename='render_sense_graph.js') %%"></script>
+	<script type="text/javascript" src="%% url_for('static', filename='render_graph_from_file.js') %%"></script>
 
-<!-- Required scripts -->
-<script src="https://unpkg.com/vue"></script>
-<script src="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.js"></script>
+	 <!-- Stylesheets -->
+	<link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css"/>
+	<link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.css"/>
+	<link rel= "stylesheet" type= "text/css" href="%% url_for('static', filename='style.css') %%"/>
+
+	<!-- Bootstrap Vue -->
+	<script src="https://unpkg.com/vue"></script>
+	<script src="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.js"></script>
 </head>
-<!-- import D3.js -->
-
-<style>
-.target {
-	font-family: sans-serif;
-	font-size: 15px;
-	fill: lightgrey;
-	stroke: black;
-	stroke-width: 0px;
-}
-text {
-	font-family: sans-serif;
-	font-size: 10px;
-	stroke-width: 0px;
-}
-.selected {
-	stroke: #E34234;
-	stroke-width: 2.5px;
-}
-
-.header {
-	/*word-spacing: -10px;*/
-}
-
-.input_options {
-	font: sans-serif;
-	font-size: 12px;
-	text-align: left;
-	/*word-spacing: -10px;*/
-	background: #343a40;
-	color: white;
-	margin-left: 10px;
-	width: 150px;
-}
-
-.body {
-	margin: 0px;
-	padding-left: 0px;
-	padding-right: 0px;
-}
-
-.input {
-	padding-top: 0ex;
-	margin-top: 10px;
-	margin-bottom: 10px;
-}
-
-#download_button {
-	position: absolute;
-	right: 7%;
-	text-align: center;
-	font-size: 10px;
-	/*word-spacing: -10px;*/
-	margin-right:10px; 
-}
-
-#load_button {
-	position: absolute;
-	right: 0;
-	text-align: center;
-	font-size: 10px;
-	/*word-spacing: -10px;*/
-	margin-right: 10px;
-	margin-left:10px;
-}
-
-#render_button {
-	margin-top: 10px;
-	text-align: center;
-	/*word-spacing: -10px;*/
-	font-size: 10px;
-}
-
-#render_file_button {
-	margin-top: 10px;
-	margin-bottom: 10px;
-	/*word-spacing: -10px;*/
-	font-size: 10px;
-}
-
-#cancel_button {
-	margin-top: 10px;
-	margin-bottom: 10px;
-	/*word-spacing: -10px;*/
-	font-size: 10px;
-}
-
-#file_input {
-	margin-top: 10px;
-	margin-bottom: 10px;
-}
-
-.form-popup {
-	display: none;
-	position: fixed;
-	top: 60px;
-	right: 10px;
-	border: 1px solid #343a40;
-	max-width: 300px;
-  	padding: 10px;
-  	background-color: lightgrey;
-  	/*word-spacing: -10px;*/
-  	font-size: 12px;
-}
-
-</style>
 
 <body>
 <div id="vue-app">
-<!-- <b-container fluid> -->
-
-<!-- </b-container> -->
-
 <b-container id="body-container" class="body" fluid>
-<b-navbar type="dark" variant="dark">
-<b-navbar-brand tag="h1" class="header">SCoT senseviewer</b-navbar-brand>
-<b-button id="download_button" variant="success" v-on:click="saveGraph()" download="graph.json" href="">Save Graph</b-button>
-<b-button id="load_button" variant="danger" v-on:click="displayForm()">Load Graph</b-button>
-</b-navbar>
+	<b-navbar type="dark" variant="dark">
+		<b-navbar-brand tag="h1" class="header">SCoT senseviewer</b-navbar-brand>
+		<b-button id="download_button" variant="success" v-on:click="saveGraph()" download="graph.json" href="">Save Graph</b-button>
+		<b-button id="load_button" variant="danger" v-on:click="displayForm()">Load Graph</b-button>
+	</b-navbar>
+
   <b-row id="rows">
     <b-col id="input-options" class="input_options" sm="2">
 
     	<b-form-group class="input" label="Enter target word">  
-		<b-form-input v-model="target_word" placeholder="target word" size="sm"></b-form-input>
+			<b-form-input v-model="target_word" placeholder="target word" size="sm"></b-form-input>
 		</b-form-group>
 
 		<b-form-group class="input" label="Number of senses">  
-		<b-form-input type="number" v-model="senses" min="0" placeholder="number of senses" size="sm"></b-form-input>
+			<b-form-input type="number" v-model="senses" min="0" placeholder="number of senses" size="sm"></b-form-input>
 		</b-form-group>
 
 		<b-form-group class="input" label="Max. number of edges per node">  
-		<b-form-input type="number" v-model="edges" min="0" placeholder="number of edges" size="sm"></b-form-input>
+			<b-form-input type="number" v-model="edges" min="0" placeholder="number of edges" size="sm"></b-form-input>
 		</b-form-group>
 
 		<b-form-group class="input" label="Mode">
-	      <b-form-radio v-model="time_diff" name="time_diff" v-bind:value="false"> sense clustering (CW) </b-form-radio>
-	      <b-form-radio v-model="time_diff" name="time_diff" v-bind:value="true">time diff</b-form-radio>
+		    <b-form-radio v-model="time_diff" name="time_diff" v-bind:value="false"> sense clustering (CW) </b-form-radio>
+		    <b-form-radio v-model="time_diff" name="time_diff" v-bind:value="true">time diff</b-form-radio>
     	</b-form-group>
 
     	<b-form-group class="input" label="Select a start year">
-		<b-form-select v-model="start_year" :options="start_years" size="sm"></b-form-select>
+			<b-form-select v-model="start_year" :options="start_years" size="sm"></b-form-select>
 		</b-from-group>
 
 		<b-form-group class="input" label="Select an end year">
-		<b-form-select v-model="end_year" :options="end_years" size="sm"></b-form-select>
+			<b-form-select v-model="end_year" :options="end_years" size="sm"></b-form-select>
 		</b-from-group>
 
     	<b-button id="render_button" v-on:click="getURL()">Render Graph</b-button>
     </b-col>
 
     <b-col id="graph_display" sm="7">
-	    <b-card class="form-popup" id="loadpopup">
-		<b-card-text>
-		Select a .json file to render graph from
-		</b-card-text>
-		<b-form-file id="file_input"
-		    v-model="file"
-		    :state="Boolean(file)"
-		    placeholder="Choose a file..."
-		    drop-placeholder="Drop file here...">
-		</b-form-file>
-		<b-button id="render_file_button" href="#" variant="success" v-on:click="loadGraph()">Render</b-button>
-	    <b-button id="cancel_button" href="#" variant="danger" v-on:click="closeForm()">Close</b-button>
-		</b-card>
     	<div id="graph2"></div>
     </b-col>
 
     <b-col id="graph_params" sm="2">
     	<p hidden v-if="graph_rendered"> {{ get_clusters() }}</p>
+
     	<b-card v-if="graph_rendered" class="name_clusters" id="assign_popup">
-    		<b-card-text> Graph clusters </b-card-text>
-    		<ul v-if="clusters.length" id="clusters">
-			  <li v-for="cluster in clusters">
-			    {{ cluster }}
-			  </li>
-			</ul>
+    		<b-card-text class="cluster_textbox">
+    			<b-list-group v-for="cluster in clusters" :key="cluster.cluster_name">
+					<b-list-group-item class="list-item">
+						<!--
+						<b-form-input class="color-select" type="color" :value="cluster.colour"> </b-form-input>
+						-->
+						<div class="overflow">
+							<div class="clustername">
+								<span class="dot" v-bind:style="{ 'background-color': cluster.colour }"></span>
+								Cluster: <span class="bigger_font">{{ cluster.cluster_name }} </span>
+							</div>
+							<b-button id="edit_button" v-on:click="showEditNameMask()"> Edit </b-button>
+							<!--
+								<div>
+									<b-dropdown id="nodes_dropdown" v-model="cluster.labels" text="Nodes" size="sm"> 
+									 <b-dropdown-item class="dropdown-item" v-for="label in cluster.labels" :key="label" :value="label"> {{ label }} </b-dropdown-item>
+				                    </b-dropdown>
+			                	</div>
+			                -->
+							<div style="margin-top: 10px;">
+								<li>
+									<ul v-for="label in cluster.labels"> {{ label }} </ul>
+								</li>
+							</div>
+						</div>
+
+					</b-list-group>
+    			</b-list-group>
+    		</b-card-text>
     	</b-card>
+
+    	<b-card class="form-popup" id="loadpopup">
+			<b-card-text> Select a .json file to render graph from</b-card-text>
+			<b-form-file id="file_input" v-model="file" :state="Boolean(file)" placeholder="Choose a file..." drop-placeholder="Drop file here..."> </b-form-file>
+			<b-button id="render_file_button" href="#" variant="success" v-on:click="loadGraph()">Render</b-button>
+		    <b-button id="cancel_button" href="#" variant="danger" v-on:click="closeForm()">Close</b-button>
+		</b-card>
+    
     </b-col>
   </b-row>
 </b-container> 
