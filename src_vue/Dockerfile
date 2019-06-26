@@ -14,6 +14,7 @@ RUN pip install --trusted-host pypi.python.org -r requirements.txt
 EXPOSE 80
 
 # Define environment variable
+ENV FLASK_APP="scot.py"
 ENV FLASK_ENV="development"
 
 # Run app.py when the container launches
