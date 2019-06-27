@@ -146,10 +146,22 @@ text {
 	padding: 2px;
 }
 
-#nodes_dropdown {
-	font-size: 10px !important;
-	margin-left: 5px;
+#accordion {
+	font-size:10px;
 	padding: 2px;
+	margin-left: 5px;
+}
+
+.collapsed > .when-opened,
+:not(.collapsed) > .when-closed {
+  display: none;
+}
+
+.panel {
+  padding: 0 18px;
+  background-color: white;
+  display: none;
+  overflow: hidden;
 }
 
 .dropdown-item {

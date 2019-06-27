@@ -53,9 +53,6 @@ app = new Vue({
 		showEditNameMask: function() {
 			return true;
 		},
-		showNodesList: function() {
-			document.getElementById("cluster_nodes").style.display = "block";
-		},
 		get_clusters: function() {
 			//this.got_clusters = false;
 			var timeout;
