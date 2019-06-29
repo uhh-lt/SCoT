@@ -50,18 +50,22 @@ app = new Vue({
 
 	},
 	methods: {
-		showEditNameMask: function() {
-			return true;
+		showEditMask: function() {
+			this.get_clusters();
+			document.getElementById("edit_clusters_popup").style.display = "block";
 		},
 		get_clusters: function() {
 			//this.got_clusters = false;
-			var timeout;
-			if (this.senses < 100) {
-				timeout = 1000;
-			} else {
-				timeout = this.senses * 10;
-			}
-			setTimeout(function() {
+			// FIX THESE ISSUES FIRST!
+			// TODO: replace with promise
+			// TODO: How can I fill this.clusters as soon as the graph was rendered? -> Promise, Listener, Watcher? Would computed work? Find out if get_clusters() can be replaced by something else or at least triggered differently. Seems to be always triggered on updating and value overrides input value?
+			//var timeout;
+			//if (this.senses < 100) {
+			//	timeout = 1000;
+			//} else {
+			//	timeout = this.senses * 10;
+			//}
+			//setTimeout(function() {
 				var clusters = [];
 				
 				// var circles = document.getElementsByTagName("circle")
@@ -73,7 +77,9 @@ app = new Vue({
 				// }
 				// console.log(clusters);
 				var svg = d3.select("#svg");
+				console.log(svg)
 				var nodes = svg.selectAll(".node");
+				console.log(nodes)
 
 				nodes.selectAll("g").each(function(d,i) {
 					var cluster = {};
@@ -120,10 +126,14 @@ app = new Vue({
 				console.log(app.clusters);
 				//this.got_clusters = true;
 				//console.log(this.got_clusters);
-			}, timeout);
+			//}, timeout);
 		},
-		getURL: function() {
-			this.render_graph = false;
+		render_graph: async function() {
+			this.graph_rendered = false;
+			await this.$nextTick();
+			this.getURL();
+		},
+		getURL: async function() {
 			console.log(this.target_word)
 			var target_word = this.target_word;
 			var start_year = this.start_year;
@@ -140,8 +150,8 @@ app = new Vue({
 			var url = '/sense_graph' + '/' + encodeURIComponent(target_word) + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges + '/' + time_diff;
 
 			render_graph(url, time_diff)
-
 			this.graph_rendered = true;
+			await this.$nextTick();
 		},
 		saveGraph: function() {
 			var svg = d3.select("#svg");
@@ -255,8 +265,8 @@ app = new Vue({
 			reader.readAsText(file);
 			app.graph_rendered = true;
 		},
-		closeForm: function() {
-			document.getElementById("loadpopup").style.display = "none";
+		closeForm: function(id) {
+			document.getElementById(id).style.display = "none";
 		},
 		displayForm: function() {
 			document.getElementById("loadpopup").style.display = "block";

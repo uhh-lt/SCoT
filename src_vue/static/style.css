@@ -61,6 +61,16 @@ text {
 	margin-left:10px;
 }
 
+#edit_mask_button {
+	position: absolute;
+	right: 14%;
+	text-align: center;
+	font-size: 10px;
+	/*word-spacing: -10px;*/
+	margin-right: 10px;
+	margin-left:10px;
+}
+
 #render_button {
 	margin-top: 10px;
 	text-align: center;
@@ -100,18 +110,23 @@ text {
   	font-size: 12px;
 }
 
-.cluster_textbox {
+.edit_cluster_textbox {
 	font-size: 10px;
 	max-height: 250px;
-	width: 200px;
+	width: 275px;
 	overflow: auto;
 }
 
-.name_clusters {
+.edit_clusters_card {
 	margin-top: 50px;
-	margin-right: -20px;
-	width: 250px;
-	heigth: 300px;
+	width: 350px;
+	display: none;
+}
+
+.close_button{
+	font-size: 10px;
+	display: block;
+	float: right;
 }
 
 .bigger_font {
@@ -119,8 +134,6 @@ text {
 }
 
 .color-select {
-	height: 20px !important;
-	width: 20px;
 	float: left;
 	margin-left: 0px;
 }
@@ -139,17 +152,28 @@ text {
 	margin-right: 10px;
 }
 
-#edit_button {
+.edit_button {
 	font-size: 10px;
 	float: left;
 	display: block !important;
 	padding: 2px;
+	margin-top: 5px;
+}
+
+#editNameMask{
+	padding: 0 18px;
+	background-color: white;
+	display: none;
+	overflow: hidden;
 }
 
 #accordion {
 	font-size:10px;
 	padding: 2px;
 	margin-left: 5px;
+	margin-top: 5px;
+	float: left;
+	display: block !important;
 }
 
 .collapsed > .when-opened,
@@ -157,11 +181,11 @@ text {
   display: none;
 }
 
-.panel {
-  padding: 0 18px;
-  background-color: white;
-  display: none;
-  overflow: hidden;
+.input_cluster {
+	margin-top: 5px;
+	width: 200px;
+	display: block;
+	float: left;
 }
 
 .dropdown-item {

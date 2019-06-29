@@ -7,7 +7,7 @@
 	<title>SCoT - Sense Clustering over Time</title>
 
 	<!-- D3 and vue.js -->
-	<script src="https://d3js.org/d3.v4.min.js"></script>
+	<script src="https://d3js.org/d3.v5.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 
 	<script type="text/javascript" src="%% url_for('static', filename='render_sense_graph.js') %%"></script>
@@ -29,6 +29,8 @@
 <b-container id="body-container" class="body" fluid>
 	<b-navbar type="dark" variant="dark">
 		<b-navbar-brand tag="h1" class="header">SCoT senseviewer</b-navbar-brand>
+		<b-button v-if="graph_rendered" id="edit_mask_button" v-on:click="showEditMask()">Edit Graph</b-button>
+
 		<b-button id="download_button" variant="success" v-on:click="saveGraph()" download="graph.json" href="">Save Graph</b-button>
 		<b-button id="load_button" variant="danger" v-on:click="displayForm()">Load Graph</b-button>
 	</b-navbar>
@@ -61,7 +63,7 @@
 			<b-form-select v-model="end_year" :options="end_years" size="sm"></b-form-select>
 		</b-from-group>
 
-    	<b-button id="render_button" v-on:click="getURL()">Render Graph</b-button>
+    	<b-button id="render_button" v-on:click="render_graph()">Render Graph</b-button>
     </b-col>
 
     <b-col id="graph_display" sm="7">
@@ -69,52 +71,56 @@
     </b-col>
 
     <b-col id="graph_params" sm="2">
-    	<p hidden v-if="graph_rendered"> {{ get_clusters() }}</p>
 
-    	<b-card v-if="graph_rendered" class="name_clusters" id="assign_popup">
-    		<b-card-text class="cluster_textbox">
-    			<b-list-group v-for="cluster in clusters" :key="cluster.cluster_name">
+    	<b-card v-if="graph_rendered" class="edit_clusters_card" id="edit_clusters_popup" header="Edit cluster settings" footer-tag="footer"> 
+
+    		<b-card-text class="edit_cluster_textbox">
+    			<b-list-group v-for="(cluster, index) in clusters" :key="index">
 					<b-list-group-item class="list-item">
-						<!--
-						<b-form-input class="color-select" type="color" :value="cluster.colour"> </b-form-input>
-						-->
 						<div class="overflow">
 							<div class="clustername">
 								<span class="dot" v-bind:style="{ 'background-color': cluster.colour }"></span>
 								Cluster: <span class="bigger_font">{{ cluster.cluster_name }} </span>
 							</div>
-							<b-button id="edit_button" class="edit_button" v-on:click="showEditNameMask()"> Edit </b-button>
+							<b-button v-b-toggle="'collapse-edit-' + index" id="edit_button" class="edit_button"> Edit </b-button>
+								<b-collapse :id="'collapse-edit-' + index" class="mt-2"  aria-expanded="false">
+									<b-card class="input_cluster">
+									<b-form-group label="cluster name">  
+										<b-form-input v-model="cluster.cluster_name" size="sm"></b-form-input>
+									</b-form-group>
+									<b-form-group label="Select cluster colour">
+										<b-form-input class="color-select" v-model="cluster.colour" type="color" :value="cluster.colour"> </b-form-input>
+									</b-form-group>
+									</b-card>
+								</b-collapse>
 							
-							<div>
-								<b-button v-b-toggle="'collapse-' + cluster.cluster_name" id="accordion"> Nodes
+							
+								<b-button v-b-toggle="'collapse-nodes-' + index" id="accordion"> Nodes
 									<span class="when-opened"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
-          							<span class="when-closed"><i class="fa fa-chevron-up" aria-hidden="true"></i></span>
+	      							<span class="when-closed"><i class="fa fa-chevron-up" aria-hidden="true"></i></span>
 								</b-button>
-								<b-collapse :id="'collapse-' + cluster.cluster_name" class="mt-2">
-									<b-card>
+								<b-collapse :id="'collapse-nodes-' + index" class="mt-2">
+									<b-card class="input_cluster">
 									<p v-for="label in cluster.labels"> {{ label }}</p>
 									</b-card>
 								</b-collapse>
-		                	</div>
-			                <!--	
-							<div style="margin-top: 10px;">
-								<li>
-									<ul v-for="label in cluster.labels"> {{ label }} </ul>
-								</li>
-							</div>
-							-->
+
 						</div>
 
 					</b-list-group>
     			</b-list-group>
     		</b-card-text>
+    		<div>
+    		<b-button class="close_button" v-on:click="applyClusterSettings(cluster)">Apply</b-button>
+    		<b-button class="close_button" variant="danger" v-on:click="closeForm('edit_clusters_popup')">Close</b-button>
+    		</div>
     	</b-card>
 
     	<b-card class="form-popup" id="loadpopup">
 			<b-card-text> Select a .json file to render graph from</b-card-text>
 			<b-form-file id="file_input" v-model="file" :state="Boolean(file)" placeholder="Choose a file..." drop-placeholder="Drop file here..."> </b-form-file>
 			<b-button id="render_file_button" href="#" variant="success" v-on:click="loadGraph()">Render</b-button>
-		    <b-button id="cancel_button" href="#" variant="danger" v-on:click="closeForm()">Close</b-button>
+		    <b-button id="cancel_button" href="#" variant="danger" v-on:click="closeForm('loadpopup')">Close</b-button>
 		</b-card>
     
     </b-col>

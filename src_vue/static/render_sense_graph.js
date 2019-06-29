@@ -1,12 +1,12 @@
-function render_graph(url, time_diff) {
+async function render_graph(url, time_diff) {
 	console.log("start rendering graph")
 
-	var width = 800;
-	var height = 600;
+	var width = 900;
+	var height = 700;
 	var shiftKey;
 	var radius = 5;
 
-	var color = d3.scaleOrdinal(d3.schemeCategory20)
+	var color = d3.scaleOrdinal(d3.schemePaired)
 
 	d3.select("#graph2").select("svg").remove()
 
@@ -31,10 +31,11 @@ function render_graph(url, time_diff) {
 		shiftKey = d3.event.shiftKey || d3.event.metaKey;
 	}
 
+	console.log(url)
 
 	/* Load and bind data */
-	d3.json(url, function(error, data) {
-		if (error) throw error;
+	d3.json(url).then(function(data) {
+		console.log(data);
 		
 		var graph = data[0];
 		var target = [data[1]];
@@ -219,7 +220,7 @@ function render_graph(url, time_diff) {
     }
 
     // fade nodes on hover
-    function mouseOver(d, opacity) {
+    function mouseOver(opacity) {
 		return function(d) {
             // check all other nodes to see if they're connected
             // to this one. if so, keep the opacity at 1, otherwise
