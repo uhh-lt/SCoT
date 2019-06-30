@@ -85,8 +85,18 @@
 							<b-button v-b-toggle="'collapse-edit-' + index" id="edit_button" class="edit_button"> Edit </b-button>
 								<b-collapse :id="'collapse-edit-' + index" class="mt-2"  aria-expanded="false">
 									<b-card class="input_cluster">
-									<b-form-group label="cluster name">  
+									<b-form-group label="cluster name"> 
 										<b-form-input v-model="cluster.cluster_name" size="sm"></b-form-input>
+									</b-form-group>
+									<b-form-group>
+										<b-form-checkbox
+									      id="checkbox_cluster_node"
+									      v-model="cluster.cluster_node"
+									      value="true"
+									      unchecked-value="false"
+									    >
+									      Add cluster label to graph
+									    </b-form-checkbox>
 									</b-form-group>
 									<b-form-group label="Select cluster colour">
 										<b-form-input class="color-select" v-model="cluster.colour" type="color" :value="cluster.colour"> </b-form-input>
@@ -111,7 +121,7 @@
     			</b-list-group>
     		</b-card-text>
     		<div>
-    		<b-button class="close_button" v-on:click="applyClusterSettings(cluster)">Apply</b-button>
+    		<b-button class="close_button" v-on:click="applyClusterSettings()">Apply</b-button>
     		<b-button class="close_button" variant="danger" v-on:click="closeForm('edit_clusters_popup')">Close</b-button>
     		</div>
     	</b-card>

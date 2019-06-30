@@ -50,6 +50,53 @@ app = new Vue({
 
 	},
 	methods: {
+		applyClusterSettings: function() {
+
+			console.log(this.clusters[0]);
+
+			var svg = d3.select("#svg");
+			var nodes = svg.selectAll(".node");
+
+			for (var i = 0; i < this.clusters.length; i++) {
+				console.log(this.clusters[i])
+				var cluster_name = this.clusters[i].cluster_name;
+				var colour = this.clusters[i].colour;
+				var cluster_node = this.clusters[i].cluster_node;
+				var labels = this.clusters[i].labels;
+
+				nodes.selectAll("g").each(function(d,i) {
+					var node_cluster;
+					var node_fill;
+					var node_label;
+
+					childnodes = this.childNodes;
+
+					childnodes.forEach(function(d,i) {
+						if (d.tagName === "circle") {
+							node_cluster = d.getAttribute('cluster');
+							node_fill = d.getAttribute('fill');
+						}
+						if (d.tagName === "text") {
+							node_label = d.getAttribute('text');
+						}
+					});
+
+					if (labels.includes(node_label)) {
+						childnodes.forEach(function(d,i) {
+							if (d.tagName === "circle") {
+								node_cluster = d.setAttribute('cluster', cluster_name);
+								node_fill = d.setAttribute('fill', colour);
+							}
+						});
+					}
+
+				});
+
+				if (cluster_node === "true") {
+					return true;
+				}
+			}
+		},
 		showEditMask: function() {
 			this.get_clusters();
 			document.getElementById("edit_clusters_popup").style.display = "block";
@@ -77,9 +124,7 @@ app = new Vue({
 				// }
 				// console.log(clusters);
 				var svg = d3.select("#svg");
-				console.log(svg)
 				var nodes = svg.selectAll(".node");
-				console.log(nodes)
 
 				nodes.selectAll("g").each(function(d,i) {
 					var cluster = {};
@@ -112,6 +157,7 @@ app = new Vue({
 					if (! exists) {
 						cluster["cluster_name"] = cluster_name;
 						cluster["colour"] = colour;
+						cluster["cluster_node"] = false;
 						cluster["labels"] = [text];
 						clusters.push(cluster)
 					}
