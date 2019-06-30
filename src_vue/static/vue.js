@@ -2,63 +2,48 @@ app = new Vue({
    el: "#vue-app",
    data: {
    		target_word : "",
-   		// TODO read from DB!
      	start_year : 0,
      	end_year : 0,
      	senses : 0,
      	edges : 0,
      	time_diff : false,
-     	start_years : [{
-     		value : 1520, text: "1520"
-     	}, {
-     		value : 1909, text: "1909"
-     	}, {
-     		value : 1954, text: "1954"
-     	}, {
-     		value : 1973, text: "1973"
-     	}, {
-     		value: 1987, text: "1987"
-     	}, {
-     		value: 1996, text: "1996" 
-     	}, {
-     		value : 2002, text: "2002"
-     	}, {
-     		value : 2006, text: "2006"
-     	}],
-     	end_years : [{
-     		value : 1908, text: "1908"
-     	}, {
-     		value : 1953, text: "1953"
-     	}, {
-     		value : 1972, text: "1972"
-     	}, {
-     		value : 1986, text: "1986"
-     	}, {
-     		value: 1995, text: "1995"
-     	}, {
-     		value: 2001, text: "2001" 
-     	}, {
-     		value : 2005, text: "2005"
-     	}, {
-     		value : 2008, text: "2008"
-     	}],
+     	start_years : [],
+     	end_years : [],
      	file : null,
      	read_graph: null,
      	graph_rendered : false,
      	clusters : []
-     	//got_clusters : false,
-
 	},
 	methods: {
+		resetZoom: function() {
+			var svg = d3.select("#svg");
+			svg.select("g")
+				.attr("transform", "translate(0.0, 0.0) scale(1.0)");
+		},
+		getStartYears: function() {
+			axios.get('/start_years')
+				.then((res) => {
+					this.start_years = res.data;
+				})
+				.catch((error) => {
+					console.error(error);
+				});
+		},
+		getEndYears: function() {
+			axios.get('/end_years')
+				.then((res) => {
+					this.end_years = res.data;
+				})
+				.catch((error) => {
+					console.error(error);
+				});
+
+		},
 		applyClusterSettings: function() {
-
-			console.log(this.clusters[0]);
-
 			var svg = d3.select("#svg");
 			var nodes = svg.selectAll(".node");
 
 			for (var i = 0; i < this.clusters.length; i++) {
-				console.log(this.clusters[i])
 				var cluster_name = this.clusters[i].cluster_name;
 				var colour = this.clusters[i].colour;
 				var cluster_node = this.clusters[i].cluster_node;
@@ -102,27 +87,9 @@ app = new Vue({
 			document.getElementById("edit_clusters_popup").style.display = "block";
 		},
 		get_clusters: function() {
-			//this.got_clusters = false;
-			// FIX THESE ISSUES FIRST!
-			// TODO: replace with promise
-			// TODO: How can I fill this.clusters as soon as the graph was rendered? -> Promise, Listener, Watcher? Would computed work? Find out if get_clusters() can be replaced by something else or at least triggered differently. Seems to be always triggered on updating and value overrides input value?
-			//var timeout;
-			//if (this.senses < 100) {
-			//	timeout = 1000;
-			//} else {
-			//	timeout = this.senses * 10;
-			//}
-			//setTimeout(function() {
+
 				var clusters = [];
 				
-				// var circles = document.getElementsByTagName("circle")
-				// for(var i=0; i < circles.length; i++) {
-				// 	var cluster = circles[i].getAttribute("cluster");
-				// 	if (! clusters.includes(cluster)) {
-				// 		clusters.push(cluster);
-				// 	}
-				// }
-				// console.log(clusters);
 				var svg = d3.select("#svg");
 				var nodes = svg.selectAll(".node");
 
@@ -161,18 +128,11 @@ app = new Vue({
 						cluster["labels"] = [text];
 						clusters.push(cluster)
 					}
-
-					console.log(clusters);
 			 	});
 
-				//this.clusters = clusters;
 				for (var i=0; i < clusters.length; i++) {
 					Vue.set(app.clusters, i, clusters[i]);
 				}
-				console.log(app.clusters);
-				//this.got_clusters = true;
-				//console.log(this.got_clusters);
-			//}, timeout);
 		},
 		render_graph: async function() {
 			this.graph_rendered = false;
@@ -187,11 +147,6 @@ app = new Vue({
 			var senses = this.senses;
 			var edges = this.edges;
 			var time_diff = this.time_diff;
-
-			// var birth_start = this.birth_start;
-			// var birth_end = this.birth_end;
-			// var death_start = this.death_start;
-			// var death_end = this.death_end;
 
 			var url = '/sense_graph' + '/' + encodeURIComponent(target_word) + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges + '/' + time_diff;
 
@@ -213,41 +168,30 @@ app = new Vue({
 			nodes.selectAll("g").each(function(d,i) {
 				var node = {};
 				var text_obj = {};
-				//console.log(this)
 				node["node"] = this;
 				childnodes = this.childNodes;
-				//console.log(childnodes)
 				childnodes.forEach(function(d,i) {
 					var circle = {};
 					var text = [];
 
 					if (d.tagName === "circle") {
-						console.log("it's a circle!")
 						var attrs = d.attributes;
-						for(var k = attrs.length - 1; k >= 0; k--) {
-							//console.log("length: " + attrs.length)
 
+						for(var k = attrs.length - 1; k >= 0; k--) {
 							var name = attrs[k].name;
 							var value = attrs[k].value;
-							console.log(name);
-							console.log(value);
 							circle[name] = value;
 						}
 					node['circle'] = circle;
 					} else if (d.tagName === "text") {
-						console.log("it's a text!");
 
 						attrs = d.attributes;
-						console.log(attrs)
 
 						for(var i = attrs.length - 1; i >= 0; i--) {
-							console.log("length: " + attrs.length)
-
 							var name = attrs[i].name;
 							var value = attrs[i].value;
 							
 							if (name === "style") {
-								console.log("Have some Style!");
 								var value_list = value.split(";");
 								
 								var formatted_obj = {};
@@ -271,9 +215,7 @@ app = new Vue({
 					}
 					node['label']= text_obj;
 				})
-				//node.push(childnodes)
 				graph_nodes.push(node);
-				
 			})
 
 
@@ -317,6 +259,10 @@ app = new Vue({
 		displayForm: function() {
 			document.getElementById("loadpopup").style.display = "block";
 		}
+	},
+	created() {
+		this.getStartYears();
+		this.getEndYears();
 	}
 
 });

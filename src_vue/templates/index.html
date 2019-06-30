@@ -9,6 +9,7 @@
 	<!-- D3 and vue.js -->
 	<script src="https://d3js.org/d3.v5.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+	<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 
 	<script type="text/javascript" src="%% url_for('static', filename='render_sense_graph.js') %%"></script>
 	<script type="text/javascript" src="%% url_for('static', filename='render_graph_from_file.js') %%"></script>
@@ -30,6 +31,7 @@
 	<b-navbar type="dark" variant="dark">
 		<b-navbar-brand tag="h1" class="header">SCoT senseviewer</b-navbar-brand>
 		<b-button v-if="graph_rendered" id="edit_mask_button" v-on:click="showEditMask()">Edit Graph</b-button>
+		<b-button v-if="graph_rendered" id="reset_zoom_button" v-on:click="resetZoom()">Reset Zoom</b-button>
 
 		<b-button id="download_button" variant="success" v-on:click="saveGraph()" download="graph.json" href="">Save Graph</b-button>
 		<b-button id="load_button" variant="danger" v-on:click="displayForm()">Load Graph</b-button>

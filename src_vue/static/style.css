@@ -61,6 +61,16 @@ text {
 	margin-left:10px;
 }
 
+#reset_zoom_button {
+	position: absolute;
+	right: 21%;
+	text-align: center;
+	font-size: 10px;
+	/*word-spacing: -10px;*/
+	margin-right: 10px;
+	margin-left:10px;
+}
+
 #edit_mask_button {
 	position: absolute;
 	right: 14%;
