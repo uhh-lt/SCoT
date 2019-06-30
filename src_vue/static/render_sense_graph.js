@@ -250,22 +250,38 @@ async function render_graph(url, time_diff) {
         link.style("stroke", "#ddd");
     }
 
-		function dragstart(d, i) {
-			simulation.stop()
-		}
+		// function dragstart(d, i) {
+		// 	simulation.stop()
+		// }
 
-		function dragmove(d, i) {
-			d.px += d3.event.dx;
-	        d.py += d3.event.dy;
-	        d.x += d3.event.dx;
-	        d.y += d3.event.dy; 
-        	ticked();
-		}
+		// function dragmove(d, i) {
+		// 	d.px += d3.event.dx;
+	 //        d.py += d3.event.dy;
+	 //        d.x += d3.event.dx;
+	 //        d.y += d3.event.dy; 
+  //       	//ticked();
+		// }
 
-		function dragend(d, i) {
-			//d.fixed() = true;
-			ticked();
-		}
+		// function dragend(d, i) {
+		// 	//d.fixed() = true;
+		// 	ticked();
+		// }
+		 function dragstart(d) {
+		    if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+		    d.fx = d.x;
+		    d.fy = d.y;
+		  }
+
+		  function dragmove(d) {
+		    d.fx = d3.event.x;
+		    d.fy = d3.event.y;
+		  }
+
+		  function dragend(d) {
+		    if (!d3.event.active) simulation.alphaTarget(0);
+		    //d.fx = null;
+		    //d.fy = null;
+		  }
 
 		
 	});
