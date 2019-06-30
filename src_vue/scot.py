@@ -29,23 +29,22 @@ app.config.from_object(__name__)
 #CORS(app, resources={r'/*':{'origins': '*'}})
 @app.route('/')
 def index():
-	db = Database()
-	start_years = db.get_all_years("start_years")
-	end_years = db.get_all_years("end_year")
-	return render_template('index.html', start_years=start_years, end_years=end_years)
+	return render_template('index.html')
 
 
 @app.route('/start_years')
 def get_start_years():
 	db = Database()
 	start_years = db.get_all_years("start_year")
-	return start_years
+	#print(start_years)
+	return json.dumps(start_years)
 
 @app.route('/end_years')
 def get_end_years():
 	db = Database()
 	end_years = db.get_all_years("end_year")
-	return end_years
+	#print(end_years)
+	return json.dumps(end_years)
 
 
 @app.route('/sense_graph/<path:target_word>/<int:start_year>/<int:end_year>/<int:direct_neighbours>/<int:density>/<mode>')

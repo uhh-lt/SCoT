@@ -8,12 +8,15 @@ class Database:
 		self.db = records.Database(config['database'])
 
 	def get_all_years(self, position):
-		years = {}
+		years = []
 		t = self.db.query(
-			'SELECT :year_type FROM time_slices',
-			year_type=position)
+			'SELECT * FROM time_slices')
 		for row in t:
-			years["value"] = row[position]
+			year = {}
+			print(row[position])
+			year["value"] = int(row[position])
+			year["text"] = str(row[position])
+			years.append(year)
 		return years
 
 	def get_time_ids(self, start_year, end_year):
