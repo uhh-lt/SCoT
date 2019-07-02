@@ -13,7 +13,6 @@ class Database:
 			'SELECT * FROM time_slices')
 		for row in t:
 			year = {}
-			print(row[position])
 			year["value"] = int(row[position])
 			year["text"] = str(row[position])
 			years.append(year)
