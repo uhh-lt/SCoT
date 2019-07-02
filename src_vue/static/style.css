@@ -43,42 +43,56 @@ text {
 }
 
 #download_button {
-	position: absolute;
-	right: 7%;
+	/*position: absolute;
+	right: 5%;*/
+	float: right;
+	display: block;
 	text-align: center;
 	font-size: 10px;
 	/*word-spacing: -10px;*/
-	margin-right:10px; 
+	margin-left: 5px;
 }
 
 #load_button {
-	position: absolute;
-	right: 0;
+	float: right;
+	display: block;
+	/*position: absolute;
+	right: 0;*/
 	text-align: center;
 	font-size: 10px;
 	/*word-spacing: -10px;*/
-	margin-right: 10px;
-	margin-left:10px;
+	/*margin-right: 10px;*/
+	margin-left: 5px;
+}
+
+#recluster_button {
+	display: block;
+	float: right;
+	text-align: center;
+	font-size: 10px;
+	/*word-spacing: -10px;*/
+	/*margin-right: 10px;*/
+	margin-left: 5px;
 }
 
 #reset_zoom_button {
-	position: absolute;
-	right: 21%;
+	display:block;
+	float: right;
 	text-align: center;
 	font-size: 10px;
 	/*word-spacing: -10px;*/
-	margin-right: 10px;
-	margin-left:10px;
+	/*margin-right: 10px;*/
+	margin-left: 5px;
 }
 
 #edit_mask_button {
-	position: absolute;
-	right: 14%;
+	display: block;
+	float: right;
 	text-align: center;
 	font-size: 10px;
 	/*word-spacing: -10px;*/
-	margin-right: 10px;
-	margin-left:10px;
+	/*margin-right: 10px;*/
+	margin-left: 5px;
 }
 
 #render_button {

@@ -15,6 +15,9 @@ app = new Vue({
      	clusters : []
 	},
 	methods: {
+		recluster: function() {
+			return true;
+		},
 		resetZoom: function() {
 			var svg = d3.select("#svg");
 			svg.select("g")
