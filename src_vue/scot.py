@@ -6,7 +6,7 @@
 # and show the relationships between words better?
 
 from flask import Flask, jsonify, render_template, request, Response
-#from flask_cors import CORS
+from flask_cors import CORS
 
 from db import Database
 import chineseWhispers
@@ -25,11 +25,26 @@ class CustomFlask(Flask):
 
 app = CustomFlask(__name__)  # This replaces your existing "app = Flask(__name__)"
 app.config.from_object(__name__)
+CORS(app)
 
-#CORS(app, resources={r'/*':{'origins': '*'}})
 @app.route('/')
 def index():
 	return render_template('index.html')
+
+@app.route('/reclustering', methods=['POST'])
+def recluster():
+	nodes = []
+	links = []
+	if request.method == 'POST':
+		data = json.loads(request.data)
+		nodes = data["nodes"]
+		links_list = data["links"]
+		for item in links_list:
+			links.append((item["source"], item["target"], {'weight': int(item["weight"])}))
+
+		reclustered_graph = chineseWhispers.reclustering(nodes, links)
+		return json.dumps(reclustered_graph)	
+
 
 
 @app.route('/start_years')

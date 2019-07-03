@@ -12,11 +12,101 @@ app = new Vue({
      	file : null,
      	read_graph: null,
      	graph_rendered : false,
-     	clusters : []
+     	clusters : [],
+     	newclusters: {}
 	},
 	methods: {
 		recluster: function() {
-			return true;
+			// get nodes (text is enough)
+			var svg = d3.select("#svg");
+			var nodes = svg.selectAll(".node");
+			var links = svg.selectAll(".link");
+			console.log(links)
+
+			var data = {};
+
+			var nodes_array = [];
+			nodes.selectAll("g").each(function(d,i) {
+				childnodes = this.childNodes;
+				childnodes.forEach(function(d,i) {
+					if(d.tagName === "text") {
+						nodes_array.push(d.getAttribute("text"));
+					}
+				})
+			})
+
+			data['nodes'] = nodes_array;
+
+			var link_array = [];
+
+			links.each(function(d,i) {
+				childnodes = this.childNodes;
+				//console.log(childnodes)
+				childnodes.forEach(function(d,i) {
+					link = {}
+					link['source'] = d.getAttribute("source");
+					link['target'] = d.getAttribute("target");
+
+					//var strokewidth = d.getAttribute("stroke-width");
+					//var weight = Math.pow(strokewidth, 2) * 10;
+					link['weight'] = d.getAttribute("weight");
+					link_array.push(link);
+				})
+				
+			})
+
+			data["nodes"] = nodes_array;
+			data["links"] = link_array;
+
+			axios.post('/reclustering', data)
+				.then(function (response) {
+					console.log(response.data);
+				    this.newclusters = response.data;
+
+
+				    var colour = d3.scaleOrdinal(d3.schemePaired);
+				    console.log(colour)
+
+				    var newClusteredNodes = this.newclusters.nodes;
+
+				    //var svg = d3.select("#svg")
+				    //var nodes = svg.selectAll(".node");
+
+				    for (var i=0; i<newClusteredNodes.length; i++) {
+				    	var node_id = newClusteredNodes[i].id;
+				    	var node_new_cluster = newClusteredNodes[i].class;
+
+				    	var texts = nodes.selectAll("g").select("text");
+				    	var circles = nodes.selectAll("g").select("circle");
+				    	//console.log(text)
+				    	//console.log(circle)
+				    	//d3.select(someSelection.nodes()[i])
+				    	texts.each(function(d,i) {
+				    		var t = d3.select(this);
+				    		//console.log(t)
+				    		if (t.attr("text") === node_id) {
+				    			//console.log(t.attr("text"));
+				    			var circle = d3.select(circles.nodes()[i])
+				    			//console.log(circle);
+				    			circle.attr("cluster", node_new_cluster)
+				    			circle.attr("fill", function() {return colour(node_new_cluster) });
+				    		}
+				    	})
+				    }
+
+				    
+
+				  })
+				  .catch(function (error) {
+				    console.log(error);
+				  });
+
+
+			
+			// get links (source, target, weight)
+			// post to API -> call chinese whispers
+			// get response (clustered graph)
+			// for each node set Attribute cluster, fill according to cluster
 		},
 		resetZoom: function() {
 			var svg = d3.select("#svg");

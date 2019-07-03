@@ -60,6 +60,9 @@ function render_graph_from_file(graph) {
 		.attr("y1", function(d) { return d.__data__.source.y })
 		.attr("x2", function(d) { return d.__data__.target.x })
 		.attr("y2", function(d) { return d.__data__.target.y })
+		.attr("source", function(d) { return d.__data__.source.id })
+		.attr("target", function(d) { return d.__data__.target.id })
+		.attr("weight", function(d) { return d.__data__.weight })
 		.attr("stroke-width", function(d) { return Math.sqrt(d.__data__.weight/10); });
 
 

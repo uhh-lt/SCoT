@@ -75,6 +75,9 @@ async function render_graph(url, time_diff) {
 			.selectAll("line")
 			.data(links)
 			.enter().append("line")
+				.attr("source", function(d) { return d.source.id })
+				.attr("target", function(d) { return d.target.id })
+				.attr("weight", function(d) { return d.weight })
 				.attr("stroke-width", function(d) { return Math.sqrt(d.weight/10); });
 
 		var drag_node = d3.drag()
