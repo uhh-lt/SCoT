@@ -68,7 +68,7 @@ def construct_reclustering_graph(nodes, edges):
 	return graph
 
 
-def reclustering(nodes, edges, iterations=2):
+def reclustering(nodes, edges, iterations=10):
 	graph = construct_reclustering_graph(nodes, edges)
 	for i in range(0, iterations):
 		graph_nodes = list(graph.nodes())
