@@ -13,7 +13,10 @@ app = new Vue({
      	read_graph: null,
      	graph_rendered : false,
      	clusters : [],
-     	newclusters: {}
+     	newclusters: {},
+     	sticky_mode: true,
+     	charge: -10,
+     	linkdistance: 100
 	},
 	methods: {
 		recluster: function() {
