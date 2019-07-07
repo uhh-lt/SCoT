@@ -16,7 +16,8 @@ app = new Vue({
      	newclusters: {},
      	sticky_mode: "true",
      	charge: -10,
-     	linkdistance: 100
+     	linkdistance: 100,
+     	graph_from_file: false
 	},
 	methods: {
 		recluster: function() {
@@ -231,6 +232,7 @@ app = new Vue({
 				}
 		},
 		render_graph: async function() {
+			this.graph_from_file = false;
 			this.graph_rendered = false;
 			await this.$nextTick();
 			this.getURL();
@@ -347,6 +349,7 @@ app = new Vue({
 			  render_graph_from_file(this.read_graph);
 			}
 			reader.readAsText(file);
+			app.graph_from_file = true;
 			app.graph_rendered = true;
 		},
 		closeForm: function(id) {

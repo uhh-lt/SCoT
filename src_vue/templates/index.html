@@ -71,18 +71,6 @@
 			<b-form-select v-model="end_year" :options="end_years" size="sm"></b-form-select>
 		</b-from-group>
 
-		<b-form-group id="sticky" class="input" label="Dragging">
-		    <b-form-radio name="sticky_mode" value="false" v-model="sticky_mode"> Enable brush and single node movement </b-form-radio>
-		    <b-form-radio name="sticky_mode" value="true" v-model="sticky_mode"> Keep force for dragging (no brush available) </b-form-radio>
-    	</b-form-group>
-
-    	<b-form-group label="Charge strength (-500, 0)">
-    		<b-form-input id="range_charge" v-model="charge" type="range" min="-500" max="0"></b-form-input>
-    	</b-form-group>
-
-    	<b-form-group label="Link Distance (0, 1000)">
-    		<b-form-input id="range_linkdistance" v-model="linkdistance" type="range" min="0" max="1000"></b-form-input>
-    	</b-form-group>
 
     	<b-button id="render_button" v-on:click="render_graph()">Render Graph</b-button>
 
@@ -96,6 +84,19 @@
     <b-col id="graph_params" sm="2">
 
     	<b-card v-if="graph_rendered" class="edit_clusters_card" id="edit_clusters_popup" header="Edit cluster settings" footer-tag="footer"> 
+    		
+    		<b-form-group v-if="!graph_from_file" id="sticky" class="input" label="Dragging">
+		    <b-form-radio name="sticky_mode" value="false" v-model="sticky_mode"> Enable brush and single node movement </b-form-radio>
+		    <b-form-radio name="sticky_mode" value="true" v-model="sticky_mode"> Keep force for dragging (no brush available) </b-form-radio>
+	    	</b-form-group>
+
+	    	<b-form-group v-if="!graph_from_file" label="Charge strength (-500, 0)">
+	    		<b-form-input id="range_charge" v-model="charge" type="range" min="-500" max="0"></b-form-input>
+	    	</b-form-group>
+
+	    	<b-form-group v-if="!graph_from_file" label="Link Distance (0, 1000)">
+	    		<b-form-input id="range_linkdistance" v-model="linkdistance" type="range" min="0" max="1000"></b-form-input>
+	    	</b-form-group>
 
     		<b-card-text class="edit_cluster_textbox">
     			<b-list-group v-for="(cluster, index) in clusters" :key="index">

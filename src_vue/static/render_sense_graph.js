@@ -10,13 +10,6 @@ async function render_graph(url, time_diff) {
 
 	d3.select("#graph2").select("svg").remove()
 
-	// var sticky = d3.select('input[name = "sticky_mode"]:checked').property("value")
-	// console.log(sticky);
-
-	// d3.selectAll('input[name = "sticky_mode"]').on("change", function() {
-	// 	sticky = this.value;
-	// 	console.log(sticky)
-	// });
 
 	var svg = d3.select("#graph2")
 		.on("keydown.brush", keydowned)
@@ -103,12 +96,7 @@ async function render_graph(url, time_diff) {
 				.attr("stroke-width", function(d) { return Math.sqrt(d.weight/10); });
 
 		var drag_node = d3.drag()
-		// 	.on("start", function() {
-		// 		d3.selectAll('.selected').each(dragstart); })
-		// 	.on("drag", function() {
-		// 		d3.selectAll('.selected').each(dragmove); })
-		// 	.on("end", function() {
-		// 		d3.selectAll('.selected').each(dragend); });	
+	
 
 		var node = svg.append("g")
 		    	.attr("stroke", "#fff")
@@ -174,9 +162,6 @@ async function render_graph(url, time_diff) {
 		    .on("brush", brushed)
 		    .on("end", brushended));
 
-		    ///node.on("mousedown", mousedowned)
-		    //	.call(drag_node)
-
 		    drag_node
 				.on("start", function() {
 					d3.selectAll('.selected').each(dragstart); })
@@ -186,11 +171,6 @@ async function render_graph(url, time_diff) {
 					d3.selectAll('.selected').each(dragend); });	
 
 		} else if (sticky === "true") {
-			//d3.select(".brush").remove();
-
-			//node.on("mousedown", mousedowned)
-		   	//	.call(drag_node)
-
 			drag_node
 				.on("start", function() {
 					d3.selectAll('.selected').each(dragstart_sticky); })
