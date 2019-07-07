@@ -14,7 +14,7 @@ app = new Vue({
      	graph_rendered : false,
      	clusters : [],
      	newclusters: {},
-     	sticky_mode: true,
+     	sticky_mode: "true",
      	charge: -10,
      	linkdistance: 100
 	},

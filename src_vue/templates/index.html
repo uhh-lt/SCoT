@@ -72,15 +72,15 @@
 		</b-from-group>
 
 		<b-form-group id="sticky" class="input" label="Dragging">
-		    <b-form-radio name="sticky_mode" value="false"> Enable brush and single node movement </b-form-radio>
-		    <b-form-radio name="sticky_mode" value="true"> Keep force for dragging (no brush available) </b-form-radio>
+		    <b-form-radio name="sticky_mode" value="false" v-model="sticky_mode"> Enable brush and single node movement </b-form-radio>
+		    <b-form-radio name="sticky_mode" value="true" v-model="sticky_mode"> Keep force for dragging (no brush available) </b-form-radio>
     	</b-form-group>
 
-    	<b-form-group label="Charge strength">
+    	<b-form-group label="Charge strength (-500, 0)">
     		<b-form-input id="range_charge" v-model="charge" type="range" min="-500" max="0"></b-form-input>
     	</b-form-group>
 
-    	<b-form-group label="Link Distance">
+    	<b-form-group label="Link Distance (0, 1000)">
     		<b-form-input id="range_linkdistance" v-model="linkdistance" type="range" min="0" max="1000"></b-form-input>
     	</b-form-group>
 

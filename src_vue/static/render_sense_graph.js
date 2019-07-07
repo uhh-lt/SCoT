@@ -10,13 +10,13 @@ async function render_graph(url, time_diff) {
 
 	d3.select("#graph2").select("svg").remove()
 
-	var sticky = d3.select('input[name = "sticky_mode"]:checked').property("value")
-	console.log(sticky);
+	// var sticky = d3.select('input[name = "sticky_mode"]:checked').property("value")
+	// console.log(sticky);
 
-	d3.selectAll('input[name = "sticky_mode"]').on("change", function() {
-		sticky = this.value;
-		console.log(sticky)
-	});
+	// d3.selectAll('input[name = "sticky_mode"]').on("change", function() {
+	// 	sticky = this.value;
+	// 	console.log(sticky)
+	// });
 
 	var svg = d3.select("#graph2")
 		.on("keydown.brush", keydowned)
@@ -66,17 +66,37 @@ async function render_graph(url, time_diff) {
 			.attr("y", (height/2))
 			.text(function(d) { return d.target_word; })
 
-		console.log(sticky)
-		//if (!sticky) {
+		var sticky = app.sticky_mode;
+		if (sticky === "false") {
 			var brush = svg.append("g")
-			.attr("class", "brush");
+				.attr("class", "brush");
 
-			brush.call(d3.brush()
-		    .extent([[0, 0], [width, height]])
-		    .on("start", brushstarted)
-		    .on("brush", brushed)
-		    .on("end", brushended));
-		//}
+				brush.call(d3.brush()
+			    .extent([[0, 0], [width, height]])
+			    .on("start", brushstarted)
+			    .on("brush", brushed)
+			    .on("end", brushended));
+		}
+		
+		d3.select("#sticky").on("change", function() {
+			sticky = app.sticky_mode;
+			//console.log(sticky);
+			if (sticky === "false") {
+				console.log("sticky is false");
+				var brush = svg.append("g")
+				.attr("class", "brush");
+
+				brush.call(d3.brush()
+			    .extent([[0, 0], [width, height]])
+			    .on("start", brushstarted)
+			    .on("brush", brushed)
+			    .on("end", brushended));
+			} else if (sticky === "true") {
+				d3.select(".brush").remove();
+			} 
+		})
+		console.log(sticky)
+
 		
 
 		var simulation = d3.forceSimulation(nodes)
