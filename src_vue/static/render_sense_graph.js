@@ -39,7 +39,8 @@ async function render_graph(url, time_diff) {
 		shiftKey = d3.event.shiftKey || d3.event.metaKey;
 	}
 
-	console.log(url)
+	var brush = svg.append("g")
+			.attr("class", "brush");
 
 	/* Load and bind data */
 	d3.json(url).then(function(data) {
@@ -65,37 +66,6 @@ async function render_graph(url, time_diff) {
 			.attr("x", (width/2))
 			.attr("y", (height/2))
 			.text(function(d) { return d.target_word; })
-
-		var sticky = app.sticky_mode;
-		if (sticky === "false") {
-			var brush = svg.append("g")
-				.attr("class", "brush");
-
-				brush.call(d3.brush()
-			    .extent([[0, 0], [width, height]])
-			    .on("start", brushstarted)
-			    .on("brush", brushed)
-			    .on("end", brushended));
-		}
-		
-		d3.select("#sticky").on("change", function() {
-			sticky = app.sticky_mode;
-			//console.log(sticky);
-			if (sticky === "false") {
-				console.log("sticky is false");
-				var brush = svg.append("g")
-				.attr("class", "brush");
-
-				brush.call(d3.brush()
-			    .extent([[0, 0], [width, height]])
-			    .on("start", brushstarted)
-			    .on("brush", brushed)
-			    .on("end", brushended));
-			} else if (sticky === "true") {
-				d3.select(".brush").remove();
-			} 
-		})
-		console.log(sticky)
 
 		
 
@@ -133,12 +103,12 @@ async function render_graph(url, time_diff) {
 				.attr("stroke-width", function(d) { return Math.sqrt(d.weight/10); });
 
 		var drag_node = d3.drag()
-			.on("start", function() {
-				d3.selectAll('.selected').each(dragstart); })
-			.on("drag", function() {
-				d3.selectAll('.selected').each(dragmove); })
-			.on("end", function() {
-				d3.selectAll('.selected').each(dragend); });	
+		// 	.on("start", function() {
+		// 		d3.selectAll('.selected').each(dragstart); })
+		// 	.on("drag", function() {
+		// 		d3.selectAll('.selected').each(dragmove); })
+		// 	.on("end", function() {
+		// 		d3.selectAll('.selected').each(dragend); });	
 
 		var node = svg.append("g")
 		    	.attr("stroke", "#fff")
@@ -148,7 +118,7 @@ async function render_graph(url, time_diff) {
 		    .data(nodes)
 		    .enter().append("g")
 		    .on("mousedown", mousedowned)
-		    .call(drag_node)
+		    	.call(drag_node)
 		    .on("mouseover", mouseOver(0.2))
 		    .on("mouseout", mouseOut);
 
@@ -192,6 +162,82 @@ async function render_graph(url, time_diff) {
 			.attr("text", function(d) { return d.id; });
 
 		simulation.on("tick", ticked)
+
+
+		var sticky = app.sticky_mode;
+
+		if (sticky === "false") {
+
+			brush.call(d3.brush()
+		    .extent([[0, 0], [width, height]])
+		    .on("start", brushstarted)
+		    .on("brush", brushed)
+		    .on("end", brushended));
+
+		    ///node.on("mousedown", mousedowned)
+		    //	.call(drag_node)
+
+		    drag_node
+				.on("start", function() {
+					d3.selectAll('.selected').each(dragstart); })
+				.on("drag", function() {
+					d3.selectAll('.selected').each(dragmove); })
+				.on("end", function() {
+					d3.selectAll('.selected').each(dragend); });	
+
+		} else if (sticky === "true") {
+			//d3.select(".brush").remove();
+
+			//node.on("mousedown", mousedowned)
+		   	//	.call(drag_node)
+
+			drag_node
+				.on("start", function() {
+					d3.selectAll('.selected').each(dragstart_sticky); })
+				.on("drag", function() {
+					d3.selectAll('.selected').each(dragmove_sticky); })
+				.on("end", function() {
+					d3.selectAll('.selected').each(dragend_sticky); });
+		} 
+
+		
+		d3.select("#sticky").on("change", function() {
+			sticky = app.sticky_mode;
+			console.log(sticky);
+			if (sticky === "false") {
+
+				brush.style("display", "inline")
+				brush.call(d3.brush()
+			    .extent([[0, 0], [width, height]])
+			    .on("start", brushstarted)
+			    .on("brush", brushed)
+			    .on("end", brushended));
+
+			    drag_node
+					.on("start", function() {
+						d3.selectAll('.selected').each(dragstart); })
+					.on("drag", function() {
+						d3.selectAll('.selected').each(dragmove); })
+					.on("end", function() {
+						d3.selectAll('.selected').each(dragend); });
+			} else if (sticky === "true") {
+				brush.style("display", "none");
+				node.classed("selected", function(d) { 
+					if (d.selected) {
+						return d.selected = d.previouslySelected = shiftKey && d.selected;
+					}
+				})
+
+				drag_node
+					.on("start", function() {
+						d3.selectAll('.selected').each(dragstart_sticky); })
+					.on("drag", function() {
+						d3.selectAll('.selected').each(dragmove_sticky); })
+					.on("end", function() {
+						d3.selectAll('.selected').each(dragend_sticky); });
+			} 
+		})
+		//console.log(sticky)
 
 		
 		function brushstarted(){
@@ -300,38 +346,39 @@ async function render_graph(url, time_diff) {
         link.style("stroke", "#ddd");
     }
 
-		// function dragstart(d, i) {
-		// 	simulation.stop()
-		// }
+	function dragstart(d) {
+		simulation.stop()
+	}
 
-		// function dragmove(d, i) {
-		// 	d.px += d3.event.dx;
-	 //        d.py += d3.event.dy;
-	 //        d.x += d3.event.dx;
-	 //        d.y += d3.event.dy; 
-  //       	//ticked();
-		// }
+	function dragmove(d) {
+		d.px += d3.event.dx;
+        d.py += d3.event.dy;
+        d.x += d3.event.dx;
+        d.y += d3.event.dy; 
+    	ticked();
+	}
 
-		// function dragend(d, i) {
-		// 	//d.fixed() = true;
-		// 	ticked();
-		// }
-	 function dragstart(d) {
+	function dragend(d) {
+		//d.fixed() = true;
+		ticked();
+	}
+
+	function dragstart_sticky(d) {
 	    if (!d3.event.active) simulation.alphaTarget(0.3).restart();
 	    d.fx = d.x;
 	    d.fy = d.y;
-	  }
+	}
 
-	  function dragmove(d) {
+	function dragmove_sticky(d) {
 	    d.fx = d3.event.x;
 	    d.fy = d3.event.y;
-	  }
+	}
 
-	  function dragend(d) {
+	function dragend_sticky(d) {
 	    if (!d3.event.active) simulation.alphaTarget(0);
 	    //d.fx = null;
 	    //d.fy = null;
-	  }
+	}
 
 		
 	});
