@@ -84,7 +84,7 @@
     <b-col id="graph_params" sm="2">
 
     	<b-card v-if="graph_rendered" class="edit_clusters_card" id="edit_clusters_popup" header="Edit cluster settings" footer-tag="footer"> 
-    		
+
     		<b-form-group v-if="!graph_from_file" id="sticky" class="input" label="Dragging">
 		    <b-form-radio name="sticky_mode" value="false" v-model="sticky_mode"> Enable brush and single node movement </b-form-radio>
 		    <b-form-radio name="sticky_mode" value="true" v-model="sticky_mode"> Keep force for dragging (no brush available) </b-form-radio>
@@ -114,12 +114,11 @@
 									</b-form-group>
 									<b-form-group>
 										<b-form-checkbox
-									      id="checkbox_cluster_node"
 									      v-model="cluster.cluster_node"
 									      value="true"
 									      unchecked-value="false"
 									    >
-									      Add cluster label to graph
+									      Show cluster label in graph
 									    </b-form-checkbox>
 									</b-form-group>
 									<b-form-group label="Select cluster colour">
@@ -145,7 +144,7 @@
     			</b-list-group>
     		</b-card-text>
     		<div>
-    		<b-button class="close_button" v-on:click="applyClusterSettings()">Apply</b-button>
+    		<b-button id="apply_settings_button" class="close_button" v-on:click="applyClusterSettings()">Apply</b-button>
     		<b-button class="close_button" variant="danger" v-on:click="closeForm('edit_clusters_popup')">Close</b-button>
     		</div>
     	</b-card>

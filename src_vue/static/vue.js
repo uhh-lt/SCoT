@@ -21,7 +21,8 @@ app = new Vue({
 	},
 	methods: {
 		recluster: function() {
-			// get nodes (text is enough)
+			document.getElementById("edit_clusters_popup").style.display = "none";			
+
 			var svg = d3.select("#svg");
 			var nodes = svg.selectAll(".node");
 			var links = svg.selectAll(".link");
@@ -174,17 +175,19 @@ app = new Vue({
 
 				});
 
-				if (cluster_node === "true") {
-					return true;
-				}
+				// add
+				// if (cluster_node === "true") {
+				// 	app.add_cluster_node(cluster_name, colour, labels);
+				// }
 			}
 		},
 		showEditMask: function() {
-			this.get_clusters();
+			app.get_clusters();
 			document.getElementById("edit_clusters_popup").style.display = "block";
 		},
 		get_clusters: function() {
 
+				app.clusters = [];
 				var clusters = [];
 				
 				var svg = d3.select("#svg");

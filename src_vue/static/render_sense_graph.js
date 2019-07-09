@@ -96,7 +96,7 @@ async function render_graph(url, time_diff) {
 				.attr("stroke-width", function(d) { return Math.sqrt(d.weight/10); });
 
 		var drag_node = d3.drag()
-	
+
 
 		var node = svg.append("g")
 		    	.attr("stroke", "#fff")
@@ -217,8 +217,86 @@ async function render_graph(url, time_diff) {
 						d3.selectAll('.selected').each(dragend_sticky); });
 			} 
 		})
-		//console.log(sticky)
+		
+	// select apply settings button. listen for click
+	// iterate app.clusters. If app.clusters.cluster_node is true
+	// update nodes
+	// do the same in render graph from file
 
+		d3.select("#apply_settings_button").on("click", function() {
+			for (var i = 0; i < app.clusters.length; i++) {
+				var cluster_name = app.clusters[i].cluster_name
+				var cluster_node = app.clusters[i].cluster_node;
+				var labels = app.clusters[i].labels;
+				if (cluster_node === "true") {
+					addclusternode(cluster_name)
+					for (var i = 0; i < labels.length; i++) {
+						console.log(labels[i])
+						addlink(labels[i], cluster_name)
+						restart()
+					}
+
+				} //else {
+					//deleteclusternode(cluster_name)
+					//for (var i = 0; i < labels.length; i++) {
+					//	//console.log(labels[i])
+					//	deletelink(labels[i], cluster_name)
+					//	restart()
+				//	}
+				//}
+			}
+		})
+
+		function restart() {
+
+			// Apply the general update pattern to the nodes.
+			node = node.data(nodes, function(d) { return d.id;});
+			node.exit().remove();
+			node = node.enter()
+				.append("circle")
+				.on("mousedown", mousedowned)
+		    	.call(drag_node)
+		    	.on("mouseover", mouseOver(0.2))
+		   		.on("mouseout", mouseOut)
+				.attr("fill", function(d) { return color(d.id); }).attr("r", 10)
+				.merge(node);
+
+			  // Apply the general update pattern to the links.
+			link = link.data(links, function(d) { return d.source.id + "-" + d.target.id; });
+			link.exit().remove();
+			link = link.enter().append("line").merge(link);
+
+			// Update and restart the simulation.
+			simulation.nodes(nodes);
+			simulation.force("link").links(links);
+			simulation.alpha(1).restart();
+		}
+
+/*
+NOT WORKING AS EXPECTED
+		function deletelink(source, target) {
+			if((source !== undefined) && (target !== undefined)) {
+	            links.pop({"source": source, "target": target});
+	            //restart();
+        	}
+		}
+
+		function deleteclusternode(id) {
+			nodes.pop({"id" : id})
+			//restart()	
+		}
+*/
+		function addlink(source, target) {
+			if((source !== undefined) && (target !== undefined)) {
+	            links.push({"source": source, "target": target});
+	            //restart();
+        	}
+		}
+
+		function addclusternode(id) {
+			nodes.push({"id" : id})
+			//restart()	
+		}
 		
 		function brushstarted(){
 			if (d3.event.sourceEvent.type !== "end") {
