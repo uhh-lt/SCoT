@@ -224,47 +224,76 @@ async function render_graph(url, time_diff) {
 	// do the same in render graph from file
 
 		d3.select("#apply_settings_button").on("click", function() {
+			//console.log(app.clusters)
 			for (var i = 0; i < app.clusters.length; i++) {
 				var cluster_name = app.clusters[i].cluster_name
 				var cluster_node = app.clusters[i].cluster_node;
+				var cluster_colour = app.clusters[i].colour;
 				var labels = app.clusters[i].labels;
 				if (cluster_node === "true") {
-					addclusternode(cluster_name)
-					for (var i = 0; i < labels.length; i++) {
-						console.log(labels[i])
-						addlink(labels[i], cluster_name)
-						restart()
+					//console.log(cluster_name)
+					addclusternode(cluster_name, cluster_colour)
+					for (var j = 0; j < labels.length; j++) {
+						//console.log(labels[i])
+						addlink(labels[j], cluster_name)
 					}
 
-				} //else {
+				} else if (cluster_node === "false" || !cluster_node){
+					console.log(cluster_name)
 					//deleteclusternode(cluster_name)
 					//for (var i = 0; i < labels.length; i++) {
 					//	//console.log(labels[i])
 					//	deletelink(labels[i], cluster_name)
 					//	restart()
 				//	}
-				//}
+				}
 			}
+			restart();
 		})
 
 		function restart() {
-
+			console.log(nodes)
 			// Apply the general update pattern to the nodes.
 			node = node.data(nodes, function(d) { return d.id;});
 			node.exit().remove();
-			node = node.enter()
-				.append("circle")
-				.on("mousedown", mousedowned)
-		    	.call(drag_node)
-		    	.on("mouseover", mouseOver(0.2))
-		   		.on("mouseout", mouseOut)
-				.attr("fill", function(d) { return color(d.id); }).attr("r", 10)
-				.merge(node);
+
+			//node = node.enter().append("circle").attr("r", 10).attr("fill", function(d) { return color(d.id)}).merge(node)
+
+			var g = node.enter()
+					.append("g")
+					.attr("stroke", "#fff")
+			    	.attr("stroke-width", 1.5)
+			    	.attr("class", "node")
+					.on("mousedown", mousedowned)
+			    		.call(drag_node)
+			    	.on("mouseover", mouseOver(0.2))
+			   		.on("mouseout", mouseOut)
+
+
+		   	var circle = g.append("circle")
+					.attr("fill", function(d) { console.log(d.colour); return d.colour; })
+					.attr("r", 10);
+
+			var text = g.append("text")
+				.text(function(d) { return d.id; })
+				.style('fill', "black")
+				.style('stroke', "black")
+				.attr('x', 6)
+				.attr('y', 3)
+				.attr("text", function(d) { return d.id; });
+
+
+			node = node.merge(g);
+
 
 			  // Apply the general update pattern to the links.
 			link = link.data(links, function(d) { return d.source.id + "-" + d.target.id; });
 			link.exit().remove();
-			link = link.enter().append("line").merge(link);
+			link = link.enter().append("line")
+				.attr("weight", 10)
+				.attr("source", function(d) { return d.source })
+				.attr("target", function(d) { return d.target })
+				.merge(link);
 
 			// Update and restart the simulation.
 			simulation.nodes(nodes);
@@ -293,8 +322,8 @@ NOT WORKING AS EXPECTED
         	}
 		}
 
-		function addclusternode(id) {
-			nodes.push({"id" : id})
+		function addclusternode(id, colour) {
+			nodes.push({"id" : id, "colour" : colour})
 			//restart()	
 		}
 		
