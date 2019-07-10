@@ -26,8 +26,9 @@ text {
 	/*word-spacing: -10px;*/
 	background: #343a40;
 	color: white;
-	margin-left: 10px;
-	width: 150px;
+	padding-left: 2px
+	padding-right: 2px;
+	width: 80%;
 }
 
 .body {
@@ -137,21 +138,30 @@ text {
 .edit_cluster_textbox {
 	font-size: 10px;
 	max-height: 250px;
-	width: 275px;
 	overflow: auto;
+	color: black;
 }
 
-.edit_clusters_card {
-	margin-top: 50px;
-	width: 350px;
+.edit_clusters {
+	font: sans-serif;
+	font-size: 12px;
+	text-align: left;
+	/*word-spacing: -10px;*/
+	background: #343a40;
+	color: white;
+	padding-right: : 2px;
+	width: 80%;
 	display: none;
-	font-size: 10px;
 }
 
 .close_button{
 	font-size: 10px;
 	display: block;
 	float: right;
+}
+
+.settings_button {
+	padding-top: 10px;
 }
 
 .bigger_font {

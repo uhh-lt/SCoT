@@ -63,6 +63,8 @@ app = new Vue({
 			data["nodes"] = nodes_array;
 			data["links"] = link_array;
 
+			console.log(data);
+
 			axios.post('/reclustering', data)
 				.then(function (response) {
 					console.log(response.data);
