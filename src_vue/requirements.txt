@@ -2,3 +2,4 @@ Flask
 records
 networkx
 mysqlclient
+flask_cors
