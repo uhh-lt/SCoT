@@ -201,11 +201,14 @@ app = new Vue({
 					var cluster_name;
 					var colour;
 					var text;
+					var cluster_id;
+
 					childnodes = this.childNodes;
 					childnodes.forEach(function(d,i) {
 						
 						if (d.tagName === "circle") {
 							cluster_name = d.getAttribute("cluster");
+							cluster_id = d.getAttribute("cluster_id");
 							colour = d.getAttribute("fill")
 						}
 
@@ -224,6 +227,7 @@ app = new Vue({
 					});
 
 					if (! exists) {
+						cluster["cluster_id"] = cluster_id;
 						cluster["cluster_name"] = cluster_name;
 						cluster["colour"] = colour;
 						cluster["cluster_node"] = false;

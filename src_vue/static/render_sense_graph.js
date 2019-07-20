@@ -113,6 +113,7 @@ async function render_graph(url, time_diff) {
 		var circles = node.append("circle")
 			.attr("r", radius)
 			.attr("cluster", function(d) {return d.class; })
+			.attr("cluster_id", function(d) {return d.class })
 			.attr("fill", function(d) { return color(d.class); });
 
 	 	var labels = node.append("text")
@@ -225,6 +226,7 @@ async function render_graph(url, time_diff) {
 
 		d3.select("#apply_settings_button").on("click", function() {
 			//console.log(app.clusters)
+			// I need a cluster ID + cluster node ID -> necessary for updating
 			for (var i = 0; i < app.clusters.length; i++) {
 				var cluster_name = app.clusters[i].cluster_name
 				var cluster_node = app.clusters[i].cluster_node;
