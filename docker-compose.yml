@@ -1,11 +1,35 @@
+#version: "2"
+#services:
+#  app:
+#    build: ./src_vue
+#    links:
+#      - db
+#    ports:
+#      - "80:80"
+#  db:
+#    image: mariadb:10.4.6
+#    volumes:
+#      - ./db/dump.sql:/docker-entrypoint-initdb.d/dump.sql
+#    environment:
+#      MYSQL_ROOT_PASSWORD: root
+#      MYSQL_DATABASE: scot
+#      MYSQL_USER: user
+#      MYSQL_PASSWORD: password
+
+#//user:password@db/scot
+
 version: "2"
+networks:
+  scot-net:
 services:
   app:
     build: ./src_vue
     links:
       - db
     ports:
-      - "80:80"
+      - "10017:80"
+    networks:
+      scot-net:
   db:
     image: mariadb:10.4.6
     volumes:
@@ -15,3 +39,5 @@ services:
       MYSQL_DATABASE: scot
       MYSQL_USER: user
       MYSQL_PASSWORD: password
+    networks:
+      scot-net:
