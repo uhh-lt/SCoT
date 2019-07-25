@@ -65,7 +65,7 @@ app = new Vue({
 
 			console.log(data);
 
-			axios.post('/reclustering', data)
+			axios.post('./reclustering', data)
 				.then(function (response) {
 					console.log(response.data);
 				    this.newclusters = response.data;
@@ -121,7 +121,7 @@ app = new Vue({
 				.attr("transform", "translate(0.0, 0.0) scale(1.0)");
 		},
 		getStartYears: function() {
-			axios.get('/start_years')
+			axios.get('./start_years')
 				.then((res) => {
 					this.start_years = res.data;
 				})
@@ -130,7 +130,7 @@ app = new Vue({
 				});
 		},
 		getEndYears: function() {
-			axios.get('/end_years')
+			axios.get('./end_years')
 				.then((res) => {
 					this.end_years = res.data;
 				})
