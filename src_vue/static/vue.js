@@ -255,8 +255,8 @@ app = new Vue({
 			var edges = this.edges;
 			var time_diff = this.time_diff;
 
-			var url = './sense_graph' + '/' + encodeURIComponent(target_word) + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges + '/' + time_diff;
-
+			//var url = './sense_graph' + '/' + encodeURIComponent(target_word) + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges + '/' + time_diff;
+			var url = './sense_graph' + '/' + target_word + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges + '/' + time_diff;
 			render_graph(url, time_diff)
 			this.graph_rendered = true;
 			await this.$nextTick();

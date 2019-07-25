@@ -71,7 +71,8 @@ def get_clustered_graph(
 		direct_neighbours,
 		density,
 		mode):
-	target_word = str(urllib.parse.unquote(target_word))
+	#target_word = str(urllib.parse.unquote(target_word))
+	target_word = str(target_word)
 	#print(target_word, start_year, end_year, direct_neighbours, density, mode)
 	paradigms = direct_neighbours
 	if mode == "false":
