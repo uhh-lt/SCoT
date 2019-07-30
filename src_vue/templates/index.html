@@ -115,7 +115,7 @@
 									</b-form-group>
 									<b-form-group>
 										<b-form-checkbox
-									      v-model="cluster.cluster_node"
+									      v-model="cluster.add_cluster_node"
 									      value="true"
 									      unchecked-value="false"
 									    >
@@ -135,7 +135,7 @@
 								</b-button>
 								<b-collapse :id="'collapse-nodes-' + index" class="mt-2">
 									<b-card class="input_cluster">
-									<p v-for="label in cluster.labels"> {{ label }}</p>
+									<p v-for="label in cluster.labels"> {{ label.text }}</p>
 									</b-card>
 								</b-collapse>
 

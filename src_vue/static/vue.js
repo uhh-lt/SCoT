@@ -96,7 +96,9 @@ app = new Vue({
 				    			var circle = d3.select(circles.nodes()[i])
 				    			//console.log(circle);
 				    			circle.attr("cluster", node_new_cluster)
-				    			circle.attr("fill", function() {return colour(node_new_cluster) });
+				    			circle.attr("fill", function() {return colour(node_new_cluster) })
+				    			circle.attr("cluster_id", node_new_cluster);
+				    			circle.attr("cluster_node", "false");
 				    		}
 				    	})
 				    }
@@ -144,10 +146,15 @@ app = new Vue({
 			var nodes = svg.selectAll(".node");
 
 			for (var i = 0; i < this.clusters.length; i++) {
+				var cluster_id = this.clusters[i].cluster_id;
 				var cluster_name = this.clusters[i].cluster_name;
 				var colour = this.clusters[i].colour;
-				var cluster_node = this.clusters[i].cluster_node;
+				var add_cluster_node = this.clusters[i].add_cluster_node;
 				var labels = this.clusters[i].labels;
+				var text_labels;
+				for (label in this.labels) {
+					text_labels.push(label["text"]);
+				}
 
 				nodes.selectAll("g").each(function(d,i) {
 					var node_cluster;
@@ -202,6 +209,7 @@ app = new Vue({
 					var colour;
 					var text;
 					var cluster_id;
+					var cluster_node;
 
 					childnodes = this.childNodes;
 					childnodes.forEach(function(d,i) {
@@ -209,7 +217,9 @@ app = new Vue({
 						if (d.tagName === "circle") {
 							cluster_name = d.getAttribute("cluster");
 							cluster_id = d.getAttribute("cluster_id");
-							colour = d.getAttribute("fill")
+							colour = d.getAttribute("fill");
+							console.log(d.getAttribute("cluster_node"));
+							cluster_node = d.getAttribute("cluster_node");
 						}
 
 						if (d.tagName === "text") {
@@ -221,7 +231,7 @@ app = new Vue({
 					clusters.forEach(function(c,i) {
 						if (c.cluster_name === cluster_name) {
 							exists = true;
-							c.labels.push(text)
+							c.labels.push({"text": text, "cluster_node": cluster_node})
 
 						}
 					});
@@ -230,8 +240,8 @@ app = new Vue({
 						cluster["cluster_id"] = cluster_id;
 						cluster["cluster_name"] = cluster_name;
 						cluster["colour"] = colour;
-						cluster["cluster_node"] = false;
-						cluster["labels"] = [text];
+						cluster["add_cluster_node"] = false;
+						cluster["labels"] = [{"text": text, "cluster_node": cluster_node}];
 						clusters.push(cluster)
 					}
 			 	});

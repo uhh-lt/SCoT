@@ -104,7 +104,8 @@ async function render_graph(url, time_diff) {
 		    	.attr("class", "node")
 		    .selectAll("g")
 		    .data(nodes)
-		    .enter().append("g")
+		    .enter()
+		    .append("g")
 		    .on("mousedown", mousedowned)
 		    	.call(drag_node)
 		    .on("mouseover", mouseOver(0.2))
@@ -114,6 +115,7 @@ async function render_graph(url, time_diff) {
 			.attr("r", radius)
 			.attr("cluster", function(d) {return d.class; })
 			.attr("cluster_id", function(d) {return d.class })
+			.attr("cluster_node", false)
 			.attr("fill", function(d) { return color(d.class); });
 
 	 	var labels = node.append("text")
@@ -224,37 +226,68 @@ async function render_graph(url, time_diff) {
 	// update nodes
 	// do the same in render graph from file
 
+
+
 		d3.select("#apply_settings_button").on("click", function() {
 			//console.log(app.clusters)
 			// I need a cluster ID + cluster node ID -> necessary for updating
 			for (var i = 0; i < app.clusters.length; i++) {
 				var cluster_name = app.clusters[i].cluster_name
-				var cluster_node = app.clusters[i].cluster_node;
+				var add_cluster_node = app.clusters[i].add_cluster_node;
 				var cluster_colour = app.clusters[i].colour;
+				var cluster_id = app.clusters[i].cluster_id;
+				console.log(cluster_id)
+
 				var labels = app.clusters[i].labels;
-				if (cluster_node === "true") {
-					//console.log(cluster_name)
-					addclusternode(cluster_name, cluster_colour)
-					for (var j = 0; j < labels.length; j++) {
-						//console.log(labels[i])
-						addlink(labels[j], cluster_name)
+				var text_labels = [];
+				var cluster_nodes = []
+
+				for (var j = 0; j < labels.length; j++) {
+					text_labels.push(labels[j]["text"]);
+					cluster_nodes.push(labels[j]["cluster_node"]);
+				}
+
+				var exists = false;
+				exists = cluster_node_exists(cluster_id);
+				console.log(exists)
+				if (add_cluster_node === "true" && !exists) {
+					//console.log(exists)
+					addclusternode(cluster_name, cluster_colour, cluster_id)
+
+					for (var k = 0; k < text_labels.length; k++) {
+						addlink(text_labels[k], cluster_name)
 					}
 
-				} else if (cluster_node === "false" || !cluster_node){
-					console.log(cluster_name)
-					//deleteclusternode(cluster_name)
-					//for (var i = 0; i < labels.length; i++) {
-					//	//console.log(labels[i])
-					//	deletelink(labels[i], cluster_name)
-					//	restart()
-				//	}
 				}
 			}
 			restart();
 		})
 
+		function cluster_node_exists(cluster_id) {
+			//console.log("called cluster node exists check")
+			var nodes = d3.selectAll(".node");
+			var exists = false;
+			nodes.selectAll("g").each(function(d) {
+				childnodes = this.childNodes;
+				//console.log(childnodes)
+				childnodes.forEach(function(d,i) {
+					if (d.tagName === "circle") {
+						var is_cluster_node = d.getAttribute("cluster_node");
+						var id = d.getAttribute("cluster_id");
+						
+						if (is_cluster_node === "true" && id === cluster_id) {
+							console.log(id, cluster_id)
+							exists = true;
+						}
+					}
+				})
+			})
+			return exists;
+
+		}
+
 		function restart() {
-			console.log(nodes)
+			//console.log(nodes)
 			// Apply the general update pattern to the nodes.
 			node = node.data(nodes, function(d) { return d.id;});
 			node.exit().remove();
@@ -273,8 +306,10 @@ async function render_graph(url, time_diff) {
 
 
 		   	var circle = g.append("circle")
-					.attr("fill", function(d) { console.log(d.colour); return d.colour; })
-					.attr("r", 10);
+					.attr("fill", function(d) { return d.colour; })
+					.attr("r", 10)
+					.attr("cluster_id", function(d) { return d.cluster_id; })
+			    	.attr("cluster_node", true);
 
 			var text = g.append("text")
 				.text(function(d) { return d.id; })
@@ -324,9 +359,24 @@ NOT WORKING AS EXPECTED
         	}
 		}
 
-		function addclusternode(id, colour) {
-			nodes.push({"id" : id, "colour" : colour})
+		function addclusternode(name, colour, cluster_id) {
+			nodes.push({"id" : name, "colour" : colour, "cluster_id": cluster_id})
 			//restart()	
+		}
+
+		d3.select("body").on("keydown", deleteClusterNode)
+
+		function deleteClusterNode(d) {
+			// key = 5 and is_cluster_node === true
+			var KeyID = event.keyCode;
+			var selected_nodes = d3.selectAll(".node").selectAll(".selected")
+			console.log(selected_nodes)
+			selected_nodes.each(function(d) {
+				console.log(d)
+				//if (d.select("circle").attr("cluster_node") === "true" && KeyID === 8) {
+				//	console.log("delete!")
+				//}
+			})
 		}
 		
 		function brushstarted(){
