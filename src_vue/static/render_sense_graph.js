@@ -338,20 +338,7 @@ async function render_graph(url, time_diff) {
 			simulation.alpha(1).restart();
 		}
 
-/*
-NOT WORKING AS EXPECTED
-		function deletelink(source, target) {
-			if((source !== undefined) && (target !== undefined)) {
-	            links.pop({"source": source, "target": target});
-	            //restart();
-        	}
-		}
 
-		function deleteclusternode(id) {
-			nodes.pop({"id" : id})
-			//restart()	
-		}
-*/
 		function addlink(source, target) {
 			if((source !== undefined) && (target !== undefined)) {
 	            links.push({"source": source, "target": target});
@@ -369,14 +356,64 @@ NOT WORKING AS EXPECTED
 		function deleteClusterNode(d) {
 			// key = 5 and is_cluster_node === true
 			var KeyID = event.keyCode;
-			var selected_nodes = d3.selectAll(".node").selectAll(".selected")
-			console.log(selected_nodes)
-			selected_nodes.each(function(d) {
-				console.log(d)
+			if (KeyID === 8) {
+				var selected_nodes = d3.selectAll(".node").selectAll("g");
+				//console.log(selected_nodes)
+				selected_nodes.each(function(d) {
+					if (d.selected) {
+						var childnodes = this.childNodes;
+						var is_cluster_node;
+						var node_name;
+						var cluster_id;
+						childnodes.forEach(function(d,i) {
+							
+							if (d.tagName === "circle") {
+								is_cluster_node = d.getAttribute("cluster_node");
+								cluster_id = d.getAttribute("cluster_id");
+							}
+							if (d.tagName === "text") {
+								node_name = d.getAttribute("text");
+							}
+						})	
+						if (is_cluster_node === "true") {
+							deletenode(node_name);
+							deletelinks(node_name, cluster_id);
+							restart();
+						}
+					}
+				
 				//if (d.select("circle").attr("cluster_node") === "true" && KeyID === 8) {
 				//	console.log("delete!")
 				//}
-			})
+			})	
+			}
+			
+		}
+
+		function deletenode(id) {
+			nodes.pop({"id" : id})
+		}
+		
+
+		function deletelinks(target, cluster_id) {
+			var clusters = app.clusters;
+			var fellow_cluster_nodes;
+			for (var i=0; i < clusters.length; i++) {
+				if (clusters[i].cluster_id === cluster_id) {
+					var cluster = clusters[i];
+					var sources = [];
+					
+					for (var j=0; j < cluster.labels.length; j++) {
+						if (cluster.labels[j].cluster_node === "false") {
+							sources.push(cluster.labels[j].text)
+						}
+					}
+					for (var k=0; k < sources.length; k++) {
+						console.log(sources[k], target)
+						links.pop({"source": sources[k], "target": target})
+					}
+				}
+			}
 		}
 		
 		function brushstarted(){
