@@ -94,17 +94,17 @@ def get_clustered_graph(
 		nodes, nodes_anno = db.get_nodes(time_diff, target_word, paradigms, time_ids)
 
 		#print(nodes)
-		edges = db.get_edges(nodes, density, time_ids)
-		return chineseWhispers.chinese_whispers(time_diff, nodes, nodes_anno, edges, target_word)
+		edges, nodes, singletons = db.get_edges(nodes, density, time_ids)
+		return singletons, chineseWhispers.chinese_whispers(time_diff, nodes, nodes_anno, edges, target_word)
 
-	clustered_graph = clusters(target_word,
+	singletons, clustered_graph = clusters(target_word,
 		start_year,
 		end_year,
 		paradigms,
 		density,
 		time_diff)
 
-	c_graph = json.dumps([clustered_graph, {'target_word': target_word}], sort_keys=False, indent=4)
+	c_graph = json.dumps([clustered_graph, {'target_word': target_word}, {'singletons': singletons}], sort_keys=False, indent=4)
 	
 	return c_graph
 

@@ -41,7 +41,8 @@ async function render_graph(url, time_diff) {
 		
 		var graph = data[0];
 		var target = [data[1]];
-		//console.log(target)
+		app.singletons = data[2].singletons;
+		console.log(app.singletons);
 
 		var nodes = graph.nodes;
 		var links = graph.links;
@@ -415,7 +416,7 @@ async function render_graph(url, time_diff) {
 				}
 			}
 		}
-		
+
 		function brushstarted(){
 			if (d3.event.sourceEvent.type !== "end") {
 				node.classed("selected", function(d) {

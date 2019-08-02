@@ -138,16 +138,25 @@
 									<p v-for="label in cluster.labels"> {{ label.text }}</p>
 									</b-card>
 								</b-collapse>
-
 						</div>
-
 					</b-list-group>
     			</b-list-group>
-    		<!--</b-card-text>-->
-    	</div>
+    		</div>
+
+    		<div>
+	    		<b-button v-b-toggle.collapse-singletons-1 id="singleton_button"> Singletons
+					<span class="when-opened"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
+					<span class="when-closed"><i class="fa fa-chevron-up" aria-hidden="true"></i></span>
+				</b-button>
+				<b-collapse :id="'collapse-singletons-1'" class="mt-2">
+					<b-card class="input_cluster">
+						<p v-for="node in singletons" style="color: black;">{{node}}</p>
+					</b-card>
+				</b-collapse>
+    		</div>
     		<div style="margin-top: 10px; float: left;">
-    		<b-button id="apply_settings_button" class="close_button" v-on:click="applyClusterSettings()">Apply</b-button>
-    		<b-button class="close_button" variant="danger" v-on:click="closeForm('edit_clusters_popup')">Close</b-button>
+	    		<b-button id="apply_settings_button" class="close_button" v-on:click="applyClusterSettings()">Apply</b-button>
+	    		<b-button class="close_button" variant="danger" v-on:click="closeForm('edit_clusters_popup')">Close</b-button>
     		</div>
     	<!--</b-card> -->
 

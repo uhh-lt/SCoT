@@ -10,14 +10,15 @@ app = new Vue({
      	start_years : [],
      	end_years : [],
      	file : null,
-     	read_graph: null,
+     	read_graph : null,
      	graph_rendered : false,
      	clusters : [],
-     	newclusters: {},
-     	sticky_mode: "true",
-     	charge: -10,
-     	linkdistance: 100,
-     	graph_from_file: false
+     	newclusters : {},
+     	sticky_mode : "true",
+     	charge : -10,
+     	linkdistance : 100,
+     	graph_from_file : false,
+     	singletons : []
 	},
 	methods: {
 		recluster: function() {

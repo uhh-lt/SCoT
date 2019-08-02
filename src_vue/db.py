@@ -156,6 +156,7 @@ class Database:
 				connections.append([row['word1'], row['word2'], row['score']])
 		
 		potential_edges = {}
+		singletons = set()
 		for c in connections:
 			if c[0] in nodes and c[1] in nodes:
 				if (c[0], c[1]) not in potential_edges:
@@ -163,10 +164,27 @@ class Database:
 				else:
 					weight = c[2]
 					avg = (potential_edges[(c[0], c[1])] + weight) / 2
-		for k,v in potential_edges.items():
-			edges.append((k[0], k[1], {'weight': v}))
+
+		print(nodes)
+		print(potential_edges)
 		
-		return edges
+		for n in nodes:
+			exists = False
+			for k,v in potential_edges.items():
+				if n == k[0] or n == k[1]:
+					exists = True
+					edges.append((k[0], k[1], {'weight': v}))
+
+			if not exists:
+				singletons.add(n)
+		
+		#print(singletons)
+		nodes = nodes - singletons
+
+		singletons = list(singletons)
+		# TODO: delete singletons from node set
+
+		return edges, nodes, singletons
 
 	def close():
 		self.db.close()

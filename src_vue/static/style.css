@@ -103,6 +103,11 @@ text {
 	font-size: 10px;
 }
 
+#singleton_button {
+	margin-top: 10px;
+	font-size: 10px;
+}
+
 #render_file_button {
 	margin-top: 10px;
 	margin-bottom: 10px;
