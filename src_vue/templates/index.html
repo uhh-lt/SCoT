@@ -112,7 +112,16 @@
 								Cluster: <span class="bigger_font">{{ cluster.cluster_name }} </span>
 								<p> Number of nodes: {{cluster.labels.length}} </p>
 							</div>
-							<b-button v-b-toggle="'collapse-edit-' + index" id="edit_button" class="edit_button"> Edit </b-button>
+							
+							<p>
+								<b-button v-b-toggle="'collapse-edit-' + index" id="edit_button" class="edit_button"> Edit </b-button>
+								<b-button v-b-toggle="'collapse-nodes-' + index" id="accordion"> Nodes
+									<span class="when-opened"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
+	      							<span class="when-closed"><i class="fa fa-chevron-up" aria-hidden="true"></i></span>
+								</b-button>
+							</p>
+
+							<p>
 								<b-collapse :id="'collapse-edit-' + index" class="mt-2"  aria-expanded="false">
 									<b-card class="input_cluster">
 									<b-form-group label="cluster name"> 
@@ -132,38 +141,39 @@
 									</b-form-group>
 									</b-card>
 								</b-collapse>
+							</p>
 							
-							
-								<b-button v-b-toggle="'collapse-nodes-' + index" id="accordion"> Nodes
-									<span class="when-opened"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
-	      							<span class="when-closed"><i class="fa fa-chevron-up" aria-hidden="true"></i></span>
-								</b-button>
+							<div>
 								<b-collapse :id="'collapse-nodes-' + index" class="mt-2">
 									<b-card class="input_cluster">
-									<p v-for="label in cluster.labels"> {{ label.text }}</p>
+										<div v-for="label in cluster.labels"> {{ label.text }}</div>
 									</b-card>
 								</b-collapse>
+							</div>
 						</div>
 					</b-list-group>
     			</b-list-group>
     		</div>
 
-    		<div>
-	    		<b-button v-b-toggle.collapse-singletons-1 id="singleton_button"> Singletons
+    		<p>
+	    		<b-button v-b-toggle.collapse-singletons-1 id="singleton_button"> Singletons ({{singletons.length}})
 					<span class="when-opened"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
 					<span class="when-closed"><i class="fa fa-chevron-up" aria-hidden="true"></i></span>
 				</b-button>
+			</p>
+			<div>
 				<b-collapse :id="'collapse-singletons-1'" class="mt-2">
 					<b-card class="input_cluster">
-						<p> Number of singleton nodes: {{singletons.length}}
 						<div v-for="node in singletons" style="color: black;">{{node}}</div>
 					</b-card>
 				</b-collapse>
     		</div>
-    		<div style="margin-top: 10px; float: left;">
+    	
+    		<p style="display: block;float: left;">
 	    		<b-button id="apply_settings_button" class="close_button" v-on:click="applyClusterSettings()">Apply</b-button>
 	    		<b-button class="close_button" variant="danger" v-on:click="closeForm('edit_clusters_popup')">Close</b-button>
-    		</div>
+    		</p>
+    	
     	<!--</b-card> -->
     </b-col>
   </b-row>
