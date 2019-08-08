@@ -65,17 +65,19 @@ async function render_graph(url, time_diff) {
 
 		var simulation = d3.forceSimulation(nodes)
 			.force("link", d3.forceLink(links).id(function(d) { return d.id; }).distance(function(d) { return app.linkdistance } ))
-			.force("charge", d3.forceManyBody().strength(app.charge))
+			.force("charge", d3.forceManyBody().strength(app.charge).distanceMin(1).distanceMax(2000))
 			.force("collide", d3.forceCollide().radius(10))
 			.force("center", d3.forceCenter(width/2, height/2))
 			.on('tick', ticked);
 
-		var forceCharge = simulation.force("charge")
-		var forceLinkDistance = simulation.force("link")
+		var forceLinkDistance = simulation.force("link");
 
 		d3.select("#range_charge").on("change", function() {
-			forceCharge = d3.forceManyBody().strength(app.charge)
-			simulation.alpha(1).restart()
+			simulation.force("charge", d3.forceManyBody()
+				.strength(app.charge)
+				.distanceMin(1)
+				.distanceMax(2000));
+			simulation.alpha(1).restart();
 		})
 
 		d3.select("#range_linkdistance").on("change", function() {
