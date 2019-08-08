@@ -21,13 +21,68 @@ app = new Vue({
      	singletons : []
 	},
 	methods: {
+		set_cluster_opacity: function(cluster, opacity) {
+			console.log("mouseover" + cluster.cluster_id);
+			var cluster_id = cluster.cluster_id;
+			var cluster_nodes = [];
+
+			for (var i = 0; i < cluster.labels.length; i++) {
+				cluster_nodes.push(cluster.labels[i].text);
+			}
+
+			var svg = d3.select("#svg");
+			var nodes = svg.selectAll(".node");
+			var links = svg.selectAll(".link");
+
+			nodes.selectAll("g").each(function(d,i) {
+				var childnodes = this.childNodes;
+				var node_text;
+				var node_cluster_id;
+				childnodes.forEach(function(d,i) {
+					if (d.tagName === "circle") {
+						node_cluster_id = d.getAttribute("cluster_id");
+					}
+					if (d.tagName === "text") {
+						node_text = d.getAttribute("text");
+					}
+				})
+				//console.log(cluster_nodes, node_text)
+				if (! cluster_nodes.includes(node_text)) {
+					childnodes.forEach(function(d,i) {
+						if (d.tagName === "circle") {
+							d.setAttribute("style", "stroke-opacity:" + opacity)
+							d.setAttribute("style", "fill-opacity:" + opacity)
+						}
+						if (d.tagName === "text") {
+							d.setAttribute("style", "stroke-opacity:" + opacity)
+							d.setAttribute("style", "fill-opacity:" + opacity)
+						}
+					})
+				}
+
+			})
+
+			//console.log(links)
+			links.each(function(d,i) {
+				//console.log(this)
+				var childnodes = this.childNodes;
+				childnodes.forEach(function(d,i) {
+					var source = d.getAttribute("source");
+					var target = d.getAttribute("target");
+					if (!cluster_nodes.includes(source) || !cluster_nodes.includes(target)) {
+						d.setAttribute("style", "stroke-opacity:" + opacity);
+					}
+				}) 
+				
+			})
+
+		},
 		recluster: function() {
 			document.getElementById("edit_clusters_popup").style.display = "none";			
 
 			var svg = d3.select("#svg");
 			var nodes = svg.selectAll(".node");
 			var links = svg.selectAll(".link");
-			console.log(links)
 
 			var data = {};
 
@@ -47,7 +102,6 @@ app = new Vue({
 
 			links.each(function(d,i) {
 				childnodes = this.childNodes;
-				//console.log(childnodes)
 				childnodes.forEach(function(d,i) {
 					link = {}
 					link['source'] = d.getAttribute("source");
@@ -64,16 +118,11 @@ app = new Vue({
 			data["nodes"] = nodes_array;
 			data["links"] = link_array;
 
-			console.log(data);
-
 			axios.post('./reclustering', data)
 				.then(function (response) {
-					console.log(response.data);
 				    this.newclusters = response.data;
 
-
 				    var colour = d3.scaleOrdinal(d3.schemePaired);
-				    console.log(colour)
 
 				    var newClusteredNodes = this.newclusters.nodes;
 
@@ -152,9 +201,9 @@ app = new Vue({
 				var colour = this.clusters[i].colour;
 				var add_cluster_node = this.clusters[i].add_cluster_node;
 				var labels = this.clusters[i].labels;
-				var text_labels;
-				for (label in this.labels) {
-					text_labels.push(label["text"]);
+				var text_labels = [];
+				for (var i = 0; i < labels.length; i++) {
+					text_labels.push(labels[i].text);
 				}
 
 				nodes.selectAll("g").each(function(d,i) {
@@ -174,7 +223,7 @@ app = new Vue({
 						}
 					});
 
-					if (labels.includes(node_label)) {
+					if (text_labels.includes(node_label)) {
 						childnodes.forEach(function(d,i) {
 							if (d.tagName === "circle") {
 								node_cluster = d.setAttribute('cluster', cluster_name);

@@ -104,8 +104,12 @@
 					<b-list-group-item class="list-item">
 						<div class="overflow">
 							<div class="clustername">
-								<span class="dot" v-bind:style="{ 'background-color': cluster.colour }"></span>
+								<span class="dot" 
+								v-bind:style="{ 'background-color': cluster.colour }"
+								v-on:mouseover="set_cluster_opacity(cluster, 0.2)"
+								v-on:mouseout="set_cluster_opacity(cluster, 1.0)"></span>
 								Cluster: <span class="bigger_font">{{ cluster.cluster_name }} </span>
+								<p> Number of nodes: {{cluster.labels.length}} </p>
 							</div>
 							<b-button v-b-toggle="'collapse-edit-' + index" id="edit_button" class="edit_button"> Edit </b-button>
 								<b-collapse :id="'collapse-edit-' + index" class="mt-2"  aria-expanded="false">
@@ -150,7 +154,8 @@
 				</b-button>
 				<b-collapse :id="'collapse-singletons-1'" class="mt-2">
 					<b-card class="input_cluster">
-						<p v-for="node in singletons" style="color: black;">{{node}}</p>
+						<p> Number of singleton nodes: {{singletons.length}}
+						<div v-for="node in singletons" style="color: black;">{{node}}</div>
 					</b-card>
 				</b-collapse>
     		</div>
