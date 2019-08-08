@@ -127,6 +127,10 @@ text {
 	margin-bottom: 10px;
 }
 
+#loadpopup {
+	display: none;
+}
+
 .form-popup {
 	display: none;
 	position: fixed;
@@ -139,6 +143,7 @@ text {
   	/*word-spacing: -10px;*/
   	font-size: 12px;
 }
+
 
 .edit_cluster_textbox {
 	font-size: 10px;

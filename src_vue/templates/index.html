@@ -44,6 +44,7 @@
 	</b-navbar>
 
   <b-row id="rows">
+
     <b-col id="input-options" class="input_options" sm="2">
 
     	<b-form-group class="input" label="Enter target word">  
@@ -164,16 +165,14 @@
 	    		<b-button class="close_button" variant="danger" v-on:click="closeForm('edit_clusters_popup')">Close</b-button>
     		</div>
     	<!--</b-card> -->
-
-    	<b-card class="form-popup" id="loadpopup">
+    </b-col>
+  </b-row>
+  <b-card class="form-popup" id="loadpopup">
 			<b-card-text> Select a .json file to render graph from</b-card-text>
 			<b-form-file id="file_input" v-model="file" :state="Boolean(file)" placeholder="Choose a file..." drop-placeholder="Drop file here..."> </b-form-file>
 			<b-button id="render_file_button" href="#" variant="success" v-on:click="loadGraph()">Render</b-button>
 		    <b-button id="cancel_button" href="#" variant="danger" v-on:click="closeForm('loadpopup')">Close</b-button>
-		</b-card>
-    
-    </b-col>
-  </b-row>
+	</b-card>
 </b-container> 
 </div>
 <script type="text/javascript" src=".%% url_for('static', filename='vue.js') %%"></script>
