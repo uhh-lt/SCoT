@@ -22,7 +22,7 @@ app = new Vue({
      	data_from_db : {}
 	},
 	methods: {
-		set_cluster_opacity: function(cluster, opacity) {
+		set_cluster_opacity: function(cluster, opacity, link_opacity) {
 			console.log("mouseover" + cluster.cluster_id);
 			var cluster_id = cluster.cluster_id;
 			var cluster_nodes = [];
@@ -71,8 +71,16 @@ app = new Vue({
 					var source = d.getAttribute("source");
 					var target = d.getAttribute("target");
 					if (!cluster_nodes.includes(source) || !cluster_nodes.includes(target)) {
-						d.setAttribute("style", "stroke-opacity:" + opacity);
+						d.setAttribute("style", "stroke-opacity:" + link_opacity);
+					} 
+					if (cluster_nodes.includes(source) && cluster_nodes.includes(target)) {
+						if (opacity < 1) {
+							d.setAttribute("style", "stroke:" + cluster.colour)
+						} else {
+							d.setAttribute("style", "stroke: #999;")
+						}
 					}
+
 				}) 
 				
 			})
@@ -203,8 +211,9 @@ app = new Vue({
 				var add_cluster_node = this.clusters[i].add_cluster_node;
 				var labels = this.clusters[i].labels;
 				var text_labels = [];
-				for (var i = 0; i < labels.length; i++) {
-					text_labels.push(labels[i].text);
+
+				for (var j = 0; j < labels.length; j++) {
+					text_labels.push(labels[j].text);
 				}
 
 				nodes.selectAll("g").each(function(d,i) {
@@ -227,8 +236,8 @@ app = new Vue({
 					if (text_labels.includes(node_label)) {
 						childnodes.forEach(function(d,i) {
 							if (d.tagName === "circle") {
-								node_cluster = d.setAttribute('cluster', cluster_name);
-								node_fill = d.setAttribute('fill', colour);
+								d.setAttribute('cluster', cluster_name);
+								d.setAttribute('fill', colour);
 							}
 						});
 					}
@@ -325,7 +334,11 @@ app = new Vue({
 				.then((res) => {
 					console.log(res.data)
 					this.data_from_db = res.data;
-					render_graph(this.data_from_db, this.time_diff)
+					var nodes = this.data_from_db[0].nodes;
+					var links = this.data_from_db[0].links;
+					var target = [this.data_from_db[1]];
+					app.singletons = this.data_from_db[2].singletons;
+					render_graph(nodes, links, target, this.time_diff)
 					this.graph_rendered = true;
 					//await this.$nextTick();
 
@@ -391,10 +404,15 @@ app = new Vue({
 
 			})
 
+
 			
 			var graph = {};
 			graph['links'] = graph_links;
 			graph['nodes'] = graph_nodes;
+			graph['singletons'] = app.singletons;
+			graph['target'] = app.target_word;
+			graph['link_distance'] = app.linkdistance;
+			graph['charge'] = app.charge;
 			//graph['target'] = this.target_word;
 
 			var data = JSON.stringify(graph, null, 2);
@@ -414,16 +432,30 @@ app = new Vue({
 		},
 		loadGraph: function() {
 			document.getElementById("loadpopup").style.display = "none";
-
+			app.graph_from_file = true;
 			const file = this.file;
 			const reader = new FileReader()
 
 			reader.onload = function(e) {
 			  this.read_graph = JSON.parse(reader.result);
-			  render_graph_from_file(this.read_graph);
+			  console.log(this.read_graph);
+			  if (this.read_graph.singletons) {
+			  	app.singletons = this.read_graph.singletons;
+			  } else {
+			  	app.singletons = [];
+			  }
+			  
+			  var nodes = this.read_graph.nodes;
+			  var links = this.read_graph.links;
+			  var target = this.read_graph.target;
+			  app.target_word = target;
+			  app.charge = this.read_graph.charge;
+			  app.linkdistance = this.read_graph.link_distance;
+			  console.log(nodes, links, target);
+			  render_graph(nodes, links, target, app.time_diff);
 			}
 			reader.readAsText(file);
-			app.graph_from_file = true;
+			
 			app.graph_rendered = true;
 		},
 		closeForm: function(id) {
