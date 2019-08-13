@@ -18,7 +18,8 @@ app = new Vue({
      	charge : -10,
      	linkdistance : 100,
      	graph_from_file : false,
-     	singletons : []
+     	singletons : [],
+     	data_from_db : {}
 	},
 	methods: {
 		set_cluster_opacity: function(cluster, opacity) {
@@ -301,12 +302,14 @@ app = new Vue({
 				}
 		},
 		render_graph: async function() {
+			this.getData();
 			this.graph_from_file = false;
 			this.graph_rendered = false;
 			await this.$nextTick();
-			this.getURL();
+			
+
 		},
-		getURL: async function() {
+		getData: function() {
 			console.log(this.target_word)
 			var target_word = this.target_word;
 			var start_year = this.start_year;
@@ -317,9 +320,21 @@ app = new Vue({
 
 			//var url = './sense_graph' + '/' + encodeURIComponent(target_word) + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges + '/' + time_diff;
 			var url = './sense_graph' + '/' + target_word + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges + '/' + time_diff;
-			render_graph(url, time_diff)
-			this.graph_rendered = true;
-			await this.$nextTick();
+			
+			axios.get(url)
+				.then((res) => {
+					console.log(res.data)
+					this.data_from_db = res.data;
+					render_graph(this.data_from_db, this.time_diff)
+					this.graph_rendered = true;
+					//await this.$nextTick();
+
+				})
+				.catch((error) => {
+					console.error(error);
+				});
+
+			
 		},
 		saveGraph: function() {
 			var svg = d3.select("#svg");
@@ -330,67 +345,57 @@ app = new Vue({
 			var graph_links = [];
 			var graph_nodes = [];
 
-			links.selectAll("line").each(function(d, i) { graph_links.push(this) });
+			links.selectAll("line").each(function(d,i) {
+				var source = this.getAttribute("source");
+				var target = this.getAttribute("target");
+				var weight = this.getAttribute("weight");
+				var link = {};
+
+				link["source"] = source;
+				link["target"] = target;
+				link["weight"] = weight;
+
+				graph_links.push(link);
+			});
+
 
 			nodes.selectAll("g").each(function(d,i) {
-				var node = {};
-				var text_obj = {};
-				node["node"] = this;
-				childnodes = this.childNodes;
+				var x = this.__data__.x;
+				var y = this.__data__.y;
+				var id = this.__data__.id;
+				var cluster_id = this.__data__.class;
+				var cluster_name;
+				var is_cluster_node;
+				var colour;
+
+				var node = {}
+
+				var childnodes = this.childNodes;
 				childnodes.forEach(function(d,i) {
-					var circle = {};
-					var text = [];
-
 					if (d.tagName === "circle") {
-						var attrs = d.attributes;
-
-						for(var k = attrs.length - 1; k >= 0; k--) {
-							var name = attrs[k].name;
-							var value = attrs[k].value;
-							circle[name] = value;
-						}
-					node['circle'] = circle;
-					} else if (d.tagName === "text") {
-
-						attrs = d.attributes;
-
-						for(var i = attrs.length - 1; i >= 0; i--) {
-							var name = attrs[i].name;
-							var value = attrs[i].value;
-							
-							if (name === "style") {
-								var value_list = value.split(";");
-								
-								var formatted_obj = {};
-								
-								for (var j = value_list.length - 1; j >= 0; j--) {
-									var name_value = value_list[j].split(":");
-									var n = String(name_value[0]).replace(" ", "").replace(";", "");
-									var v = String(name_value[1]).replace(" ", "").replace(";", "");
-									
-									if (n !== "") {
-										formatted_obj[n] = v;
-									}
-								}
-
-								text_obj['style'] = formatted_obj;
-
-							} else {
-							text_obj[name] = value;
-							}
-						}
+						cluster_name = d.getAttribute("cluster");
+						is_cluster_node = d.getAttribute("cluster_node");
+						colour = d.getAttribute("fill");
 					}
-					node['label']= text_obj;
 				})
+
+				node["id"] = id;
+				node["x"] = x;
+				node["y"] = y;
+				node["class"] = cluster_id;
+				node["cluster_name"] = cluster_name;
+				node["cluster_node"] = is_cluster_node;
+				node["colour"] = colour;
+
 				graph_nodes.push(node);
+
 			})
 
-
-			var graph;
-			graph = {};
+			
+			var graph = {};
 			graph['links'] = graph_links;
 			graph['nodes'] = graph_nodes;
-			graph['target'] = this.target_word;
+			//graph['target'] = this.target_word;
 
 			var data = JSON.stringify(graph, null, 2);
 			var blob = new Blob([data], {type: 'text/plain'});

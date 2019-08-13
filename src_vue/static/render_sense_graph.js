@@ -1,5 +1,5 @@
-async function render_graph(url, time_diff) {
-	console.log("start rendering graph")
+async function render_graph(data, time_diff) {
+	console.log(data, time_diff)
 
 	var width = 1000;
 	var height = 1000;
@@ -36,7 +36,7 @@ async function render_graph(url, time_diff) {
 			.attr("class", "brush");
 
 	/* Load and bind data */
-	d3.json(url).then(function(data) {
+	//d3.json(url).then(function(data) {
 		console.log(data);
 		
 		var graph = data[0];
@@ -560,5 +560,5 @@ async function render_graph(url, time_diff) {
 	}
 
 		
-	});
+	//});
 }
