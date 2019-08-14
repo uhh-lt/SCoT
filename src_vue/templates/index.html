@@ -12,7 +12,7 @@
 	<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 
 	<script type="text/javascript" src=".%% url_for('static', filename='render_sense_graph.js') %%"></script>
-	<script type="text/javascript" src=".%% url_for('static', filename='render_graph_from_file.js') %%"></script>
+	<script type="text/javascript" src=".%% url_for('static', filename='update_graph.js') %%"></script>
 
 	 <!-- Stylesheets -->
 	<link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css"/>
@@ -32,6 +32,7 @@
 		<b-navbar-brand tag="h1" class="header">SCoT senseviewer</b-navbar-brand>
 		<b-navbar-nav class="ml-auto">
 		<b-nav-form>
+			<!--<b-button v-if="graph_rendered" id="restart_button" v-on:click="restart_sim"> Restart Simulation</b-button>-->
 			<b-button v-if="graph_rendered" id="recluster_button" v-on:click="recluster()"> Recluster</b-button>
 			<b-button v-if="graph_rendered" id="edit_mask_button" v-on:click="showEditMask()">Edit Graph</b-button>
 			<b-button v-if="graph_rendered" id="reset_zoom_button" v-on:click="resetZoom()">Reset Zoom</b-button>
@@ -74,6 +75,29 @@
 
 
     	<b-button id="render_button" v-on:click="render_graph()">Render Graph</b-button>
+
+    	<p>
+    		<b-button v-if="graph_rendered" v-b-toggle.collapse-update-1 id="add_update_button"> Update Graph
+			</b-button>
+		</p>
+		<div>
+			<b-collapse :id="'collapse-update-1'" class="mt-2">
+				<b-card class="input_cluster" style="color: black">
+					<b-form-group class="input" label="Number of neighbours">  
+						<b-form-input type="number" v-model="update_senses" min="0" placeholder="number of senses" size="sm"></b-form-input>
+					</b-form-group>
+
+					<b-form-group class="input" label="Max. number of edges per node">  
+						<b-form-input type="number" v-model="update_edges" min="0" placeholder="number of edges" size="sm"></b-form-input>
+					</b-form-group>
+
+					<p>
+			    		<b-button id="update_button" v-on:click="update_graph()"> Update
+						</b-button>
+					</p>		
+				</b-card>
+			</b-collapse>
+    	</div>
 
 
     </b-col>

@@ -76,6 +76,16 @@ text {
 	margin-left: 5px;
 }
 
+#restart_button {
+	display: block;
+	float: right;
+	text-align: center;
+	font-size: 10px;
+	/*word-spacing: -10px;*/
+	/*margin-right: 10px;*/
+	margin-left: 5px;
+}
+
 #reset_zoom_button {
 	display:block;
 	float: right;
@@ -97,6 +107,14 @@ text {
 }
 
 #render_button {
+	margin-top: 10px;
+	text-align: center;
+	/*word-spacing: -10px;*/
+	font-size: 10px;
+}
+
+
+#add_update_button {
 	margin-top: 10px;
 	text-align: center;
 	/*word-spacing: -10px;*/

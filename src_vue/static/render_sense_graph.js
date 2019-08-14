@@ -63,27 +63,27 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 	
 
-	var simulation = d3.forceSimulation(nodes)
+	app.simulation = d3.forceSimulation(nodes)
 		.force("link", d3.forceLink(links).id(function(d) { return d.id; }).distance(function(d) { return app.linkdistance } ))
 		.force("charge", d3.forceManyBody().strength(app.charge).distanceMin(1).distanceMax(2000))
 		.force("collide", d3.forceCollide().radius(10))
 		.force("center", d3.forceCenter(width/2, height/2))
 		.on('tick', ticked);
 
-	var forceLinkDistance = simulation.force("link");
+	var forceLinkDistance = app.simulation.force("link");
 
 	d3.select("#range_charge").on("change", function() {
 		console.log(app.charge)
-		simulation.force("charge", d3.forceManyBody()
+		app.simulation.force("charge", d3.forceManyBody()
 			.strength(app.charge)
 			.distanceMin(1)
 			.distanceMax(2000));
-		simulation.alpha(1).restart();
+		app.simulation.alpha(1).restart();
 	})
 
 	d3.select("#range_linkdistance").on("change", function() {
 		forceLinkDistance.distance(app.linkdistance)
-		simulation.alpha(1).restart()
+		app.simulation.alpha(1).restart()
 	})
 	
 
@@ -156,7 +156,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		.attr('y', 3)
 		.attr("text", function(d) { return d.id; });
 
-	simulation.on("tick", ticked)
+	app.simulation.on("tick", ticked)
 
 
 	var sticky = app.sticky_mode;
@@ -224,12 +224,6 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 					d3.selectAll('.selected').each(dragend_sticky); });
 		} 
 	})
-	
-// select apply settings button. listen for click
-// iterate app.clusters. If app.clusters.cluster_node is true
-// update nodes
-// do the same in render graph from file
-
 
 
 	d3.select("#apply_settings_button").on("click", function() {
@@ -331,15 +325,15 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		link = link.data(links, function(d) { return d.source.id + "-" + d.target.id; });
 		link.exit().remove();
 		link = link.enter().append("line")
-			.attr("weight", 10)
+			.attr("weight", 50)
 			.attr("source", function(d) { return d.source })
 			.attr("target", function(d) { return d.target })
 			.merge(link);
 
-		// Update and restart the simulation.
-		simulation.nodes(nodes);
-		simulation.force("link").links(links);
-		simulation.alpha(1).restart();
+		// Update and restart the app.simulation.
+		app.simulation.nodes(nodes);
+		app.simulation.force("link").links(links);
+		app.simulation.alpha(1).restart();
 	}
 
 
@@ -419,6 +413,131 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 			}
 		}
 	}
+
+
+	d3.select("#update_button").on("click", function() {
+		setTimeout(() => {
+			//app.updated_nodes.forEach(function(d) {
+			//	d.selected = false;
+			//	d.previouslySelected = false;
+			//});
+
+			var existing_labels = [];
+			for (var j = 0; j < app.clusters.length; j++) {
+				var cluster = app.clusters[j];
+				
+				for (var k=0; k < cluster.labels.length; k++) {
+					if (cluster.labels[k].cluster_node === "false") {
+						existing_labels.push(cluster.labels[k].text)
+					}
+				}
+			}
+
+			for (var i = 0; i < app.updated_nodes.length; i++) {
+				var new_label = app.updated_nodes[i].id
+				var cluster_class = app.updated_nodes[i].class
+				console.log(new_label, cluster_class)
+					if (!existing_labels.includes(new_label)) {
+						nodes.push({"id": app.updated_nodes[i].id, "class": app.updated_nodes[i].class})
+					} else {
+						var existing_nodes = d3.selectAll(".node")
+						existing_nodes.selectAll("g").each(function(d,i) {
+							var label;
+							var childnodes = this.childNodes;
+							
+							childnodes.forEach(function(d,i) {
+								if (d.tagName === "text") {
+									label = d.getAttribute("text");
+								}
+							});
+
+							if (new_label === label) {
+								childnodes.forEach(function(d,i) {
+									if (d.tagName === "circle") {
+										d.setAttribute("cluster_id", cluster_class);
+
+										var colour = get_colour(cluster_class);
+										d.setAttribute("fill", colour)
+
+										d.setAttribute("cluster", cluster_class)
+									}
+								});
+							}
+						})
+						
+
+					}
+			}
+			console.log(nodes)
+
+			for (var i = 0; i < app.updated_links.length; i++) {
+				if (! links.includes(app.updated_links[i])) {
+					links.push(app.updated_links[i])	
+				}
+			}
+			update_graph()
+			//app.get_clusters();
+			console.log(app.clusters);
+		}, 1000)
+	})
+
+
+	function get_colour(c) {
+		return color(c);
+	}
+
+	function update_graph() {
+		node = node.data(nodes, function(d) { return d.id;});
+		node.exit().remove();
+
+		//node = node.enter().append("circle").attr("r", 10).attr("fill", function(d) { return color(d.id)}).merge(node)
+
+		var g = node.enter()
+				.append("g")
+				.attr("stroke", "#fff")
+		    	.attr("stroke-width", 1.5)
+		    	.attr("class", "node")
+				.on("mousedown", mousedowned)
+		    		.call(drag_node)
+		    	.on("mouseover", mouseOver(0.2))
+		   		.on("mouseout", mouseOut)
+
+
+	   	var circle = g.append("circle")
+				.attr("fill", function(d) { return color(d.class); })
+				.attr("r", 5)
+				.attr("cluster_id", function(d) { return d.class; })
+		    	.attr("cluster_node", false)
+		    	.attr("cluster", function(d) { return d.class; });
+
+		var text = g.append("text")
+			.text(function(d) { return d.id; })
+			.style('fill', "black")
+			.style('stroke', "black")
+			.attr('x', 6)
+			.attr('y', 3)
+			.attr("text", function(d) { return d.id; });
+
+
+		node = node.merge(g);
+
+
+		  // Apply the general update pattern to the links.
+		link = link.data(links, function(d) { return d.source.id + "-" + d.target.id; });
+		link.exit().remove();
+		link = link.enter().append("line")
+			.attr("weight", function(d) { return d.weight })
+			.attr("source", function(d) { return d.source })
+			.attr("target", function(d) { return d.target })
+			.attr("stroke-width", function(d) { return Math.sqrt(d.weight/10); })
+			.merge(link);
+
+		// Update and restart the app.simulation.
+		app.simulation.nodes(nodes);
+		app.simulation.force("link").links(links);
+		app.simulation.alpha(1).restart();
+	}
+
 
 	function brushstarted(){
 		if (d3.event.sourceEvent.type !== "end") {
@@ -529,7 +648,7 @@ function mouseOut() {
 }
 
 function dragstart(d) {
-	simulation.stop()
+	app.simulation.stop()
 }
 
 function dragmove(d) {
@@ -546,7 +665,7 @@ function dragend(d) {
 }
 
 function dragstart_sticky(d) {
-    if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+    if (!d3.event.active) app.simulation.alphaTarget(0.3).restart();
     d.fx = d.x;
     d.fy = d.y;
 }
@@ -557,7 +676,7 @@ function dragmove_sticky(d) {
 }
 
 function dragend_sticky(d) {
-    if (!d3.event.active) simulation.alphaTarget(0);
+    if (!d3.event.active) app.simulation.alphaTarget(0);
     //d.fx = null;
     //d.fy = null;
 }

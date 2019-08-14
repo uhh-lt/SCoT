@@ -19,9 +19,48 @@ app = new Vue({
      	linkdistance : 100,
      	graph_from_file : false,
      	singletons : [],
-     	data_from_db : {}
+     	data_from_db : {},
+     	simulation : null,
+     	update_senses : 0,
+     	update_edges : 0,
+     	updated_nodes : null,
+     	updated_links : null
 	},
 	methods: {
+		update_graph: function() {
+			var target_word = this.target_word;
+			var start_year = this.start_year;
+			var end_year = this.end_year;
+			var senses = this.update_senses;
+			var edges = this.update_edges;
+			var time_diff = this.time_diff;
+
+			//var url = './sense_graph' + '/' + encodeURIComponent(target_word) + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges + '/' + time_diff;
+			var url = './sense_graph' + '/' + target_word + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges + '/' + time_diff;
+			
+			axios.get(url)
+				.then((res) => {
+					console.log(res.data)
+					this.data_from_db = res.data;
+					app.updated_nodes = this.data_from_db[0].nodes;
+					app.updated_links = this.data_from_db[0].links;
+					//var target = [this.data_from_db[1]];
+					app.singletons = this.data_from_db[2].singletons;
+					
+					//update_existing_graph(nodes, links);
+					
+					//await this.$nextTick();
+
+				})
+				.catch((error) => {
+					console.error(error);
+			});
+
+
+		},
+		restart_sim: function() {
+			app.simulation.alpha(1).restart();
+		},
 		set_cluster_opacity: function(cluster, opacity, link_opacity) {
 			console.log("mouseover" + cluster.cluster_id);
 			var cluster_id = cluster.cluster_id;
@@ -278,15 +317,16 @@ app = new Vue({
 							cluster_name = d.getAttribute("cluster");
 							cluster_id = d.getAttribute("cluster_id");
 							colour = d.getAttribute("fill");
-							console.log(d.getAttribute("cluster_node"));
+							//console.log(d.getAttribute("cluster_node"));
 							cluster_node = d.getAttribute("cluster_node");
 						}
 
 						if (d.tagName === "text") {
 							text = d.getAttribute("text");
 						}
-
 					});
+
+					console.log(cluster_id, text)
 
 					clusters.forEach(function(c,i) {
 						if (c.cluster_name === cluster_name) {
@@ -304,6 +344,8 @@ app = new Vue({
 						cluster["labels"] = [{"text": text, "cluster_node": cluster_node}];
 						clusters.push(cluster)
 					}
+
+					console.log(clusters)
 			 	});
 
 				for (var i=0; i < clusters.length; i++) {
@@ -340,6 +382,7 @@ app = new Vue({
 					app.singletons = this.data_from_db[2].singletons;
 					render_graph(nodes, links, target, this.time_diff)
 					this.graph_rendered = true;
+					app.get_clusters()
 					//await this.$nextTick();
 
 				})
@@ -432,6 +475,7 @@ app = new Vue({
 		},
 		loadGraph: function() {
 			document.getElementById("loadpopup").style.display = "none";
+			document.getElementById("edit_clusters_popup").style.display = "none";	
 			app.graph_from_file = true;
 			const file = this.file;
 			const reader = new FileReader()
