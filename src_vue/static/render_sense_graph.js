@@ -89,7 +89,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 	var link = svg.append("g")
 			.attr("stroke", "#999")
-			.attr("stroke-opacity", 0.6)
+			.attr("stroke-opacity", 0.8)
 			.attr("class", "link")
 		.selectAll("line")
 		.data(links)
@@ -190,7 +190,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	
 	d3.select("#sticky").on("change", function() {
 		sticky = app.sticky_mode;
-		console.log(sticky);
+		//console.log(sticky);
 		if (sticky === "false") {
 
 			brush.style("display", "inline")
@@ -234,7 +234,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 			var add_cluster_node = app.clusters[i].add_cluster_node;
 			var cluster_colour = app.clusters[i].colour;
 			var cluster_id = app.clusters[i].cluster_id;
-			console.log(cluster_id)
+			//console.log(cluster_id)
 
 			var labels = app.clusters[i].labels;
 			var text_labels = [];
@@ -247,7 +247,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 			var exists = false;
 			exists = cluster_node_exists(cluster_id);
-			console.log(exists)
+			//console.log(exists)
 			if (add_cluster_node === "true" && !exists) {
 				//console.log(exists)
 				addclusternode(cluster_name, cluster_colour, cluster_id)
@@ -274,7 +274,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 					var id = d.getAttribute("cluster_id");
 					
 					if (is_cluster_node === "true" && id === cluster_id) {
-						console.log(id, cluster_id)
+						//console.log(id, cluster_id)
 						exists = true;
 					}
 				}
@@ -334,6 +334,12 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		app.simulation.nodes(nodes);
 		app.simulation.force("link").links(links);
 		app.simulation.alpha(1).restart();
+
+		linkedByIndex = {};
+		links.forEach(function(d) {
+			//console.log(d.source.id, d.target.id);
+		    linkedByIndex[d.source.id + "," + d.target.id] = 1;
+		});
 	}
 
 
@@ -407,7 +413,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 					}
 				}
 				for (var k=0; k < sources.length; k++) {
-					console.log(sources[k], target)
+					//console.log(sources[k], target)
 					links.pop({"source": sources[k], "target": target})
 				}
 			}
@@ -436,7 +442,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 			for (var i = 0; i < app.updated_nodes.length; i++) {
 				var new_label = app.updated_nodes[i].id
 				var cluster_class = app.updated_nodes[i].class
-				console.log(new_label, cluster_class)
+				//console.log(new_label, cluster_class)
 					if (!existing_labels.includes(new_label)) {
 						nodes.push({"id": app.updated_nodes[i].id, "class": app.updated_nodes[i].class})
 					} else {
@@ -468,7 +474,11 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 					}
 			}
-			console.log(nodes)
+			//console.log(nodes)
+			nodes.forEach(function(d) {
+			    d.selected = false;
+			    d.previouslySelected = false;
+			});
 
 			for (var i = 0; i < app.updated_links.length; i++) {
 				if (! links.includes(app.updated_links[i])) {
@@ -476,8 +486,8 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 				}
 			}
 			update_graph()
-			//app.get_clusters();
-			console.log(app.clusters);
+			app.get_clusters();
+			//console.log(app.clusters);
 		}, 1000)
 	})
 
@@ -489,8 +499,6 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	function update_graph() {
 		node = node.data(nodes, function(d) { return d.id;});
 		node.exit().remove();
-
-		//node = node.enter().append("circle").attr("r", 10).attr("fill", function(d) { return color(d.id)}).merge(node)
 
 		var g = node.enter()
 				.append("g")
@@ -530,12 +538,19 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 			.attr("source", function(d) { return d.source })
 			.attr("target", function(d) { return d.target })
 			.attr("stroke-width", function(d) { return Math.sqrt(d.weight/10); })
+			.attr("stroke", "#999")
 			.merge(link);
 
 		// Update and restart the app.simulation.
 		app.simulation.nodes(nodes);
 		app.simulation.force("link").links(links);
 		app.simulation.alpha(1).restart();
+
+		linkedByIndex = {};
+		links.forEach(function(d) {
+			//console.log(d.source.id, d.target.id);
+		    linkedByIndex[d.source.id + "," + d.target.id] = 1;
+		});
 	}
 
 
@@ -604,10 +619,12 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
     }
 
 // build a dictionary of nodes that are linked
-var linkedByIndex = {};
+var linkedByIndex = {}
 links.forEach(function(d) {
+	//console.log(d.source.id, d.target.id);
     linkedByIndex[d.source.id + "," + d.target.id] = 1;
 });
+
 
 // check the dictionary to see if nodes are linked
 function isConnected(a, b) {

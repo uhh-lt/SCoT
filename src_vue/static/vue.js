@@ -43,6 +43,7 @@ app = new Vue({
 					console.log(res.data)
 					this.data_from_db = res.data;
 					app.updated_nodes = this.data_from_db[0].nodes;
+					console.log(app.updated_nodes.length)
 					app.updated_links = this.data_from_db[0].links;
 					//var target = [this.data_from_db[1]];
 					app.singletons = this.data_from_db[2].singletons;
@@ -377,6 +378,7 @@ app = new Vue({
 					console.log(res.data)
 					this.data_from_db = res.data;
 					var nodes = this.data_from_db[0].nodes;
+					console.log(nodes.length)
 					var links = this.data_from_db[0].links;
 					var target = [this.data_from_db[1]];
 					app.singletons = this.data_from_db[2].singletons;
