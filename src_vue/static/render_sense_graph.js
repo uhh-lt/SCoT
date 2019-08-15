@@ -89,7 +89,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 	var link = svg.append("g")
 			.attr("stroke", "#999")
-			.attr("stroke-opacity", 0.8)
+			//.attr("stroke-opacity", 0.8)
 			.attr("class", "link")
 		.selectAll("line")
 		.data(links)
@@ -325,9 +325,11 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		link = link.data(links, function(d) { return d.source.id + "-" + d.target.id; });
 		link.exit().remove();
 		link = link.enter().append("line")
-			.attr("weight", 50)
+			.attr("weight", 500)
 			.attr("source", function(d) { return d.source })
 			.attr("target", function(d) { return d.target })
+			//.attr("stroke-width", 5)
+			//.attr("stroke", "#eee")
 			.merge(link);
 
 		// Update and restart the app.simulation.
@@ -337,7 +339,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 		linkedByIndex = {};
 		links.forEach(function(d) {
-			//console.log(d.source.id, d.target.id);
+			console.log(d.source.id, d.target.id);
 		    linkedByIndex[d.source.id + "," + d.target.id] = 1;
 		});
 	}
@@ -433,9 +435,9 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 				var cluster = app.clusters[j];
 				
 				for (var k=0; k < cluster.labels.length; k++) {
-					if (cluster.labels[k].cluster_node === "false") {
+					//if (cluster.labels[k].cluster_node === "false") {
 						existing_labels.push(cluster.labels[k].text)
-					}
+					//}
 				}
 			}
 
@@ -661,7 +663,7 @@ function mouseOut() {
     node.style("stroke-opacity", 1);
     node.style("fill-opacity", 1);
     link.style("stroke-opacity", 1);
-    link.style("stroke", "#ddd");
+    //link.style("stroke", "#ddd");
 }
 
 function dragstart(d) {
