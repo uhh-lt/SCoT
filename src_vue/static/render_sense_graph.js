@@ -47,6 +47,9 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	var nodes = graph_nodes;
 	var links = graph_links;
 
+	// build a dictionary of nodes that are linked
+	var linkedByIndex = {}
+
 	nodes.forEach(function(d) {
 	    d.selected = false;
 	    d.previouslySelected = false;
@@ -325,7 +328,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		link = link.data(links, function(d) { return d.source.id + "-" + d.target.id; });
 		link.exit().remove();
 		link = link.enter().append("line")
-			.attr("weight", 500)
+			.attr("weight", 1000)
 			.attr("source", function(d) { return d.source })
 			.attr("target", function(d) { return d.target })
 			//.attr("stroke-width", 5)
@@ -339,7 +342,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 		linkedByIndex = {};
 		links.forEach(function(d) {
-			console.log(d.source.id, d.target.id);
+			console.log("linkedByIndex");
 		    linkedByIndex[d.source.id + "," + d.target.id] = 1;
 		});
 	}
@@ -348,13 +351,13 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	function addlink(source, target) {
 		if((source !== undefined) && (target !== undefined)) {
             links.push({"source": source, "target": target});
-            //restart();
+            restart();
     	}
 	}
 
 	function addclusternode(name, colour, cluster_id) {
 		nodes.push({"id" : name, "colour" : colour, "cluster_id": cluster_id})
-		//restart()	
+		restart()	
 	}
 
 	d3.select("body").on("keydown", deleteClusterNode)
@@ -364,10 +367,13 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		var KeyID = event.keyCode;
 		if (KeyID === 8) {
 			var selected_nodes = d3.selectAll(".node").selectAll("g");
+			console.log(selected_nodes)
 			//console.log(selected_nodes)
 			selected_nodes.each(function(d) {
 				if (d.selected) {
+					console.log("trying to do something here...")
 					var childnodes = this.childNodes;
+					console.log(childnodes)
 					var is_cluster_node;
 					var node_name;
 					var cluster_id;
@@ -397,7 +403,10 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	}
 
 	function deletenode(id) {
-		nodes.pop({"id" : id})
+		for (var i=0; i < nodes.length; i++)
+			if (nodes[i]["id"] == id) {
+				nodes.splice(i,1)
+			}
 	}
 	
 
@@ -619,15 +628,11 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
         };
         return "translate(" + d.x + "," + d.y + ")";
     }
-
-// build a dictionary of nodes that are linked
-var linkedByIndex = {}
+linkedByIndex = {}
 links.forEach(function(d) {
 	//console.log(d.source.id, d.target.id);
     linkedByIndex[d.source.id + "," + d.target.id] = 1;
 });
-
-
 // check the dictionary to see if nodes are linked
 function isConnected(a, b) {
     return linkedByIndex[a.id + "," + b.id] || linkedByIndex[b.id + "," + a.id] || a.id == b.id;
