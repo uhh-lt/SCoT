@@ -89,8 +89,10 @@ app = new Vue({
 				})
 				//console.log(cluster_nodes, node_text)
 				if (! cluster_nodes.includes(node_text)) {
-					this.setAttribute("style", "stroke-opacity:" + opacity + ";");
-					this.setAttribute("style", "fill-opacity:" + opacity + ";");
+					//this.setAttribute("style", "stroke-opacity:" + opacity);
+					//this.setAttribute("style", "fill-opacity:" + opacity);
+					this.style.strokeOpacity = opacity;
+					this.style.fillOpacity = opacity;
 					// childnodes.forEach(function(d,i) {
 					// 	if (d.tagName === "circle") {
 					// 		d.setAttribute("style", "stroke-opacity:" + opacity)
@@ -334,8 +336,9 @@ app = new Vue({
 					clusters.forEach(function(c,i) {
 						if (c.cluster_name === cluster_name) {
 							exists = true;
-							c.labels.push({"text": text, "cluster_node": cluster_node})
-
+							if (cluster_node === "false") {
+								c.labels.push({"text": text, "cluster_node": cluster_node})
+							}
 						}
 					});
 
@@ -344,8 +347,14 @@ app = new Vue({
 						cluster["cluster_name"] = cluster_name;
 						cluster["colour"] = colour;
 						cluster["add_cluster_node"] = false;
-						cluster["labels"] = [{"text": text, "cluster_node": cluster_node}];
-						clusters.push(cluster)
+						cluster.labels = []
+						if (cluster_node === "false") {
+							cluster["labels"].push({"text": text, "cluster_node": cluster_node});
+						}
+						if (cluster.labels.length > 0) {
+							clusters.push(cluster)
+						}
+						
 					}
 
 					console.log(clusters)

@@ -396,6 +396,8 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 					})	
 					if (is_cluster_node === "true") {
 						deletenode(node_name);
+						// Does not work with cluster_id and app.clusters
+						// Clusters may have changes. find all edges directly in the DOM instead
 						deletelinks(node_name, cluster_id);
 						restart();
 					}

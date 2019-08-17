@@ -121,6 +121,13 @@ text {
 	font-size: 10px;
 }
 
+#update_button {
+	margin-top: 10px;
+	text-align: center;
+	/*word-spacing: -10px;*/
+	font-size: 10px;
+}
+
 #singleton_button {
 	margin-top: 10px;
 	font-size: 10px;
