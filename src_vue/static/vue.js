@@ -89,16 +89,18 @@ app = new Vue({
 				})
 				//console.log(cluster_nodes, node_text)
 				if (! cluster_nodes.includes(node_text)) {
-					childnodes.forEach(function(d,i) {
-						if (d.tagName === "circle") {
-							d.setAttribute("style", "stroke-opacity:" + opacity)
-							d.setAttribute("style", "fill-opacity:" + opacity)
-						}
-						if (d.tagName === "text") {
-							d.setAttribute("style", "stroke-opacity:" + opacity)
-							d.setAttribute("style", "fill-opacity:" + opacity)
-						}
-					})
+					this.setAttribute("style", "stroke-opacity:" + opacity + ";");
+					this.setAttribute("style", "fill-opacity:" + opacity + ";");
+					// childnodes.forEach(function(d,i) {
+					// 	if (d.tagName === "circle") {
+					// 		d.setAttribute("style", "stroke-opacity:" + opacity)
+					// 		d.setAttribute("style", "fill-opacity:" + opacity)
+					// 	}
+					// 	if (d.tagName === "text") {
+					// 		d.setAttribute("style", "stroke-opacity:" + opacity)
+					// 		d.setAttribute("style", "fill-opacity:" + opacity)
+					// 	}
+					// })
 				}
 
 			})
