@@ -421,7 +421,7 @@ app = new Vue({
 				var x = this.__data__.x;
 				var y = this.__data__.y;
 				var id = this.__data__.id;
-				var cluster_id = this.__data__.class;
+				var cluster_id;
 				var cluster_name;
 				var is_cluster_node;
 				var colour;
@@ -431,6 +431,7 @@ app = new Vue({
 				var childnodes = this.childNodes;
 				childnodes.forEach(function(d,i) {
 					if (d.tagName === "circle") {
+						cluster_id = d.getAttribute("cluster_id");
 						cluster_name = d.getAttribute("cluster");
 						is_cluster_node = d.getAttribute("cluster_node");
 						colour = d.getAttribute("fill");
@@ -458,7 +459,9 @@ app = new Vue({
 			graph['target'] = app.target_word;
 			graph['link_distance'] = app.linkdistance;
 			graph['charge'] = app.charge;
-			//graph['target'] = this.target_word;
+			graph['start_year'] = app.start_year;
+			graph['end_year'] = app.end_year;
+			graph['time_diff'] = app.time_diff;
 
 			var data = JSON.stringify(graph, null, 2);
 			var blob = new Blob([data], {type: 'text/plain'});
@@ -497,6 +500,9 @@ app = new Vue({
 			  app.target_word = target;
 			  app.charge = this.read_graph.charge;
 			  app.linkdistance = this.read_graph.link_distance;
+			  app.start_year = this.read_graph.start_year;
+			  app.end_year = this.read_graph.end_year;
+			  app.time_diff = this.read_graph.time_diff;
 			  console.log(nodes, links, target);
 			  render_graph(nodes, links, target, app.time_diff);
 			}

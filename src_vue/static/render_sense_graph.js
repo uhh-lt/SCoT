@@ -100,7 +100,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 			.attr("source", function(d) { return d.source.id })
 			.attr("target", function(d) { return d.target.id })
 			.attr("weight", function(d) { return d.weight })
-			.attr("stroke-width", function(d) { return Math.sqrt(d.weight/10); });
+			.attr("stroke-width", function(d) { return Math.sqrt(d.weight/10);	});
 
 	var drag_node = d3.drag()
 
@@ -119,9 +119,15 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	    .on("mouseout", mouseOut);
 
 	var circles = node.append("circle")
-		.attr("r", radius)
-		.attr("cluster", function(d) {return d.class; })
-		.attr("cluster_id", function(d) {return d.class })
+		.attr("r", function(d) {
+			if (d.cluster_node === "true") {
+				return radius * 2;
+			} else {
+				return radius;
+			}
+		})
+		.attr("cluster", function(d) { return d.class; })
+		.attr("cluster_id", function(d) { return d.class })
 		.attr("cluster_node", false)
 		.attr("fill", function(d) { return color(d.class); });
 
@@ -161,6 +167,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 	app.simulation.on("tick", ticked)
 
+	app.get_clusters();
 
 	var sticky = app.sticky_mode;
 
@@ -328,7 +335,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		link = link.data(links, function(d) { return d.source.id + "-" + d.target.id; });
 		link.exit().remove();
 		link = link.enter().append("line")
-			.attr("weight", 1000)
+			.attr("weight", 10)
 			.attr("source", function(d) { return d.source })
 			.attr("target", function(d) { return d.target })
 			//.attr("stroke-width", 5)
@@ -628,6 +635,8 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
         };
         return "translate(" + d.x + "," + d.y + ")";
     }
+
+
 linkedByIndex = {}
 links.forEach(function(d) {
 	//console.log(d.source.id, d.target.id);
