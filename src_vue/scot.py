@@ -104,6 +104,7 @@ def get_clustered_graph(
 		density,
 		time_diff)
 
+
 	c_graph = json.dumps([clustered_graph, {'target_word': target_word}, {'singletons': singletons}], sort_keys=False, indent=4)
 	
 	return c_graph

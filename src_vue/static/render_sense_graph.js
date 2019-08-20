@@ -704,8 +704,8 @@ function dragstart(d) {
 }
 
 function dragmove(d) {
-	d.px += d3.event.dx;
-    d.py += d3.event.dy;
+	d.fx += d3.event.dx;
+    d.fy += d3.event.dy;
     d.x += d3.event.dx;
     d.y += d3.event.dy; 
 	ticked();

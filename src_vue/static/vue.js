@@ -431,6 +431,8 @@ app = new Vue({
 			nodes.selectAll("g").each(function(d,i) {
 				var x = this.__data__.x;
 				var y = this.__data__.y;
+				var fx = this.__data__.fx;
+				var fy = this.__data__.fy;
 				var id = this.__data__.id;
 				var cluster_id;
 				var cluster_name;
@@ -452,6 +454,8 @@ app = new Vue({
 				node["id"] = id;
 				node["x"] = x;
 				node["y"] = y;
+				node["fx"] = fx;
+				node["fy"] = fy;
 				node["class"] = cluster_id;
 				node["cluster_name"] = cluster_name;
 				node["cluster_node"] = is_cluster_node;

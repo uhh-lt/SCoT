@@ -48,9 +48,6 @@ def chinese_whispers(time_diff, nodes, nodes_anno, edges, target_word, iteration
 			graph.node[node]['class'] = maxclass
 			#print(graph.nodes.data('class'))
 
-	#graph.add_node(target_word)
-	#graph.node[target_word]['class'] = -1
-
 	return  nx.readwrite.json_graph.node_link_data(graph)
 
 def construct_reclustering_graph(nodes, edges):
