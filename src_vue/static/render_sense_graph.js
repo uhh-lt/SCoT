@@ -76,7 +76,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	var forceLinkDistance = app.simulation.force("link");
 
 	d3.select("#range_charge").on("change", function() {
-		console.log(app.charge)
+		//console.log(app.charge)
 		app.simulation.force("charge", d3.forceManyBody()
 			.strength(app.charge)
 			.distanceMin(1)
@@ -349,7 +349,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 		linkedByIndex = {};
 		links.forEach(function(d) {
-			console.log("linkedByIndex");
+			//console.log("linkedByIndex");
 		    linkedByIndex[d.source.id + "," + d.target.id] = 1;
 		});
 	}
@@ -370,7 +370,6 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	d3.select("body").on("keydown", deleteClusterNode)
 
 	function deleteClusterNode(d) {
-		// key = 5 and is_cluster_node === true
 		var KeyID = event.keyCode;
 		if (KeyID === 8) {
 			var selected_nodes = d3.selectAll(".node").selectAll("g");
@@ -413,14 +412,14 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 	function deletenode(id) {
 		for (var i=0; i < nodes.length; i++)
-			if (nodes[i]["id"] == id) {
+			if (nodes[i]["id"] === id) {
 				nodes.splice(i,1)
 			}
 	}
 	
 
 	function deletelinks(target, cluster_id) {
-		var clusters = app.clusters;
+		/*var clusters = app.clusters;
 		var fellow_cluster_nodes;
 		for (var i=0; i < clusters.length; i++) {
 			if (clusters[i].cluster_id === cluster_id) {
@@ -437,7 +436,25 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 					links.pop({"source": sources[k], "target": target})
 				}
 			}
-		}
+		}*/
+		// select all links in DOM
+		// delete all those, that have target === the cluster node
+		var allLinks = d3.select(".link").selectAll("line");
+		//console.log(allLinks);
+		//console.log(target);
+		allLinks.each(function(d) {
+			//console.log(d.target)
+			if (this.getAttribute("target") === target) {
+				//console.log(this.getAttribute("target"))
+				for (var i = 0; i < links.length; i++) {
+					console.log(links[i].target.id)
+					if (links[i].target.id === target) {
+						links.splice(i, 1);
+					}
+				}
+				//links.pop({"source": d.source, "target": target});
+			}
+		});
 	}
 
 

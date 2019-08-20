@@ -331,7 +331,7 @@ app = new Vue({
 						}
 					});
 
-					console.log(cluster_id, text)
+					//console.log(cluster_id, text)
 
 					clusters.forEach(function(c,i) {
 						if (c.cluster_name === cluster_name) {
@@ -357,7 +357,7 @@ app = new Vue({
 						
 					}
 
-					console.log(clusters)
+					//console.log(clusters)
 			 	});
 
 				for (var i=0; i < clusters.length; i++) {
@@ -373,7 +373,7 @@ app = new Vue({
 
 		},
 		getData: function() {
-			console.log(this.target_word)
+			//console.log(this.target_word)
 			var target_word = this.target_word;
 			var start_year = this.start_year;
 			var end_year = this.end_year;
@@ -386,10 +386,10 @@ app = new Vue({
 			
 			axios.get(url)
 				.then((res) => {
-					console.log(res.data)
+					//console.log(res.data)
 					this.data_from_db = res.data;
 					var nodes = this.data_from_db[0].nodes;
-					console.log(nodes.length)
+					//console.log(nodes.length)
 					var links = this.data_from_db[0].links;
 					var target = [this.data_from_db[1]];
 					app.singletons = this.data_from_db[2].singletons;
@@ -498,7 +498,7 @@ app = new Vue({
 
 			reader.onload = function(e) {
 			  this.read_graph = JSON.parse(reader.result);
-			  console.log(this.read_graph);
+			  //console.log(this.read_graph);
 			  if (this.read_graph.singletons) {
 			  	app.singletons = this.read_graph.singletons;
 			  } else {
@@ -514,7 +514,7 @@ app = new Vue({
 			  app.start_year = this.read_graph.start_year;
 			  app.end_year = this.read_graph.end_year;
 			  app.time_diff = this.read_graph.time_diff;
-			  console.log(nodes, links, target);
+			  //console.log(nodes, links, target);
 			  render_graph(nodes, links, target, app.time_diff);
 			}
 			reader.readAsText(file);
