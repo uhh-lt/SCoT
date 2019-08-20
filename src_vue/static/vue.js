@@ -60,6 +60,8 @@ app = new Vue({
 
 		},
 		restart_sim: function() {
+			var node = d3.selectAll(".node")
+			console.log(node)
 			app.simulation.alpha(1).restart();
 		},
 		set_cluster_opacity: function(cluster, opacity, link_opacity) {

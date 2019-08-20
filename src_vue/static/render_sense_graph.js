@@ -129,7 +129,13 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		.attr("cluster", function(d) { return d.class; })
 		.attr("cluster_id", function(d) { return d.class })
 		.attr("cluster_node", false)
-		.attr("fill", function(d) { return color(d.class); });
+		.attr("fill", function(d) { 
+			if (d.colour) {
+				return d.colour
+			} else {
+				return color(d.class);
+			}
+		});
 
  	var labels = node.append("text")
 		.text(function(d) { return d.id; })
