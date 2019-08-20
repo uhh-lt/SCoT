@@ -74,6 +74,7 @@ def reclustering(nodes, edges, iterations=10):
 		random.shuffle(graph_nodes)
 		for node in graph_nodes:
 			neighbours = graph[node]
+			
 			classes = {}
 			for neighbour in neighbours:
 				if graph.node[neighbour]['class'] in classes:

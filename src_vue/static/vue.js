@@ -142,11 +142,22 @@ app = new Vue({
 			var nodes_array = [];
 			nodes.selectAll("g").each(function(d,i) {
 				childnodes = this.childNodes;
+
+				var is_cluster_node;
 				childnodes.forEach(function(d,i) {
-					if(d.tagName === "text") {
-						nodes_array.push(d.getAttribute("text"));
+					if (d.tagName === "circle") {
+						is_cluster_node = d.getAttribute("cluster_node");
 					}
-				})
+				});
+
+				if (is_cluster_node === "false") {
+					childnodes.forEach(function(d,i) {
+						if(d.tagName === "text") {
+							nodes_array.push(d.getAttribute("text"));
+						}
+					});
+				}
+				
 			})
 
 			data['nodes'] = nodes_array;
@@ -156,14 +167,21 @@ app = new Vue({
 			links.each(function(d,i) {
 				childnodes = this.childNodes;
 				childnodes.forEach(function(d,i) {
-					link = {}
-					link['source'] = d.getAttribute("source");
-					link['target'] = d.getAttribute("target");
+					var link = {}
+					var source = d.getAttribute("source");
+					var target = d.getAttribute("target");
 
-					//var strokewidth = d.getAttribute("stroke-width");
-					//var weight = Math.pow(strokewidth, 2) * 10;
-					link['weight'] = d.getAttribute("weight");
-					link_array.push(link);
+					if (nodes_array.includes(source) && nodes_array.includes(target)) {
+						link['source'] = source;
+						link['target'] = target;
+
+						//var strokewidth = d.getAttribute("stroke-width");
+						//var weight = Math.pow(strokewidth, 2) * 10;
+						link['weight'] = d.getAttribute("weight");
+
+						link_array.push(link);	
+					}
+					
 				})
 				
 			})
