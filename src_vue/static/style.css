@@ -172,7 +172,7 @@ text {
 
 .edit_cluster_textbox {
 	font-size: 10px;
-	max-height: 900px;
+	max-height: 50vh;
 	overflow: auto;
 	color: black;
 }
