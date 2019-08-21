@@ -76,6 +76,17 @@ text {
 	margin-left: 5px;
 }
 
+
+#time_diff_button {
+	display: block;
+	float: right;
+	text-align: center;
+	font-size: 10px;
+	/*word-spacing: -10px;*/
+	/*margin-right: 10px;*/
+	margin-left: 5px;
+}
+
 #restart_button {
 	display: block;
 	float: right;
@@ -154,6 +165,15 @@ text {
 
 #loadpopup {
 	display: none;
+}
+
+#time_diff_card {
+	width: 60vw;
+	font-size: 10pt
+}
+
+.interval_input {
+	width: 100px;
 }
 
 .form-popup {

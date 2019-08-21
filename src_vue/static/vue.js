@@ -24,9 +24,34 @@ app = new Vue({
      	update_senses : 0,
      	update_edges : 0,
      	updated_nodes : null,
-     	updated_links : null
+     	updated_links : null,
+     	interval_start : 0,
+     	interval_end : 0
+	},
+	computed: {
+		reducedStartYears: function() {
+			reducedStartYears = [];
+			for (var i=0; i < app.start_years.length; i++) {
+				if (app.start_years[i].value >= app.start_year && app.end_year > app.start_years[i].value ) {
+					reducedStartYears.push(app.start_years[i]);
+				} 
+			}
+			return reducedStartYears;
+		},
+		reducedEndYears: function() {
+			reducedEndYears = []
+			for (var i=0; i < app.end_years.length; i++) {
+				if (app.end_years[i].value <= app.end_year && app.end_years[i].value > app.interval_start) {
+					reducedEndYears.push(app.end_years[i]);
+				}
+			}
+			return reducedEndYears;
+		}
 	},
 	methods: {
+		show_time_diff: function() {
+			console.log("time_diff")
+		},
 		update_graph: function() {
 			var target_word = this.target_word;
 			var start_year = this.start_year;

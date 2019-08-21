@@ -103,7 +103,24 @@
     </b-col>
 
     <b-col id="graph_display" sm="8">
+    	 <b-card v-if="time_diff" id="time_diff_card">
+    		Select an interval for time diff:
+    		<div> {{start_year}} - 
+			<b-form-select v-model="interval_start" class="interval_input" size="sm">
+			<option  v-for="s in reducedStartYears"> {{ s.text }} </option> 
+			</b-form-select>
+			- 
+			<b-form-select v-model="interval_end" class="interval_input" size="sm">
+			<option  v-for="e in reducedEndYears"> {{ e.text }} </option> 
+			</b-form-select>
+			- {{end_year}}
+			
+    		<b-button v-if="graph_rendered" v-on:click="show_time_diff" id="time_diff_button">  Show difference </b-button>
+    		</div>
+    	</b-card>
     	<div id="graph2"></div>
+
+
     </b-col>
 
 

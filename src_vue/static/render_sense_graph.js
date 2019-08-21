@@ -596,7 +596,6 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		});
 	}
 
-
 	function brushstarted(){
 		if (d3.event.sourceEvent.type !== "end") {
 			node.classed("selected", function(d) {
