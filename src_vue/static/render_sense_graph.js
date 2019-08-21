@@ -531,7 +531,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 			update_graph()
 			app.get_clusters();
 			//console.log(app.clusters);
-		}, 1000)
+		}, 2000)
 	})
 
 
