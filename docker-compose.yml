@@ -34,6 +34,7 @@ services:
     image: mariadb:10.4.6
     volumes:
       - ./db/dump.sql:/docker-entrypoint-initdb.d/dump.sql
+      # "database" : "mysql://user:password@db/scot" (config.json)
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: scot
