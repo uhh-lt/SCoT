@@ -36,7 +36,7 @@ app = new Vue({
 			var time_diff = this.time_diff;
 
 			//var url = './sense_graph' + '/' + encodeURIComponent(target_word) + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges + '/' + time_diff;
-			var url = './sense_graph' + '/' + target_word + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges + '/' + time_diff;
+			var url = './sense_graph' + '/' + target_word + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges;
 			
 			axios.get(url)
 				.then((res) => {
@@ -402,11 +402,11 @@ app = new Vue({
 			var time_diff = this.time_diff;
 
 			//var url = './sense_graph' + '/' + encodeURIComponent(target_word) + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges + '/' + time_diff;
-			var url = './sense_graph' + '/' + target_word + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges + '/' + time_diff;
+			var url = './sense_graph' + '/' + target_word + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges;
 			
 			axios.get(url)
 				.then((res) => {
-					//console.log(res.data)
+					console.log(res.data)
 					this.data_from_db = res.data;
 					var nodes = this.data_from_db[0].nodes;
 					//console.log(nodes.length)

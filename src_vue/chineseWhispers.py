@@ -2,28 +2,28 @@ import networkx as nx
 import random
 import json
 
-def construct_graph(time_diff, nodes_set, nodes_anno, edges):
+def construct_graph(nodes_set, edges):
 	nodes = list(nodes_set)
 	graph = nx.Graph()
 	# add nodes from a list of nodes
 	# [1,2,3,...]
 	graph.add_nodes_from(nodes)
-	#print(graph.nodes)
+	print("graph nodes:" + str(graph.nodes))
 	# initialize the class of each node
-	for v, n in enumerate(nodes):
+	for v, n in enumerate(graph.nodes):
 		graph.node[n]['class'] = v
 		#print(graph.node[n])
 		#graph.node[n]['text'] = nodes[v]
 
-	for word in nodes_anno:
-		graph.node[word]['status'] = nodes_anno[word]
+	#for word in nodes_anno:
+	#	graph.node[word]['status'] = nodes_anno[word]
 
 	# [(1,2), (2,3), ...]
 	graph.add_edges_from(edges)
 	return graph
 
-def chinese_whispers(time_diff, nodes, nodes_anno, edges, target_word, iterations=2):
-	graph = construct_graph(time_diff, nodes, nodes_anno, edges)
+def chinese_whispers(nodes, edges, target_word, iterations=2):
+	graph = construct_graph(nodes, edges)
 
 	for i in range(0, iterations):
 		graph_nodes = list(graph.nodes())

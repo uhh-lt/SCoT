@@ -62,47 +62,43 @@ def get_end_years():
 	#print(end_years)
 	return json.dumps(end_years)
 
-
-@app.route('/sense_graph/<path:target_word>/<int:start_year>/<int:end_year>/<int:direct_neighbours>/<int:density>/<mode>')
+#'/sense_graph/<path:target_word>/<int:start_year>/<int:end_year>/<int:direct_neighbours>/<int:density>/<mode>'
+@app.route('/sense_graph/<path:target_word>/<int:start_year>/<int:end_year>/<int:direct_neighbours>/<int:density>')
 def get_clustered_graph(
 		target_word,
 		start_year,
 		end_year,
 		direct_neighbours,
-		density,
-		mode):
+		density):
 	#target_word = str(urllib.parse.unquote(target_word))
 	target_word = str(target_word)
 	#print(target_word, start_year, end_year, direct_neighbours, density, mode)
 	paradigms = direct_neighbours
-	if mode == "false":
-		time_diff = False
-	else:
-		time_diff = True
+	# if mode == "false":
+	# 	time_diff = False
+	# else:
+	# 	time_diff = True
 
 	def clusters(
 		target_word,
 		start_year,
 		end_year,
 		paradigms,
-		density,
-		time_diff
-		):
+		density):
 		db = Database()
 		time_ids = db.get_time_ids(start_year, end_year)
 		#print(time_ids)
-		nodes, nodes_anno = db.get_nodes(time_diff, target_word, paradigms, time_ids)
+		nodes = db.get_nodes(target_word, paradigms, time_ids)
 
 		#print(nodes)
 		edges, nodes, singletons = db.get_edges(nodes, density, time_ids)
-		return singletons, chineseWhispers.chinese_whispers(time_diff, nodes, nodes_anno, edges, target_word)
+		return singletons, chineseWhispers.chinese_whispers(nodes, edges, target_word)
 
 	singletons, clustered_graph = clusters(target_word,
 		start_year,
 		end_year,
 		paradigms,
-		density,
-		time_diff)
+		density)
 
 
 	c_graph = json.dumps([clustered_graph, {'target_word': target_word}, {'singletons': singletons}], sort_keys=False, indent=4)
