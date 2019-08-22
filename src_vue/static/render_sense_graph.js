@@ -105,6 +105,10 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	var drag_node = d3.drag()
 
 
+	var time_diff_tip = d3.tip().html(function(d) {return d.time_ids; })
+
+
+
 	var node = svg.append("g")
 	    	.attr("stroke", "#fff")
 	    	.attr("stroke-width", 1.5)
@@ -117,7 +121,9 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	    	.call(drag_node)
 	    .on("mouseover", mouseOver(0.2))
 	    .on("mouseout", mouseOut);
-
+	
+	svg.call(time_diff_tip);
+	
 	var circles = node.append("circle")
 		.attr("r", function(d) {
 			if (d.cluster_node === "true") {
@@ -601,6 +607,12 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	d3.select("#select_time_diff").on("change", function(d) {
 		if (app.time_diff === false) {
 			circles.attr("fill", function(d) { return color(d.class); })
+			circles.on("mouseover", null);
+			circles.on("mouseout", null);
+		}
+		if (app.time_diff === true) {
+			circles.on("mouseover", time_diff_tip.show);
+			circles.on("mouseout", time_diff_tip.hide);
 		}
 	});
 
