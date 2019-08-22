@@ -32,6 +32,13 @@ CORS(app)
 def index():
 	return render_template('index.html')
 
+@app.route('/interval/<int:start>/<int:end>')
+def interval(start, end):
+	print(start,end)
+	db = Database()
+	interval = db.get_time_ids(start, end)
+	return json.dumps(interval)
+
 @app.route('/reclustering', methods=['POST'])
 def recluster():
 	nodes = []

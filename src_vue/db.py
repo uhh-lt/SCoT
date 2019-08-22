@@ -7,6 +7,12 @@ class Database:
 			config = json.load(config_file)
 		self.db = records.Database(config['database'])
 
+	#def get_interval(self, start, end):
+	#	interval = []
+	#	time_slices = self.db.query(
+	#		'SELECT id FROM time_slices WHERE stat')
+
+
 	def get_all_years(self, position):
 		years = []
 		t = self.db.query(
