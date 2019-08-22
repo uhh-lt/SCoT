@@ -129,6 +129,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		.attr("cluster", function(d) { return d.class; })
 		.attr("cluster_id", function(d) { return d.class })
 		.attr("cluster_node", false)
+		.attr("time_ids", function(d) {return d.time_ids})
 		.attr("fill", function(d) { 
 			if (d.colour) {
 				return d.colour
@@ -559,6 +560,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 				.attr("r", 5)
 				.attr("cluster_id", function(d) { return d.class; })
 		    	.attr("cluster_node", false)
+		    	.attr("time_ids", function(d) { return d.time_ids})
 		    	.attr("cluster", function(d) { return d.class; });
 
 		var text = g.append("text")
@@ -595,6 +597,12 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		    linkedByIndex[d.source.id + "," + d.target.id] = 1;
 		});
 	}
+
+	d3.select("#select_time_diff").on("change", function(d) {
+		if (app.time_diff === false) {
+			circles.attr("fill", function(d) { return color(d.class); })
+		}
+	});
 
 	function brushstarted(){
 		if (d3.event.sourceEvent.type !== "end") {
