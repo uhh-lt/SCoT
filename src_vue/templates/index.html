@@ -60,7 +60,7 @@
 			<b-form-input type="number" v-model="edges" min="0" placeholder="number of edges" size="sm"></b-form-input>
 		</b-form-group>
 
-		<b-form-group class="input" label="Mode">
+		<b-form-group class="input" label="Mode" id="select_time_diff">
 		    <b-form-radio v-model="time_diff" name="time_diff" v-bind:value="false"> sense clustering (CW) </b-form-radio>
 		    <b-form-radio v-model="time_diff" name="time_diff" v-bind:value="true">time diff</b-form-radio>
     	</b-form-group>
@@ -114,8 +114,8 @@
 			<option  v-for="e in reducedEndYears"> {{ e.text }} </option> 
 			</b-form-select>
 			- {{end_year}}
-			
-    		<b-button v-if="graph_rendered" v-on:click="show_time_diff" id="time_diff_button">  Show difference </b-button>
+
+    		<b-button v-on:click="show_time_diff" id="time_diff_button">  Show difference </b-button>
     		</div>
     	</b-card>
     	<div id="graph2"></div>

@@ -26,7 +26,8 @@ app = new Vue({
      	updated_nodes : null,
      	updated_links : null,
      	interval_start : 0,
-     	interval_end : 0
+     	interval_end : 0,
+     	interval_time_ids : []
 	},
 	computed: {
 		reducedStartYears: function() {
@@ -49,8 +50,77 @@ app = new Vue({
 		}
 	},
 	methods: {
-		show_time_diff: function() {
-			console.log("time_diff")
+		show_time_diff: async function() {
+			var big_time_interval = [];
+			await axios.get("./interval/" + app.start_year + "/" + app.end_year)
+				.then((res) => {
+					big_time_interval = res.data;
+				})
+				.catch((error) => {
+					console.error(error)
+				});
+
+			var small_time_interval = [];
+			await axios.get("./interval/" + app.interval_start + "/" + app.interval_end)
+				.then((res) => {
+					small_time_interval = res.data;
+				})
+				.catch((error) => {
+					console.error(error)
+				});
+
+			console.log(big_time_interval, small_time_interval)
+
+			var period_before = [];
+			var period_after = [];
+
+			var small_interval_start_time_id = Math.min(...small_time_interval);
+			var small_interval_end_time_id = Math.max(...small_time_interval)
+
+			for (var i=0; i<big_time_interval.length; i++) {
+				if (big_time_interval[i] < small_interval_start_time_id) {
+					period_before.push(big_time_interval[i]);
+				} else if (big_time_interval[i] > small_interval_end_time_id) {
+					period_after.push(big_time_interval[i]);
+				}
+			}
+
+			console.log(period_before, period_after);
+			
+			var nodes = d3.selectAll(".node").selectAll("g");
+
+			nodes.each(function(d) {
+				var childnodes = this.childNodes;
+				childnodes.forEach(function(d){
+					if (d.tagName === "circle") {
+						var time_ids = d.getAttribute("time_ids").split(",");
+						time_ids = time_ids.map(x => parseInt(x))
+						console.log(time_ids);
+
+						var born = true;
+						var deceased = true;
+						
+						for (var i = 0; i < time_ids.length; i++) {
+							var t = time_ids[i];
+							if (period_after.includes(t)) {
+								deceased = false;
+							}
+							if (period_before.includes(t)) {
+								born = false;
+							}
+						}
+
+						if (born===true) {
+							d.setAttribute("fill", "green");
+						} else if (deceased===true) {
+							d.setAttribute("fill", "red");
+						} else {
+							d.setAttribute("fill", "grey");
+						}
+						// would be good to see exactly the time slices of the respective nodes
+					}
+				});
+			});
 		},
 		update_graph: function() {
 			var target_word = this.target_word;
