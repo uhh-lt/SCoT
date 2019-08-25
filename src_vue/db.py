@@ -7,12 +7,6 @@ class Database:
 			config = json.load(config_file)
 		self.db = records.Database(config['database'])
 
-	#def get_interval(self, start, end):
-	#	interval = []
-	#	time_slices = self.db.query(
-	#		'SELECT id FROM time_slices WHERE stat')
-
-
 	def get_all_years(self, position):
 		years = []
 		t = self.db.query(
@@ -114,10 +108,11 @@ class Database:
 		tw=target_word 
 		)
 		#print(target_word_senses)
-		
+		print(time_ids);
 		for row in target_word_senses:
 			exists = False
 			if row['time_id'] in time_ids and len(nodes) < size:
+				print(row['time_id'])
 				for node in nodes:
 					if node[0] == row['word1']:
 						#print(node[0], node[1])
@@ -126,8 +121,6 @@ class Database:
 				
 				if not exists:
 					nodes.append([row['word1'], {"time_ids": [row['time_id']]}])
-
-		print("nodes:" + str(nodes))
 
 		return nodes
 
@@ -159,7 +152,6 @@ class Database:
 		node_list = []
 		for node in nodes:
 			node_list.append(node[0])
-		print("nodes for edges:" + str(node_list))
 
 		con = self.db.query(
 			'SELECT word1, word2, score, time_id '
@@ -202,7 +194,6 @@ class Database:
 					if n == node[0]:
 						nodes.remove(node)
 		
-		print(singletons)
 		#nodes = nodes - singletons
 		# for node in nodes:
 		# 	if node[0] in singletons:

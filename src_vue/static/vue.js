@@ -53,11 +53,12 @@ app = new Vue({
 		selectInterval: function(time_ids) {
 			var intervalString = "";
 			//time_ids = time_ids.split(",");
+			time_ids.sort();
 			for (time_id of time_ids) {
 				//var time_id = time_ids[i];
 				//console.log(time_id);
-				var start = app.start_years[time_id].text;
-				var end = app.end_years[time_id].text;
+				var start = app.start_years[time_id - 1].text;
+				var end = app.end_years[time_id - 1].text;
 				//console.log(start, end)
 				intervalString += start + " - " + end + "<br>"
 			}
@@ -83,7 +84,7 @@ app = new Vue({
 					console.error(error)
 				});
 
-			console.log(big_time_interval, small_time_interval)
+			//console.log(big_time_interval, small_time_interval)
 
 			var period_before = [];
 			var period_after = [];
@@ -152,10 +153,10 @@ app = new Vue({
 			
 			axios.get(url)
 				.then((res) => {
-					console.log(res.data)
+					//console.log(res.data)
 					this.data_from_db = res.data;
 					app.updated_nodes = this.data_from_db[0].nodes;
-					console.log(app.updated_nodes.length)
+					//console.log(app.updated_nodes.length)
 					app.updated_links = this.data_from_db[0].links;
 					//var target = [this.data_from_db[1]];
 					app.singletons = this.data_from_db[2].singletons;
@@ -173,11 +174,11 @@ app = new Vue({
 		},
 		restart_sim: function() {
 			var node = d3.selectAll(".node")
-			console.log(node)
+			//console.log(node)
 			app.simulation.alpha(1).restart();
 		},
 		set_cluster_opacity: function(cluster, opacity, link_opacity) {
-			console.log("mouseover" + cluster.cluster_id);
+			//console.log("mouseover" + cluster.cluster_id);
 			var cluster_id = cluster.cluster_id;
 			var cluster_nodes = [];
 
