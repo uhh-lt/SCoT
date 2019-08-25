@@ -105,7 +105,9 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	var drag_node = d3.drag()
 
 
-	var time_diff_tip = d3.tip().html(function(d) {return d.time_ids; })
+	var time_diff_tip = d3.tip()
+		.attr("class", "d3-tip")
+		.html(function(d) { return app.selectInterval(d.time_ids); })
 
 
 
@@ -494,7 +496,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 				var cluster_class = app.updated_nodes[i].class
 				//console.log(new_label, cluster_class)
 					if (!existing_labels.includes(new_label)) {
-						nodes.push({"id": app.updated_nodes[i].id, "class": app.updated_nodes[i].class})
+						nodes.push({"id": app.updated_nodes[i].id, "class": app.updated_nodes[i].class, "time_ids": app.updated_nodes[i].time_ids})
 					} else {
 						var existing_nodes = d3.selectAll(".node")
 						existing_nodes.selectAll("g").each(function(d,i) {
@@ -579,6 +581,18 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 
 		node = node.merge(g);
+
+		d3.select("#select_time_diff").on("change", function(d) {
+			if (app.time_diff === false) {
+				circles.attr("fill", function(d) { return color(d.class); })
+				circles.on("mouseover", null);
+				circles.on("mouseout", null);
+			}
+			if (app.time_diff === true) {
+				circles.on("mouseover", time_diff_tip.show);
+				circles.on("mouseout", time_diff_tip.hide);
+			}
+		});
 
 
 		  // Apply the general update pattern to the links.

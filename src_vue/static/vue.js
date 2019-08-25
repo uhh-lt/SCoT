@@ -50,6 +50,20 @@ app = new Vue({
 		}
 	},
 	methods: {
+		selectInterval: function(time_ids) {
+			var intervalString = "";
+			//time_ids = time_ids.split(",");
+			for (time_id of time_ids) {
+				//var time_id = time_ids[i];
+				//console.log(time_id);
+				var start = app.start_years[time_id].text;
+				var end = app.end_years[time_id].text;
+				//console.log(start, end)
+				intervalString += start + " - " + end + "<br>"
+			}
+			
+			return intervalString;
+		},
 		show_time_diff: async function() {
 			var big_time_interval = [];
 			await axios.get("./interval/" + app.start_year + "/" + app.end_year)
@@ -110,7 +124,9 @@ app = new Vue({
 							}
 						}
 
-						if (born===true) {
+						if(born===true && deceased===true) {
+							d.setAttribute("fill", "yellow");
+						} else if (born===true) {
 							d.setAttribute("fill", "green");
 						} else if (deceased===true) {
 							d.setAttribute("fill", "red");
@@ -130,6 +146,7 @@ app = new Vue({
 			var edges = this.update_edges;
 			var time_diff = this.time_diff;
 
+			app.time_diff = false;
 			//var url = './sense_graph' + '/' + encodeURIComponent(target_word) + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges + '/' + time_diff;
 			var url = './sense_graph' + '/' + target_word + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges;
 			
