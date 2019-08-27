@@ -19,6 +19,8 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 			.attr("id", "svg")
 			.attr("width", width)
 			.attr("height", height)
+			.style("outline", "1px solid")
+			.style("margin", "3ex")
 		.call(d3.zoom().on("zoom", function () {
     		svg.attr("transform", d3.event.transform)
  			}))
