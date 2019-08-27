@@ -9,6 +9,8 @@ app = new Vue({
      	time_diff : false,
      	start_years : [],
      	end_years : [],
+     	min_time_id : 1,
+     	max_time_id: 10,
      	file : null,
      	read_graph : null,
      	graph_rendered : false,
@@ -27,7 +29,8 @@ app = new Vue({
      	updated_links : null,
      	interval_start : 0,
      	interval_end : 0,
-     	interval_time_ids : []
+     	interval_time_ids : [],
+     	interval_id : 0
 	},
 	computed: {
 		reducedStartYears: function() {
@@ -47,9 +50,82 @@ app = new Vue({
 				}
 			}
 			return reducedEndYears;
+		},
+		time_slice_from_interval: function() {
+			var start = app.start_years[app.interval_id - 1];
+			var end = app.end_years[app.interval_id - 1];
+			if (typeof start === "undefined") {
+				start = "-"
+			} else {
+				start = start.text;
+			}
+			if (typeof end === "undefined") {
+				end = "-"
+			} else {
+				end = end.text
+			}
+
+			return start + " - " + end
 		}
 	},
 	methods: {
+
+		skip_through_time_slices: function() {
+
+			var nodes = d3.selectAll(".node").selectAll("g");
+
+			nodes.each(function(d,i) {
+				this.style.strokeOpacity = 1.0;
+				this.style.fillOpacity = 1.0;
+				var childnodes = this.childNodes;
+				var in_interval = false;
+				childnodes.forEach(function(d,i) {
+
+					if (d.tagName === "circle") {
+						var time_ids = d.getAttribute("time_ids");
+						time_ids = time_ids.split(",");
+						console.log(time_ids)
+						time_ids.forEach(function(d, i) {
+							console.log(d, app.interval_id)
+							if (d === app.interval_id) {
+								in_interval = true;
+							}
+						})
+						//if (!time_ids.includes(app.interal_id)) {
+						//	not_in_interval = true;
+						//}
+					}
+				})
+				if (in_interval === false) {
+					this.style.strokeOpacity = 0.2;
+					this.style.fillOpacity = 0.2;
+				}	
+			})
+
+			var links = d3.selectAll(".link").selectAll("line");
+			links.each(function(d,i) {
+				this.style.strokeOpacity = 1.0;
+				var source_time_ids = d.source.time_ids
+				var target_time_ids = d.target.time_ids
+
+				var in_source_interval = false;
+				var in_target_interval = false;
+
+				interval = parseInt(app.interval_id);
+
+				if (source_time_ids.includes(interval)) {
+					in_source_interval = true;
+				}
+
+				if (target_time_ids.includes(interval)) {
+					in_target_interval = true;
+				}
+				
+				if (in_source_interval === false || in_target_interval === false) {
+					this.style.strokeOpacity = 0.2;
+				}
+			})
+		},
 		selectInterval: function(time_ids) {
 			var intervalString = "";
 			//time_ids = time_ids.split(",");
@@ -125,7 +201,7 @@ app = new Vue({
 							}
 						}
 
-						if(born===true && deceased===true) {
+						if (born===true && deceased===true) {
 							d.setAttribute("fill", "yellow");
 						} else if (born===true) {
 							d.setAttribute("fill", "green");
@@ -514,6 +590,18 @@ app = new Vue({
 			var edges = this.edges;
 			var time_diff = this.time_diff;
 
+			app.start_years.forEach(function(d,i) {
+				if (d.value === app.start_year) {
+					app.min_time_id = i + 1;
+				}
+			})
+
+			app.end_years.forEach(function(d,i) {
+				if (d.value === app.end_year) {
+					app.max_time_id = i + 1;
+				}
+			})
+
 			//var url = './sense_graph' + '/' + encodeURIComponent(target_word) + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges + '/' + time_diff;
 			var url = './sense_graph' + '/' + target_word + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges;
 			
@@ -651,6 +739,18 @@ app = new Vue({
 			  app.start_year = this.read_graph.start_year;
 			  app.end_year = this.read_graph.end_year;
 			  app.time_diff = this.read_graph.time_diff;
+
+			  app.start_years.forEach(function(d,i) {
+				if (d.value === app.start_year) {
+					app.min_time_id = i + 1;
+				}
+			  })
+
+			  app.end_years.forEach(function(d,i) {
+				if (d.value === app.end_year) {
+					app.max_time_id = i + 1;
+				}
+			  })
 			  //console.log(nodes, links, target);
 			  render_graph(nodes, links, target, app.time_diff);
 			}

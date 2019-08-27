@@ -118,6 +118,13 @@
 
     		<b-button v-on:click="show_time_diff" id="time_diff_button">  Show difference </b-button>
     		</div>
+
+    		<div>
+	    		<b-form-group label="Skip through time slices"> 
+	    			{{ time_slice_from_interval }}
+		    		<b-form-input id="range_time_slices" v-model="interval_id" type="range" v-bind:min="min_time_id" v-bind:max="max_time_id" v-on:change="skip_through_time_slices"></b-form-input>
+		    	</b-form-group>
+	    	</div>
     	</b-card>
     	<div id="graph2"></div>
 
