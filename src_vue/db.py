@@ -108,11 +108,9 @@ class Database:
 		tw=target_word 
 		)
 		#print(target_word_senses)
-		print(time_ids);
 		for row in target_word_senses:
 			exists = False
 			if row['time_id'] in time_ids and len(nodes) < size:
-				print(row['time_id'])
 				for node in nodes:
 					if node[0] == row['word1']:
 						#print(node[0], node[1])
