@@ -130,6 +130,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	
 	var circles = node.append("circle")
 		.attr("r", function(d) {
+			console.log(d.cluster_node)
 			if (d.cluster_node === "true") {
 				return radius * 2;
 			} else {
@@ -138,7 +139,13 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		})
 		.attr("cluster", function(d) { return d.class; })
 		.attr("cluster_id", function(d) { return d.class })
-		.attr("cluster_node", false)
+		.attr("cluster_node", function(d) {
+			if (d.cluster_node === "true") {
+				return true;
+			} else {
+				return false;
+			}
+		})
 		.attr("time_ids", function(d) {return d.time_ids})
 		.attr("fill", function(d) { 
 			if (d.colour) {
