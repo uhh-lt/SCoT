@@ -69,7 +69,6 @@ app = new Vue({
 		}
 	},
 	methods: {
-
 		skip_through_time_slices: function() {
 
 			var nodes = d3.selectAll(".node").selectAll("g");
@@ -83,19 +82,21 @@ app = new Vue({
 
 					if (d.tagName === "circle") {
 						var time_ids = d.getAttribute("time_ids");
-						time_ids = time_ids.split(",");
-						console.log(time_ids)
-						time_ids.forEach(function(d, i) {
-							console.log(d, app.interval_id)
-							if (d === app.interval_id) {
-								in_interval = true;
-							}
-						})
+						if (time_ids !== null) {
+							time_ids = time_ids.split(",");
+							console.log(time_ids)
+							time_ids.forEach(function(d, i) {
+								console.log(d, app.interval_id)
+								if (d === app.interval_id) {
+									in_interval = true;
+								}
+							})
+						}
+					}
+				})
 						//if (!time_ids.includes(app.interal_id)) {
 						//	not_in_interval = true;
 						//}
-					}
-				})
 				if (in_interval === false) {
 					this.style.strokeOpacity = 0.2;
 					this.style.fillOpacity = 0.2;
@@ -108,16 +109,27 @@ app = new Vue({
 				var source_time_ids = d.source.time_ids
 				var target_time_ids = d.target.time_ids
 
+				if (typeof source_time_ids === "string" && typeof target_time_ids === "string") {
+					source_time_ids = source_time_ids.split(",");
+					target_time_ids = target_time_ids.split(",");
+
+					source_time_ids = source_time_ids.map(x => parseInt(x));
+					target_time_ids = target_time_ids.map(x => parseInt(x));
+
+				}
+
 				var in_source_interval = false;
 				var in_target_interval = false;
 
 				interval = parseInt(app.interval_id);
 
 				if (source_time_ids.includes(interval)) {
+					console.log(source_time_ids, interval)
 					in_source_interval = true;
 				}
 
-				if (target_time_ids.includes(interval)) {
+				if (target_time_ids !== null && target_time_ids.includes(interval)) {
+					console.log(target_time_ids, interval)
 					in_target_interval = true;
 				}
 				
@@ -128,18 +140,24 @@ app = new Vue({
 		},
 		selectInterval: function(time_ids) {
 			var intervalString = "";
+			console.log(time_ids)
 			//time_ids = time_ids.split(",");
-			time_ids.sort();
-			for (time_id of time_ids) {
-				//var time_id = time_ids[i];
-				//console.log(time_id);
-				var start = app.start_years[time_id - 1].text;
-				var end = app.end_years[time_id - 1].text;
-				//console.log(start, end)
-				intervalString += start + " - " + end + "<br>"
+			if ((time_ids !== null) && (typeof time_ids !== "undefined")) {
+				if (typeof time_ids === "string") {
+					time_ids = time_ids.split(",");
+				}
+				time_ids.sort();
+				for (time_id of time_ids) {
+					//var time_id = time_ids[i];
+					//console.log(time_id);
+					var start = app.start_years[time_id - 1].text;
+					var end = app.end_years[time_id - 1].text;
+					//console.log(start, end)
+					intervalString += start + " - " + end + "<br>"
+				}
+				
+				return intervalString;
 			}
-			
-			return intervalString;
 		},
 		show_time_diff: async function() {
 			var big_time_interval = [];
@@ -184,31 +202,35 @@ app = new Vue({
 				var childnodes = this.childNodes;
 				childnodes.forEach(function(d){
 					if (d.tagName === "circle") {
-						var time_ids = d.getAttribute("time_ids").split(",");
-						time_ids = time_ids.map(x => parseInt(x))
-						console.log(time_ids);
+						var time_ids = d.getAttribute("time_ids")
+						console.log(time_ids)
+						if ((time_ids !== null) && (typeof time_ids !== "undefined")) {
+							time_ids = time_ids.split(",");
+							time_ids = time_ids.map(x => parseInt(x))
+							console.log(time_ids);
 
-						var born = true;
-						var deceased = true;
-						
-						for (var i = 0; i < time_ids.length; i++) {
-							var t = time_ids[i];
-							if (period_after.includes(t)) {
-								deceased = false;
+							var born = true;
+							var deceased = true;
+							
+							for (var i = 0; i < time_ids.length; i++) {
+								var t = time_ids[i];
+								if (period_after.includes(t)) {
+									deceased = false;
+								}
+								if (period_before.includes(t)) {
+									born = false;
+								}
 							}
-							if (period_before.includes(t)) {
-								born = false;
-							}
-						}
 
-						if (born===true && deceased===true) {
-							d.setAttribute("fill", "yellow");
-						} else if (born===true) {
-							d.setAttribute("fill", "green");
-						} else if (deceased===true) {
-							d.setAttribute("fill", "red");
-						} else {
-							d.setAttribute("fill", "grey");
+							if (born===true && deceased===true) {
+								d.setAttribute("fill", "yellow");
+							} else if (born===true) {
+								d.setAttribute("fill", "green");
+							} else if (deceased===true) {
+								d.setAttribute("fill", "red");
+							} else {
+								d.setAttribute("fill", "grey");
+							}
 						}
 						// would be good to see exactly the time slices of the respective nodes
 					}
@@ -659,6 +681,7 @@ app = new Vue({
 				var cluster_name;
 				var is_cluster_node;
 				var colour;
+				var time_ids;
 
 				var node = {}
 
@@ -669,6 +692,7 @@ app = new Vue({
 						cluster_name = d.getAttribute("cluster");
 						is_cluster_node = d.getAttribute("cluster_node");
 						colour = d.getAttribute("fill");
+						time_ids = d.getAttribute("time_ids");
 					}
 				})
 
@@ -681,6 +705,7 @@ app = new Vue({
 				node["cluster_name"] = cluster_name;
 				node["cluster_node"] = is_cluster_node;
 				node["colour"] = colour;
+				node["time_ids"] = time_ids;
 
 				graph_nodes.push(node);
 
