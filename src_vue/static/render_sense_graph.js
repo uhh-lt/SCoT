@@ -484,7 +484,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 	d3.select("#update_button").on("click", async function() {
 		app.update().then((res) => {
-			
+
 		var existing_labels = [];
 		for (var j = 0; j < app.clusters.length; j++) {
 			var cluster = app.clusters[j];
@@ -625,7 +625,19 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 	d3.select("#select_time_diff").on("change", function(d) {
 		if (app.time_diff === false) {
-			circles.attr("fill", function(d) { return color(d.class); })
+			
+			//circles.attr("fill", function(d) { return color(d.class); })
+			var circleChilds = d3.selectAll(".node").selectAll("g").selectAll("circle");
+
+			circleChilds.each(function(d) {
+				var node_cluster_id = this.getAttribute("cluster_id");
+				for (var i=0; i < app.clusters.length; i++) {
+					if (node_cluster_id === app.clusters[i].cluster_id) {
+						this.setAttribute("fill", app.clusters[i].colour);
+					}
+				}
+			})
+
 			circles.on("mouseover", null);
 			circles.on("mouseout", null);
 		}
