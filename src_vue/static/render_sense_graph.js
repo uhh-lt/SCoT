@@ -484,8 +484,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 	d3.select("#update_button").on("click", async function() {
 		app.update().then((res) => {
-
-
+			
 		var existing_labels = [];
 		for (var j = 0; j < app.clusters.length; j++) {
 			var cluster = app.clusters[j];

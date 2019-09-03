@@ -258,6 +258,69 @@ app = new Vue({
 			//console.log(node)
 			app.simulation.alpha(1).restart();
 		},
+		reset_opacity: function() {
+			var nodes = d3.selectAll(".node").selectAll("g");
+			var links = d3.selectAll(".link");
+
+			nodes.each(function(d) {
+				this.style.strokeOpacity = 1.0;
+				this.style.fillOpacity = 1.0;
+			})
+
+			links.each(function(d) {
+				var childnodes = this.childNodes;
+				childnodes.forEach(function(d) {
+					d.setAttribute("style", "stroke: #999;")
+					d.setAttribute("style", "stroke-opacity:" + 0.6)
+
+				})
+			})
+		},
+		fade_in_nodes: function(colour) {
+			var nodes = d3.selectAll(".node").selectAll("g");
+			var links = d3.selectAll(".link");
+			
+			var faded_in = []
+
+			nodes.each(function(d,i) {
+				var childnodes = this.childNodes;
+				var node_colour;
+
+				childnodes.forEach(function(d) {	
+					if (d.tagName === "circle") {
+						node_colour = d.getAttribute("fill");
+					}
+				});
+
+				if (colour !== node_colour) {
+					this.style.strokeOpacity = 0.2;
+					this.style.fillOpacity = 0.2;
+				} else {
+					childnodes.forEach(function(d) {	
+						if (d.tagName === "text") {
+							faded_in.push(d.getAttribute("text"));
+						}
+					});
+				}
+			});
+
+
+			links.each(function(d) {
+				var linknodes = this.childNodes;
+
+				linknodes.forEach(function(d) {
+					var source = d.getAttribute("source");
+					var target = d.getAttribute("target");
+
+					if (faded_in.includes(source) && faded_in.includes(target)) {
+						d.setAttribute("style", "stroke:" + colour)
+					} else {
+						d.setAttribute("style", "stroke-opacity:" + 0.2)
+					}
+				})
+			})
+
+		},
 		set_cluster_opacity: function(cluster, opacity, link_opacity) {
 			//console.log("mouseover" + cluster.cluster_id);
 			var cluster_id = cluster.cluster_id;

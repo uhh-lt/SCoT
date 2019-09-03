@@ -104,27 +104,69 @@
     </b-col>
 
     <b-col id="graph_display" sm="8">
+
     	 <b-card v-if="time_diff" id="time_diff_card">
-    		Select an interval for time diff:
-    		<div> {{start_year}} - 
-			<b-form-select v-model="interval_start" class="interval_input" size="sm">
-			<option  v-for="s in reducedStartYears"> {{ s.text }} </option> 
-			</b-form-select>
-			- 
-			<b-form-select v-model="interval_end" class="interval_input" size="sm">
-			<option  v-for="e in reducedEndYears"> {{ e.text }} </option> 
-			</b-form-select>
-			- {{end_year}}
+    	 	<p>
+    			<b-button v-b-toggle.collapse-interval-1 id="show_diff_button">
+    				Select Interval
+    			</b-button>
 
-    		<b-button v-on:click="show_time_diff" id="time_diff_button">  Show difference </b-button>
-    		</div>
+    			<b-button v-b-toggle.collapse-skip-1 id="skip_through_button">
+    				Skip through time slices
+    			</b-button>
+    		</p>
+    		<b-collapse id="collapse-interval-1">
+    			<b-card>
+    				<p>
+		    			Select an interval for time diff:
+		    		</p>
+		    		<div> {{start_year}} - 
+						<b-form-select v-model="interval_start" class="interval_input" size="sm">
+						<option  v-for="s in reducedStartYears"> {{ s.text }} </option> 
+						</b-form-select>
+						- 
+						<b-form-select v-model="interval_end" class="interval_input" size="sm">
+						<option  v-for="e in reducedEndYears"> {{ e.text }} </option> 
+						</b-form-select>
+						- {{end_year}}
 
-    		<div>
-	    		<b-form-group label="Skip through time slices"> 
-	    			{{ time_slice_from_interval }}
-		    		<b-form-input id="range_time_slices" v-model="interval_id" type="range" v-bind:min="min_time_id" v-bind:max="max_time_id" v-on:change="skip_through_time_slices"></b-form-input>
-		    	</b-form-group>
-	    	</div>
+			    		<b-button v-on:click="show_time_diff" id="time_diff_button">  Show difference </b-button>
+
+			    		<div style="font-size: 10px; border: solid 0.5px; margin-top: 10px">
+			    			<div>
+			    				<span class="dot-sm" style="background-color: red;"
+			    				v-on:mouseover="fade_in_nodes('red')"
+			    				v-on:mouseout="reset_opacity()"></span> Nodes that cease to occur between {{ interval_start}} and {{ interval_end }} (deceased)
+			    			</div>
+			    			<div>
+			    				<span class="dot-sm" style="background-color: yellow;" v-on:mouseover="fade_in_nodes('yellow')"
+			    				v-on:mouseout="reset_opacity()"></span>Nodes that occur only between {{ interval_start }} and {{ interval_end }} (shortlived)
+			    			</div>
+			    			<div>
+			    				<span class="dot-sm" style="background-color: green;" v-on:mouseover="fade_in_nodes('green')"
+			    				v-on:mouseout="reset_opacity()"></span> Nodes that start to occur between {{ interval_start }} and {{interval_end }} (born)
+			    			</div>
+			    			<div>
+			    				<span class="dot-sm" style="background-color: grey;" 
+			    				v-on:mouseover="fade_in_nodes('grey')"
+			    				v-on:mouseout="reset_opacity()"></span> Nodes that also occure before and after {{ interval_start }} and {{interval_end}}
+			    			</div>
+			    			
+			    		</div>
+		    		</div>
+	    		</b-card>
+    		</b-collapse>
+
+    		<b-collapse id = "collapse-skip-1">
+    			<b-card>
+		    		<div>
+			    		<b-form-group> 
+			    			Current time slice: {{ time_slice_from_interval }}
+				    		<b-form-input id="range_time_slices" v-model="interval_id" type="range" v-bind:min="min_time_id" v-bind:max="max_time_id" v-on:change="skip_through_time_slices"></b-form-input>
+				    	</b-form-group>
+			    	</div>
+			    </b-card>
+			</b-collase>
     	</b-card>
     	<div id="graph2"></div>
 
