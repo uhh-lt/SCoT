@@ -30,7 +30,8 @@ app = new Vue({
      	interval_start : 0,
      	interval_end : 0,
      	interval_time_ids : [],
-     	interval_id : 0
+     	interval_id : 0,
+     	time_diff_nodes : {} 
 	},
 	computed: {
 		reducedStartYears: function() {
@@ -188,45 +189,68 @@ app = new Vue({
 					period_after.push(big_time_interval[i]);
 				}
 			}
+
+			var time_diff_nodes = {born: [], deceased: [], shortlived: [], normal: []}
 			
 			var nodes = d3.selectAll(".node").selectAll("g");
 
 			nodes.each(function(d) {
 				var childnodes = this.childNodes;
+				var node_text;
+
+				childnodes.forEach(function(d) {
+					if (d.tagName === "text") {
+						node_text = d.getAttribute("text")
+					}
+				})
+
+
 				childnodes.forEach(function(d){
 					if (d.tagName === "circle") {
-						var time_ids = d.getAttribute("time_ids")
-						if ((time_ids !== null) && (typeof time_ids !== "undefined")) {
-							time_ids = time_ids.split(",");
-							time_ids = time_ids.map(x => parseInt(x))
+						if (d.getAttribute("cluster_node") === "false") {
 
-							var born = true;
-							var deceased = true;
-							
-							for (var i = 0; i < time_ids.length; i++) {
-								var t = time_ids[i];
-								if (period_after.includes(t)) {
-									deceased = false;
-								}
-								if (period_before.includes(t)) {
-									born = false;
-								}
-							}
+							var time_ids = d.getAttribute("time_ids")
 
-							if (born===true && deceased===true) {
-								d.setAttribute("fill", "yellow");
-							} else if (born===true) {
-								d.setAttribute("fill", "green");
-							} else if (deceased===true) {
-								d.setAttribute("fill", "red");
-							} else {
-								d.setAttribute("fill", "grey");
+							if ((time_ids !== null) && (typeof time_ids !== "undefined")) {
+								time_ids = time_ids.split(",");
+								time_ids = time_ids.map(x => parseInt(x));
+
+								var born = true;
+								var deceased = true;
+								
+								for (var i = 0; i < time_ids.length; i++) {
+									var t = time_ids[i];
+									if (period_after.includes(t)) {
+										deceased = false;
+									}
+									if (period_before.includes(t)) {
+										born = false;
+									}
+								}
+
+								if (born===true && deceased===true) {
+									d.setAttribute("fill", "yellow");
+									time_diff_nodes.shortlived.push(node_text);
+								} else if (born===true) {
+									d.setAttribute("fill", "green");
+									time_diff_nodes.born.push(node_text);
+								} else if (deceased===true) {
+									d.setAttribute("fill", "red");
+									time_diff_nodes.deceased.push(node_text);
+								} else {
+									d.setAttribute("fill", "grey");
+									time_diff_nodes.normal.push(node_text);
+								}
+
 							}
+						
 						}
 						// would be good to see exactly the time slices of the respective nodes
 					}
 				});
 			});
+
+			app.time_diff_nodes = time_diff_nodes;
 		},
 		update: function() {
 			var target_word = this.target_word;
@@ -572,7 +596,9 @@ app = new Vue({
 			}
 		},
 		showEditMask: function() {
-			app.get_clusters();
+			if (app.time_diff==="false") {
+				app.get_clusters();	
+			}
 			document.getElementById("edit_clusters_popup").style.display = "block";
 		},
 		get_clusters: function() {

@@ -43,6 +43,12 @@ text {
 	margin-bottom: 10px;
 }
 
+.show-nodes-button {
+	font-size: 10px;
+	padding: 0.5ex;
+	margin-left: 5ex;
+}
+
 #download_button {
 	/*position: absolute;
 	right: 5%;*/
