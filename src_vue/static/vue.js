@@ -84,9 +84,7 @@ app = new Vue({
 						var time_ids = d.getAttribute("time_ids");
 						if (time_ids !== null) {
 							time_ids = time_ids.split(",");
-							console.log(time_ids)
 							time_ids.forEach(function(d, i) {
-								console.log(d, app.interval_id)
 								if (d === app.interval_id) {
 									in_interval = true;
 								}
@@ -124,12 +122,10 @@ app = new Vue({
 				interval = parseInt(app.interval_id);
 
 				if (source_time_ids.includes(interval)) {
-					console.log(source_time_ids, interval)
 					in_source_interval = true;
 				}
 
 				if (target_time_ids !== null && target_time_ids.includes(interval)) {
-					console.log(target_time_ids, interval)
 					in_target_interval = true;
 				}
 				
@@ -140,7 +136,6 @@ app = new Vue({
 		},
 		selectInterval: function(time_ids) {
 			var intervalString = "";
-			console.log(time_ids)
 			//time_ids = time_ids.split(",");
 			if ((time_ids !== null) && (typeof time_ids !== "undefined")) {
 				if (typeof time_ids === "string") {
@@ -193,8 +188,6 @@ app = new Vue({
 					period_after.push(big_time_interval[i]);
 				}
 			}
-
-			console.log(period_before, period_after);
 			
 			var nodes = d3.selectAll(".node").selectAll("g");
 
@@ -203,11 +196,9 @@ app = new Vue({
 				childnodes.forEach(function(d){
 					if (d.tagName === "circle") {
 						var time_ids = d.getAttribute("time_ids")
-						console.log(time_ids)
 						if ((time_ids !== null) && (typeof time_ids !== "undefined")) {
 							time_ids = time_ids.split(",");
 							time_ids = time_ids.map(x => parseInt(x))
-							console.log(time_ids);
 
 							var born = true;
 							var deceased = true;
@@ -238,7 +229,6 @@ app = new Vue({
 			});
 		},
 		update: function() {
-			console.log("called update_graph")
 			var target_word = this.target_word;
 			var start_year = this.start_year;
 			var end_year = this.end_year;
@@ -252,19 +242,12 @@ app = new Vue({
 			
 			return axios.get(url)
 				.then((res) => {
-					//console.log(res.data)
 					this.data_from_db = res.data;
 					app.updated_nodes = this.data_from_db[0].nodes;
-					//console.log(app.updated_nodes.length)
+
 					app.updated_links = this.data_from_db[0].links;
-					//var target = [this.data_from_db[1]];
+
 					app.singletons = this.data_from_db[2].singletons;
-					
-					//update_existing_graph(nodes, links);
-					//console.log(app.updated_nodes)
-					//await this.$nextTick();
-					console.log(this)
-					//return this;
 				})
 				.catch((error) => {
 					console.error(error);
