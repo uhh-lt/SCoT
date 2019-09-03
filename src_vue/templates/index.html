@@ -309,7 +309,7 @@
     		</div>
     	
     		<p style="display: block;float: left;">
-	    		<b-button id="apply_settings_button" class="close_button" v-on:click="applyClusterSettings()">Apply</b-button>
+	    		<b-button id="apply_settings_button" class="close_button" v-on:click="applyClusterSettings()" :disabled="time_diff == 1">Apply</b-button>
 	    		<b-button class="close_button" variant="danger" v-on:click="closeForm('edit_clusters_popup')">Close</b-button>
     		</p>
     	
