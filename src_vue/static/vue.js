@@ -1,7 +1,7 @@
 app = new Vue({
    el: "#vue-app",
    data: {
-   		target_word : "",
+   		target_word : "happiness/NN",
      	start_year : 1520,
      	end_year : 2008,
      	senses : 100,
@@ -23,8 +23,8 @@ app = new Vue({
      	singletons : [],
      	data_from_db : {},
      	simulation : null,
-     	update_senses : 0,
-     	update_edges : 0,
+     	update_senses : 200,
+     	update_edges : 50,
      	updated_nodes : null,
      	updated_links : null,
      	interval_start : 0,
@@ -237,7 +237,8 @@ app = new Vue({
 				});
 			});
 		},
-		update_graph: function() {
+		update: function() {
+			console.log("called update_graph")
 			var target_word = this.target_word;
 			var start_year = this.start_year;
 			var end_year = this.end_year;
@@ -249,7 +250,7 @@ app = new Vue({
 			//var url = './sense_graph' + '/' + encodeURIComponent(target_word) + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges + '/' + time_diff;
 			var url = './sense_graph' + '/' + target_word + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges;
 			
-			axios.get(url)
+			return axios.get(url)
 				.then((res) => {
 					//console.log(res.data)
 					this.data_from_db = res.data;
@@ -260,15 +261,14 @@ app = new Vue({
 					app.singletons = this.data_from_db[2].singletons;
 					
 					//update_existing_graph(nodes, links);
-					
+					//console.log(app.updated_nodes)
 					//await this.$nextTick();
-
+					console.log(this)
+					//return this;
 				})
 				.catch((error) => {
 					console.error(error);
 			});
-
-
 		},
 		restart_sim: function() {
 			var node = d3.selectAll(".node")
