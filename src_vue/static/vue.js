@@ -701,7 +701,6 @@ app = new Vue({
 			
 			axios.get(url)
 				.then((res) => {
-					console.log(res.data)
 					this.data_from_db = res.data;
 					var nodes = this.data_from_db[0].nodes;
 					//console.log(nodes.length)

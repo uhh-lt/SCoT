@@ -130,7 +130,6 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	
 	var circles = node.append("circle")
 		.attr("r", function(d) {
-			console.log(d.cluster_node)
 			if (d.cluster_node === "true") {
 				return radius * 2;
 			} else {
@@ -397,13 +396,10 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		var KeyID = event.keyCode;
 		if (KeyID === 8) {
 			var selected_nodes = d3.selectAll(".node").selectAll("g");
-			console.log(selected_nodes)
 			//console.log(selected_nodes)
 			selected_nodes.each(function(d) {
 				if (d.selected) {
-					console.log("trying to do something here...")
 					var childnodes = this.childNodes;
-					console.log(childnodes)
 					var is_cluster_node;
 					var node_name;
 					var cluster_id;
@@ -471,7 +467,6 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 			if (this.getAttribute("target") === target) {
 				//console.log(this.getAttribute("target"))
 				for (var i = 0; i < links.length; i++) {
-					console.log(links[i].target.id)
 					if (links[i].target.id === target) {
 						links.splice(i, 1);
 					}
