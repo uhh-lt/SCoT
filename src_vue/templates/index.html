@@ -34,12 +34,12 @@
 		<b-navbar-nav class="ml-auto">
 		<b-nav-form>
 			<!--<b-button v-if="graph_rendered" id="restart_button" v-on:click="restart_sim"> Restart Simulation</b-button>-->
-			<b-button v-if="graph_rendered" id="recluster_button" v-on:click="recluster()"> Recluster</b-button>
+			<b-button :disabled="time_diff == 1" v-if="graph_rendered" id="recluster_button" v-on:click="recluster()"> Recluster</b-button>
 			<b-button v-if="graph_rendered" id="edit_mask_button" v-on:click="showEditMask()">Edit Graph</b-button>
 			<b-button v-if="graph_rendered" id="reset_zoom_button" v-on:click="resetZoom()">Reset Zoom</b-button>
 		</b-nav-form>
 		<b-nav-form>
-			<b-button id="download_button" variant="success" v-on:click="saveGraph()" download="graph.json" href="">Save Graph</b-button>
+			<b-button :disabled="time_diff == 1" id="download_button" variant="success" v-on:click="saveGraph()" download="graph.json" href="">Save Graph</b-button>
 			<b-button id="load_button" variant="danger" v-on:click="displayForm()">Load Graph</b-button>
 		</b-nav-form>
 	</b-navbar-nav>
@@ -78,11 +78,11 @@
     	<b-button id="render_button" v-on:click="render_graph()">Render Graph</b-button>
 
     	<p>
-    		<b-button v-if="graph_rendered" v-b-toggle.collapse-update-1 id="add_update_button"> Update Graph
+    		<b-button :disabled="time_diff == 1" v-if="graph_rendered" v-b-toggle.collapse-update-1 id="add_update_button"> Update Graph
 			</b-button>
 		</p>
 		<div>
-			<b-collapse :id="'collapse-update-1'" class="mt-2">
+			<b-collapse v-if="time_diff==0" :id="'collapse-update-1'" class="mt-2">
 				<b-card class="input_cluster" style="color: black">
 					<b-form-group class="input" label="Number of neighbours">  
 						<b-form-input type="number" v-model="update_senses" min="0" placeholder="number of neighbours" size="sm"></b-form-input>
