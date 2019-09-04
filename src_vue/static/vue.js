@@ -1,7 +1,7 @@
 app = new Vue({
    el: "#vue-app",
    data: {
-   		target_word : "happiness/NN",
+   		target_word : "",
      	start_year : 1520,
      	end_year : 2008,
      	senses : 100,
