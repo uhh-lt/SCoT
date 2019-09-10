@@ -104,6 +104,34 @@
     </b-col>
 
     <b-col id="graph_display" sm="8">
+    	<b-dropdown v-if="node_selected && sticky_mode === 'true'" text="Options">
+    		<b-dropdown-item v-on:click="findSelectedNodes()" v-b-modal.modal-1> Assign to different cluster </b-dropdown-item>
+
+    	</b-dropdown> 
+
+    	<b-modal id="modal-1" title="Change Cluster Assignment" @ok="assignNewCluster()">
+		  <div v-for="node in clicked_nodes">
+		  	<div>
+		  	    Clicked node: {{node.id}}
+		    </div>
+		  	<br>
+		  	<div>
+		  		Current cluster: <span class="dot-sm" v-bind:style="{'background-color': node.colour}"></span>{{ node.cluster_name }}, (ID: {{node.cluster_id}})
+		  	</div>
+		  	<div>
+		  		Select new cluster:
+		  		<span class="dot-sm" v-bind:style="{'background-color': new_assigned_cluster.colour}"></span> {{new_assigned_cluster.cluster_name}}
+
+		  		<b-form-select v-model="new_assigned_cluster" size="sm" class="mt-3">
+		  			<option v-for="cluster in cluster_options" :value="cluster.value">
+		  			{{cluster.text}}
+		  			</option>
+		  		</b-form-select>
+		  		
+
+		  	</div>
+		  </div>
+		</b-modal>
 
     	 <b-card v-if="time_diff" id="time_diff_card">
     	 	<p>

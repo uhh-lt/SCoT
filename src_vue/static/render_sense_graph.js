@@ -124,7 +124,10 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	    .on("mousedown", mousedowned)
 	    	.call(drag_node)
 	    .on("mouseover", mouseOver(0.2))
-	    .on("mouseout", mouseOut);
+	    .on("mouseout", mouseOut)
+	    .on("click", function(d) {
+	    	app.node_selected = true;
+	    });
 	
 	svg.call(time_diff_tip);
 	

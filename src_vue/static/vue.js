@@ -1,7 +1,7 @@
 app = new Vue({
    el: "#vue-app",
    data: {
-   		target_word : "",
+   		target_word : "happiness/NN",
      	start_year : 1520,
      	end_year : 2008,
      	senses : 100,
@@ -31,9 +31,24 @@ app = new Vue({
      	interval_end : 0,
      	interval_time_ids : [],
      	interval_id : 0,
-     	time_diff_nodes : {} 
+     	time_diff_nodes : {},
+     	node_selected : false,
+     	clicked_nodes : [],
+     	new_assigned_cluster : {}
 	},
 	computed: {
+		cluster_options: function() {
+			options = [];
+			// { "cluster_id": "84", "cluster_name": "84", "colour": "#ff7f00", "add_cluster_node": false, "labels": [ { "text": "optimism/NN", "cluster_node": "false" } ] }
+			for (var i=0; i < app.clusters.length; i++) {
+				console.log(app.clusters[i])
+				options.push(
+					{"text": app.clusters[i].cluster_name, "value": {"cluster_id" : app.clusters[i].id, "cluster_name": app.clusters[i].cluster_name, "colour": app.clusters[i].colour}}
+				);			
+			}
+			return options;
+			
+		},
 		reducedStartYears: function() {
 			reducedStartYears = [];
 			for (var i=0; i < app.start_years.length; i++) {
@@ -70,6 +85,60 @@ app = new Vue({
 		}
 	},
 	methods: {
+		assignNewCluster: function() {
+			var selected_nodes = d3.selectAll(".node").selectAll("g");
+			selected_nodes.each(function(d,i) {
+				text = ""
+				var childnodes = this.childNodes;
+				childnodes.forEach(function(d,i) {
+					if (d.tagName === "text") {
+						text = d.getAttribute("text")				
+					}
+				})
+
+				for (var j=0; j < app.clicked_nodes.length; j++) {
+					if (app.clicked_nodes[j].id === text) {
+						childnodes.forEach(function(d,k) {
+							if (d.tagName === "circle") {
+								d.setAttribute("cluster_id", app.new_assigned_cluster.cluster_id);
+								d.setAttribute("cluster", app.new_assigned_cluster.cluster_name);
+								d.setAttribute("fill", app.new_assigned_cluster.colour);
+							}
+						})
+					}
+				}
+
+			})
+		},
+		findSelectedNodes: function() {
+			console.log("called find selected nodes")
+			list = [];
+			var selected_nodes = d3.select(".selected");
+
+			console.log(selected_nodes);
+
+			selected_nodes.each(function(d,i) {
+				console.log("iterating over selected nodes")
+				node_characteristics = {}
+				
+
+				var childnodes = this.childNodes;
+				childnodes.forEach(function(d) {
+					console.log("iterating over child nodes")
+					if (d.tagName === "circle") {
+						
+						node_characteristics["colour"] = d.getAttribute("fill");
+						node_characteristics["cluster_id"] = d.getAttribute("cluster_id");
+						node_characteristics["cluster_name"] = d.getAttribute("cluster")
+					}
+					if (d.tagName === "text") {
+						node_characteristics["id"] = d.getAttribute("text");
+					}
+				});
+				list.push(node_characteristics);
+			})
+			app.clicked_nodes = list;
+		},
 		skip_through_time_slices: function() {
 
 			var nodes = d3.selectAll(".node").selectAll("g");

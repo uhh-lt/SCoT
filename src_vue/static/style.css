@@ -265,6 +265,7 @@ text {
 	border-radius: 50%;
 	text-align: bottom;
 	margin-right: 10px;
+	display: inline;
 }
 
 .edit_button {
