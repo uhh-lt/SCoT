@@ -109,6 +109,7 @@ app = new Vue({
 				}
 
 			})
+			app.get_clusters()
 		},
 		findSelectedNodes: function() {
 			console.log("called find selected nodes")
