@@ -5,7 +5,11 @@
 
 SCoT can be found at: <http://ltdemos.informatik.uni-hamburg.de/scot/>
 
-SCoT was developed in the context of the digital humanities. The aim is to provide a means to help linguists and those interested in diachronic semantics to visualize the different senses of a word over time. The main idea is that the user enters the word he or she is interested in and the different senses of this word are displayed in a clustered graph of its collocations for a certain time period. Collocations are words that appear in the same context as the queried word. The clusters are visualized through the colour of the nodes. An edge is drawn between two nodes if they are also collocations. The clusters are calculated using the Chinese Whispers algorithm and are only a first hypothesis. The clustering algorithm is non-deterministic, which means that the system may provide different hypotheses for the same graph if the algorithm is executed again.
+SCoT was developed in the context of the digital humanities. The aim is to provide a means to help linguists and those interested in diachronic semantics to visualize the different senses of a word over time. 
+
+![A clustered graph](./images/graph_for_intro.png "Clustered graph for target word 'happiness/NN', 100 nodes, 30 edges per node, 1520-2008" )
+
+The main idea is that the user enters the word he or she is interested in and the different senses of this word are displayed in a clustered graph of its collocations for a certain time period. Collocations are words that appear in the same context as the queried word. The clusters are visualized through the colour of the nodes. An edge is drawn between two nodes if they are also collocations. The clusters are calculated using the Chinese Whispers algorithm and are only a first hypothesis. The clustering algorithm is non-deterministic, which means that the system may provide different hypotheses for the same graph if the algorithm is executed again.
 
 **Note**: SCoT currently runs on a reduced database of Google Books ranging from 1520 to 2008. The data is split into eight time slices. This means that no exact years or time periods other than these time slices can be queried.
 
@@ -28,7 +32,7 @@ First, the user needs to enter a target word.
 These include:
 "crisis", "freedom", "development", "system", "culture", "work", "labour", "labor", "security", "safety", "autonomy", "order", "experience", "normality", "medium", "communication", "value", "worth", "network", "complexity", "program", "programme", "diversity", "change", "life", "sabotage".
 
-**Note:** For all words the respective part-of-speech tag needs to be appended to the query word. This is due to disambiguation purposes. The correct query words for "crisis" would therefore be "crisis/NN". The data uses the [Penn Treebank POS tags](https://www.ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html)
+**Note:** For all words the respective part-of-speech tag needs to be appended to the query word. This is due to disambiguation purposes. The correct query words for "crisis" would therefore be "crisis/NN". The data uses the [Penn Treebank POS tags](https://www.ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html).
 
 
 Secondly, it needs to be specified how many nodes the graph should have (aka. "Number of neighbours"), as well as the maximum number of edges on a node. Per default the number of neighbours is set to 100 and the maximum number of edges is set to 30. Feel free to change them as you please.
@@ -39,6 +43,47 @@ Last but not least, the user has to specify the time period in which the colloca
 
 
 ### Rendering a Graph from a json file
+You can save a graph you have been working on to a json file by clicking on the "Save Graph" button in the top right-hand corner. Then the graph is downloaded as "graph.json". Where your graph is saved depends on your browser settings.
 
+The json file has the following format (pseudo code):
+`
+{
+  "links": [
+    {
+      "source": "joy/NN",
+      "target": "delight/NN",
+      "weight": "314"
+    },
+    ...
+    ],
+  "nodes": [
+    {
+      "id": "joy/NN",
+      "x": 515.5573938806319,
+      "y": 477.98070940597063,
+      "class": "0",
+      "cluster_name": "0",
+      "cluster_node": "false",
+      "colour": "#a6cee3",
+      "time_ids": "7,5,6,4,8,3,2,1"
+    },
+    ...
+    ],
+  "singletons": [
+    "unhappiness/NN",
+    "misery/NN"
+  ],
+  "target": "happiness/NN",
+  "link_distance": 100,
+  "charge": -10,
+  "start_year": 1520,
+  "end_year": 2008,
+  "time_diff": false
+}
+`
+
+The graph in the json file can be loaded into SCoT again via the "Load Graph" button in the top right-hand corner. When clicking on the button a panel is opened where you can browse for your desired json file in your file system.
+![Load graph from file](./images/load_graph1.png)
+Select your file, click "Render" and continue to work on your graph.
 
 ## Manipulating the Graph
