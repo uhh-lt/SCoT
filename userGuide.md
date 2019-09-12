@@ -46,7 +46,7 @@ Last but not least, the user has to specify the time period in which the colloca
 You can save a graph you have been working on to a json file by clicking on the "Save Graph" button in the top right-hand corner. Then the graph is downloaded as "graph.json". Where your graph is saved depends on your browser settings.
 
 The json file has the following format (pseudo code):
-`
+```
 {
   "links": [
     {
@@ -80,10 +80,12 @@ The json file has the following format (pseudo code):
   "end_year": 2008,
   "time_diff": false
 }
-`
+```
 
 The graph in the json file can be loaded into SCoT again via the "Load Graph" button in the top right-hand corner. When clicking on the button a panel is opened where you can browse for your desired json file in your file system.
+
 ![Load graph from file](./images/load_graph1.png)
+
 Select your file, click "Render" and continue to work on your graph.
 
 ## Manipulating the Graph
