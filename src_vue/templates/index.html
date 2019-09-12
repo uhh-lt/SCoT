@@ -104,9 +104,8 @@
     </b-col>
 
     <b-col id="graph_display" sm="8">
-    	<b-dropdown v-if="node_selected && sticky_mode === 'true'" text="Options">
+    	<b-dropdown variant="light" id="nodeOptionsDD" v-if="node_selected && sticky_mode === 'true'" text="Options">
     		<b-dropdown-item v-on:click="findSelectedNodes()" v-b-modal.modal-1> Assign to different cluster </b-dropdown-item>
-
     	</b-dropdown> 
 
     	<b-modal id="modal-1" title="Change Cluster Assignment" @ok="assignNewCluster()">

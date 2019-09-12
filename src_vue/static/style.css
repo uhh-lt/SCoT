@@ -188,6 +188,14 @@ text {
 	font-size: 10pt
 }
 
+
+#nodeOptionsDD {
+	margin-top: 5px;
+	font-size: 10px;
+	display: block;
+	float: left;
+}
+
 .interval_input {
 	width: 100px;
 }
@@ -276,7 +284,9 @@ text {
 	margin-top: 5px;
 }
 
-#editNameMask{
+
+
+#editNameMask {
 	padding: 0 18px;
 	background-color: white;
 	display: none;
