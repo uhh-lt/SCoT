@@ -131,7 +131,7 @@ SCoT lets you edit two simulation parameters: the charge strength between the no
 The default value for the charge strength is -10, the default value for the link distance is 100.
 A graph with 100 nodes, 30 edges and these simulation parameter values looks like this:
 
-![Default Graph](./images/graph_with_default_simulation_settings.png)
+![Default Graph](./images/graph_default_simulation_settings.png)
 
 Changing the charge strength influences the repelling forces between the nodes. The same graph with a charge strength of -252 and the default link distance looks as follows:
 
@@ -141,7 +141,7 @@ As a rule of thumb, a negative charge strength pushes the nodes further apart, s
 
 The link distance influences the distance between nodes and therefore the length of the edges between them. A high link distance means a long distance between nodes, a low link distance means a small distance between nodes. The following example shows and graph with a link distance of 360 and the default charge.
 
-![Graph Link Distance 360](./graph_charge-10_linkdistance360.png) 
+![Graph Link Distance 360](./images/graph_charge-10_linkdistance360.png) 
 
 #### Fade in Neighbours on Hover over Node
 TBA
