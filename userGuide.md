@@ -19,7 +19,7 @@ When the user first opens SCoT, he or she as two options to render a graph.
 
 ![Clean new session](./images/new_session.png "New Session")
 
-He can either query the database or load an already existing graph from a json file.
+The user can either query the database or load an already existing graph from a json file.
 
 ### Rendering a Graph from the Database
 If the user wants to render a new graph from the database, he or she needs to specify some parameters.
@@ -93,7 +93,7 @@ There are many ways to interact with the graph, examine and manipulate it.
 Most of the manipulation functionalities are only available in the sense clustering mode.
 The functionality buttons are only faded in, if a graph is rendered.
 
-! [Functionality buttons](./images/buttons_in_navbar.png)
+![Functionality buttons](./images/buttons_in_navbar.png)
 
 By clicking on the button "Recluster", the clustering algorithm is executed on the graph again, potentially resulting in a different hypothesis.
 
