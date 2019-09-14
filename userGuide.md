@@ -84,7 +84,7 @@ The json file has the following format (pseudo code):
 
 The graph in the json file can be loaded into SCoT again via the "Load Graph" button in the top right-hand corner. When clicking on the button a panel is opened where you can browse for your desired json file in your file system.
 
-![Load graph from file](./images/load_graph1.png)
+![Load graph from file](./images/load_graph1.png =400x400)
 
 Select your file, click "Render" and continue to work on your graph.
 
