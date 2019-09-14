@@ -101,7 +101,7 @@ Clicking on the "Edit Graph" button opens up a column to the right of the graph 
 
 ![Edit column](./images/scot_with_edit_column.png)
 
-The functionalities available in the edit column are explained in detail in the sections below.
+The functionalities available in the edit column are explained in detail in the sections below. The edit column can be closed via the "Close" Button at the bottom.
 
 The button "Reset Zoom" resets all the zooming and panning activity to 0. You can zoom into the graph by scrolling in the box with the graph and pan by pressing and the moving the cursor within the box.
 
@@ -144,20 +144,51 @@ The link distance influences the distance between nodes and therefore the length
 ![Graph Link Distance 360](./images/graph_charge-10_linkdistance360.png) 
 
 #### Fade in Neighbours on Hover over Node
-TBA
+When hovering over a node in the graph only it and its neighbouring nodes as well as the edges between them are faded in. This way, the user can better explore the direct vicinity of a node.
+
+![Fade In Neighbouring Nodes](./images/mouseover_node.png)
 
 #### Add new Nodes to the Graph
-TBA
+The user can add new nodes to the graph via the "Update" button that is faded in beneath the "Render" button in the parameter input column as soon as a graph is rendered. Clicking on the button opens up a card, where the user can enter the number of nodes and the maximum number of edges per node in the updated graph. 
+
+![Update Graph](./images/update_input.png)
+
+If the numbers are the same or less than the those in the graph that is to be updated no new nodes or edges are rendered. Otherwise the missing nodes and edges are added to the graph to match the input numbers when the user clicks on the button "Update".
+
+The default number of updated nodes is 200, the default number of edges is 50.
+
+**Note:** When updating the graph the previous clusters are lost, since the clustering algorithm is executed on the data again. Otherwise there would not be a cluster hypothesis for the newly added nodes.
+
+If the nodes have been dragged beforehand they will stay in the position when adding new nodes to the graph. 
 
 
 ### Edit Clusters
-TBA
+The clusters produced by the program can be edited and if necessary corrected. In the edit column all the clusters in the graph are listed. For each cluster there are to buttons: one to edit the cluster and another to display a list of all the nodes in the respective cluster.
+
+![Cluster List](./images/cluster_list.png)
+
+In some cases, nodes are not connected to any other in the graph. The are only neighbours to the target word. Then, the nodes are not rendered in the graph, but they are listed under "Singletons" in the edit column.
+
+![Singletons](./images/singletons.png)
+
 
 #### Edit Cluster Name
-TBA
+The program only numbers the clusters and it is up to the user to name the cluster. A cluster name can be changed via the edit button of a cluster.
+
+![Edit Cluster Name](./images/edit_cluster_name.png)
+
+The user can enter the new name in the text input field "Cluster Name". The name of the cluster is automatically updated while typing.
 
 #### Edit Cluster Colour
-TBA
+The user can also select a different cluster colour by clicking on the colour field with the label "Select cluster colour" when editing a cluster. Then a colour picker opens and the user can select the new colour.
+
+![Choose Colour](./images/select_color.png)
+
+Your colour picker may look different to the one in the image, since the appearance of the colour picker depends on your browser.
+
+The colour of the circle next to the cluster name is directly updated. However, to apply the new colour to the graph, the user needs to click on the button "Apply" at the bottom of the edit column.
+
+The user can edit multiple clusters before clicking the "Apply" button to make the updated visible in the graph.
 
 #### Add / Delete Cluster Node
 TBA
