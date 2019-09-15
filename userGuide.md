@@ -263,4 +263,4 @@ To regain the cluster colours in the graph switch back to sense clustering mode.
 ### Skip through time slices
 With the "Skip through time slices" option, you can look at each time slice of your originally selected time period of the graph individually. You can either use it directly when switching from the sense clustering mode or after changing the colour of the nodes via the "Select Interval" option. 
 
-![Skip Through Time Slices](./images/skip_through.png)
+![Skip Through Time Slices](./images/skip_though.png)
