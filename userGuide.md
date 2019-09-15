@@ -107,7 +107,10 @@ The button "Reset Zoom" resets all the zooming and panning activity to 0. You ca
 
 ![Zoom](./images/zoom_in.png)
 
-The graph is rendered using a force simulation, which means that the positions of nodes are automatically calculated according to different parameters such as the charge between them. 
+The graph is rendered using a force simulation, which means that the positions of nodes are automatically calculated according to different parameters such as the charge between them.
+
+### Reclustering
+When clicking the button "Recluster" in the top right-hand corner, the clustering algorithm is executed on the graph again. This may result in different clusters, since the algorithm used is non-deterministic. This way, the user is able to see different hypothesis the system makes about the senses of the target word. For more information on the Chinese Whispers Clustering Algorithm click [here](http://delivery.acm.org/10.1145/1660000/1654774/p73-biemann.pdf?ip=77.20.250.85&id=1654774&acc=OPEN&key=4D4702B0C3E38B35%2E4D4702B0C3E38B35%2E4D4702B0C3E38B35%2E6D218144511F3437&__acm__=1568553032_2c17e0dabf68573cf049cc4c8c1491be).
 
 ### Editing the Graph
 The user can edit different aspects of the graph, e.g. manipulate simulation parameters, add nodes, name clusters amongst others.
@@ -167,6 +170,11 @@ The clusters produced by the program can be edited and if necessary corrected. I
 
 ![Cluster List](./images/cluster_list.png)
 
+When hovering over the coloured circle next to the cluster name, all the nodes and edges in the graph belonging to the cluster are faded in in the graph.
+
+![Fade In Cluster](./images/show_cluster_in_graph.png)
+
+
 In some cases, nodes are not connected to any other in the graph. The are only neighbours to the target word. Then, the nodes are not rendered in the graph, but they are listed under "Singletons" in the edit column.
 
 ![Singletons](./images/singletons.png)
@@ -191,13 +199,68 @@ The colour of the circle next to the cluster name is directly updated. However, 
 The user can edit multiple clusters before clicking the "Apply" button to make the updated visible in the graph.
 
 #### Add / Delete Cluster Node
-TBA
+The user can also add a special node with the cluster name to the graph for each cluster - sort of like a label to a cluster. This node has edges to all the other nodes in the cluster.
+
+![LABELED GRAPH](./images/graph_with_labels.png)
+
+To add a new cluster label, the user ticks the box "Show cluster label in graph" when editing a cluster and clicks the "Apply" button at the bottom of the edit column.
+
+![TICKED LABEL BOX](./images/ticked_box_label.png)
+
+For each cluster only one cluster node can be added.
+
+When reclustering the graph, the old labels are kept in the graph. Since the reclustering produced new clusters on the graph, the user can add new cluster labels. The old labels are kept, so that the clusters can be more easily compared. When hovering over a cluster node, all the nodes connected to it (i.e. all the nodes in the cluster) are faded in.
+
+The same behaviour is displayed when updating the graph.
+
+Cluster labels can be deleted via selecting them (clicking on them) and then pressing `BACKSPACE`.
+
+**Note of caution:** Currently, selected cluster nodes are always deleted when pressing `BACKSPACE`. This is not ideal, I know, and I am going to solve this. However, until I do, please make sure you have selected a non-cluster node when editing e.g. a cluster name. Otherwise, you might accidentally delete a cluster node.
 
 #### Assign a Node to a Different Cluster
-TBA
+In case the user does not agree with the system hypothesis, he or she can assign a node to a different existing cluster.
+When clicking on a node, an "Options" button appears in the corner above the graph.
 
-#### Reclustering
-TBA
+![Options Button](./images/options.png)
+
+A click on this buttons opens a dropdown menu. Currently, the only option available is "Assign to different cluster". After selecting this option, a modal is opened, in which the selected node, its current cluster and an input field in which the user can enter the new cluster of the node.
+
+![Change Cluster Assignment](./images/change_cluster_assignment.png)
+
+On clicking "OK", the node's colour changes to the one of the newly assigned cluster. It also changes the cluster in the cluster list.
+
+If a cluster labels are used, they do not automatically update, but have to be deleted manually and reentered with the updated clusters via the edit function of the respective cluster.
+
 
 ## Time Diff Mode
-TBA
+When selecting "time diff" mode in the parameter input column, two options are faded in: "Select interval" and "Skip through time slices".
+
+![Time Diff](./images/time_diff.png)
+
+When in this mode, several functionalities are disabled, such as updating the graph, reclustering, saving the graph, and editing the name and colour of clusters.
+
+When hovering over nodes in time diff mode not only are only the neighbouring nodes faded in, but also a tooltip stating the time slices the node occurred in. In the example below, the particular node *optimism/NN* only appeared in the time slice from 1996 till 2001.
+
+![Tooltip](./images/tooltip_time_diff.png)
+
+### Select Interval
+With the option "Select Interval" the user can select a specific time interval within the original time period and compare the smaller interval to the bigger on.
+
+In the example below, the interval from 1954 to 2001 is selected. Nodes that do not occur before 1520 and 1954 are categorized as *born* (green nodes), since they start to occur somewhere within the selected period. Nodes that do not occur between 2001 and 2008 are classified as *deceased* (red nodes), since they stop occurring within the the selected time period. Words that start and stop occurring within the selected time period are categorized as *shortlived* (yellow nodes). All other nodes occur consistently (grey nodes).
+
+![Select Interval](./images/select_interval.png)
+
+All the nodes of a category are listed when the user clicks on the "Nodes" button.
+
+In the graph, the nodes are coloured accordingly. The previous cluster colours are still visible in the edit graph column. 
+
+![Time Interval Graph](./images/time_interval_graph.png)
+
+**Note of caution:** At the moment, some edge cases are not categorized correctly - I only just noticed that there ARE in fact cases I did not consider - e.g. nodes that are born after the selected time period are still classified as born, since there is no other category they would fit.
+
+To regain the cluster colours in the graph switch back to sense clustering mode.
+
+### Skip through time slices
+With the "Skip through time slices" option, you can look at each time slice of your originally selected time period of the graph individually. You can either use it directly when switching from the sense clustering mode or after changing the colour of the nodes via the "Select Interval" option. 
+
+![Skip Through Time Slices](./images/skip_through.png)
