@@ -484,7 +484,7 @@ app = new Vue({
 
 		},
 		recluster: function() {
-			document.getElementById("edit_clusters_popup").style.display = "none";			
+			//document.getElementById("edit_clusters_popup").style.display = "none";			
 
 			var svg = d3.select("#svg");
 			var nodes = svg.selectAll(".node");
@@ -576,6 +576,7 @@ app = new Vue({
 				    		}
 				    	})
 				    }
+				    app.get_clusters()
 
 				    
 
