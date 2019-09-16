@@ -37,18 +37,24 @@ app = new Vue({
      	new_assigned_cluster : {}
 	},
 	computed: {
+		/*
+		Returns all the clusters as an array of objects of the form 
+			{"text": cluster_name}, "value": {"cluster_id": some_id, "cluster_name": some_cluster_name, "colour": some_cluster_colour}
+		to be used as the options when selecting a different cluster for a node.
+		All the information about the clusters is already stored in the data variable clusters.
+		*/
 		cluster_options: function() {
 			options = [];
-			// { "cluster_id": "84", "cluster_name": "84", "colour": "#ff7f00", "add_cluster_node": false, "labels": [ { "text": "optimism/NN", "cluster_node": "false" } ] }
 			for (var i=0; i < app.clusters.length; i++) {
-				console.log(app.clusters[i])
 				options.push(
 					{"text": app.clusters[i].cluster_name, "value": {"cluster_id" : app.clusters[i].id, "cluster_name": app.clusters[i].cluster_name, "colour": app.clusters[i].colour}}
 				);			
 			}
 			return options;
-			
 		},
+		/*
+		Returns all the possible start years for the small time diff interval.
+		*/
 		reducedStartYears: function() {
 			reducedStartYears = [];
 			for (var i=0; i < app.start_years.length; i++) {
@@ -58,6 +64,10 @@ app = new Vue({
 			}
 			return reducedStartYears;
 		},
+		/*
+		Returns all the possible end years for the small time diff interval.
+		Takes into account the selected start year of the small time diff interval.
+		*/
 		reducedEndYears: function() {
 			reducedEndYears = []
 			for (var i=0; i < app.end_years.length; i++) {
@@ -67,6 +77,9 @@ app = new Vue({
 			}
 			return reducedEndYears;
 		},
+		/*
+		Returns a string showing the start and end year of a time slice
+		*/
 		time_slice_from_interval: function() {
 			var start = app.start_years[app.interval_id - 1];
 			var end = app.end_years[app.interval_id - 1];
@@ -85,18 +98,26 @@ app = new Vue({
 		}
 	},
 	methods: {
+		/*
+		Assigns the newly selected cluster id, cluster name and cluster colour to the selected node node.
+
+		TODO: test this throughly with adding nodes, saving to file, rendering from file, cluster nodes etc.
+		*/
 		assignNewCluster: function() {
 			var selected_nodes = d3.selectAll(".node").selectAll("g");
+
 			selected_nodes.each(function(d,i) {
-				text = ""
+				text = "";
 				var childnodes = this.childNodes;
+
 				childnodes.forEach(function(d,i) {
 					if (d.tagName === "text") {
-						text = d.getAttribute("text")				
+						text = d.getAttribute("text");				
 					}
 				})
 
 				for (var j=0; j < app.clicked_nodes.length; j++) {
+					// if the node is one of the selected nodes, assign the new attributes
 					if (app.clicked_nodes[j].id === text) {
 						childnodes.forEach(function(d,k) {
 							if (d.tagName === "circle") {
@@ -104,68 +125,77 @@ app = new Vue({
 								d.setAttribute("cluster", app.new_assigned_cluster.cluster_name);
 								d.setAttribute("fill", app.new_assigned_cluster.colour);
 							}
-						})
+						});
 					}
 				}
-
-			})
+			});
+			// update the information about the clusters in the graph in the data variable clusters.
 			app.get_clusters()
 		},
+		/*
+		Return a list of all selected nodes as a list of objects
+		An object depicts one selected node with slots for its colour, its cluster id, its cluster name and its id.
+		The list is stored in the data variable clicked_nodes.
+		*/
 		findSelectedNodes: function() {
-			console.log("called find selected nodes")
 			list = [];
 			var selected_nodes = d3.select(".selected");
 
-			console.log(selected_nodes);
-
 			selected_nodes.each(function(d,i) {
-				console.log("iterating over selected nodes")
-				node_characteristics = {}
-				
-
+				node_characteristics = {};
 				var childnodes = this.childNodes;
+
 				childnodes.forEach(function(d) {
-					console.log("iterating over child nodes")
 					if (d.tagName === "circle") {
-						
 						node_characteristics["colour"] = d.getAttribute("fill");
 						node_characteristics["cluster_id"] = d.getAttribute("cluster_id");
-						node_characteristics["cluster_name"] = d.getAttribute("cluster")
+						node_characteristics["cluster_name"] = d.getAttribute("cluster");
 					}
+
 					if (d.tagName === "text") {
 						node_characteristics["id"] = d.getAttribute("text");
 					}
 				});
 				list.push(node_characteristics);
-			})
+			});
 			app.clicked_nodes = list;
 		},
+		/*
+		Set the opacity of all the nodes and edges that are not in the inspected time slice to 0.2.
+		*/
 		skip_through_time_slices: function() {
-
 			var nodes = d3.selectAll(".node").selectAll("g");
 
 			nodes.each(function(d,i) {
+
+				// Set opacity to one in the beginning - important when changing time slice.
 				this.style.strokeOpacity = 1.0;
 				this.style.fillOpacity = 1.0;
-				var childnodes = this.childNodes;
-				var in_interval = false;
-				childnodes.forEach(function(d,i) {
 
+				var childnodes = this.childNodes;
+				// assume that every node is not in the interval
+				var in_interval = false;
+
+				childnodes.forEach(function(d,i) {
 					if (d.tagName === "circle") {
+						
+						// for all nodes that have time ids, retrieve them - cluster nodes do not have any.
 						var time_ids = d.getAttribute("time_ids");
 						if (time_ids !== null) {
 							time_ids = time_ids.split(",");
+
+							// check if the time ids of the node include the id of the interval
 							time_ids.forEach(function(d, i) {
 								if (d === app.interval_id) {
+									// if so, the node occurs in the selected time slice
 									in_interval = true;
 								}
-							})
+							});
 						}
 					}
-				})
-						//if (!time_ids.includes(app.interal_id)) {
-						//	not_in_interval = true;
-						//}
+				});
+
+				// Set the opacity to 0.2 for all nodes that do not occur in the focused time slice
 				if (in_interval === false) {
 					this.style.strokeOpacity = 0.2;
 					this.style.fillOpacity = 0.2;
@@ -173,10 +203,14 @@ app = new Vue({
 			})
 
 			var links = d3.selectAll(".link").selectAll("line");
+
 			links.each(function(d,i) {
+				// Set the opacity of all links to 1.0 initially
 				this.style.strokeOpacity = 1.0;
-				var source_time_ids = d.source.time_ids
-				var target_time_ids = d.target.time_ids
+
+				// select the time ids of the source and the target
+				var source_time_ids = d.source.time_ids;
+				var target_time_ids = d.target.time_ids;
 
 				if (typeof source_time_ids === "string" && typeof target_time_ids === "string") {
 					source_time_ids = source_time_ids.split(",");
@@ -192,39 +226,44 @@ app = new Vue({
 
 				interval = parseInt(app.interval_id);
 
+				// check if source time ids of a link include the time slice id of the selected interval
 				if (source_time_ids.includes(interval)) {
 					in_source_interval = true;
 				}
 
+				// check if the target time ids of a link include the time slice if of the selected interval
 				if (target_time_ids !== null && target_time_ids.includes(interval)) {
 					in_target_interval = true;
 				}
 				
+				// the link only has opacity 1.0 if both source and target are in the selected time slice
 				if (in_source_interval === false || in_target_interval === false) {
 					this.style.strokeOpacity = 0.2;
 				}
-			})
+			});
 		},
+		/*
+		Returns all the time ids of a node as a string of start year and end year to be displayed in the tooltip on a node in the time diff mode
+		*/
 		selectInterval: function(time_ids) {
 			var intervalString = "";
-			//time_ids = time_ids.split(",");
+			
 			if ((time_ids !== null) && (typeof time_ids !== "undefined")) {
 				if (typeof time_ids === "string") {
 					time_ids = time_ids.split(",");
 				}
 				time_ids.sort();
 				for (time_id of time_ids) {
-					//var time_id = time_ids[i];
-					//console.log(time_id);
 					var start = app.start_years[time_id - 1].text;
 					var end = app.end_years[time_id - 1].text;
-					//console.log(start, end)
 					intervalString += start + " - " + end + "<br>"
 				}
-				
 				return intervalString;
 			}
 		},
+		/*
+		TODO: add comment
+		*/
 		show_time_diff: async function() {
 			var big_time_interval = [];
 			await axios.get("./interval/" + app.start_year + "/" + app.end_year)
@@ -232,7 +271,7 @@ app = new Vue({
 					big_time_interval = res.data;
 				})
 				.catch((error) => {
-					console.error(error)
+					console.error(error);
 				});
 
 			var small_time_interval = [];
@@ -241,16 +280,14 @@ app = new Vue({
 					small_time_interval = res.data;
 				})
 				.catch((error) => {
-					console.error(error)
+					console.error(error);
 				});
-
-			//console.log(big_time_interval, small_time_interval)
 
 			var period_before = [];
 			var period_after = [];
 
 			var small_interval_start_time_id = Math.min(...small_time_interval);
-			var small_interval_end_time_id = Math.max(...small_time_interval)
+			var small_interval_end_time_id = Math.max(...small_time_interval);
 
 			for (var i=0; i<big_time_interval.length; i++) {
 				if (big_time_interval[i] < small_interval_start_time_id) {
@@ -260,7 +297,7 @@ app = new Vue({
 				}
 			}
 
-			var time_diff_nodes = {born: [], deceased: [], shortlived: [], normal: []}
+			var time_diff_nodes = {born: [], deceased: [], shortlived: [], normal: []};
 			
 			var nodes = d3.selectAll(".node").selectAll("g");
 
@@ -273,7 +310,6 @@ app = new Vue({
 						node_text = d.getAttribute("text")
 					}
 				})
-
 
 				childnodes.forEach(function(d){
 					if (d.tagName === "circle") {
@@ -322,6 +358,9 @@ app = new Vue({
 
 			app.time_diff_nodes = time_diff_nodes;
 		},
+		/*
+		Fetch the updated amount of nodes and edges as well as the singletons from the BE.
+		*/
 		update: function() {
 			var target_word = this.target_word;
 			var start_year = this.start_year;
@@ -331,7 +370,6 @@ app = new Vue({
 			var time_diff = this.time_diff;
 
 			app.time_diff = false;
-			//var url = './sense_graph' + '/' + encodeURIComponent(target_word) + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges + '/' + time_diff;
 			var url = './sense_graph' + '/' + target_word + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges;
 			
 			return axios.get(url)
@@ -347,11 +385,18 @@ app = new Vue({
 					console.error(error);
 			});
 		},
+		/*
+		TODO: not working yet nor integrated!
+		The idea is to be able to release all of the fixed nodes as restart the whole simulation
+		*/
 		restart_sim: function() {
 			var node = d3.selectAll(".node")
 			//console.log(node)
 			app.simulation.alpha(1).restart();
 		},
+		/*
+		Reset the opacity of all nodes and edges to their original values (nodes: 1.0, edges: 0.6).
+		*/
 		reset_opacity: function() {
 			var nodes = d3.selectAll(".node").selectAll("g");
 			var links = d3.selectAll(".link");
@@ -359,22 +404,28 @@ app = new Vue({
 			nodes.each(function(d) {
 				this.style.strokeOpacity = 1.0;
 				this.style.fillOpacity = 1.0;
-			})
+			});
 
 			links.each(function(d) {
 				var childnodes = this.childNodes;
 				childnodes.forEach(function(d) {
-					d.setAttribute("style", "stroke: #999;")
-					d.setAttribute("style", "stroke-opacity:" + 0.6)
+					d.setAttribute("style", "stroke: #999;");
+					d.setAttribute("style", "stroke-opacity:" + 0.6);
 
-				})
-			})
+				});
+			});
 		},
+		/*
+		Fade in the nodes of a certain colour and the connecting links.
+		The purpose of this function is to fade in only the red, yellow, green and grey nodes in the time diff mode.
+		@param String CSS colour such as 'red'
+		*/
 		fade_in_nodes: function(colour) {
 			var nodes = d3.selectAll(".node").selectAll("g");
 			var links = d3.selectAll(".link");
 			
-			var faded_in = []
+			// collect all the nodes with opacity 1.0, so you can check them against the source and target of links
+			var faded_in = [];
 
 			nodes.each(function(d,i) {
 				var childnodes = this.childNodes;
@@ -407,16 +458,22 @@ app = new Vue({
 					var target = d.getAttribute("target");
 
 					if (faded_in.includes(source) && faded_in.includes(target)) {
-						d.setAttribute("style", "stroke:" + colour)
+						// if the link is faded in, set the colour to the same as all the nodes
+						d.setAttribute("style", "stroke:" + colour);
 					} else {
-						d.setAttribute("style", "stroke-opacity:" + 0.2)
+						d.setAttribute("style", "stroke-opacity:" + 0.2);
 					}
 				})
 			})
 
 		},
+		/*
+		Set the opacity of nodes and links of a specific cluster.
+		@param Object cluster: the entry for a specific cluster in the data variable clusters.
+		@param float opacity: some number between 0.0 and 1.0.
+		@param float link_opacity: some number between 0.0 and 1.0.
+		*/
 		set_cluster_opacity: function(cluster, opacity, link_opacity) {
-			//console.log("mouseover" + cluster.cluster_id);
 			var cluster_id = cluster.cluster_id;
 			var cluster_nodes = [];
 
