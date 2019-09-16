@@ -36,7 +36,7 @@ services:
     image: mariadb:10.4.6
     volumes:
       - ./db/pseudodump.sql:/docker-entrypoint-initdb.d/pseudodump.sql
-      - ./db/data_test:/var/lib/mysql
+      - ./db/data_reduced_gbooks:/var/lib/mysql
       # "database" : "mysql://user:password@db/scot" (config.json)
     environment:
       MYSQL_ROOT_PASSWORD: root
