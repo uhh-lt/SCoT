@@ -245,11 +245,23 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 					d3.selectAll('.selected').each(dragend); });
 		} else if (sticky === "true") {
 			brush.style("display", "none");
+			
+			//app.simulation.alphaTarget(0);
 			node.classed("selected", function(d) { 
 				if (d.selected) {
-					return d.selected = d.previouslySelected = shiftKey && d.selected;
+					//console.log(d.selected)
+					d.previouslySelected = d.selected;
+					//console.log(d.previouslySelected)
+					d.selected = ! d.selected;
+				
+					//console.log(d.selected)
+					return d.selected;
 				}
 			})
+			
+
+			console.log(node)
+			//node.on("mousedown", mousedowned).call(drag_node);
 
 			drag_node
 				.on("start", function() {
@@ -371,6 +383,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		// Update and restart the app.simulation.
 		app.simulation.nodes(nodes);
 		app.simulation.force("link").links(links);
+		ticked();
 		app.simulation.alpha(1).restart();
 
 		linkedByIndex = {};
@@ -612,7 +625,9 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		// Update and restart the app.simulation.
 		app.simulation.nodes(nodes);
 		app.simulation.force("link").links(links);
+		ticked();
 		app.simulation.alpha(1).restart();
+
 
 		linkedByIndex = {};
 		links.forEach(function(d) {
@@ -706,6 +721,8 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
         if (d.y > height) {
             d.y = height - 50;
         };
+
+        //console.log(d.x, d.y)
         return "translate(" + d.x + "," + d.y + ")";
     }
 
@@ -758,31 +775,44 @@ function dragstart(d) {
 }
 
 function dragmove(d) {
-	d.fx += d3.event.dx;
-    d.fy += d3.event.dy;
+	//d.fx += d3.event.x;
+    //d.fy += d3.event.y;
     d.x += d3.event.dx;
-    d.y += d3.event.dy; 
+    d.y += d3.event.dy;
+    d.fx = d.x;
+    d.fy = d.y;
+    //console.log(d.x, d.y)
 	ticked();
 }
 
 function dragend(d) {
 	//d.fixed() = true;
+	//app.simulation.alphaTarget(0);
 	ticked();
 }
 
 function dragstart_sticky(d) {
-    if (!d3.event.active) app.simulation.alphaTarget(0.3).restart();
-    d.fx = d.x;
-    d.fy = d.y;
+    if (!d3.event.active) {
+    	app.simulation.alphaTarget(0.3).restart();
+	}	
+    console.log(d)
+    //d.fx = d.x;
+    //d.fy = d.y;
+    //}
 }
 
 function dragmove_sticky(d) {
+	d.x = d3.event.x;
+	d.y = d3.event.y;
     d.fx = d3.event.x;
     d.fy = d3.event.y;
+    //ticked();
 }
 
 function dragend_sticky(d) {
-    if (!d3.event.active) app.simulation.alphaTarget(0);
+    if (!d3.event.active) {
+    	app.simulation.alphaTarget(0);
+    }
     //d.fx = null;
     //d.fy = null;
 }
