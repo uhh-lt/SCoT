@@ -1,4 +1,4 @@
 {
 	"host" : "0.0.0.0",
-	"database" : "mysql://user:password@db/scot"
+	"database" : "mysql://user:password@localhost/scot"
 }
