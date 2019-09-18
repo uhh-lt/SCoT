@@ -496,30 +496,14 @@ app = new Vue({
 					if (d.tagName === "text") {
 						node_text = d.getAttribute("text");
 					}
-				})
-				//console.log(cluster_nodes, node_text)
+				});
 				if (! cluster_nodes.includes(node_text)) {
-					//this.setAttribute("style", "stroke-opacity:" + opacity);
-					//this.setAttribute("style", "fill-opacity:" + opacity);
 					this.style.strokeOpacity = opacity;
 					this.style.fillOpacity = opacity;
-					// childnodes.forEach(function(d,i) {
-					// 	if (d.tagName === "circle") {
-					// 		d.setAttribute("style", "stroke-opacity:" + opacity)
-					// 		d.setAttribute("style", "fill-opacity:" + opacity)
-					// 	}
-					// 	if (d.tagName === "text") {
-					// 		d.setAttribute("style", "stroke-opacity:" + opacity)
-					// 		d.setAttribute("style", "fill-opacity:" + opacity)
-					// 	}
-					// })
 				}
-
 			})
 
-			//console.log(links)
 			links.each(function(d,i) {
-				//console.log(this)
 				var childnodes = this.childNodes;
 				childnodes.forEach(function(d,i) {
 					var source = d.getAttribute("source");
@@ -529,17 +513,17 @@ app = new Vue({
 					} 
 					if (cluster_nodes.includes(source) && cluster_nodes.includes(target)) {
 						if (opacity < 1) {
-							d.setAttribute("style", "stroke:" + cluster.colour)
+							d.setAttribute("style", "stroke:" + cluster.colour);
 						} else {
-							d.setAttribute("style", "stroke: #999;")
+							d.setAttribute("style", "stroke: #999;");
 						}
 					}
-
-				}) 
-				
-			})
-
+				}) ;	
+			});
 		},
+		/*
+		Send all the nodes and edges to the backend, recluster them and change the nodes in the graph accordingly (cluster id, cluster name, colour)
+		*/
 		recluster: function() {
 			//document.getElementById("edit_clusters_popup").style.display = "none";			
 
@@ -549,6 +533,7 @@ app = new Vue({
 
 			var data = {};
 
+			// accumulate all the graph nodes
 			var nodes_array = [];
 			nodes.selectAll("g").each(function(d,i) {
 				childnodes = this.childNodes;
@@ -566,12 +551,10 @@ app = new Vue({
 							nodes_array.push(d.getAttribute("text"));
 						}
 					});
-				}
-				
+				}	
 			})
 
-			data['nodes'] = nodes_array;
-
+			// accumulate all the links
 			var link_array = [];
 
 			links.each(function(d,i) {
@@ -584,18 +567,14 @@ app = new Vue({
 					if (nodes_array.includes(source) && nodes_array.includes(target)) {
 						link['source'] = source;
 						link['target'] = target;
-
-						//var strokewidth = d.getAttribute("stroke-width");
-						//var weight = Math.pow(strokewidth, 2) * 10;
 						link['weight'] = d.getAttribute("weight");
 
 						link_array.push(link);	
 					}
-					
-				})
-				
-			})
+				});
+			});
 
+			// store all the nodes and links in a data object to be sent to the BE
 			data["nodes"] = nodes_array;
 			data["links"] = link_array;
 
@@ -607,25 +586,18 @@ app = new Vue({
 
 				    var newClusteredNodes = this.newclusters.nodes;
 
-				    //var svg = d3.select("#svg")
-				    //var nodes = svg.selectAll(".node");
-
 				    for (var i=0; i<newClusteredNodes.length; i++) {
 				    	var node_id = newClusteredNodes[i].id;
 				    	var node_new_cluster = newClusteredNodes[i].class;
 
 				    	var texts = nodes.selectAll("g").select("text");
 				    	var circles = nodes.selectAll("g").select("circle");
-				    	//console.log(text)
-				    	//console.log(circle)
-				    	//d3.select(someSelection.nodes()[i])
+
+				    	// assign the updated attributes to the nodes
 				    	texts.each(function(d,i) {
 				    		var t = d3.select(this);
-				    		//console.log(t)
 				    		if (t.attr("text") === node_id) {
-				    			//console.log(t.attr("text"));
 				    			var circle = d3.select(circles.nodes()[i])
-				    			//console.log(circle);
 				    			circle.attr("cluster", node_new_cluster)
 				    			circle.attr("fill", function() {return colour(node_new_cluster) })
 				    			circle.attr("cluster_id", node_new_cluster);
@@ -633,21 +605,12 @@ app = new Vue({
 				    		}
 				    	})
 				    }
+				    // update the data variable clusters
 				    app.get_clusters()
-
-				    
-
 				  })
 				  .catch(function (error) {
 				    console.log(error);
 				  });
-
-
-			
-			// get links (source, target, weight)
-			// post to API -> call chinese whispers
-			// get response (clustered graph)
-			// for each node set Attribute cluster, fill according to cluster
 		},
 		resetZoom: function() {
 			var svg = d3.select("#svg");
@@ -671,8 +634,10 @@ app = new Vue({
 				.catch((error) => {
 					console.error(error);
 				});
-
 		},
+		/*
+		Apply changes in cluster name and colour to all the nodes in the graph (when pressing the "Apply" button in the edit column)
+		*/
 		applyClusterSettings: function() {
 			var svg = d3.select("#svg");
 			var nodes = svg.selectAll(".node");
@@ -714,23 +679,21 @@ app = new Vue({
 							}
 						});
 					}
-
 				});
-
-				// add
-				// if (cluster_node === "true") {
-				// 	app.add_cluster_node(cluster_name, colour, labels);
-				// }
 			}
 		},
 		showEditMask: function() {
 			if (app.time_diff==="false") {
+				//update clusters before fading in the column, keep the old clusters in time diff mode though, so that the user can still see the information about clusters
 				app.get_clusters();	
 			}
 			document.getElementById("edit_clusters_popup").style.display = "block";
 		},
+		/*
+		Collect the information on the clusters from the graph and store it in the data variable clusters.
+		@return Array of objects with cluster information
+		*/
 		get_clusters: function() {
-
 				app.clusters = [];
 				var clusters = [];
 				
@@ -753,7 +716,6 @@ app = new Vue({
 							cluster_name = d.getAttribute("cluster");
 							cluster_id = d.getAttribute("cluster_id");
 							colour = d.getAttribute("fill");
-							//console.log(d.getAttribute("cluster_node"));
 							cluster_node = d.getAttribute("cluster_node");
 						}
 
@@ -761,8 +723,6 @@ app = new Vue({
 							text = d.getAttribute("text");
 						}
 					});
-
-					//console.log(cluster_id, text)
 
 					clusters.forEach(function(c,i) {
 						if (c.cluster_name === cluster_name) {
@@ -778,17 +738,14 @@ app = new Vue({
 						cluster["cluster_name"] = cluster_name;
 						cluster["colour"] = colour;
 						cluster["add_cluster_node"] = false;
-						cluster.labels = []
+						cluster.labels = [];
 						if (cluster_node === "false") {
 							cluster["labels"].push({"text": text, "cluster_node": cluster_node});
 						}
 						if (cluster.labels.length > 0) {
-							clusters.push(cluster)
-						}
-						
+							clusters.push(cluster);
+						}	
 					}
-
-					//console.log(clusters)
 			 	});
 
 				for (var i=0; i < clusters.length; i++) {
@@ -800,11 +757,11 @@ app = new Vue({
 			this.graph_from_file = false;
 			this.graph_rendered = false;
 			await this.$nextTick();
-			
-
 		},
+		/*
+		Get the data from the BE according to the parameters entered in the FE and render the graph
+		*/
 		getData: function() {
-			//console.log(this.target_word)
 			var target_word = this.target_word;
 			var start_year = this.start_year;
 			var end_year = this.end_year;
@@ -816,30 +773,28 @@ app = new Vue({
 				if (d.value === app.start_year) {
 					app.min_time_id = i + 1;
 				}
-			})
+			});
 
 			app.end_years.forEach(function(d,i) {
 				if (d.value === app.end_year) {
 					app.max_time_id = i + 1;
 				}
-			})
+			});
 
-			//var url = './sense_graph' + '/' + encodeURIComponent(target_word) + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges + '/' + time_diff;
 			var url = './sense_graph' + '/' + target_word + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges;
 			
 			axios.get(url)
 				.then((res) => {
 					this.data_from_db = res.data;
 					var nodes = this.data_from_db[0].nodes;
-					//console.log(nodes.length)
 					var links = this.data_from_db[0].links;
 					var target = [this.data_from_db[1]];
 					app.singletons = this.data_from_db[2].singletons;
+					// Call D3 function to render graph
 					render_graph(nodes, links, target, this.time_diff)
 					this.graph_rendered = true;
-					app.get_clusters()
-					//await this.$nextTick();
-
+					// Update cluster information
+					app.get_clusters();
 				})
 				.catch((error) => {
 					console.error(error);
@@ -847,6 +802,9 @@ app = new Vue({
 
 			
 		},
+		/*
+		Returns a json object with all the information needed to rerender a graph and saves it locally.
+		*/
 		saveGraph: function() {
 			var svg = d3.select("#svg");
 
@@ -938,6 +896,9 @@ app = new Vue({
 		    }, 0)
 
 		},
+		/*
+		Render the graph from a json file that the user has specified.
+		*/
 		loadGraph: function() {
 			document.getElementById("loadpopup").style.display = "none";
 			document.getElementById("edit_clusters_popup").style.display = "none";	
@@ -947,7 +908,6 @@ app = new Vue({
 
 			reader.onload = function(e) {
 			  this.read_graph = JSON.parse(reader.result);
-			  //console.log(this.read_graph);
 			  if (this.read_graph.singletons) {
 			  	app.singletons = this.read_graph.singletons;
 			  } else {
@@ -975,7 +935,7 @@ app = new Vue({
 					app.max_time_id = i + 1;
 				}
 			  })
-			  //console.log(nodes, links, target);
+			  //Call the D3 function to render the graph
 			  render_graph(nodes, links, target, app.time_diff);
 			}
 			reader.readAsText(file);

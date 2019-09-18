@@ -1,16 +1,25 @@
+/*
+Renders the graph on the svg element
+@param array of objects graph_nodes
+@param array of objects graph_links
+@param object target: the target word
+TODO: NOT NEEDED, DELETE @param string time_diff
+*/
 async function render_graph(graph_nodes, graph_links, target, time_diff) {
-	//console.log(data, time_diff)
 
+	// Set initial parameters
 	var width = 1000;
 	var height = 1000;
 	var shiftKey;
 	var radius = 5;
 
+	// Choose a predefined colour scheme
 	var color = d3.scaleOrdinal(d3.schemePaired)
 
+	// Always remove the svg element. Otherwise a new one is appended every time you click the render button
 	d3.select("#graph2").select("svg").remove()
 
-
+	// Create the svg element on which you want to render the graph
 	var svg = d3.select("#graph2")
 		.on("keydown.brush", keydowned)
 		.on("keyup.brush", keyupped)
@@ -34,17 +43,9 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		shiftKey = d3.event.shiftKey || d3.event.metaKey;
 	}
 
+	// append the brush to the svg for dragging multiple nodes at the same time
 	var brush = svg.append("g")
-			.attr("class", "brush");
-
-	/* Load and bind data */
-	//d3.json(url).then(function(data) {
-		//console.log(data);
-		
-		//var graph = data[0];
-		//var target = [data[1]];
-		//app.singletons = data[2].singletons;
-		//console.log(app.singletons);
+		.attr("class", "brush");
 
 	var nodes = graph_nodes;
 	var links = graph_links;
@@ -52,11 +53,13 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	// build a dictionary of nodes that are linked
 	var linkedByIndex = {}
 
+	// initialize the class attributes selected and previouslySelected for each node
 	nodes.forEach(function(d) {
 	    d.selected = false;
 	    d.previouslySelected = false;
 	  });
 
+	// append the target word to the center of the svg
 	var t = svg.append("g")
 		.data(target)
 
@@ -66,8 +69,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		.attr("y", (height/2))
 		.text(function(d) { return d.target_word; })
 
-	
-
+	// create the force simulation
 	app.simulation = d3.forceSimulation(nodes)
 		.force("link", d3.forceLink(links).id(function(d) { return d.id; }).distance(function(d) { return app.linkdistance } ))
 		.force("charge", d3.forceManyBody().strength(app.charge).distanceMin(1).distanceMax(2000))
@@ -77,8 +79,8 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 	var forceLinkDistance = app.simulation.force("link");
 
+	// update the charge strength if the user moves the range input with the value from the Vue data variable charge and restart the simulation with the new value
 	d3.select("#range_charge").on("change", function() {
-		//console.log(app.charge)
 		app.simulation.force("charge", d3.forceManyBody()
 			.strength(app.charge)
 			.distanceMin(1)
@@ -86,12 +88,13 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		app.simulation.alpha(1).restart();
 	})
 
+	// update the link distance if the user moves the range input with the value from the Vue data variable linkdistance and restart the simulation with the new value
 	d3.select("#range_linkdistance").on("change", function() {
 		forceLinkDistance.distance(app.linkdistance)
 		app.simulation.alpha(1).restart()
 	})
 	
-
+	// create the graph links
 	var link = svg.append("g")
 			.attr("stroke", "#999")
 			//.attr("stroke-opacity", 0.8)
@@ -102,17 +105,19 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 			.attr("source", function(d) { return d.source.id })
 			.attr("target", function(d) { return d.target.id })
 			.attr("weight", function(d) { return d.weight })
+			// set the stroke with in dependence to the weight attribute of the link
+			// TODO: sort the weights into three categories and only use three different thicknesses for links according to the category
 			.attr("stroke-width", function(d) { return Math.sqrt(d.weight/10);	});
 
+	// initialize drag behaviour
 	var drag_node = d3.drag()
 
-
+	// initialize the tooltip for the time diff mode
 	var time_diff_tip = d3.tip()
 		.attr("class", "d3-tip")
 		.html(function(d) { return app.selectInterval(d.time_ids); })
 
-
-
+	// create the nodes
 	var node = svg.append("g")
 	    	.attr("stroke", "#fff")
 	    	.attr("stroke-width", 1.5)
@@ -121,19 +126,23 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	    .data(nodes)
 	    .enter()
 	    .append("g")
-	    .on("mousedown", mousedowned)
-	    	.call(drag_node)
-	    .on("mouseover", mouseOver(0.2))
-	    .on("mouseout", mouseOut)
-	    .on("click", function(d) {
-	    	app.node_selected = true;
-	    });
+	    	.on("mousedown", mousedowned)
+	    		.call(drag_node)
+	    	.on("mouseover", mouseOver(0.2))
+	    	.on("mouseout", mouseOut)
+	    	.on("click", function(d) {
+	    		app.node_selected = true;
+	   		});
 	
+	// call the time diff tooltip from the svg
 	svg.call(time_diff_tip);
 	
+	// append circles to the node
+	// this is the way the nodes are displayed in the graph
 	var circles = node.append("circle")
 		.attr("r", function(d) {
 			if (d.cluster_node === "true") {
+				// if the node is a cluster node make it twice as big
 				return radius * 2;
 			} else {
 				return radius;
@@ -142,6 +151,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		.attr("cluster", function(d) { return d.class; })
 		.attr("cluster_id", function(d) { return d.class })
 		.attr("cluster_node", function(d) {
+			// check if the node is a cluster node and make that information known for later
 			if (d.cluster_node === "true") {
 				return true;
 			} else {
@@ -151,59 +161,39 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		.attr("time_ids", function(d) {return d.time_ids})
 		.attr("fill", function(d) { 
 			if (d.colour) {
+				// if the nodes has an explicit colour use that
 				return d.colour
 			} else {
+				// otherwise look the colour up for the class of the node
 				return color(d.class);
 			}
 		});
 
+	// append a label to the node which displays its id
  	var labels = node.append("text")
 		.text(function(d) { return d.id; })
-		.style('fill', function(d) {
-			if (d.status == 'birth') {
-				return "green";
-			}
-			if (d.status == 'death') {
-				return "red";
-			}
-			if (d.status == 'shortlived') {
-				return "orange"
-			}
-			else {
-				return "black";
-			}
-		})
-		.style('stroke', function(d) {
-			if (d.status == 'birth') {
-				return "green";
-			}
-			if (d.status == 'death') {
-				return "red";
-			}
-			if (d.status == 'shortlived') {
-				return "orange"
-			}
-			else {
-				return "black";
-			}
-		})
+		.style('fill', 'black')
+		.style('stroke', 'black')
 		.attr('x', 6)
 		.attr('y', 3)
 		.attr("text", function(d) { return d.id; });
 
 	app.simulation.on("tick", ticked)
 
+	// update the cluster information in the Vue data variable after initializing the graph
 	app.get_clusters();
 
+
+	// determine the dragging behaviour on rendering the graph initially
+	// sticky means that the simulation recalculates the other node positions when one has been dragged
 	var sticky = app.sticky_mode;
 
 	if (sticky === "false") {
-
 		brush.call(d3.brush()
-	    .extent([[0, 0], [width, height]])
-	    .on("start", brushstarted)
-	    .on("brush", brushed)
-	    .on("end", brushended));
+	    	.extent([[0, 0], [width, height]])
+	    	.on("start", brushstarted)
+	    	.on("brush", brushed)
+	    	.on("end", brushended));
 
 	    drag_node
 			.on("start", function() {
@@ -223,18 +213,17 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 				d3.selectAll('.selected').each(dragend_sticky); });
 	} 
 
-	
+	// determine the dragging behaviour if the user switched it on the radio buttons	
 	d3.select("#sticky").on("change", function() {
 		sticky = app.sticky_mode;
-		//console.log(sticky);
-		if (sticky === "false") {
 
+		if (sticky === "false") {
 			brush.style("display", "inline")
 			brush.call(d3.brush()
-		    .extent([[0, 0], [width, height]])
-		    .on("start", brushstarted)
-		    .on("brush", brushed)
-		    .on("end", brushended));
+		    	.extent([[0, 0], [width, height]])
+		    	.on("start", brushstarted)
+		    	.on("brush", brushed)
+		    	.on("end", brushended));
 
 		    drag_node
 				.on("start", function() {
@@ -243,25 +232,18 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 					d3.selectAll('.selected').each(dragmove); })
 				.on("end", function() {
 					d3.selectAll('.selected').each(dragend); });
+
 		} else if (sticky === "true") {
+			// tidy up after brush and unselect all selected nodes
 			brush.style("display", "none");
 			
-			//app.simulation.alphaTarget(0);
 			node.classed("selected", function(d) { 
 				if (d.selected) {
-					//console.log(d.selected)
 					d.previouslySelected = d.selected;
-					//console.log(d.previouslySelected)
 					d.selected = ! d.selected;
-				
-					//console.log(d.selected)
 					return d.selected;
 				}
-			})
-			
-
-			console.log(node)
-			//node.on("mousedown", mousedowned).call(drag_node);
+			});
 
 			drag_node
 				.on("start", function() {
@@ -273,18 +255,16 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		} 
 	})
 
-
+	// Add cluster nodes when clicking on the apply button in the edit column
 	d3.select("#apply_settings_button").on("click", function() {
-		//console.log(app.clusters)
-		// I need a cluster ID + cluster node ID -> necessary for updating
+		//DONE? I need a cluster ID + cluster node ID -> necessary for updating
 		for (var i = 0; i < app.clusters.length; i++) {
 			var cluster_name = app.clusters[i].cluster_name
 			var add_cluster_node = app.clusters[i].add_cluster_node;
 			var cluster_colour = app.clusters[i].colour;
 			var cluster_id = app.clusters[i].cluster_id;
-			//console.log(cluster_id)
-
 			var labels = app.clusters[i].labels;
+
 			var text_labels = [];
 			var cluster_nodes = []
 
@@ -295,50 +275,48 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 			var exists = false;
 			exists = cluster_node_exists(cluster_id);
-			//console.log(exists)
+			// make sure that each cluster only has one cluster node
 			if (add_cluster_node === "true" && !exists) {
-				//console.log(exists)
-				addclusternode(cluster_name, cluster_colour, cluster_id)
+				addclusternode(cluster_name, cluster_colour, cluster_id);
 
 				for (var k = 0; k < text_labels.length; k++) {
-					addlink(text_labels[k], cluster_name)
+					addlink(text_labels[k], cluster_name);
 				}
 
 			}
 		}
+		// restart the simulation with the additional nodes and links
 		restart();
 	})
 
+	// check if a cluster node exists for a specific cluster
 	function cluster_node_exists(cluster_id) {
-		//console.log("called cluster node exists check")
 		var nodes = d3.selectAll(".node");
 		var exists = false;
+
 		nodes.selectAll("g").each(function(d) {
 			childnodes = this.childNodes;
-			//console.log(childnodes)
+
 			childnodes.forEach(function(d,i) {
 				if (d.tagName === "circle") {
 					var is_cluster_node = d.getAttribute("cluster_node");
 					var id = d.getAttribute("cluster_id");
 					
 					if (is_cluster_node === "true" && id === cluster_id) {
-						//console.log(id, cluster_id)
 						exists = true;
 					}
 				}
-			})
-		})
+			});
+		});
 		return exists;
-
 	}
 
+	// Add or remove cluster nodes and edges to the graph and restart the simulation
+	// This function is for addin cluster nodes
 	function restart() {
-		//console.log(nodes)
 		// Apply the general update pattern to the nodes.
 		node = node.data(nodes, function(d) { return d.id;});
 		node.exit().remove();
-
-		//node = node.enter().append("circle").attr("r", 10).attr("fill", function(d) { return color(d.id)}).merge(node)
 
 		var g = node.enter()
 				.append("g")
@@ -349,7 +327,6 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		    		.call(drag_node)
 		    	.on("mouseover", mouseOver(0.2))
 		   		.on("mouseout", mouseOut)
-
 
 	   	var circle = g.append("circle")
 				.attr("fill", function(d) { return d.colour; })
@@ -365,11 +342,9 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 			.attr('y', 3)
 			.attr("text", function(d) { return d.id; });
 
-
 		node = node.merge(g);
 
-
-		  // Apply the general update pattern to the links.
+		 // Apply the general update pattern to the links.
 		link = link.data(links, function(d) { return d.source.id + "-" + d.target.id; });
 		link.exit().remove();
 		link = link.enter().append("line")
@@ -386,13 +361,12 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		ticked();
 		app.simulation.alpha(1).restart();
 
+		// update the object with connected nodes
 		linkedByIndex = {};
 		links.forEach(function(d) {
-			//console.log("linkedByIndex");
 		    linkedByIndex[d.source.id + "," + d.target.id] = 1;
 		});
 	}
-
 
 	function addlink(source, target) {
 		if((source !== undefined) && (target !== undefined)) {
@@ -406,21 +380,23 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		restart()	
 	}
 
+	// On backspace anywhere in the html body delete cluster node
+	// TODO: only focus this on the svg element, otherwise it is really annoying when entering stuff in input fields
 	d3.select("body").on("keydown", deleteClusterNode)
 
 	function deleteClusterNode(d) {
 		var KeyID = event.keyCode;
 		if (KeyID === 8) {
 			var selected_nodes = d3.selectAll(".node").selectAll("g");
-			//console.log(selected_nodes)
+
 			selected_nodes.each(function(d) {
 				if (d.selected) {
 					var childnodes = this.childNodes;
 					var is_cluster_node;
 					var node_name;
 					var cluster_id;
+
 					childnodes.forEach(function(d,i) {
-						
 						if (d.tagName === "circle") {
 							is_cluster_node = d.getAttribute("cluster_node");
 							cluster_id = d.getAttribute("cluster_id");
@@ -428,143 +404,112 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 						if (d.tagName === "text") {
 							node_name = d.getAttribute("text");
 						}
-					})	
+					});
+
 					if (is_cluster_node === "true") {
 						deletenode(node_name);
-						// Does not work with cluster_id and app.clusters
-						// Clusters may have changes. find all edges directly in the DOM instead
 						deletelinks(node_name, cluster_id);
 						restart();
 					}
 				}
-			
-			//if (d.select("circle").attr("cluster_node") === "true" && KeyID === 8) {
-			//	console.log("delete!")
-			//}
-		})	
+			});	
 		}
-		
 	}
 
 	function deletenode(id) {
-		for (var i=0; i < nodes.length; i++)
+		for (var i=0; i < nodes.length; i++) {
 			if (nodes[i]["id"] === id) {
 				nodes.splice(i,1)
 			}
+		}		
 	}
 	
-
+	// TODO: delete cluster_id as parameter 
 	function deletelinks(target, cluster_id) {
-		/*var clusters = app.clusters;
-		var fellow_cluster_nodes;
-		for (var i=0; i < clusters.length; i++) {
-			if (clusters[i].cluster_id === cluster_id) {
-				var cluster = clusters[i];
-				var sources = [];
-				
-				for (var j=0; j < cluster.labels.length; j++) {
-					if (cluster.labels[j].cluster_node === "false") {
-						sources.push(cluster.labels[j].text)
-					}
-				}
-				for (var k=0; k < sources.length; k++) {
-					//console.log(sources[k], target)
-					links.pop({"source": sources[k], "target": target})
-				}
-			}
-		}*/
-		// select all links in DOM
-		// delete all those, that have target === the cluster node
 		var allLinks = d3.select(".link").selectAll("line");
-		//console.log(allLinks);
-		//console.log(target);
+
 		allLinks.each(function(d) {
-			//console.log(d.target)
 			if (this.getAttribute("target") === target) {
-				//console.log(this.getAttribute("target"))
 				for (var i = 0; i < links.length; i++) {
 					if (links[i].target.id === target) {
 						links.splice(i, 1);
 					}
 				}
-				//links.pop({"source": d.source, "target": target});
 			}
 		});
 	}
 
-
+	// add new nodes and edges to the graph when the user updated the number of nodes and edges
 	d3.select("#update_button").on("click", async function() {
 		app.update().then((res) => {
-
-		var existing_labels = [];
-		for (var j = 0; j < app.clusters.length; j++) {
-			var cluster = app.clusters[j];
+			var existing_labels = [];
+			for (var j = 0; j < app.clusters.length; j++) {
+				var cluster = app.clusters[j];
 			
-			for (var k=0; k < cluster.labels.length; k++) {
-				//if (cluster.labels[k].cluster_node === "false") {
-					existing_labels.push(cluster.labels[k].text)
-				//}
+				for (var k=0; k < cluster.labels.length; k++) {
+					existing_labels.push(cluster.labels[k].text);
+				}
 			}
-		}
 
-		for (var i = 0; i < app.updated_nodes.length; i++) {
-			var new_label = app.updated_nodes[i].id
-			var cluster_class = app.updated_nodes[i].class
-			//console.log(new_label, cluster_class)
-				if (!existing_labels.includes(new_label)) {
-					nodes.push({"id": app.updated_nodes[i].id, "class": app.updated_nodes[i].class, "time_ids": app.updated_nodes[i].time_ids})
-				} else {
-					var existing_nodes = d3.selectAll(".node")
-					existing_nodes.selectAll("g").each(function(d,i) {
-						var label;
-						var childnodes = this.childNodes;
-						
-						childnodes.forEach(function(d,i) {
-							if (d.tagName === "text") {
-								label = d.getAttribute("text");
-							}
-						});
-
-						if (new_label === label) {
+			for (var i = 0; i < app.updated_nodes.length; i++) {
+				var new_label = app.updated_nodes[i].id;
+				var cluster_class = app.updated_nodes[i].class;
+				
+					if (!existing_labels.includes(new_label)) {
+						// add new nodes to the nodes array
+						nodes.push({"id": app.updated_nodes[i].id, "class": app.updated_nodes[i].class, "time_ids": app.updated_nodes[i].time_ids});
+					} else {
+						// update existing ones (colour, cluster id and cluster name)
+						var existing_nodes = d3.selectAll(".node");
+						existing_nodes.selectAll("g").each(function(d,i) {
+							var label;
+							var childnodes = this.childNodes;
+							
 							childnodes.forEach(function(d,i) {
-								if (d.tagName === "circle") {
-									d.setAttribute("cluster_id", cluster_class);
-
-									var colour = get_colour(cluster_class);
-									d.setAttribute("fill", colour)
-
-									d.setAttribute("cluster", cluster_class)
+								if (d.tagName === "text") {
+									label = d.getAttribute("text");
 								}
 							});
-						}
-					})
-					
-				}
-			}
-			//console.log(nodes)
-			nodes.forEach(function(d) {
-			    d.selected = false;
-			    d.previouslySelected = false;
-			});
 
-			for (var i = 0; i < app.updated_links.length; i++) {
-				if (! links.includes(app.updated_links[i])) {
-					links.push(app.updated_links[i])	
+							if (new_label === label) {
+								childnodes.forEach(function(d,i) {
+									if (d.tagName === "circle") {
+										var colour = get_colour(cluster_class);
+
+										d.setAttribute("cluster_id", cluster_class);
+										d.setAttribute("fill", colour);
+										d.setAttribute("cluster", cluster_class);
+									}
+								});
+							}
+						});
+					}
 				}
-			}
-			update_graph()
-			app.get_clusters();
-			//console.log(app.clusters);
-		//}, 2000)
-		})
-	})
+
+				nodes.forEach(function(d) {
+			    	d.selected = false;
+			   		d.previouslySelected = false;
+				});
+
+				for (var i = 0; i < app.updated_links.length; i++) {
+					if (! links.includes(app.updated_links[i])) {
+						// add new links to link array
+						links.push(app.updated_links[i]);	
+					}
+				}
+				update_graph()
+				app.get_clusters();
+		});
+	});
 
 
 	function get_colour(c) {
 		return color(c);
 	}
 
+	// update the graph with the additional nodes and links
 	function update_graph() {
+		// Apply the general update pattern to the nodes.
 		node = node.data(nodes, function(d) { return d.id;});
 		node.exit().remove();
 
@@ -576,7 +521,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 				.on("mousedown", mousedowned)
 		    		.call(drag_node)
 		    	.on("mouseover", mouseOver(0.2))
-		   		.on("mouseout", mouseOut)
+		   		.on("mouseout", mouseOut);
 
 
 	   	var circle = g.append("circle")
@@ -595,7 +540,6 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 			.attr('y', 3)
 			.attr("text", function(d) { return d.id; });
 
-
 		node = node.merge(g);
 
 		d3.select("#select_time_diff").on("change", function(d) {
@@ -611,7 +555,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		});
 
 
-		  // Apply the general update pattern to the links.
+		// Apply the general update pattern to the links.
 		link = link.data(links, function(d) { return d.source.id + "-" + d.target.id; });
 		link.exit().remove();
 		link = link.enter().append("line")
@@ -628,33 +572,35 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		ticked();
 		app.simulation.alpha(1).restart();
 
-
+		// keep track of the connected nodes
 		linkedByIndex = {};
 		links.forEach(function(d) {
-			//console.log(d.source.id, d.target.id);
 		    linkedByIndex[d.source.id + "," + d.target.id] = 1;
 		});
 	}
 
+	// Switch between time diff and sense clustering mode
 	d3.select("#select_time_diff").on("change", function(d) {
+		// sense clustering
 		if (app.time_diff === false) {
-			
-			//circles.attr("fill", function(d) { return color(d.class); })
 			var circleChilds = d3.selectAll(".node").selectAll("g").selectAll("circle");
 
 			circleChilds.each(function(d) {
 				var node_cluster_id = this.getAttribute("cluster_id");
 				for (var i=0; i < app.clusters.length; i++) {
+					// set the colour of the nodes back to the cluster colours
 					if (node_cluster_id === app.clusters[i].cluster_id) {
 						this.setAttribute("fill", app.clusters[i].colour);
 					}
 				}
 			})
 
+			// don't show time diff tooltip
 			circles.on("mouseover", null);
 			circles.on("mouseout", null);
 		}
 		if (app.time_diff === true) {
+			// show time diff tooltip
 			circles.on("mouseover", time_diff_tip.show);
 			circles.on("mouseout", time_diff_tip.hide);
 		}
@@ -664,7 +610,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		if (d3.event.sourceEvent.type !== "end") {
 			node.classed("selected", function(d) {
 				return d.selected = d.previouslySelected = shiftKey && d.selected;
-			})
+			});
 		}
 	}
 
@@ -675,7 +621,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 			node.classed("selected", function(d) {
 				return d.selected = d.previouslySelected ^ (selection != null && selection[0][0] <= d.x && d.x < selection[1][0]
 				&& selection[0][1] <= d.y && d.y < selection[1][1]);
-			})
+			});
 		}
 	 }
 
@@ -694,7 +640,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		}	
 	}
 
-
+	// update node and link positions
 	function ticked() {
 		node
     		.attr("transform", positionNode);
@@ -704,9 +650,8 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 			.attr("x2", function(d) { return d.target.x; })
 			.attr("y2", function(d) { return d.target.y; });
 
-	};
+	}
 
-	    // move the node based on forces calculations
     function positionNode(d) {
         // keep the node within the boundaries of the svg
         if (d.x < 0) {
@@ -721,102 +666,90 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
         if (d.y > height) {
             d.y = height - 50;
         };
-
-        //console.log(d.x, d.y)
         return "translate(" + d.x + "," + d.y + ")";
     }
 
+    // update the connected nodes
+	linkedByIndex = {};
+	links.forEach(function(d) {
+    	linkedByIndex[d.source.id + "," + d.target.id] = 1;
+	});
 
-linkedByIndex = {}
-links.forEach(function(d) {
-	//console.log(d.source.id, d.target.id);
-    linkedByIndex[d.source.id + "," + d.target.id] = 1;
-});
-// check the dictionary to see if nodes are linked
-function isConnected(a, b) {
-    return linkedByIndex[a.id + "," + b.id] || linkedByIndex[b.id + "," + a.id] || a.id == b.id;
-}
+	// check the dictionary to see if nodes are linked
+	function isConnected(a, b) {
+    	return linkedByIndex[a.id + "," + b.id] || linkedByIndex[b.id + "," + a.id] || a.id == b.id;
+	}
 
-// fade nodes on hover
-function mouseOver(opacity) {
-	return function(d) {
-        // check all other nodes to see if they're connected
-        // to this one. if so, keep the opacity at 1, otherwise
-        // fade
-        node.style("stroke-opacity", function(o) {
-            thisOpacity = isConnected(d, o) ? 1 : opacity;
-            return thisOpacity;
-        });
-        node.style("fill-opacity", function(o) {
-            thisOpacity = isConnected(d, o) ? 1 : opacity;
-            return thisOpacity;
-        });
-        // also style link accordingly
-        link.style("stroke-opacity", function(o) {
-            return o.source === d || o.target === d ? 1 : opacity;
-        });
-        //link.style("stroke", function(o){
-        	// how to get o.source.colour for graph rendered from db?
-        	// works for graph loaded from file
-        //	return o.source === d || o.target === d ? o.source.colour : "#ddd";
-        //});
-    };        
-}
+	// fade nodes on hover
+	function mouseOver(opacity) {
+		return function(d) {
+        	// check all other nodes to see if they're connected
+        	// to this one. if so, keep the opacity at 1, otherwise
+        	// fade
+        	node.style("stroke-opacity", function(o) {
+            	thisOpacity = isConnected(d, o) ? 1 : opacity;
+            	return thisOpacity;
+        	});
+        	node.style("fill-opacity", function(o) {
+            	thisOpacity = isConnected(d, o) ? 1 : opacity;
+            	return thisOpacity;
+        	});
+        	// also style link accordingly
+        	link.style("stroke-opacity", function(o) {
+            	return o.source === d || o.target === d ? 1 : opacity;
+        	});
+        	//link.style("stroke", function(o){
+        		// TODO: how to get o.source.colour for graph rendered from db?
+        		// works for graph loaded from file
+        	//	return o.source === d || o.target === d ? o.source.colour : "#ddd";
+        	//});
+    	}        
+	}
 
-function mouseOut() {
-    node.style("stroke-opacity", 1);
-    node.style("fill-opacity", 1);
-    link.style("stroke-opacity", 1);
-    //link.style("stroke", "#ddd");
-}
+	// fade everything back in
+	function mouseOut() {
+    	node.style("stroke-opacity", 1);
+    	node.style("fill-opacity", 1);
+    	link.style("stroke-opacity", 1);
+    	//link.style("stroke", "#ddd");
+	}
 
-function dragstart(d) {
-	app.simulation.stop()
-}
+	function dragstart(d) {
+		app.simulation.stop()
+	}
 
-function dragmove(d) {
-	//d.fx += d3.event.x;
-    //d.fy += d3.event.y;
-    d.x += d3.event.dx;
-    d.y += d3.event.dy;
-    d.fx = d.x;
-    d.fy = d.y;
-    //console.log(d.x, d.y)
-	ticked();
-}
+	function dragmove(d) {
+    	d.x += d3.event.dx;
+    	d.y += d3.event.dy;
+    	d.fx = d.x;
+    	d.fy = d.y;
+		ticked();
+	}
 
-function dragend(d) {
-	//d.fixed() = true;
-	//app.simulation.alphaTarget(0);
-	ticked();
-}
+	function dragend(d) {
+		//d.fixed() = true;
+		//app.simulation.alphaTarget(0);
+		ticked();
+	}
 
-function dragstart_sticky(d) {
-    if (!d3.event.active) {
-    	app.simulation.alphaTarget(0.3).restart();
-	}	
-    console.log(d)
-    //d.fx = d.x;
-    //d.fy = d.y;
-    //}
-}
+	function dragstart_sticky(d) {
+    	if (!d3.event.active) {
+    		app.simulation.alphaTarget(0.3).restart();
+		}
+	}
 
-function dragmove_sticky(d) {
-	d.x = d3.event.x;
-	d.y = d3.event.y;
-    d.fx = d3.event.x;
-    d.fy = d3.event.y;
-    //ticked();
-}
+	function dragmove_sticky(d) {
+		d.x = d3.event.x;
+		d.y = d3.event.y;
+    	d.fx = d3.event.x;
+    	d.fy = d3.event.y;
+	}
 
-function dragend_sticky(d) {
-    if (!d3.event.active) {
-    	app.simulation.alphaTarget(0);
-    }
-    //d.fx = null;
-    //d.fy = null;
-}
-
-		
-	//});
+	function dragend_sticky(d) {
+    	if (!d3.event.active) {
+    		app.simulation.alphaTarget(0);
+    	}
+    	//d.fx = null;
+    	//d.fy = null;
+	}
 }

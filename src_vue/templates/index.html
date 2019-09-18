@@ -81,8 +81,8 @@
 
 		<!-- Select time diff or sense clustering mode -->
 		<b-form-group class="input" label="Mode" id="select_time_diff">
-		    <b-form-radio v-model="time_diff" name="time_diff" v-bind:value="false"> sense clustering (CW) </b-form-radio>
-		    <b-form-radio v-model="time_diff" name="time_diff" v-bind:value="true">time diff</b-form-radio>
+		    <b-form-radio v-model="time_diff" name="time_diff" v-bind:value="false"> Sense Clustering (CW) </b-form-radio>
+		    <b-form-radio v-model="time_diff" name="time_diff" v-bind:value="true">Time Diff</b-form-radio>
     	</b-form-group>
 
     	<!-- Enter an start year -->
@@ -184,7 +184,7 @@
 
     			<!-- Option skip through time slices -->
     			<b-button v-b-toggle.collapse-skip-1 id="skip_through_button">
-    				Skip through time slices
+    				Skip Through Time Slices
     			</b-button>
     		</p>
 
@@ -210,7 +210,7 @@
 						- {{end_year}}
 
 						<!-- Button to show difference in graph -->
-			    		<b-button v-on:click="show_time_diff" id="time_diff_button">  Show difference </b-button>
+			    		<b-button v-on:click="show_time_diff" id="time_diff_button">  Show Difference </b-button>
 
 			    		<!-- Legend: Colour of node categories, show nodes belonging to a category -->
 			    		<!-- On mouseover over circle show nodes of the respective category in graph -->
@@ -278,7 +278,7 @@
 			    			<div>
 			    				<span class="dot-sm" style="background-color: grey;" 
 			    				v-on:mouseover="fade_in_nodes('grey')"
-			    				v-on:mouseout="reset_opacity()"></span> Nodes that also occur before and after {{ interval_start }} and {{interval_end}}
+			    				v-on:mouseout="reset_opacity()"></span> Nodes that occur before and after {{ interval_start }} and {{interval_end}}
 			    			</div>
 
 			    			<!-- button collapse to show nodes belonging to category -->
@@ -335,7 +335,7 @@
 	    	</b-form-group>
 
 	    	<!-- Set link distance for simulation -->
-	    	<b-form-group> Link Distance (0, 1000): {{linkdistance}}
+	    	<b-form-group> Link distance (0, 1000): {{linkdistance}}
 	    		<b-form-input id="range_linkdistance" v-model="linkdistance" type="range" min="0" max="1000"></b-form-input>
 	    	</b-form-group>
 

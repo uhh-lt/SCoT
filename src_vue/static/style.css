@@ -343,7 +343,7 @@ text {
       font-size: 12px;
     }
  
-    /* Creates a small triangle extender for the tooltip */
+/* Creates a small triangle extender for the tooltip */
 .d3-tip:after {
   box-sizing: border-box;
   display: inline;

@@ -32,14 +32,18 @@ CORS(app)
 def index():
 	return render_template('index.html')
 
+
 @app.route('/interval/<int:start>/<int:end>')
+# retrieve the time id(s) of a certain interval between a specified start and end year
 def interval(start, end):
 	print(start,end)
 	db = Database()
 	interval = db.get_time_ids(start, end)
 	return json.dumps(interval)
 
+
 @app.route('/reclustering', methods=['POST'])
+# recluster the existing graph by running Chinese Whispers on it again
 def recluster():
 	nodes = []
 	links = []
@@ -51,26 +55,27 @@ def recluster():
 			links.append((item["source"], item["target"], {'weight': int(item["weight"])}))
 
 		reclustered_graph = chineseWhispers.reclustering(nodes, links)
-		return json.dumps(reclustered_graph)	
-
+		return json.dumps(reclustered_graph)
 
 
 @app.route('/start_years')
+# retrieve all possible start years from the database
 def get_start_years():
 	db = Database()
 	start_years = db.get_all_years("start_year")
-	#print(start_years)
 	return json.dumps(start_years)
 
+
 @app.route('/end_years')
+# retrieve all possible end years from the database
 def get_end_years():
 	db = Database()
 	end_years = db.get_all_years("end_year")
-	#print(end_years)
 	return json.dumps(end_years)
 
-#'/sense_graph/<path:target_word>/<int:start_year>/<int:end_year>/<int:direct_neighbours>/<int:density>/<mode>'
+
 @app.route('/sense_graph/<path:target_word>/<int:start_year>/<int:end_year>/<int:direct_neighbours>/<int:density>')
+# retrieve the clustered graph data according to the input parameters of the user and return it as json
 def get_clustered_graph(
 		target_word,
 		start_year,
@@ -79,12 +84,7 @@ def get_clustered_graph(
 		density):
 	#target_word = str(urllib.parse.unquote(target_word))
 	target_word = str(target_word)
-	#print(target_word, start_year, end_year, direct_neighbours, density, mode)
 	paradigms = direct_neighbours
-	# if mode == "false":
-	# 	time_diff = False
-	# else:
-	# 	time_diff = True
 
 	def clusters(
 		target_word,
@@ -94,11 +94,9 @@ def get_clustered_graph(
 		density):
 		db = Database()
 		time_ids = db.get_time_ids(start_year, end_year)
-		#print(time_ids)
 		nodes = db.get_nodes(target_word, paradigms, time_ids)
-
-		#print(nodes)
 		edges, nodes, singletons = db.get_edges(nodes, density, time_ids)
+
 		return singletons, chineseWhispers.chinese_whispers(nodes, edges, target_word)
 
 	singletons, clustered_graph = clusters(target_word,
@@ -107,12 +105,13 @@ def get_clustered_graph(
 		paradigms,
 		density)
 
-
 	c_graph = json.dumps([clustered_graph, {'target_word': target_word}, {'singletons': singletons}], sort_keys=False, indent=4)
 	
 	return c_graph
+	
 
 if __name__ == '__main__':
+	# use the config file to get host and database parameters
 	with open('config.json') as config_file:
 		config = json.load(config_file)
 	app.run(host=config['host'])
