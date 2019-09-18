@@ -250,7 +250,7 @@ In the example below, the interval from 1954 to 2001 is selected. Nodes that do 
 
 ![Select Interval](./images/select_interval.png)
 
-All the nodes of a category are listed when the user clicks on the "Nodes" button.
+All the nodes of a category are listed when the user clicks on the "Nodes" button. When the user hovers over the coloured circle of a category with the cursor, the nodes belonging to this category are faded in in the graph.
 
 In the graph, the nodes are coloured accordingly. The previous cluster colours are still visible in the edit graph column. 
 
