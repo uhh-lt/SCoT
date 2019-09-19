@@ -95,7 +95,7 @@ text {
 
 #restart_button {
 	display: block;
-	float: right;
+	/*float: right;*/
 	text-align: center;
 	font-size: 10px;
 	/*word-spacing: -10px;*/
