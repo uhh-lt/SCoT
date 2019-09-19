@@ -39,9 +39,6 @@
 		<b-navbar-nav class="ml-auto">
 			<b-nav-form>
 
-				<!-- Button to restart simulation with all the nodes -->
-				<!--<b-button v-if="graph_rendered" id="restart_button" v-on:click="restart_sim"> Restart Simulation</b-button>-->
-
 				<!-- Recluster button -->
 				<b-button :disabled="time_diff == 1" v-if="graph_rendered" id="recluster_button" v-on:click="recluster()"> Recluster</b-button>
 				<!-- Edit button -->
@@ -135,11 +132,12 @@
     <b-col id="graph_display" sm="8">
 
     	<!-- Options Drop Down for node options -->
-    	<b-dropdown variant="light" id="nodeOptionsDD" v-if="node_selected && sticky_mode === 'true'" text="Options">
-
+    	<b-dropdown  variant="light" id="nodeOptionsDD" v-if="!time_diff && node_selected && sticky_mode === 'true'" text="Options">
     		<!-- Node options -->
-    		<b-dropdown-item v-on:click="findSelectedNodes()" v-b-modal.modal-1> Assign to different cluster </b-dropdown-item>
+    		<!-- only available for non cluster nodes -->
+    		<b-dropdown-item v-show="select_node_is_no_cluster_node" v-on:click="findSelectedNodes()" v-b-modal.modal-1> Assign to different cluster </b-dropdown-item>
     	</b-dropdown> 
+
 
     	<!-- Modal to change cluster assignment of a node -->
     	<b-modal id="modal-1" title="Change Cluster Assignment" @ok="assignNewCluster()">
@@ -163,6 +161,7 @@
 		  		<span class="dot-sm" v-bind:style="{'background-color': new_assigned_cluster.colour}"></span> {{new_assigned_cluster.cluster_name}}
 
 		  		<b-form-select v-model="new_assigned_cluster" size="sm" class="mt-3">
+		  			<option :value="{}" disabled> Select a cluster </option>
 		  			<option v-for="cluster in cluster_options" :value="cluster.value">
 		  			{{cluster.text}}
 		  			</option>
@@ -329,6 +328,11 @@
 		   		<b-form-radio name="sticky_mode" value="true" v-model="sticky_mode"> Keep force for dragging (no brush available) </b-form-radio>
 	    	</b-form-group>
 
+	    	<!-- Button to restart simulation with all the nodes -->
+    		<p>
+				<b-button id="restart_button"> Restart Simulation </b-button>
+			</p>
+			
 	    	<!-- Set charge strength for simulation -->
 	    	<b-form-group> Charge strength (-500, 500): {{charge}}
 	    		<b-form-input id="range_charge" v-model="charge" type="range" min="-500" max="500"></b-form-input>
