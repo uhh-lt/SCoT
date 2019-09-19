@@ -33,6 +33,7 @@ app = new Vue({
      	interval_id : 0,
      	time_diff_nodes : {},
      	node_selected : false,
+     	select_node_is_no_cluster_node : true,
      	clicked_nodes : [],
      	new_assigned_cluster : {}
 	},
@@ -44,6 +45,7 @@ app = new Vue({
 		All the information about the clusters is already stored in the data variable clusters.
 		*/
 		cluster_options: function() {
+			app.new_assigned_cluster = {}
 			options = [];
 			for (var i=0; i < app.clusters.length; i++) {
 				options.push(
@@ -98,6 +100,20 @@ app = new Vue({
 		}
 	},
 	methods: {
+		// Check if the selected nodes is a non cluster node. Only those should be considered for changing their cluster assignment
+		is_normal_node: function() {
+			var normal_node;
+			var selected_node = d3.select(".selected").select("circle");
+			selected_node.each(function(d) {
+				var n = d3.select(this);
+				if (n.attr("cluster_node") === "true") {
+					normal_node = false;			
+				} else {
+					normal_node = true;
+				}
+			});
+			return normal_node;
+		},
 		/*
 		Assigns the newly selected cluster id, cluster name and cluster colour to the selected node node.
 
@@ -147,9 +163,12 @@ app = new Vue({
 
 				childnodes.forEach(function(d) {
 					if (d.tagName === "circle") {
-						node_characteristics["colour"] = d.getAttribute("fill");
-						node_characteristics["cluster_id"] = d.getAttribute("cluster_id");
-						node_characteristics["cluster_name"] = d.getAttribute("cluster");
+						// cluster nodes should not be considered
+						if (d.getAttribute("cluster_node") === "false") {
+							node_characteristics["colour"] = d.getAttribute("fill");
+							node_characteristics["cluster_id"] = d.getAttribute("cluster_id");
+							node_characteristics["cluster_name"] = d.getAttribute("cluster");
+						}	
 					}
 
 					if (d.tagName === "text") {
@@ -178,19 +197,21 @@ app = new Vue({
 
 				childnodes.forEach(function(d,i) {
 					if (d.tagName === "circle") {
-						
 						// for all nodes that have time ids, retrieve them - cluster nodes do not have any.
-						var time_ids = d.getAttribute("time_ids");
-						if (time_ids !== null) {
-							time_ids = time_ids.split(",");
+						if (d.getAttribute("cluster_node") === "false") {
 
-							// check if the time ids of the node include the id of the interval
-							time_ids.forEach(function(d, i) {
-								if (d === app.interval_id) {
-									// if so, the node occurs in the selected time slice
-									in_interval = true;
-								}
-							});
+							var time_ids = d.getAttribute("time_ids");
+							if (time_ids !== null) {
+								time_ids = time_ids.split(",");
+
+								// check if the time ids of the node include the id of the interval
+								time_ids.forEach(function(d, i) {
+									if (d === app.interval_id) {
+										// if so, the node occurs in the selected time slice
+										in_interval = true;
+									}
+								});
+							}
 						}
 					}
 				});
@@ -200,7 +221,7 @@ app = new Vue({
 					this.style.strokeOpacity = 0.2;
 					this.style.fillOpacity = 0.2;
 				}	
-			})
+			});
 
 			var links = d3.selectAll(".link").selectAll("line");
 
@@ -232,7 +253,7 @@ app = new Vue({
 				}
 
 				// check if the target time ids of a link include the time slice if of the selected interval
-				if (target_time_ids !== null && target_time_ids.includes(interval)) {
+				if (!(target_time_ids === null || typeof target_time_ids === "undefined") && target_time_ids.includes(interval)) {
 					in_target_interval = true;
 				}
 				
@@ -384,15 +405,6 @@ app = new Vue({
 				.catch((error) => {
 					console.error(error);
 			});
-		},
-		/*
-		TODO: not working yet nor integrated!
-		The idea is to be able to release all of the fixed nodes as restart the whole simulation
-		*/
-		restart_sim: function() {
-			var node = d3.selectAll(".node")
-			//console.log(node)
-			app.simulation.alpha(1).restart();
 		},
 		/*
 		Reset the opacity of all nodes and edges to their original values (nodes: 1.0, edges: 0.6).
