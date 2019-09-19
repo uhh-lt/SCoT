@@ -132,6 +132,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	    	.on("mouseout", mouseOut)
 	    	.on("click", function(d) {
 	    		app.node_selected = true;
+	    		app.select_node_is_no_cluster_node = app.is_normal_node();
 	   		});
 	
 	// call the time diff tooltip from the svg
@@ -183,6 +184,15 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	// update the cluster information in the Vue data variable after initializing the graph
 	app.get_clusters();
 
+	// release all pinned nodes and restart the simulation
+	d3.select("#restart_button").on("click", function() {
+		node.each(function(d) {
+			//console.log(d)
+			d.fx = null;
+			d.fy = null;
+		});
+		app.simulation.alphaTarget(0);
+	});
 
 	// determine the dragging behaviour on rendering the graph initially
 	// sticky means that the simulation recalculates the other node positions when one has been dragged
@@ -327,6 +337,10 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		    		.call(drag_node)
 		    	.on("mouseover", mouseOver(0.2))
 		   		.on("mouseout", mouseOut)
+		   		.on("click", function(d) {
+	    			app.node_selected = true;
+	    			app.select_node_is_no_cluster_node = app.is_normal_node();
+	   			});
 
 	   	var circle = g.append("circle")
 				.attr("fill", function(d) { return d.colour; })
@@ -521,7 +535,12 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 				.on("mousedown", mousedowned)
 		    		.call(drag_node)
 		    	.on("mouseover", mouseOver(0.2))
-		   		.on("mouseout", mouseOut);
+		   		.on("mouseout", mouseOut)
+		   		.on("click", function(d) {
+	    			app.node_selected = true;
+	    			app.select_node_is_no_cluster_node = app.is_normal_node();
+
+	   			});
 
 
 	   	var circle = g.append("circle")
@@ -727,8 +746,6 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	}
 
 	function dragend(d) {
-		//d.fixed() = true;
-		//app.simulation.alphaTarget(0);
 		ticked();
 	}
 
