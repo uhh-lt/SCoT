@@ -4,8 +4,8 @@
 
 [Rendering a Graph](renderingGraph.md)
 
-[Interacting with a Graph](interacting.md)
+[Interacting With a Graph](interacting.md)
 
 [Edit Cluster Hypothesis](clusters.md)
 
-[View difference in time (Time Diff)](timeDiff.md)
+[View Difference Over Time (Time Diff)](timeDiff.md)
