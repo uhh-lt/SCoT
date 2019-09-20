@@ -1,4 +1,4 @@
-#Installation Guide
+# Installation Guide
 
 This guide is designed to help you run SCoT on your own server or local machine. You can either run it in Docker or just plain directly on your computer.
 
