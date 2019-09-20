@@ -86,7 +86,7 @@ As for the data: you need collocations of the target word and the collocations o
 
 In the image below you can see the overall architecture of SCoT.
 
-[Architecture](./images/architecture.png)
+![Architecture](./images/architecture.png)
 
 
 For rendering and manipulating the graph in the frontend I use D3.js in combination with Vue.js. 
