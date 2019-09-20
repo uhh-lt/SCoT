@@ -9,7 +9,7 @@ By clicking on the button "Recluster", the clustering algorithm is executed on t
 
 Clicking on the "Edit Graph" button opens up a column to the right of the graph with options to edit and examine the graph.
 
-![Edit column](./images/scot_with_edit_column.png)
+![Edit column](./images/overview.png)
 
 The functionalities available in the edit column are explained in detail in the sections below. The edit column can be closed via the "Close" Button at the bottom.
 
@@ -28,7 +28,7 @@ The user can edit different aspects of the graph, e.g. manipulate simulation par
 ### Dragging Nodes
 In the edit column the dragging behaviour of the nodes can be selected.
 
-![Dragging Behaviour Setting](./images/set_dragging_behaviour.png)
+![Dragging Behaviour Setting](./images/dragging_restart_sim.png)
 
 SCoT provides two different types of dragging behaviours for nodes. The default dragging behaviour is "Keep force for dragging (no brush available)".
 Using this dragging behaviour, only one node at a time can be selected. The user selects a node by clicking on it. Then the selected node is marked with a red circle around it.
@@ -38,6 +38,8 @@ Using this dragging behaviour, only one node at a time can be selected. The user
 The selected node can then be moved to a different position through drag & drop. The nodes in the graph reposition themselves automatically according to the force simulation, as long as they have not been moved manually before. If a node as been dragged to a different position, it stays in that position, even if the simulation parameters are changed.
 
 The other dragging behaviour is "Enable brush and single node movement". Using the dragging behaviour pauses the simulation, meaning you can select a node and drag it around without any other nodes following. You can also *brush* over several nodes to select them. To use the brush, hold down and drag the cursor, which opens up a box. All the nodes in this box are selected and can be dragged at the same time maintaining their exact positions to each other. To drag selected nodes, click on one of those nodes and drag it to its new position. The other nodes stay in the exact relative position to the dragged node.
+
+With the button "Restart Simulation" the user can release all the pinned nodes.
 
 ### Manipulate the Simulation
 SCoT lets you edit two simulation parameters: the charge strength between the nodes and the link distance.
