@@ -82,7 +82,7 @@ When creating an SQL dump for creating a Docker volume you do not need to includ
 
 As for the data: you need collocations of the target word and the collocations of the target word's collocations. You also need time slices for when these collocations occur as well as a score (e.g. number of occurrance) between them. In the table "time_slices", the start and end years are integers like *1520*. A row in the "similar_words" table would look like this *('bahamas', 'crisis', 1, 5)*. 'bahamas' is word1, 'crisis' is word2, '1' is the score between them and '5' is the id for the time slice the pair occurs in. For an edge to appear in the graph between *bahamas* and another node, there needs to be an entry with *bahamas* as word2 and the other node as word1 or vice versa.
 
-## Some Remarks to the Tech Stack
+## Some Remarks on the Tech Stack
 
 In the image below you can see the overall architecture of SCoT.
 
