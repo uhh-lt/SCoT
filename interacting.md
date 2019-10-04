@@ -17,7 +17,7 @@ The button "Reset Zoom" resets all the zooming and panning activity to 0. You ca
 
 ![Zoom](./images/zoom_in.png)
 
-The graph is rendered using a force simulation, which means that the positions of nodes are automatically calculated according to different parameters such as the charge between them. Clicking on the button "Restart Simulation" releases all the nodes from their positions and recalculates them by restarting the simulation.
+The graph is rendered using a force simulation, which means that the positions of nodes are automatically calculated according to different parameters such as the charge between them.
 
 ## Reclustering
 When clicking the button "Recluster" in the top right-hand corner, the Chinese Whispers clustering algorithm is executed on the graph again. This may result in different clusters, since the algorithm is non-deterministic. This way, the user is able to see different hypothesis the system assumes about the senses of the target word. For more information on the Chinese Whispers Clustering Algorithm click [here](http://delivery.acm.org/10.1145/1660000/1654774/p73-biemann.pdf?ip=77.20.250.85&id=1654774&acc=OPEN&key=4D4702B0C3E38B35%2E4D4702B0C3E38B35%2E4D4702B0C3E38B35%2E6D218144511F3437&__acm__=1568553032_2c17e0dabf68573cf049cc4c8c1491be).
