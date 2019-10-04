@@ -344,29 +344,29 @@ app = new Vue({
 
 								var born = true;
 								var deceased = true;
+								var in_interval = false;
 								
 								for (var i = 0; i < time_ids.length; i++) {
 									var t = time_ids[i];
-									console.log(node_text)
-									console.log(t)
-									console.log(small_time_interval)
-									console.log(period_before)
-									console.log(period_after)
-									if (!small_time_interval.includes(t) && period_after.includes(t)) {
+									
+									if(small_time_interval.includes(t)) {
+										in_interval = true;
+									}
+									if (!small_time_interval.includes(t) && period_after.includes(t) && ! period_before.includes(t)) {
 										deceased = false;
 									}
-									if (!small_time_interval.includes(t) && period_before.includes(t)) {
+									if (!small_time_interval.includes(t) && period_before.includes(t) && !period_after.includes(t)) {
 										born = false;
 									}
 								}
 
-								if (born===true && deceased===true) {
+								if (born===true && deceased===true && in_interval===true) {
 									d.setAttribute("fill", "yellow");
 									time_diff_nodes.shortlived.push(node_text);
-								} else if (born===true) {
+								} else if (born===true && in_interval===true) {
 									d.setAttribute("fill", "green");
 									time_diff_nodes.born.push(node_text);
-								} else if (deceased===true) {
+								} else if (deceased===true && in_interval===true) {
 									d.setAttribute("fill", "red");
 									time_diff_nodes.deceased.push(node_text);
 								} else {
