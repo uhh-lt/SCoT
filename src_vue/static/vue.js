@@ -347,10 +347,15 @@ app = new Vue({
 								
 								for (var i = 0; i < time_ids.length; i++) {
 									var t = time_ids[i];
-									if (period_after.includes(t)) {
+									console.log(node_text)
+									console.log(t)
+									console.log(small_time_interval)
+									console.log(period_before)
+									console.log(period_after)
+									if (!small_time_interval.includes(t) && period_after.includes(t)) {
 										deceased = false;
 									}
-									if (period_before.includes(t)) {
+									if (!small_time_interval.includes(t) && period_before.includes(t)) {
 										born = false;
 									}
 								}
