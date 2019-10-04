@@ -17,7 +17,7 @@ CREATE TABLE similar_words (
 	word2 VARCHAR(64) NOT NULL,
 	score INT UNSIGNED NOT NULL,
 	time_id INT UNSIGNED NOT NULL REFERENCES time_slices(id),
-	PRIMARY KEY (id)
+	PRIMARY KEY (`word1` , `word2`, `score`, `time_id`)
 );
 
 CREATE INDEX word1_idx ON similar_words(word1);
