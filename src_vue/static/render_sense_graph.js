@@ -621,7 +621,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		if (app.time_diff === true) {
 			// show time diff tooltip
 			circles.on("mouseover", time_diff_tip.show);
-			//circles.on("mouseout", time_diff_tip.hide);
+			circles.on("mouseout", time_diff_tip.hide);
 		}
 	});
 
