@@ -35,8 +35,8 @@ services:
   db:
     image: mariadb:10.4.6
     volumes:
-      - ./db/dumpnoindex.sql:/docker-entrypoint-initdb.d/dumpnoindex.sql
-      - ./db/data_reduced_gbooks:/var/lib/mysql
+      - ./db/dump.sql:/docker-entrypoint-initdb.d/dump.sql
+      - ./db/data_test:/var/lib/mysql
 
       # "database" : "mysql://user:password@db/scot" / local: "mysql://inga@0.0.0.0/scot"(config.json)
     environment:
