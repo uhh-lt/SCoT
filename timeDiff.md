@@ -20,7 +20,7 @@ All the nodes of a category are listed when the user clicks on the "Nodes" butto
 
 In the graph, the nodes are coloured accordingly. The previous cluster colours are still visible in the edit graph column. 
 
-![Time Interval Graph](./images/time_interval_graph.png)
+![Time Interval Graph](./images/fixed_time_diff_graph.png)
 
 To regain the cluster colours in the graph switch back to sense clustering mode.
 
