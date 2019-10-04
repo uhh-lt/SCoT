@@ -1,5 +1,5 @@
 # Edit Clusters
-The clusters produced by the program can be edited and if necessary corrected. In the edit column all the clusters in the graph are listed. For each cluster there are to buttons: one to edit the cluster and another to display a list of all the nodes in the respective cluster.
+The clusters produced by the program can be edited and, if necessary, corrected. In the edit column all the clusters in the graph are listed. For each cluster there are two buttons: one to edit the cluster and another to display a list of all the nodes contained in the respective cluster.
 
 ![Cluster List](./images/cluster_list.png)
 
@@ -8,7 +8,7 @@ When hovering over the coloured circle next to the cluster name, all the nodes a
 ![Fade In Cluster](./images/show_cluster_in_graph.png)
 
 
-In some cases, nodes are not connected to any other in the graph. The are only neighbours to the target word. Then, the nodes are not rendered in the graph, but they are listed under "Singletons" in the edit column.
+In some cases, nodes are not connected to any other in the graph. They are only neighbours of the target word. Then, the nodes are not rendered in the graph, but they are listed under "Singletons" in the edit column.
 
 ![Singletons](./images/singletons.png)
 
@@ -32,7 +32,7 @@ The colour of the circle next to the cluster name is directly updated. However, 
 The user can edit multiple clusters before clicking the "Apply" button to make the updated visible in the graph.
 
 ## Add / Delete Cluster Node
-The user can also add a special node with the cluster name to the graph for each cluster - sort of like a label to a cluster. This node has edges to all the other nodes in the cluster.
+The user can also add a special node with the cluster name to the graph for each cluster - sort of like a label for a cluster. This node has edges to all the other nodes in the cluster.
 
 ![LABELED GRAPH](./images/graph_with_labels.png)
 
@@ -48,10 +48,10 @@ The same behaviour is displayed when updating the graph.
 
 Cluster labels can be deleted via selecting them (clicking on them) and then pressing `BACKSPACE`.
 
-**Note of caution:** Currently, selected cluster nodes are always deleted when pressing `BACKSPACE`. This is not ideal, I know, and I am going to solve this. However, until I do, please make sure you have selected a non-cluster node when editing e.g. a cluster name. Otherwise, you might accidentally delete a cluster node.
+**Note of caution:** Currently, selected cluster nodes are always deleted when pressing `BACKSPACE`. This is not ideal and I am going to solve this. However, until I do, please make sure you have selected a non-cluster node when editing e.g. a cluster name. Otherwise, you might accidentally delete a cluster node.
 
 ## Assign a Node to a Different Cluster
-In case the user does not agree with the system hypothesis, he or she can assign a node to a different existing cluster.
+In case the user does not agree with the system's hypothesis, they can assign a node to a different existing cluster.
 When clicking on a node, an "Options" button appears in the corner above the graph.
 
 ![Options Button](./images/options.png)
@@ -62,4 +62,4 @@ A click on this buttons opens a dropdown menu. Currently, the only option availa
 
 On clicking "OK", the node's colour changes to the one of the newly assigned cluster. It also changes the cluster in the cluster list.
 
-If a cluster labels are used, they do not automatically update, but have to be deleted manually and reentered with the updated clusters via the edit function of the respective cluster.
+If cluster labels are used, they do not automatically update, but have to be deleted manually and reentered with the updated clusters via the edit function of the respective cluster.
