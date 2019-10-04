@@ -94,8 +94,8 @@ For rendering and manipulating the graph in the frontend I use D3.js in combinat
 [D3.js (Data Driven Documents)](https://d3js.org/) is a JavaScript library for creating custom interactive visualizations through direct manipulation of DOM elements. It provides methods to bind data to the DOM and many different ways to manipulate the DOM elements. For SCoT, I use a force simulation network to render the graph.
 
 For building the user interface, I used the JavaScript framework [Vue.js](https://vuejs.org). It is incrementally adaptable and easy to get started with. Vue.js provides directives to reactively interact with the HTML, e.g. data entered via an input field can be directly modeled by or bound to JavaScript variables.
-For styling the frontend I used [Bootstrap-Vue](https://bootstrap-vue.js.org/), a Bootstrap verion developed especially for the Vue.js framework.
+For styling the frontend I used [Bootstrap-Vue](https://bootstrap-vue.js.org/), a Bootstrap version developed especially for the Vue.js framework.
 
 The backend is implemented in Python and MySQL. For accessibility reasons I decided to use Python [records](https://github.com/kennethreitz/records) to query the database. Records is an easy-to-use library to access most relational database types. Since SCoT only queries the database, records is sufficient.
-The REST API is implemented with [Flask](https://palletsprojects.com/p/flask/), a lightwight WSGI web application framework. For deploying of the Flask app I use a combination of uWSGI and nginx in the Dockerfile.
+The REST API is implemented with [Flask](https://palletsprojects.com/p/flask/), a lightwight WSGI web application framework. For deploying of the Flask app I use a combination of [uWSGI and nginx](https://github.com/tiangolo/uwsgi-nginx-flask-docker) in the Dockerfile.
 To calculate the clusters in the graph, I apply the [Chinese Whispers](http://delivery.acm.org/10.1145/1660000/1654774/p73-biemann.pdf?ip=134.100.17.59&id=1654774&acc=OPEN&key=2BA2C432AB83DA15%2EBB626F2563133BE7%2E4D4702B0C3E38B35%2E6D218144511F3437&__acm__=1568987463_33679382996da1745b5f5c68b46dd4da) algorithm.
