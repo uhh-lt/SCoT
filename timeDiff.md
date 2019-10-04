@@ -22,8 +22,6 @@ In the graph, the nodes are coloured accordingly. The previous cluster colours a
 
 ![Time Interval Graph](./images/time_interval_graph.png)
 
-**Note of caution:** At the moment, some edge cases are not categorized correctly - I only just noticed that there ARE in fact cases I did not consider - e.g. nodes that are born after the selected time period are still classified as born, since there is no other category they would fit.
-
 To regain the cluster colours in the graph switch back to sense clustering mode.
 
 ## Skip through time slices
