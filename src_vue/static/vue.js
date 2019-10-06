@@ -283,7 +283,8 @@ app = new Vue({
 			}
 		},
 		/*
-		TODO: add comment
+		Color nodes depending on whether they started to occur in the selected small time interval, stopped to occur in said interval, or both.
+		Basically comparing the graph time interval and the small time interval selected by the user.
 		*/
 		show_time_diff: async function() {
 			var big_time_interval = [];
