@@ -35,13 +35,16 @@ services:
   db:
     image: mariadb:10.4.6
     volumes:
-      - ./db/dumpnoid.sql:/docker-entrypoint-initdb.d/dumpnoid.sql
-      - ./db/data_reduced_gbooks:/var/lib/mysql
+      - ./db/csv_test/datahub/:/var/lib/mysql-files/datahub/
+      - ./db/csv_test/:/docker-entrypoint-initdb.d/
+      - ./db/csv_test/data:/var/lib/mysql
+      #- ./db/fin_1990_2017.sql:/docker-entrypoint-initdb.d/fin_1990_2017.sql
+      #- ./db/data_fin_test:/var/lib/mysql
 
       # "database" : "mysql://user:password@db/scot" / local: "mysql://inga@0.0.0.0/scot"(config.json)
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: scot
+      MYSQL_DATABASE: fin
       MYSQL_USER: user
       MYSQL_PASSWORD: password
     networks:
