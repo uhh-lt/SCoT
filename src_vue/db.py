@@ -79,7 +79,8 @@ class Database:
 				for node in nodes:
 					if node[0] == row['word1']:
 						exists = True
-						node[1]["time_ids"].append(row['time_id'])
+						if not row["time_id"] in node[1]["time_ids"]:
+							node[1]["time_ids"].append(row['time_id'])
 				
 				if not exists:
 					nodes.append([row['word1'], {"time_ids": [row['time_id']]}])
