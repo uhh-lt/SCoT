@@ -8,8 +8,8 @@ TODO: NOT NEEDED, DELETE @param string time_diff
 async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 	// Set initial parameters
-	var width = 1000;
-	var height = 1000;
+	var width = 600;
+	var height = 500;
 	var shiftKey;
 	var radius = 5;
 
@@ -622,8 +622,20 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 			// show time diff tooltip
 			circles.on("mouseover", time_diff_tip.show);
 			circles.on("mouseout", time_diff_tip.hide);
+
+			d3.select("#skip_through_button").on("click", function(d) {
+				if (this.getAttribute("aria-expanded") === "true") {
+					node.on("mouseover", null);
+					node.on("mouseout", null);
+				} else {
+					node.on("mouseover", mouseOver(0.2));
+					node.on("mouseout", mouseOut);
+				}
+				
+			})
 		}
 	});
+
 
 	function brushstarted(){
 		if (d3.event.sourceEvent.type !== "end") {

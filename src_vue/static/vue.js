@@ -186,6 +186,7 @@ app = new Vue({
 			var nodes = d3.selectAll(".node").selectAll("g");
 
 			nodes.each(function(d,i) {
+				
 
 				// Set opacity to one in the beginning - important when changing time slice.
 				this.style.strokeOpacity = 1.0;
@@ -287,6 +288,7 @@ app = new Vue({
 		Basically comparing the graph time interval and the small time interval selected by the user.
 		*/
 		show_time_diff: async function() {
+			
 			var big_time_interval = [];
 			await axios.get("./interval/" + app.start_year + "/" + app.end_year)
 				.then((res) => {
