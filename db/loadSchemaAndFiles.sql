@@ -11,7 +11,7 @@ CREATE TABLE time_slices (
     PRIMARY KEY (id)
 );
 
-LOAD DATA INFILE '/var/lib/mysql-files/datahub/time_slice_data.csv' 
+LOAD DATA INFILE '/var/lib/mysql-files/datahub/time_slices.csv' 
 INTO TABLE time_slices 
 FIELDS TERMINATED BY ',' 
 ENCLOSED BY '"'
