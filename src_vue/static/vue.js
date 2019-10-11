@@ -817,7 +817,11 @@ app = new Vue({
 					app.get_clusters();
 				})
 				.catch((error) => {
-					console.error(error);
+					console.log(error)
+					if (error.response.status >= 500) {
+						alert(error + "\nPlease try a different target word.");
+					}
+					
 				});
 
 			
