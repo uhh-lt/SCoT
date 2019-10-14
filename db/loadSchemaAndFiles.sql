@@ -11,11 +11,11 @@ CREATE TABLE time_slices (
     PRIMARY KEY (id)
 );
 
-LOAD DATA INFILE '/var/lib/mysql-files/datahub/time_slices.csv' 
-INTO TABLE time_slices 
-FIELDS TERMINATED BY ',' 
-ENCLOSED BY '"'
-LINES TERMINATED BY '\n';
+#LOAD DATA INFILE '/var/lib/mysql-files/datahub/time_slices.csv' 
+#INTO TABLE time_slices 
+#FIELDS TERMINATED BY ',' 
+#ENCLOSED BY '"'
+#LINES TERMINATED BY '\n';
 
 DROP TABLE IF EXISTS similar_words;
 CREATE TABLE similar_words (
@@ -25,56 +25,56 @@ CREATE TABLE similar_words (
     time_id INT UNSIGNED NOT NULL
 );
 
-LOAD DATA INFILE '/var/lib/mysql-files/datahub/sim1.csv' 
-INTO TABLE similar_words 
-FIELDS TERMINATED BY ',' 
-ENCLOSED BY '"'
-LINES TERMINATED BY '\n';
+#LOAD DATA INFILE '/var/lib/mysql-files/datahub/sim1.csv' 
+#INTO TABLE similar_words 
+#FIELDS TERMINATED BY ',' 
+#ENCLOSED BY '"'
+#LINES TERMINATED BY '\n';
 
-LOAD DATA INFILE '/var/lib/mysql-files/datahub/sim2.csv' 
-INTO TABLE similar_words 
-FIELDS TERMINATED BY ',' 
-ENCLOSED BY '"'
-LINES TERMINATED BY '\n';
+#LOAD DATA INFILE '/var/lib/mysql-files/datahub/sim2.csv' 
+#INTO TABLE similar_words 
+#FIELDS TERMINATED BY ',' 
+#ENCLOSED BY '"'
+#LINES TERMINATED BY '\n';
 
-LOAD DATA INFILE '/var/lib/mysql-files/datahub/sim3.csv' 
-INTO TABLE similar_words 
-FIELDS TERMINATED BY ',' 
-ENCLOSED BY '"'
-LINES TERMINATED BY '\n';
+#LOAD DATA INFILE '/var/lib/mysql-files/datahub/sim3.csv' 
+#INTO TABLE similar_words 
+#FIELDS TERMINATED BY ',' 
+#ENCLOSED BY '"'
+#LINES TERMINATED BY '\n';
 
-LOAD DATA INFILE '/var/lib/mysql-files/datahub/sim4.csv' 
-INTO TABLE similar_words 
-FIELDS TERMINATED BY ',' 
-ENCLOSED BY '"'
-LINES TERMINATED BY '\n';
+#LOAD DATA INFILE '/var/lib/mysql-files/datahub/sim4.csv' 
+#INTO TABLE similar_words 
+#FIELDS TERMINATED BY ',' 
+#ENCLOSED BY '"'
+#LINES TERMINATED BY '\n';
 
-LOAD DATA INFILE '/var/lib/mysql-files/datahub/sim5.csv' 
-INTO TABLE similar_words 
-FIELDS TERMINATED BY ',' 
-ENCLOSED BY '"'
-LINES TERMINATED BY '\n';
+#LOAD DATA INFILE '/var/lib/mysql-files/datahub/sim5.csv' 
+#INTO TABLE similar_words 
+#FIELDS TERMINATED BY ',' 
+#ENCLOSED BY '"'
+#LINES TERMINATED BY '\n';
 
-LOAD DATA INFILE '/var/lib/mysql-files/datahub/sim6.csv' 
-INTO TABLE similar_words 
-FIELDS TERMINATED BY ',' 
-ENCLOSED BY '"'
-LINES TERMINATED BY '\n';
+#LOAD DATA INFILE '/var/lib/mysql-files/datahub/sim6.csv' 
+#INTO TABLE similar_words 
+#FIELDS TERMINATED BY ',' 
+#ENCLOSED BY '"'
+#LINES TERMINATED BY '\n';
 
-LOAD DATA INFILE '/var/lib/mysql-files/datahub/sim7.csv' 
-INTO TABLE similar_words 
-FIELDS TERMINATED BY ',' 
-ENCLOSED BY '"'
-LINES TERMINATED BY '\n';
+#LOAD DATA INFILE '/var/lib/mysql-files/datahub/sim7.csv' 
+#INTO TABLE similar_words 
+#FIELDS TERMINATED BY ',' 
+#ENCLOSED BY '"'
+#LINES TERMINATED BY '\n';
 
-LOAD DATA INFILE '/var/lib/mysql-files/datahub/sim8.csv' 
-INTO TABLE similar_words 
-FIELDS TERMINATED BY ',' 
-ENCLOSED BY '"'
-LINES TERMINATED BY '\n';
+#LOAD DATA INFILE '/var/lib/mysql-files/datahub/sim8.csv' 
+#INTO TABLE similar_words 
+#FIELDS TERMINATED BY ',' 
+#ENCLOSED BY '"'
+#LINES TERMINATED BY '\n';
 
 
-CREATE INDEX word1_idx ON similar_words(word1);
-CREATE INDEX word2_idx ON similar_words(word2);
+#CREATE INDEX word1_idx ON similar_words(word1);
+#CREATE INDEX word2_idx ON similar_words(word2);
 
-CREATE INDEX time_id_idx ON similar_words(time_id);
+#CREATE INDEX time_id_idx ON similar_words(time_id);
