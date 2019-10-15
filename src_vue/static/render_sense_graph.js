@@ -342,17 +342,20 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		node = node.data(nodes, function(d) { return d.id;});
 		node.exit().remove();
 
+
+
 		var g = node.enter()
 				.append("g")
 				.attr("stroke", "#fff")
 		    	.attr("stroke-width", 1.5)
-		    	.attr("class", "node")
+		    	//.attr("class", "node")
 				.on("mousedown", mousedowned)
 		    		.call(drag_node)
 		    	.on("mouseover", mouseOver(0.2))
 		   		.on("mouseout", mouseOut)
 		   		.on("click", function(d) {
-	    			if (this.getAttribute("class") === "selected") {
+		   			console.log(d)
+	    			if (d.getAttribute("class") === "selected") {
 	    				app.node_selected = true;
 	    			} else {
 	    				app.node_selected = false;
@@ -552,12 +555,13 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 				.append("g")
 				.attr("stroke", "#fff")
 		    	.attr("stroke-width", 1.5)
-		    	.attr("class", "node")
+		    	//.attr("class", "node")
 				.on("mousedown", mousedowned)
 		    		.call(drag_node)
 		    	.on("mouseover", mouseOver(0.2))
 		   		.on("mouseout", mouseOut)
 		   		.on("click", function(d) {
+		   			console.log(this)
 	    			if (this.getAttribute("class") === "selected") {
 	    				app.node_selected = true;
 	    			} else {
@@ -726,9 +730,12 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 			node.classed("selected", function(p) {
 				return p.selected = d === p;
 			})
-		} else {
+		} else if (shiftKey) {
 			d3.select(this).classed("selected", d.selected = !d.selected);
 			d3.event.stopImmediatePropagation();
+		} else {
+			d3.select(this).classed("selected", d.selected = !d.selected);
+			//d3.event.stopImmediatePropagation();
 		}
 	}
 
