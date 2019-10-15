@@ -11,6 +11,7 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3-tip/0.9.1/d3-tip.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.min.js"></script>
 	<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/vue-clickaway@2.2.2/dist/vue-clickaway.min.js"></script>
 
     <!-- Other JavaScript files -->
 	<script type="text/javascript" src=".%% url_for('static', filename='render_sense_graph.js') %%"></script>
@@ -132,12 +133,11 @@
     <b-col id="graph_display" sm="8">
 
     	<!-- Options Drop Down for node options -->
-    	<b-dropdown  variant="light" id="nodeOptionsDD" v-if="!time_diff && node_selected && sticky_mode === 'true'" text="Options">
+    	<b-dropdown  variant="light" id="nodeOptionsDD" v-if="!time_diff && sticky_mode === 'true'" text="Options" aria-expanded=true style="display:none" >
     		<!-- Node options -->
     		<!-- only available for non cluster nodes -->
     		<b-dropdown-item v-show="select_node_is_no_cluster_node" v-on:click="findSelectedNodes()" v-b-modal.modal-1> Assign to different cluster </b-dropdown-item>
     	</b-dropdown> 
-
 
     	<!-- Modal to change cluster assignment of a node -->
     	<b-modal id="modal-1" title="Change Cluster Assignment" @ok="assignNewCluster()">

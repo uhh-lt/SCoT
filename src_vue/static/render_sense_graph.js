@@ -7,9 +7,10 @@ TODO: NOT NEEDED, DELETE @param string time_diff
 */
 async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
+
 	// Set initial parameters
-	var width = 600;
-	var height = 500;
+	var width = 950;
+	var height = 550;
 	var shiftKey;
 	var radius = 5;
 
@@ -131,9 +132,17 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	    	.on("mouseover", mouseOver(0.2))
 	    	.on("mouseout", mouseOut)
 	    	.on("click", function(d) {
-	    		app.node_selected = true;
+	    		if (this.getAttribute("class") === "selected") {
+	    			app.node_selected = true;
+	    		} else {
+	    			app.node_selected = false;
+	    		}
+	    		
 	    		app.select_node_is_no_cluster_node = app.is_normal_node();
-	   		});
+	    		//console.log(this)
+	    		showContextMenu(this);
+	   		})
+	   		//.on("contextmenu", showContextMenu);
 	
 	// call the time diff tooltip from the svg
 	svg.call(time_diff_tip);
@@ -178,6 +187,11 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		.attr('x', 6)
 		.attr('y', 3)
 		.attr("text", function(d) { return d.id; });
+
+
+	//d3.select("body").on("click", function(d) {
+	//		console.log("clicked")
+	//})
 
 	app.simulation.on("tick", ticked)
 
@@ -338,8 +352,15 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		    	.on("mouseover", mouseOver(0.2))
 		   		.on("mouseout", mouseOut)
 		   		.on("click", function(d) {
-	    			app.node_selected = true;
+	    			if (this.getAttribute("class") === "selected") {
+	    				app.node_selected = true;
+	    			} else {
+	    				app.node_selected = false;
+	    			}
+	    		
 	    			app.select_node_is_no_cluster_node = app.is_normal_node();
+	    			//console.log(this)
+	    			showContextMenu(this);
 	   			});
 
 	   	var circle = g.append("circle")
@@ -537,9 +558,15 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		    	.on("mouseover", mouseOver(0.2))
 		   		.on("mouseout", mouseOut)
 		   		.on("click", function(d) {
-	    			app.node_selected = true;
+	    			if (this.getAttribute("class") === "selected") {
+	    				app.node_selected = true;
+	    			} else {
+	    				app.node_selected = false;
+	    			}
+	    		
 	    			app.select_node_is_no_cluster_node = app.is_normal_node();
-
+	    			//console.log(this)
+	    			showContextMenu(this);
 	   			});
 
 
@@ -637,6 +664,30 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	});
 
 
+	function showContextMenu(d) {
+		if (app.node_selected) {
+			console.log(app.node_selected);
+			console.log("selected");
+			console.log("Show context menu");
+			var x = d3.event.pageX;
+			var y = d3.event.pageY;
+    		d3.select('#nodeOptionsDD')
+      			.style('position', 'absolute')
+      			.style('display', 'block')
+      			.style('left', x)
+      			.style('top', y);
+
+			d3.event.preventDefault();
+			
+		} else {
+			console.log(app.node_selected);
+			console.log("not selected");
+			
+			d3.select('#nodeOptionsDD')
+				.style('display', 'none');
+		}
+	}
+
 	function brushstarted(){
 		if (d3.event.sourceEvent.type !== "end") {
 			node.classed("selected", function(d) {
@@ -663,12 +714,22 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	}
 
 	function mousedowned(d){
+		/*
 		if (shiftKey) {
 			d3.select(this).classed("selected", d.selected = !d.selected);
 			d3.event.stopImmediatePropagation();
 		} else if (!d.selected) {
 			node.classed("selected", function(p) { return p.selected = d === p;});
-		}	
+		}
+		*/
+		if (!d.selected) {
+			node.classed("selected", function(p) {
+				return p.selected = d === p;
+			})
+		} else {
+			d3.select(this).classed("selected", d.selected = !d.selected);
+			d3.event.stopImmediatePropagation();
+		}
 	}
 
 	// update node and link positions
