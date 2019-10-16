@@ -391,6 +391,7 @@ app = new Vue({
 		Fetch the updated amount of nodes and edges as well as the singletons from the BE.
 		*/
 		update: function() {
+			console.log("called update")
 			var target_word = this.target_word;
 			var start_year = this.start_year;
 			var end_year = this.end_year;

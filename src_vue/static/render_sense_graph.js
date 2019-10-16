@@ -477,69 +477,6 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		});
 	}
 
-	// add new nodes and edges to the graph when the user updated the number of nodes and edges
-	d3.select("#update_button").on("click", async function() {
-		app.update().then((res) => {
-			var existing_labels = [];
-			for (var j = 0; j < app.clusters.length; j++) {
-				var cluster = app.clusters[j];
-			
-				for (var k=0; k < cluster.labels.length; k++) {
-					existing_labels.push(cluster.labels[k].text);
-				}
-			}
-
-			for (var i = 0; i < app.updated_nodes.length; i++) {
-				var new_label = app.updated_nodes[i].id;
-				var cluster_class = app.updated_nodes[i].class;
-				
-					if (!existing_labels.includes(new_label)) {
-						// add new nodes to the nodes array
-						nodes.push({"id": app.updated_nodes[i].id, "class": app.updated_nodes[i].class, "time_ids": app.updated_nodes[i].time_ids});
-					} else {
-						// update existing ones (colour, cluster id and cluster name)
-						var existing_nodes = d3.selectAll(".node");
-						existing_nodes.selectAll("g").each(function(d,i) {
-							var label;
-							var childnodes = this.childNodes;
-							
-							childnodes.forEach(function(d,i) {
-								if (d.tagName === "text") {
-									label = d.getAttribute("text");
-								}
-							});
-
-							if (new_label === label) {
-								childnodes.forEach(function(d,i) {
-									if (d.tagName === "circle") {
-										var colour = get_colour(cluster_class);
-
-										d.setAttribute("cluster_id", cluster_class);
-										d.setAttribute("fill", colour);
-										d.setAttribute("cluster", cluster_class);
-									}
-								});
-							}
-						});
-					}
-				}
-
-				nodes.forEach(function(d) {
-			    	d.selected = false;
-			   		d.previouslySelected = false;
-				});
-
-				for (var i = 0; i < app.updated_links.length; i++) {
-					if (! links.includes(app.updated_links[i])) {
-						// add new links to link array
-						links.push(app.updated_links[i]);	
-					}
-				}
-				update_graph()
-				app.get_clusters();
-		});
-	});
-
 
 	function get_colour(c) {
 		return color(c);
@@ -633,6 +570,10 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	d3.select("#select_time_diff").on("change", function(d) {
 		// sense clustering
 		if (app.time_diff === false) {
+			
+			//circles.style("stroke-opacity", 1);
+			link.style("stroke-opacity", 1);
+			
 			var circleChilds = d3.selectAll(".node").selectAll("g").selectAll("circle");
 
 			circleChilds.each(function(d) {
@@ -644,10 +585,13 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 					}
 				}
 			})
-
+			node.style("stroke-opacity", 1);
+			node.style("fill-opacity", 1)
 			// don't show time diff tooltip
 			circles.on("mouseover", null);
 			circles.on("mouseout", null);
+			node.on("mouseover", mouseOver(0.2));
+			node.on("mouseout", mouseOut);
 		}
 		if (app.time_diff === true) {
 			// show time diff tooltip
@@ -665,6 +609,69 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 				
 			})
 		}
+	});
+
+	// add new nodes and edges to the graph when the user updated the number of nodes and edges
+	d3.select("#update_button").on("click", async function() {
+		app.update().then((res) => {
+			var existing_labels = [];
+			for (var j = 0; j < app.clusters.length; j++) {
+				var cluster = app.clusters[j];
+			
+				for (var k=0; k < cluster.labels.length; k++) {
+					existing_labels.push(cluster.labels[k].text);
+				}
+			}
+
+			for (var i = 0; i < app.updated_nodes.length; i++) {
+				var new_label = app.updated_nodes[i].id;
+				var cluster_class = app.updated_nodes[i].class;
+				
+					if (!existing_labels.includes(new_label)) {
+						// add new nodes to the nodes array
+						nodes.push({"id": app.updated_nodes[i].id, "class": app.updated_nodes[i].class, "time_ids": app.updated_nodes[i].time_ids});
+					} else {
+						// update existing ones (colour, cluster id and cluster name)
+						var existing_nodes = d3.selectAll(".node");
+						existing_nodes.selectAll("g").each(function(d,i) {
+							var label;
+							var childnodes = this.childNodes;
+							
+							childnodes.forEach(function(d,i) {
+								if (d.tagName === "text") {
+									label = d.getAttribute("text");
+								}
+							});
+
+							if (new_label === label) {
+								childnodes.forEach(function(d,i) {
+									if (d.tagName === "circle") {
+										var colour = get_colour(cluster_class);
+
+										d.setAttribute("cluster_id", cluster_class);
+										d.setAttribute("fill", colour);
+										d.setAttribute("cluster", cluster_class);
+									}
+								});
+							}
+						});
+					}
+				}
+
+				nodes.forEach(function(d) {
+			    	d.selected = false;
+			   		d.previouslySelected = false;
+				});
+
+				for (var i = 0; i < app.updated_links.length; i++) {
+					if (! links.includes(app.updated_links[i])) {
+						// add new links to link array
+						links.push(app.updated_links[i]);	
+					}
+				}
+				update_graph()
+				app.get_clusters();
+		});
 	});
 
 
