@@ -737,10 +737,10 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 			node.classed("selected", function(p) {
 				return p.selected = d === p;
 			})
-		} else if (shiftKey) {
+		} else if (shiftKey && app.sticky_mode==="true") {
 			d3.select(this).classed("selected", d.selected = !d.selected);
 			d3.event.stopImmediatePropagation();
-		} else {
+		} else if (app.sticky_mode === "true"){
 			d3.select(this).classed("selected", d.selected = !d.selected);
 			//d3.event.stopImmediatePropagation();
 		}
