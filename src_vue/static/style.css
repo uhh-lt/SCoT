@@ -82,6 +82,12 @@ text {
 	margin-left: 5px;
 }
 
+#search_button {
+	display: block;
+	float: right;
+	text-align: center;
+	font-size: 10px;	
+}
 
 #time_diff_button {
 	display: block;
