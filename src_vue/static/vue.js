@@ -35,7 +35,9 @@ app = new Vue({
      	node_selected : false,
      	select_node_is_no_cluster_node : true,
      	clicked_nodes : [],
-     	new_assigned_cluster : {}
+     	new_assigned_cluster : {},
+     	created_cluster_name : "",
+     	created_cluster_colour : ""
 	},
 	computed: {
 		/*
@@ -100,6 +102,60 @@ app = new Vue({
 		}
 	},
 	methods: {
+		generate_cluster_id: function() {
+			var number_of_nodes = d3.selectAll(".node").selectAll("g").size()
+
+			var existing_cluster_ids = [];
+			for (var i = 0; i < app.clusters.length; i++) {
+				var cluster = app.clusters[i];
+				existing_cluster_ids.push(parseInt(cluster.cluster_id));
+			}
+			console.log(existing_cluster_ids)
+			var random_number = Math.floor(Math.random() * Math.floor(number_of_nodes + 10));
+
+			console.log(random_number)
+			while (existing_cluster_ids.includes(random_number)) {
+				random_number = Math.floor(Math.random() * Math.floor(number_of_nodes + 10));
+				console.log(random_number)	
+			}
+
+			return random_number;
+		},
+		// Create a new cluster from scratch when using the node options to change the cluster of a node
+		createNewCluster: function(event) {
+			var selected_nodes = d3.selectAll(".node").selectAll("g");
+			var generated_cluster_id = app.generate_cluster_id().toString()
+
+			selected_nodes.each(function(d,i) {
+				text = "";
+				var childnodes = this.childNodes;
+
+				childnodes.forEach(function(d,i) {
+					if (d.tagName === "text") {
+						text = d.getAttribute("text");				
+					}
+				})
+
+				for (var j=0; j < app.clicked_nodes.length; j++) {
+					// if the node is one of the selected nodes, assign the new attributes
+					if (app.clicked_nodes[j].id === text) {
+						childnodes.forEach(function(d,k) {
+							if (d.tagName === "circle") {
+								d.setAttribute("cluster_id", generated_cluster_id);
+								d.setAttribute("cluster", app.created_cluster_name);
+								d.setAttribute("fill", app.created_cluster_colour);
+							}
+						});
+					}
+				}
+			});
+
+			// update the information about the clusters in the graph in the data variable clusters.
+			app.get_clusters();
+
+			app.created_cluster_colour = "";
+			app.created_cluster_name = "";
+		},
 		// Check if the selected nodes is a non cluster node. Only those should be considered for changing their cluster assignment
 		is_normal_node: function() {
 			var normal_node;
@@ -166,6 +222,7 @@ app = new Vue({
 						// cluster nodes should not be considered
 						if (d.getAttribute("cluster_node") === "false") {
 							node_characteristics["colour"] = d.getAttribute("fill");
+							app.created_cluster_colour = node_characteristics["colour"];
 							node_characteristics["cluster_id"] = d.getAttribute("cluster_id");
 							node_characteristics["cluster_name"] = d.getAttribute("cluster");
 						}	
