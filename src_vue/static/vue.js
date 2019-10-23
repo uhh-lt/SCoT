@@ -37,7 +37,9 @@ app = new Vue({
      	clicked_nodes : [],
      	new_assigned_cluster : {},
      	created_cluster_name : "",
-     	created_cluster_colour : ""
+     	created_cluster_colour : "",
+     	cluster_selected : false,
+     	searchterm : ""
 	},
 	computed: {
 		/*
@@ -102,6 +104,84 @@ app = new Vue({
 		}
 	},
 	methods: {
+		search_node: function() {
+			//console.log(app.searchterm);
+
+			// prefix matching
+			var nodes = d3.selectAll(".node").selectAll("g");
+			nodes.each(function(d) {
+				var children = this.childNodes;
+				text = "";
+				children.forEach(function(d) {
+					if (d.tagName === "text") {
+						text = d.getAttribute("text");
+					}
+				});
+				if (text.lastIndexOf(app.searchterm, 0) === 0) {
+					children.forEach(function(d) {
+						if (d.tagName === "text") {
+							d.style.backgroundColor = "yellow";
+							d.style.fill = "yellow";
+						}
+					})
+				} else {
+					children.forEach(function(d) {
+						if (d.tagName === "text") {
+							d.style.backgroundColor = null;
+							d.style.fill = "black";
+						}
+					})
+				}
+
+			})
+
+			app.searchterm = "";
+		},
+		// Not quite there yet. Save cluster_selected for every cluster
+		// Otherwise weird behaviour when selecting different cluster
+		select_cluster: function(cluster) {
+			if (app.cluster_selected === false) {
+				app.cluster_selected = true;
+				var cluster_id = cluster.cluster_id;
+				var cluster_nodes = [];
+				for (var i = 0; i < cluster.labels.length; i++) {
+					cluster_nodes.push(cluster.labels[i].text);
+				}
+				console.log(cluster_id);
+				console.log(cluster_nodes);
+
+				var links = d3.selectAll(".link").selectAll("line");
+
+				links.each(function(d) {
+					var source = this.getAttribute("source");
+					var target = this.getAttribute("target");
+					if (cluster_nodes.includes(source) && cluster_nodes.includes(target)) {
+							this.setAttribute("stroke", cluster.colour);
+					}	
+				})
+
+			} else {
+				app.cluster_selected = false;
+				var cluster_id = cluster.cluster_id;
+				var cluster_nodes = [];
+				for (var i = 0; i < cluster.labels.length; i++) {
+					cluster_nodes.push(cluster.labels[i].text);
+				}
+				console.log(cluster_id);
+				console.log(cluster_nodes);
+
+				var links = d3.selectAll(".link").selectAll("line");
+
+				links.each(function(d) {
+					var source = this.getAttribute("source");
+					var target = this.getAttribute("target");
+					if (cluster_nodes.includes(source) && cluster_nodes.includes(target)) {
+							this.setAttribute("stroke", "#999");
+					}
+				})
+			}
+			
+		},
 		generate_cluster_id: function() {
 			var number_of_nodes = d3.selectAll(".node").selectAll("g").size()
 
@@ -110,13 +190,11 @@ app = new Vue({
 				var cluster = app.clusters[i];
 				existing_cluster_ids.push(parseInt(cluster.cluster_id));
 			}
-			console.log(existing_cluster_ids)
+			
 			var random_number = Math.floor(Math.random() * Math.floor(number_of_nodes + 10));
 
-			console.log(random_number)
 			while (existing_cluster_ids.includes(random_number)) {
-				random_number = Math.floor(Math.random() * Math.floor(number_of_nodes + 10));
-				console.log(random_number)	
+				random_number = Math.floor(Math.random() * Math.floor(number_of_nodes + 10));	
 			}
 
 			return random_number;
