@@ -105,37 +105,37 @@ app = new Vue({
 	},
 	methods: {
 		search_node: function() {
-			//console.log(app.searchterm);
-
-			// prefix matching
-			var nodes = d3.selectAll(".node").selectAll("g");
-			nodes.each(function(d) {
-				var children = this.childNodes;
-				text = "";
-				children.forEach(function(d) {
-					if (d.tagName === "text") {
-						text = d.getAttribute("text");
+			if (app.searchterm === "") {
+				alert("Please enter a search term.");
+			} else {
+				// prefix matching
+				var nodes = d3.selectAll(".node").selectAll("g");
+				nodes.each(function(d) {
+					var children = this.childNodes;
+					text = "";
+					children.forEach(function(d) {
+						if (d.tagName === "text") {
+							text = d.getAttribute("text");
+						}
+					});
+					if (text.lastIndexOf(app.searchterm, 0) === 0) {
+						children.forEach(function(d) {
+							if (d.tagName === "text") {
+								d.style.backgroundColor = "yellow";
+								d.style.fill = "yellow";
+							}
+						})
+					} else {
+						children.forEach(function(d) {
+							if (d.tagName === "text") {
+								d.style.backgroundColor = null;
+								d.style.fill = "black";
+							}
+						})
 					}
 				});
-				if (text.lastIndexOf(app.searchterm, 0) === 0) {
-					children.forEach(function(d) {
-						if (d.tagName === "text") {
-							d.style.backgroundColor = "yellow";
-							d.style.fill = "yellow";
-						}
-					})
-				} else {
-					children.forEach(function(d) {
-						if (d.tagName === "text") {
-							d.style.backgroundColor = null;
-							d.style.fill = "black";
-						}
-					})
-				}
-
-			})
-
-			app.searchterm = "";
+				app.searchterm = "";
+			}	
 		},
 		// Not quite there yet. Save cluster_selected for every cluster
 		// Otherwise weird behaviour when selecting different cluster
