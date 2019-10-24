@@ -184,19 +184,6 @@ app = new Vue({
 				});
 				if (app.sticky_mode === "false") {
 					var nodes = d3.selectAll(".node").selectAll("g");
-					/*nodes.each(function(d) {
-						var children = this.childNodes;
-						text = ""
-						children.forEach(function(d) {
-							if (d.tagName === "text") {
-								text = d.getAttribute("text");
-							}
-						})
-						if (cluster_nodes.includes(text)) {
-							console.log(this)
-						}
-					})
-					*/
 					nodes.classed("selected", function(d, i) {
 						if (cluster_nodes.includes(d.id)) {
 							return true;	
