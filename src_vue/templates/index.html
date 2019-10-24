@@ -39,25 +39,30 @@
 		
 		<b-navbar-nav class="ml-auto">
 			<b-nav-form>
+				<!-- search bar -->
 				<b-input-group v-if="graph_rendered">
 					<b-form-input size="sm" v-model="searchterm" type="text" placeholder="Search"> </b-form-input>
 					<b-input-group-append>
       					<b-button id="search_button" size="sm" @click="search_node()"><i class="fas fa-search"></i></b-button>
-      					<b-button id="search_button" size="sm" variant="danger" @click="unsearch_node()"><i class="fas fa-times"></i></i></b-button>
+      					<b-button id="search_button" size="sm" variant="danger" @click="unsearch_nodes()"><i class="fas fa-times"></i></i></b-button>
       				</b-input-group-append>
 				</b-input-group>
+
 				<!-- Recluster button -->
 				<b-button :disabled="time_diff == 1" v-if="graph_rendered" id="recluster_button" v-on:click="recluster()"> Recluster</b-button>
+
 				<!-- Edit button -->
 				<b-button v-if="graph_rendered" id="edit_mask_button" v-on:click="showEditMask()">Edit Graph</b-button>
+
 				<!-- Resetz Zoom button -->
 				<b-button v-if="graph_rendered" id="reset_zoom_button" v-on:click="resetZoom()">Reset Zoom</b-button>
 			</b-nav-form>
 
 			<!-- Save and Load Graph buttons -->
 			<b-nav-form>
-				<b-button :disabled="time_diff == 1" id="download_button" variant="success" v-on:click="saveGraph()" download="graph.json" href="">Save Graph</b-button>
-				<b-button id="load_button" variant="danger" v-on:click="displayForm()">Load Graph</b-button>
+				<b-button :disabled="time_diff == 1" id="download_button" variant="success" v-on:click="saveGraph()" download="graph.json" href=""><i class="fas fa-download"></i> Save Graph</b-button>
+
+				<b-button id="load_button" variant="danger" v-on:click="displayForm()"> <i class="fas fa-upload"></i> Load Graph</b-button>
 			</b-nav-form>
 
 		</b-navbar-nav>
@@ -385,19 +390,26 @@
 							<div class="clustername">
 								<span class="dot"
 								v-bind:style="{ 'background-color': cluster.colour }"
-								v-on:mouseover="set_cluster_opacity(cluster, 0.2, 0.2)"
-								v-on:mouseout="set_cluster_opacity(cluster, 1.0, 0.6)"
+								@mouseover="!cluster_selected ? set_cluster_opacity(cluster, 0.2, 0.2) : null"
+  								@mouseout="!cluster_selected ? set_cluster_opacity(cluster, 1.0, 1.0) : null"
+								@click="select_cluster(cluster)"
 								></span>
 								Cluster: <span class="bigger_font">{{ cluster.cluster_name }} </span>
 								<p> Number of nodes: {{cluster.labels.length}} </p>
 							</div>
 
+						<!-- 
+							v-on:mouseover="set_cluster_opacity(cluster, 0.2, 0.2)"
+							v-on:mouseout="set_cluster_opacity(cluster, 1.0, 0.6)"
+
 							<b-button class="edit_button" v-on:click="select_cluster(cluster)"> Select cluster
 							</b-button>
+
+						-->
 							
 							<p>
 								<!-- Button for opening edit options of cluster -->
-								<b-button v-b-toggle="'collapse-edit-' + index" id="edit_button" class="edit_button" :disabled="time_diff == 1"> Edit </b-button>
+								<b-button v-b-toggle="'collapse-edit-' + index" id="edit_button" class="edit_button" :disabled="time_diff == 1"> <i class="fas fa-pen"></i> </b-button>
 
 								<!-- Button for opening list of nodes in cluster -->
 								<b-button v-b-toggle="'collapse-nodes-' + index" id="accordion"> Nodes
