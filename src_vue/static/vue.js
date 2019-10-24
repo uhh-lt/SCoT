@@ -104,7 +104,28 @@ app = new Vue({
 		}
 	},
 	methods: {
+		unsearch_nodes: function() {
+			// undo highlighting
+			var nodes = d3.selectAll(".node").selectAll("g");
+			nodes.each(function(d) {
+				var children = this.childNodes;
+				children.forEach(function(d) {
+					if (d.tagName === "text") {
+						d.style.fill = "black";
+						d.style.fontSize = "10px";
+					}
+					if (d.tagName === "circle") {
+						r = d.getAttribute("r");
+						if (r > 5) {
+							new_r = r / 2;
+							d.setAttribute("r", new_r);
+						}
+					}
+				})
+			})
+		},
 		search_node: function() {
+			found_matching_string = false;
 			if (app.searchterm === "") {
 				alert("Please enter a search term.");
 			} else {
@@ -119,21 +140,23 @@ app = new Vue({
 						}
 					});
 					if (text.lastIndexOf(app.searchterm, 0) === 0) {
+						found_matching_string = true;
 						children.forEach(function(d) {
 							if (d.tagName === "text") {
-								d.style.backgroundColor = "yellow";
-								d.style.fill = "yellow";
+								d.style.fill = "orange";
+								d.style.fontSize = "16px";
 							}
-						})
-					} else {
-						children.forEach(function(d) {
-							if (d.tagName === "text") {
-								d.style.backgroundColor = null;
-								d.style.fill = "black";
+							if (d.tagName === "circle") {
+								r = d.getAttribute("r");
+								new_r = r * 2;
+								d.setAttribute("r", new_r)
 							}
-						})
+						});
 					}
 				});
+				if (found_matching_string === false) {
+					alert("No match found. Please try a different search term.")
+				}
 				app.searchterm = "";
 			}	
 		},
