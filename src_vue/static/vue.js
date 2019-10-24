@@ -181,7 +181,30 @@ app = new Vue({
 					if (cluster_nodes.includes(source) && cluster_nodes.includes(target)) {
 							this.setAttribute("stroke", cluster.colour);
 					}	
-				})
+				});
+				if (app.sticky_mode === "false") {
+					var nodes = d3.selectAll(".node").selectAll("g");
+					/*nodes.each(function(d) {
+						var children = this.childNodes;
+						text = ""
+						children.forEach(function(d) {
+							if (d.tagName === "text") {
+								text = d.getAttribute("text");
+							}
+						})
+						if (cluster_nodes.includes(text)) {
+							console.log(this)
+						}
+					})
+					*/
+					nodes.classed("selected", function(d, i) {
+						if (cluster_nodes.includes(d.id)) {
+							return true;	
+						} else {
+							return false;
+						}
+					});
+				}
 
 			} else {
 				app.cluster_selected = false;
@@ -201,7 +224,7 @@ app = new Vue({
 					if (cluster_nodes.includes(source) && cluster_nodes.includes(target)) {
 							this.setAttribute("stroke", "#999");
 					}
-				})
+				});
 			}
 			
 		},
