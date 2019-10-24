@@ -39,10 +39,11 @@
 		
 		<b-navbar-nav class="ml-auto">
 			<b-nav-form>
-				<b-input-group>
+				<b-input-group v-if="graph_rendered">
 					<b-form-input size="sm" v-model="searchterm" type="text" placeholder="Search"> </b-form-input>
 					<b-input-group-append>
       					<b-button id="search_button" size="sm" @click="search_node()"><i class="fas fa-search"></i></b-button>
+      					<b-button id="search_button" size="sm" variant="danger" @click="unsearch_node()"><i class="fas fa-times"></i></i></b-button>
       				</b-input-group-append>
 				</b-input-group>
 				<!-- Recluster button -->
