@@ -9,7 +9,7 @@ def construct_graph(nodes_set, edges):
 	# add nodes from a list of nodes
 	# [1,2,3,...]
 	graph.add_nodes_from(nodes)
-	print("graph nodes:" + str(graph.nodes))
+	#print("graph nodes:" + str(graph.nodes))
 	# initialize the class of each node
 	for v, n in enumerate(graph.nodes):
 		graph.node[n]['class'] = v
@@ -21,6 +21,10 @@ def construct_graph(nodes_set, edges):
 # Apply the Chinese Whispers Clustering Algorithm to the graph
 def chinese_whispers(nodes, edges, target_word, iterations=2):
 	graph = construct_graph(nodes, edges)
+
+	centrality_nodes = nx.betweenness_centrality(graph)
+
+	print(centrality_nodes)
 
 	for i in range(0, iterations):
 		graph_nodes = list(graph.nodes())
@@ -66,6 +70,9 @@ def construct_reclustering_graph(nodes, edges):
 # TODO: try to avoid duplicated code!!
 def reclustering(nodes, edges, iterations=10):
 	graph = construct_reclustering_graph(nodes, edges)
+
+	centrality_nodes = nx.betweenness_centrality(graph)
+
 	for i in range(0, iterations):
 		graph_nodes = list(graph.nodes())
 
