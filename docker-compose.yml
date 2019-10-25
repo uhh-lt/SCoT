@@ -18,7 +18,7 @@
 
 #//user:password@db/scot
 
-version: "2"
+version: "2.1"
 networks:
   scot-net:
 services:
@@ -32,6 +32,20 @@ services:
       - "10017:80"
     networks:
       scot-net:
+    depends_on:
+      - db_setup
+
+  db_setup:
+    build: ./src_build_database
+    volumes:
+      - ./db/gbooks_datahub/:/make_db/data
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      scot-net:
+
+
   db:
     image: mariadb:10.4.6
     volumes:
@@ -39,13 +53,19 @@ services:
       - ./db/loadSchemaAndFiles.sql:/tmp/loadSchemaAndFiles.sql
       # csv files to be imported into db
       #- ./db/csv_test/datahub/:/var/lib/mysql-files/datahub/
+
       # entrypoint
       - ./db/docker_entrypoint.sh:/docker-entrypoint-initdb.d/docker_entrypoint.sh
+
       # database
-      #- ./db/csv_test/data:/var/lib/mysql
-      - ./db/gbooks_datahub/:/var/lib/mysql-files/datahub/
-      #- ./db/loadSchemaAndFiles.sql:/docker-entrypoint-initdb.d/loadSchemaAndFiles.sql
       - ./db/gbooks_data:/var/lib/mysql
+      #- ./db/gbooks_datahub/:/var/lib/mysql-files/datahub/
+      #- ./db/loadSchemaAndFiles.sql:/docker-entrypoint-initdb.d/loadSchemaAndFiles.sql
+     
+      # data for database
+      #- ./src_build_database/csv_test/datahub/sim_data:/var/lib/mysql-files/datahub/tsv
+      - ./db/gbooks_datahub/time_slices.csv:/var/lib/mysql-files/datahub/time_slices.csv
+      #- ./db/gbooks_data:/var/lib/mysql
       #- ./db/fin_1990_2017.sql:/docker-entrypoint-initdb.d/fin_1990_2017.sql
       #- ./db/data_fin_test:/var/lib/mysql
 
@@ -55,6 +75,12 @@ services:
       MYSQL_DATABASE: scot
       MYSQL_USER: user
       MYSQL_PASSWORD: password
+
+    healthcheck:
+          test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-ppassword", "-uuser"]
+          interval: 120s
+          timeout: 20s
+          retries: 40
 
     networks:
       scot-net:
