@@ -18,7 +18,7 @@ def main():
                 reader = csv.reader(file)
                 values = []
                 for i, line in enumerate(reader):
-                    if i%1000 == 0:
+                    if i%100000 == 0:
                         print(str(i), flush=True)
                     word1 = line[0].encode('utf8')
                     word2 = line[1].encode('utf8')
