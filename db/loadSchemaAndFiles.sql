@@ -1,5 +1,5 @@
 DROP DATABASE IF EXISTS scot;
-CREATE DATABASE scot;
+CREATE DATABASE scot CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 USE scot;
 
@@ -10,6 +10,8 @@ CREATE TABLE time_slices (
     end_year SMALLINT UNSIGNED NOT NULL,
     PRIMARY KEY (id)
 );
+
+# SET MYSQL-ENGINE googlen -> MysISAM ist wohl schneller
 
 #LOAD DATA INFILE '/var/lib/mysql-files/datahub/time_slices.csv' 
 #INTO TABLE time_slices 
