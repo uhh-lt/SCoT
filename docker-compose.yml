@@ -49,25 +49,9 @@ services:
   db:
     image: mariadb:10.4.6
     volumes:
-      # schema file
-      - ./db/loadSchemaAndFiles.sql:/tmp/loadSchemaAndFiles.sql
-      # csv files to be imported into db
-      #- ./db/csv_test/datahub/:/var/lib/mysql-files/datahub/
-
-      # entrypoint
-      - ./db/docker_entrypoint.sh:/docker-entrypoint-initdb.d/docker_entrypoint.sh
-
       # database
       - ./db/gbooks_data:/var/lib/mysql
-      #- ./db/gbooks_datahub/:/var/lib/mysql-files/datahub/
-      #- ./db/loadSchemaAndFiles.sql:/docker-entrypoint-initdb.d/loadSchemaAndFiles.sql
-     
-      # data for database
-      #- ./src_build_database/csv_test/datahub/sim_data:/var/lib/mysql-files/datahub/tsv
-      - ./db/gbooks_datahub/time_slices.csv:/var/lib/mysql-files/datahub/time_slices.csv
-      #- ./db/gbooks_data:/var/lib/mysql
-      #- ./db/fin_1990_2017.sql:/docker-entrypoint-initdb.d/fin_1990_2017.sql
-      #- ./db/data_fin_test:/var/lib/mysql
+
 
       # "database" : "mysql://user:password@db/scot" / local: "mysql://inga@0.0.0.0/scot"(config.json)
     environment:
