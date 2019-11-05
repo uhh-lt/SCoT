@@ -24,7 +24,8 @@ def chinese_whispers(nodes, edges, target_word, iterations=2):
 
 	centrality_nodes = nx.betweenness_centrality(graph)
 
-	print(centrality_nodes)
+	for node, centrality_score in centrality_nodes.items():
+		graph.node[node]['centrality_score'] = centrality_score
 
 	for i in range(0, iterations):
 		graph_nodes = list(graph.nodes())
@@ -68,10 +69,15 @@ def construct_reclustering_graph(nodes, edges):
 
 # Apply Chinese Whispers again
 # TODO: try to avoid duplicated code!!
-def reclustering(nodes, edges, iterations=10):
+def reclustering(nodes, edges, iterations=2):
 	graph = construct_reclustering_graph(nodes, edges)
 
-	centrality_nodes = nx.betweenness_centrality(graph)
+	# calculate betweenness centrality of nodes
+	#centrality_nodes = nx.betweenness_centrality(graph)
+
+	# add the centrality score as attribute to the nodes
+	#for node, centrality_score in centrality_nodes.items():
+	#	graph.node[node]['centrality_score'] = centrality_score
 
 	for i in range(0, iterations):
 		graph_nodes = list(graph.nodes())
