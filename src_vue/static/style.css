@@ -119,6 +119,19 @@ text {
 	margin-left: 5px;
 }
 
+#centralityDD {
+	display:block;
+	float: right;
+	text-align: center;
+	/*word-spacing: -10px;*/
+	/*margin-right: 10px;*/
+	/*margin-left: 5px;*/
+}
+
+#centralityDD__BV_toggle_ {
+	font-size: 10px;
+}
+
 #edit_mask_button {
 	display: block;
 	float: right;

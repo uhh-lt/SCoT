@@ -39,9 +39,29 @@
 		
 		<b-navbar-nav class="ml-auto">
 			<b-nav-form>
+				<!-- Centrality Button-->
+				<b-dropdown id="centralityDD" v-if="graph_rendered" text="Betweenness Centrality" aria-expanded=true>
+		    		<!-- Node options -->
+		    		<!-- only available for non cluster nodes -->
+		    		<b-dropdown-item v-on:click="highlightCentralNodes()"> Highlight central nodes in graph </b-dropdown-item>
+		    		<b-dropdown-item v-on:click="resetCentralityHighlighting()"> Reset highlighting </b-dropdown-item>
+		    		<b-dropdown-item v-on:click="getCentralityScores()" v-b-modal.modal-centrality-2> List centrality node scores </b-dropdown-item>
+		    	</b-dropdown> 
+
+		    	<b-modal id="modal-centrality-2" title="List of Centrality Node Scores">
+		    		 <div v-for="node in centrality_scores">
+
+				  	<!-- Show selected nodes -->
+				  	<div>
+		  	    		{{node.text}}: {{node.centrality_score}}
+		    		</div>
+		    	</div>
+
+		    	</b-modal>
+
 				<!-- search bar -->
 				<b-input-group v-if="graph_rendered">
-					<b-form-input size="sm" v-model="searchterm" type="text" placeholder="Search"> </b-form-input>
+					<b-form-input size="sm" v-model="searchterm" type="text" placeholder="Search" style="margin-left: 5px"> </b-form-input>
 					<b-input-group-append>
       					<b-button id="search_button" size="sm" @click="search_node()"><i class="fas fa-search"></i></b-button>
       					<b-button id="search_button" size="sm" variant="danger" @click="unsearch_nodes()"><i class="fas fa-times"></i></i></b-button>
