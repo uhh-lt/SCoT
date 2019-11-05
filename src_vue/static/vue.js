@@ -39,7 +39,8 @@ app = new Vue({
      	created_cluster_name : "",
      	created_cluster_colour : "",
      	cluster_selected : false,
-     	searchterm : ""
+     	searchterm : "",
+     	centrality_scores : []
 	},
 	computed: {
 		/*
@@ -104,6 +105,55 @@ app = new Vue({
 		}
 	},
 	methods: {
+		getCentralityScores: function() {
+			app.centrality_scores = [];
+			var circles = d3.selectAll(".node").selectAll("g").select("circle");
+			var texts = d3.selectAll(".node").selectAll("g").select("text");
+			texts.each(function(d, i) {
+				var node = {};
+				node["text"] = this.getAttribute("text");
+				console.log(node.text)
+
+				var circle = d3.select(circles.nodes()[i]);
+				node["centrality_score"] = parseFloat(circle.attr("centrality_score"));
+
+				if (node.centrality_score > 0.0) {
+					app.centrality_scores.push(node)
+				}
+			})
+		},
+		resetCentralityHighlighting: function() {
+			var circles = d3.selectAll(".node").selectAll("g").select("circle");
+			var texts = d3.selectAll(".node").selectAll("g").select("text");
+			circles.each(function(d, i) {
+				this.setAttribute("r", 5)
+				var text = d3.select(texts.nodes()[i])
+				text.style("font-size", "10px");
+			})
+		},
+		highlightCentralNodes: function() {
+			var nodes = d3.selectAll(".node").selectAll("g");
+			var texts = d3.selectAll(".node").selectAll("g").select("text");
+			nodes.each(function(d, i) {
+				var children = this.childNodes;
+				var text = d3.select(texts.nodes()[i])
+				children.forEach(function(d,i) {
+					if(d.tagName == "circle") {
+						var centrality_score = parseFloat(d.getAttribute("centrality_score"))
+						if (centrality_score === 0.0) {
+							d.setAttribute("r", 2.5)
+							text.style("font-size", "8px")
+						} else if (centrality_score > 0.0 && centrality_score <= 0.1) {
+							d.setAttribute("r", 10.0)
+							text.style("font-size", "14px")
+						} else {
+							d.setAttribute("r", 20.0)
+							text.style("font-size", "20px")
+						}
+					}
+				})
+			})
+		},
 		unsearch_nodes: function() {
 			// undo highlighting
 			var nodes = d3.selectAll(".node").selectAll("g");
@@ -778,6 +828,7 @@ app = new Vue({
 				    for (var i=0; i<newClusteredNodes.length; i++) {
 				    	var node_id = newClusteredNodes[i].id;
 				    	var node_new_cluster = newClusteredNodes[i].class;
+				    	//var node_centr_score = newClusteredNodes[i].centrality_score;
 
 				    	var texts = nodes.selectAll("g").select("text");
 				    	var circles = nodes.selectAll("g").select("circle");
@@ -787,6 +838,7 @@ app = new Vue({
 				    		var t = d3.select(this);
 				    		if (t.attr("text") === node_id) {
 				    			var circle = d3.select(circles.nodes()[i])
+				    			//circle.attr("centrality_score", node_centr_score)
 				    			circle.attr("cluster", node_new_cluster)
 				    			circle.attr("fill", function() {return colour(node_new_cluster) })
 				    			circle.attr("cluster_id", node_new_cluster);
