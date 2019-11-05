@@ -158,6 +158,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 				return radius;
 			}
 		})
+		.attr("centrality_score", function(d) { return d.centrality_score; })
 		.attr("cluster", function(d) { return d.class; })
 		.attr("cluster_id", function(d) { return d.class })
 		.attr("cluster_node", function(d) {
@@ -514,6 +515,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	   	var circle = g.append("circle")
 				.attr("fill", function(d) { return color(d.class); })
 				.attr("r", 5)
+				.attr("centrality_score", function(d) {d.centrality_score; })
 				.attr("cluster_id", function(d) { return d.class; })
 		    	.attr("cluster_node", false)
 		    	.attr("time_ids", function(d) { return d.time_ids})
@@ -626,10 +628,11 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 			for (var i = 0; i < app.updated_nodes.length; i++) {
 				var new_label = app.updated_nodes[i].id;
 				var cluster_class = app.updated_nodes[i].class;
+				var centr_score = app.updated_nodes[i].centrality_score
 				
 					if (!existing_labels.includes(new_label)) {
 						// add new nodes to the nodes array
-						nodes.push({"id": app.updated_nodes[i].id, "class": app.updated_nodes[i].class, "time_ids": app.updated_nodes[i].time_ids});
+						nodes.push({"id": app.updated_nodes[i].id, "class": app.updated_nodes[i].class, "time_ids": app.updated_nodes[i].time_ids, "centrality_score": app.updated_nodes[i].centrality_score});
 					} else {
 						// update existing ones (colour, cluster id and cluster name)
 						var existing_nodes = d3.selectAll(".node");
@@ -648,6 +651,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 									if (d.tagName === "circle") {
 										var colour = get_colour(cluster_class);
 
+										d.setAttribute("centrality_score", centr_score)
 										d.setAttribute("cluster_id", cluster_class);
 										d.setAttribute("fill", colour);
 										d.setAttribute("cluster", cluster_class);
