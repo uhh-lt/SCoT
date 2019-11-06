@@ -4,8 +4,8 @@ app = new Vue({
    		target_word : "happiness/NN",
      	start_year : 1520,
      	end_year : 2008,
-     	senses : 30,
-     	edges : 3,
+     	senses : 100,
+     	edges : 30,
      	time_diff : false,
      	start_years : [],
      	end_years : [],
@@ -23,8 +23,8 @@ app = new Vue({
      	singletons : [],
      	data_from_db : {},
      	simulation : null,
-     	update_senses : 50,
-     	update_edges : 5,
+     	update_senses : 150,
+     	update_edges : 50,
      	updated_nodes : null,
      	updated_links : null,
      	interval_start : 0,
@@ -41,7 +41,10 @@ app = new Vue({
      	cluster_selected : false,
      	searchterm : "",
      	centrality_scores : [],
-     	centrality_fields : [{key: "text", label: "Node",  sortable: true}, {key: "centrality_score", sortable: true}]
+     	centrality_fields : [{key: "text", label: "Node", sortable: true}, {key: "centrality_score", sortable: true}],
+     	centrality_threshold_s : "0.0",
+     	centrality_threshold_m: "0.1",
+     	centrality_score_distribution : []
 	},
 	computed: {
 		/*
@@ -106,6 +109,32 @@ app = new Vue({
 		}
 	},
 	methods: {
+		calculateCentralityDistribution: function(d) {
+			app.centrality_score_distribution = [];
+			app.getCentralityScores();
+
+			var group0 = 0;
+			var group1 = 0;
+			var group2 = 0;
+			var group3 = 0;
+			var group4 = 0;
+
+			app.centrality_scores.forEach(function(d) {
+				if (d.centrality_score === 0.0) {
+					group0 += 1;
+				} else if (d.centrality_score > 0.0 && d.centrality_score <= 0.1) {
+					group1 += 1;
+				} else if (d.centrality_score > 0.1 && d.centrality_score <= 0.2) {
+					group2 += 1;
+				} else if (d.centrality_score > 0.2 && d.centrality_score <= 0.3) {
+					group3 +=1;
+				} else {
+					group4 += 1;
+				}
+			});
+
+			app.centrality_score_distribution.push({"centrality_score": "0.0", "number": group0}, {"centrality_score": "0.0 - 0.1", "number": group1}, {"centrality_score": "0.1 - 0.2", "number": group2}, {"centrality_score": "0.2 - 0.3", "number": group3}, {"centrality_score": "over 0.3", "number": group4})
+		},
 		getCentralityScores: function() {
 			app.centrality_scores = [];
 			var circles = d3.selectAll(".node").selectAll("g").select("circle");
@@ -118,9 +147,9 @@ app = new Vue({
 				var circle = d3.select(circles.nodes()[i]);
 				node["centrality_score"] = parseFloat(circle.attr("centrality_score"));
 
-				if (node.centrality_score > 0.0) {
-					app.centrality_scores.push(node)
-				}
+				//if (node.centrality_score > 0.0) {
+				app.centrality_scores.push(node)
+				//}
 			})
 		},
 		resetCentralityHighlighting: function() {
@@ -132,7 +161,9 @@ app = new Vue({
 				text.style("font-size", "10px");
 			})
 		},
-		highlightCentralNodes: function() {
+		highlightCentralNodes: function(threshold_s, threshold_m) {
+			threshold_s = parseFloat(threshold_s);
+			threshold_m = parseFloat(threshold_m);
 			var nodes = d3.selectAll(".node").selectAll("g");
 			var texts = d3.selectAll(".node").selectAll("g").select("text");
 			nodes.each(function(d, i) {
@@ -141,10 +172,10 @@ app = new Vue({
 				children.forEach(function(d,i) {
 					if(d.tagName == "circle") {
 						var centrality_score = parseFloat(d.getAttribute("centrality_score"))
-						if (centrality_score === 0.0) {
+						if (centrality_score <= threshold_s) {
 							d.setAttribute("r", 2.5)
 							text.style("font-size", "8px")
-						} else if (centrality_score > 0.0 && centrality_score <= 0.1) {
+						} else if (centrality_score > threshold_s && centrality_score <= threshold_m) {
 							d.setAttribute("r", 10.0)
 							text.style("font-size", "14px")
 						} else {
