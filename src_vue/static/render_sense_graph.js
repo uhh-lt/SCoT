@@ -515,11 +515,12 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	   	var circle = g.append("circle")
 				.attr("fill", function(d) { return color(d.class); })
 				.attr("r", 5)
-				.attr("centrality_score", function(d) {d.centrality_score; })
+				.attr("centrality_score", function(d) { return d.centrality_score; })
 				.attr("cluster_id", function(d) { return d.class; })
 		    	.attr("cluster_node", false)
 		    	.attr("time_ids", function(d) { return d.time_ids})
 		    	.attr("cluster", function(d) { return d.class; });
+
 
 		var text = g.append("text")
 			.text(function(d) { return d.id; })
