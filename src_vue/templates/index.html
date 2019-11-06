@@ -39,6 +39,73 @@
 		
 		<b-navbar-nav class="ml-auto">
 			<b-nav-form>
+				<!-- Options Drop Down for node options -->
+				<div>
+			    	<b-dropdown  variant="light" id="nodeOptionsDD" v-if="!time_diff && sticky_mode === 'true'" text="Node options" aria-expanded=true style="display:none" >
+			    		<!-- Node options -->
+			    		<!-- only available for non cluster nodes -->
+			    		<b-dropdown-item v-show="select_node_is_no_cluster_node" v-on:click="findSelectedNodes()" v-b-modal.modal-1> Assign to different cluster </b-dropdown-item>
+			    		<b-dropdown-item v-show="select_node_is_no_cluster_node" v-on:click="findSelectedNodes()" v-b-modal.modal-2> Create new cluster </b-dropdown-item>
+			    	</b-dropdown> 
+		    	</div>
+
+		    	<!-- Modal to change cluster assignment of a node -->
+		    	<b-modal id="modal-1" title="Change Cluster Assignment" @ok="assignNewCluster()">
+				  <div v-for="node in clicked_nodes">
+
+				  	<!-- Show selected nodes -->
+				  	<div>
+				  	    Selected node: {{node.id}}
+				    </div>
+
+				  	<br>
+				  	
+				  	<!-- Show current cluster -->
+				  	<div>
+				  		Current cluster: <span class="dot-sm" v-bind:style="{'background-color': node.colour}"></span>{{ node.cluster_name }}, (ID: {{node.cluster_id}})
+				  	</div>
+
+				  	<!-- Choose a new cluster -->
+				  	<div>
+				  		Select new cluster:
+				  		<span class="dot-sm" v-bind:style="{'background-color': new_assigned_cluster.colour}"></span> {{new_assigned_cluster.cluster_name}}
+
+				  		<b-form-select v-model="new_assigned_cluster" size="sm" class="mt-3">
+				  			<option :value="{}" disabled> Select a cluster </option>
+				  			<option v-for="cluster in cluster_options" :value="cluster.value">
+				  			{{cluster.text}}
+				  			</option>
+				  		</b-form-select>
+				  	</div>
+				  </div>
+				</b-modal>
+
+				<!-- Modal for creating a new cluster an adding the clicked node to it -->
+				<b-modal id="modal-2" title="Create new cluster" @ok="createNewCluster()">
+					<div v-for="node in clicked_nodes">
+
+						<div>
+							Selected node: {{node.id}}
+						</div>
+
+						<br>
+
+						<div>
+							<span style="font-size: 16pt"> Create a new cluster </span>
+							<br>
+							<div>
+							<b-form-group label="Choose cluster name">
+								<b-form-input v-model="created_cluster_name" placeholder="Enter cluster name"></b-form-input>
+							</b-form-group>
+
+							<b-form-group label="Choose cluster colour">
+								<b-form-input class="color-select" v-model="created_cluster_colour" type="color"> </b-form-input>
+							</b-form-group>
+							</div>
+						</div>
+					</div>
+				</b-modal>
+
 				<!-- Centrality Button-->
 				<b-dropdown id="centralityDD" v-if="graph_rendered" text="Betweenness Centrality" aria-expanded=true>
 		    		<!-- Node options -->
@@ -171,72 +238,6 @@
 
     <!-- Graph display column (middle) + Options button for ndoes + card for time diff options -->
     <b-col id="graph_display" sm="8">
-
-    	<!-- Options Drop Down for node options -->
-    	<b-dropdown  variant="light" id="nodeOptionsDD" v-if="!time_diff && sticky_mode === 'true'" text="Options" aria-expanded=true style="display:none" >
-    		<!-- Node options -->
-    		<!-- only available for non cluster nodes -->
-    		<b-dropdown-item v-show="select_node_is_no_cluster_node" v-on:click="findSelectedNodes()" v-b-modal.modal-1> Assign to different cluster </b-dropdown-item>
-    		<b-dropdown-item v-show="select_node_is_no_cluster_node" v-on:click="findSelectedNodes()" v-b-modal.modal-2> Create new cluster </b-dropdown-item>
-    	</b-dropdown> 
-
-    	<!-- Modal to change cluster assignment of a node -->
-    	<b-modal id="modal-1" title="Change Cluster Assignment" @ok="assignNewCluster()">
-		  <div v-for="node in clicked_nodes">
-
-		  	<!-- Show selected nodes -->
-		  	<div>
-		  	    Selected node: {{node.id}}
-		    </div>
-
-		  	<br>
-		  	
-		  	<!-- Show current cluster -->
-		  	<div>
-		  		Current cluster: <span class="dot-sm" v-bind:style="{'background-color': node.colour}"></span>{{ node.cluster_name }}, (ID: {{node.cluster_id}})
-		  	</div>
-
-		  	<!-- Choose a new cluster -->
-		  	<div>
-		  		Select new cluster:
-		  		<span class="dot-sm" v-bind:style="{'background-color': new_assigned_cluster.colour}"></span> {{new_assigned_cluster.cluster_name}}
-
-		  		<b-form-select v-model="new_assigned_cluster" size="sm" class="mt-3">
-		  			<option :value="{}" disabled> Select a cluster </option>
-		  			<option v-for="cluster in cluster_options" :value="cluster.value">
-		  			{{cluster.text}}
-		  			</option>
-		  		</b-form-select>
-		  	</div>
-
-		  </div>
-		</b-modal>
-
-		<!-- Modal for creating a new cluster an adding the clicked node to it -->
-		<b-modal id="modal-2" title="Create new cluster" @ok="createNewCluster()">
-			<div v-for="node in clicked_nodes">
-
-				<div>
-					Selected node: {{node.id}}
-				</div>
-
-				<br>
-
-				<div>
-					<span style="font-size: 16pt"> Create a new cluster </span>
-					<br>
-					<div>
-					<b-form-group label="Choose cluster name">
-						<b-form-input v-model="created_cluster_name" placeholder="Enter cluster name"></b-form-input>
-					</b-form-group>
-
-					<b-form-group label="Choose cluster colour">
-						<b-form-input class="color-select" v-model="created_cluster_colour" type="color"> </b-form-input>
-					</b-form-group>
-					</div>
-				</div>
-			</div>
-		</b-modal>
 
 		<!-- TIME DIFF -->
 		<!-- Card with time diff options -->

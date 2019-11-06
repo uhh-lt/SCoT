@@ -682,22 +682,22 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 	function showContextMenu(d) {
 		if (app.node_selected) {
-			console.log(app.node_selected);
-			console.log("selected");
-			console.log("Show context menu");
-			var x = d3.event.pageX;
-			var y = d3.event.pageY;
+			//console.log(app.node_selected);
+			//console.log("selected");
+			//console.log("Show context menu");
+			//var x = d3.event.pageX;
+			//var y = d3.event.pageY;
     		d3.select('#nodeOptionsDD')
-      			.style('position', 'absolute')
+      			//.style('position', 'absolute')
       			.style('display', 'block')
-      			.style('left', x)
-      			.style('top', y);
+      			//.style('left', x)
+      			//.style('top', y);
 
 			d3.event.preventDefault();
 			
 		} else {
-			console.log(app.node_selected);
-			console.log("not selected");
+			//console.log(app.node_selected);
+			//console.log("not selected");
 			
 			d3.select('#nodeOptionsDD')
 				.style('display', 'none');

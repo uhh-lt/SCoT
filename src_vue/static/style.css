@@ -125,7 +125,7 @@ text {
 	text-align: center;
 	/*word-spacing: -10px;*/
 	/*margin-right: 10px;*/
-	/*margin-left: 5px;*/
+	margin-left: 5px;
 }
 
 #centralityDD__BV_toggle_ {
@@ -209,11 +209,15 @@ text {
 
 
 #nodeOptionsDD {
-	margin-top: 5px;
-	font-size: 10px;
 	display: block;
-	float: left;
+	float: right;
+	text-align: center;
 }
+
+#nodeOptionsDD__BV_toggle_ {
+	font-size: 10px;
+}
+
 
 .interval_input {
 	width: 100px;
