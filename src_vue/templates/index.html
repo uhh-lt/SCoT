@@ -49,13 +49,16 @@
 		    	</b-dropdown> 
 
 		    	<b-modal id="modal-centrality-2" title="List of Centrality Node Scores">
-		    		 <div v-for="node in centrality_scores">
+		    		 <!--<div v-for="node in centrality_scores"> -->
 
 				  	<!-- Show selected nodes -->
-				  	<div>
+				  	<!--<div>
 		  	    		{{node.text}}: {{node.centrality_score}}
 		    		</div>
-		    	</div>
+		    	</div> -->
+		    	<div>
+    				<b-table striped hover :items="centrality_scores" :fields="centrality_fields"></b-table>
+  				</div>
 
 		    	</b-modal>
 

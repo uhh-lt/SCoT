@@ -40,7 +40,8 @@ app = new Vue({
      	created_cluster_colour : "",
      	cluster_selected : false,
      	searchterm : "",
-     	centrality_scores : []
+     	centrality_scores : [],
+     	centrality_fields : [{key: "text", label: "Node",  sortable: true}, {key: "centrality_score", sortable: true}]
 	},
 	computed: {
 		/*
