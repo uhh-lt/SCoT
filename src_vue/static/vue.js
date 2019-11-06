@@ -17,7 +17,7 @@ app = new Vue({
      	clusters : [],
      	newclusters : {},
      	sticky_mode : "true",
-     	charge : -10,
+     	charge : -50,
      	linkdistance : 100,
      	graph_from_file : false,
      	singletons : [],
@@ -1129,6 +1129,7 @@ app = new Vue({
 				var is_cluster_node;
 				var colour;
 				var time_ids;
+				var centrality_score;
 
 				var node = {}
 
@@ -1140,6 +1141,7 @@ app = new Vue({
 						is_cluster_node = d.getAttribute("cluster_node");
 						colour = d.getAttribute("fill");
 						time_ids = d.getAttribute("time_ids");
+						centrality_score = d.getAttribute("centrality_score");
 					}
 				})
 
@@ -1153,6 +1155,7 @@ app = new Vue({
 				node["cluster_node"] = is_cluster_node;
 				node["colour"] = colour;
 				node["time_ids"] = time_ids;
+				node["centrality_score"] = centrality_score;
 
 				graph_nodes.push(node);
 
