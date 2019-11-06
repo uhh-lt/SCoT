@@ -43,10 +43,10 @@
 				<b-dropdown id="centralityDD" v-if="graph_rendered" text="Betweenness Centrality" aria-expanded=true>
 		    		<!-- Node options -->
 		    		<!-- only available for non cluster nodes -->
-		    		<b-dropdown-item v-on:click="highlightCentralNodes(centrality_threshold_s, centrality_threshold_m)"> Highlight central nodes in graph </b-dropdown-item>
-		    		<b-dropdown-item v-on:click="calculateCentralityDistribution()" v-b-modal.modal-centrality-1> Customize highlighting thresholds </b-dropdown-item>
-		    		<b-dropdown-item v-on:click="resetCentralityHighlighting()"> Reset highlighting </b-dropdown-item>
-		    		<b-dropdown-item v-on:click="getCentralityScores()" v-b-modal.modal-centrality-2> List centrality node scores </b-dropdown-item>
+		    		<b-dropdown-item v-on:click="highlightCentralNodes(centrality_threshold_s, centrality_threshold_m)"> <i class="fas fa-highlighter"></i> Highlight central nodes in graph </b-dropdown-item>
+		    		<b-dropdown-item v-on:click="calculateCentralityDistribution()" v-b-modal.modal-centrality-1> <i class="fas fa-cogs"></i> Customize highlighting thresholds </b-dropdown-item>
+		    		<b-dropdown-item v-on:click="resetCentralityHighlighting()"> <i class="fas fa-times"></i> Reset highlighting </b-dropdown-item>
+		    		<b-dropdown-item v-on:click="getCentralityScores()" v-b-modal.modal-centrality-2> <i class="fas fa-bars"></i> List centrality node scores </b-dropdown-item>
 		    	</b-dropdown>
 
 		    	<b-modal id="modal-centrality-1" title="Customize Highlighting Thresholds" @ok="highlightCentralNodes(centrality_threshold_s, centrality_threshold_m)">
