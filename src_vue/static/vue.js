@@ -195,12 +195,15 @@ app = new Vue({
 					if (d.tagName === "text") {
 						d.style.fill = "black";
 						d.style.fontSize = "10px";
+						d.style.opacity = 1;
 					}
 					if (d.tagName === "circle") {
 						r = d.getAttribute("r");
+						d.style.opacity = 1;
 						if (r > 5) {
 							new_r = r / 2;
 							d.setAttribute("r", new_r);
+							d.style.stroke = "white"
 						}
 					}
 				})
@@ -225,15 +228,25 @@ app = new Vue({
 						found_matching_string = true;
 						children.forEach(function(d) {
 							if (d.tagName === "text") {
-								d.style.fill = "orange";
+								//d.style.fill = "black";
 								d.style.fontSize = "16px";
 							}
 							if (d.tagName === "circle") {
 								r = d.getAttribute("r");
 								new_r = r * 2;
 								d.setAttribute("r", new_r)
+								d.style.stroke = "yellow";
 							}
 						});
+					} else {
+						children.forEach(function(d) {
+							if (d.tagName === "text") {
+								d.style.opacity = 0.4;
+							}
+							if (d.tagName === "circle") {
+								d.style.opacity = 0.4;
+							}
+						})
 					}
 				});
 				if (found_matching_string === false) {
