@@ -392,8 +392,8 @@
 
     		<!-- Set dragging behaviour -->
     		<b-form-group id="sticky" class="input" label="Dragging">
-		    	<b-form-radio name="sticky_mode" value="false" v-model="sticky_mode"> Enable brush and single node movement </b-form-radio>
-		   		<b-form-radio name="sticky_mode" value="true" v-model="sticky_mode"> Keep force for dragging (no brush available) </b-form-radio>
+		    	<b-form-radio name="sticky_mode" value="false" v-model="sticky_mode"> Enable brush (no force) </b-form-radio>
+		   		<b-form-radio name="sticky_mode" value="true" v-model="sticky_mode"> Use force (no brush available) </b-form-radio>
 	    	</b-form-group>
 
 	    	<!-- Button to restart simulation with all the nodes -->
