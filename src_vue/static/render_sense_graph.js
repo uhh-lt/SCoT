@@ -158,7 +158,13 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 				return radius;
 			}
 		})
-		.attr("centrality_score", function(d) { return d.centrality_score; })
+		.attr("centrality_score", function(d) { 
+			if (d.centrality_score != NaN) {
+				return d.centrality_score;
+			} else {
+				return null
+			}
+		})
 		.attr("cluster", function(d) { return d.class; })
 		.attr("cluster_id", function(d) { return d.class })
 		.attr("cluster_node", function(d) {

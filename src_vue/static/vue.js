@@ -142,23 +142,25 @@ app = new Vue({
 			texts.each(function(d, i) {
 				var node = {};
 				node["text"] = this.getAttribute("text");
-				console.log(node.text)
 
 				var circle = d3.select(circles.nodes()[i]);
-				node["centrality_score"] = parseFloat(circle.attr("centrality_score"));
+				var cen_score = circle.attr("centrality_score");
+				if (cen_score != null) {
+					node["centrality_score"] = parseFloat(cen_score);
 
-				//if (node.centrality_score > 0.0) {
-				app.centrality_scores.push(node)
-				//}
-			})
+					app.centrality_scores.push(node);
+				}
+			});
 		},
 		resetCentralityHighlighting: function() {
 			var circles = d3.selectAll(".node").selectAll("g").select("circle");
 			var texts = d3.selectAll(".node").selectAll("g").select("text");
 			circles.each(function(d, i) {
-				this.setAttribute("r", 5)
-				var text = d3.select(texts.nodes()[i])
-				text.style("font-size", "10px");
+				if (this.getAttribute("centrality_score") != null) {
+					this.setAttribute("r", 5)
+					var text = d3.select(texts.nodes()[i])
+					text.style("font-size", "10px");
+				}
 			})
 		},
 		highlightCentralNodes: function(threshold_s, threshold_m) {
@@ -171,17 +173,20 @@ app = new Vue({
 				var text = d3.select(texts.nodes()[i])
 				children.forEach(function(d,i) {
 					if(d.tagName == "circle") {
-						var centrality_score = parseFloat(d.getAttribute("centrality_score"))
-						if (centrality_score <= threshold_s) {
-							d.setAttribute("r", 2.5)
-							text.style("font-size", "8px")
-						} else if (centrality_score > threshold_s && centrality_score <= threshold_m) {
-							d.setAttribute("r", 10.0)
-							text.style("font-size", "14px")
-						} else {
-							d.setAttribute("r", 20.0)
-							text.style("font-size", "20px")
+						if (d.getAttribute("centrality_score") != null) {
+							var centrality_score = parseFloat(d.getAttribute("centrality_score"))
+							if (centrality_score <= threshold_s) {
+								d.setAttribute("r", 2.5)
+								text.style("font-size", "8px")
+							} else if (centrality_score > threshold_s && centrality_score <= threshold_m) {
+								d.setAttribute("r", 10.0)
+								text.style("font-size", "14px")
+							} else {
+								d.setAttribute("r", 20.0)
+								text.style("font-size", "20px")
+							}
 						}
+						
 					}
 				})
 			})
@@ -1133,6 +1138,12 @@ app = new Vue({
 
 				var node = {}
 
+				node["id"] = id;
+				node["x"] = x;
+				node["y"] = y;
+				node["fx"] = fx;
+				node["fy"] = fy;
+
 				var childnodes = this.childNodes;
 				childnodes.forEach(function(d,i) {
 					if (d.tagName === "circle") {
@@ -1141,21 +1152,22 @@ app = new Vue({
 						is_cluster_node = d.getAttribute("cluster_node");
 						colour = d.getAttribute("fill");
 						time_ids = d.getAttribute("time_ids");
-						centrality_score = d.getAttribute("centrality_score");
+
+						node["class"] = cluster_id;
+						node["cluster_name"] = cluster_name;
+						node["cluster_node"] = is_cluster_node;
+						node["colour"] = colour;
+						node["time_ids"] = time_ids;
+
+						if (is_cluster_node === "false") {
+							centrality_score = d.getAttribute("centrality_score");
+							node["centrality_score"] = centrality_score;
+						}
 					}
 				})
 
-				node["id"] = id;
-				node["x"] = x;
-				node["y"] = y;
-				node["fx"] = fx;
-				node["fy"] = fy;
-				node["class"] = cluster_id;
-				node["cluster_name"] = cluster_name;
-				node["cluster_node"] = is_cluster_node;
-				node["colour"] = colour;
-				node["time_ids"] = time_ids;
-				node["centrality_score"] = centrality_score;
+				
+				
 
 				graph_nodes.push(node);
 
@@ -1173,6 +1185,8 @@ app = new Vue({
 			graph['start_year'] = app.start_year;
 			graph['end_year'] = app.end_year;
 			graph['time_diff'] = app.time_diff;
+			graph['senses'] = app.senses;
+			graph['edges'] = app.edges;
 
 			var data = JSON.stringify(graph, null, 2);
 			var blob = new Blob([data], {type: 'text/plain'});
@@ -1216,6 +1230,8 @@ app = new Vue({
 			  app.start_year = this.read_graph.start_year;
 			  app.end_year = this.read_graph.end_year;
 			  app.time_diff = this.read_graph.time_diff;
+			  app.senses = this.read_graph.senses;
+			  app.edges = this.read_graph.edges;
 
 			  app.start_years.forEach(function(d,i) {
 				if (d.value === app.start_year) {
