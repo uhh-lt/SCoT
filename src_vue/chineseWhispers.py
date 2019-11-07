@@ -14,7 +14,8 @@ def construct_graph(nodes_set, edges):
 	#print("graph nodes:" + str(graph.nodes))
 	# initialize the class of each node
 	for v, n in enumerate(graph.nodes):
-		graph.node[n]['class'] = v
+		graph.nodes[n]['class'] = v
+		print(graph.nodes[n])
 
 	# [(1,2), (2,3), ...]
 	graph.add_edges_from(edges)
@@ -38,10 +39,10 @@ def chinese_whispers(nodes, edges, target_word, iterations=2):
 			neighbours = graph[node]
 			classes = {}
 			for neighbour in neighbours:
-				if graph.node[neighbour]['class'] in classes:
-					classes[graph.node[neighbour]['class']] += graph[node][neighbour]['weight']
+				if graph.nodes[neighbour]['class'] in classes:
+					classes[graph.nodes[neighbour]['class']] += graph[node][neighbour]['weight']
 				else:
-					classes[graph.node[neighbour]['class']] = graph[node][neighbour]['weight']	
+					classes[graph.nodes[neighbour]['class']] = graph[node][neighbour]['weight']	
 
 			max = 0
 			maxclass = 0
@@ -49,7 +50,7 @@ def chinese_whispers(nodes, edges, target_word, iterations=2):
 				if classes[c] > max:
 					max = classes[c]
 					maxclass = c
-			graph.node[node]['class'] = maxclass
+			graph.nodes[node]['class'] = maxclass
 
 	return  nx.readwrite.json_graph.node_link_data(graph)
 
