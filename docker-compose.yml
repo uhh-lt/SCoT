@@ -50,6 +50,7 @@ services:
     image: mariadb:10.4.6
     volumes:
       # database
+      - .db/dump.sql://docker-entrypoint-initdb.d/dump.sql
       - ./db/gbooks_data:/var/lib/mysql
 
 
