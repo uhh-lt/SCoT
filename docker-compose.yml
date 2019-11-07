@@ -32,18 +32,18 @@ services:
       - "10017:80"
     networks:
       scot-net:
-    depends_on:
-      - db_setup
+    #depends_on:
+    #  - db_setup
 
-  db_setup:
-    build: ./src_build_database
-    volumes:
-      - ./db/gbooks_datahub/:/make_db/data
-    depends_on:
-      db:
-        condition: service_healthy
-    networks:
-      scot-net:
+  #db_setup:
+  #  build: ./src_build_database
+  #  volumes:
+  #    - ./db/gbooks_datahub/:/make_db/data
+  #  depends_on:
+  #    db:
+  #      condition: service_healthy
+  #  networks:
+  #    scot-net:
 
 
   db:
@@ -61,11 +61,11 @@ services:
       MYSQL_USER: user
       MYSQL_PASSWORD: password
 
-    healthcheck:
-          test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-ppassword", "-uuser"]
-          interval: 120s
-          timeout: 20s
-          retries: 40
+    #healthcheck:
+    #      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-ppassword", "-uuser"]
+    #      interval: 120s
+    #      timeout: 20s
+    #      retries: 40
 
     networks:
       scot-net:
