@@ -51,7 +51,7 @@ services:
     volumes:
       # database
       - .db/dump.sql://docker-entrypoint-initdb.d/dump.sql
-      - ./db/gbooks_data:/var/lib/mysql
+      - ./db/dev_data:/var/lib/mysql
 
 
       # "database" : "mysql://user:password@db/scot" / local: "mysql://inga@0.0.0.0/scot"(config.json)
