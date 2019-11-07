@@ -84,6 +84,7 @@ def get_clustered_graph(
 		density):
 	#target_word = str(urllib.parse.unquote(target_word))
 	target_word = str(target_word)
+	print("------------------------------- target word: " + target_word)
 	paradigms = direct_neighbours
 
 	def clusters(
