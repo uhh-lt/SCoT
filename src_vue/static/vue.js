@@ -44,7 +44,8 @@ app = new Vue({
      	centrality_fields : [{key: "text", label: "Node", sortable: true}, {key: "centrality_score", sortable: true}],
      	centrality_threshold_s : "0.0",
      	centrality_threshold_m: "0.1",
-     	centrality_score_distribution : []
+     	centrality_score_distribution : [],
+     	edit_column_open: false
 	},
 	computed: {
 		/*
@@ -109,7 +110,7 @@ app = new Vue({
 		}
 	},
 	methods: {
-		calculateCentralityDistribution: function(d) {
+		calculateCentralityDistribution: function() {
 			app.centrality_score_distribution = [];
 			app.getCentralityScores();
 
@@ -978,7 +979,14 @@ app = new Vue({
 				//update clusters before fading in the column, keep the old clusters in time diff mode though, so that the user can still see the information about clusters
 				app.get_clusters();	
 			}
-			document.getElementById("edit_clusters_popup").style.display = "block";
+			if (app.edit_column_open === false) {
+				app.edit_column_open = true;
+				document.getElementById("edit_clusters_popup").style.display = "block";
+			} else if (app.edit_column_open === true) {
+				app.edit_column_open = false;
+				document.getElementById("edit_clusters_popup").style.display = "none";
+			}
+			
 		},
 		/*
 		Collect the information on the clusters from the graph and store it in the data variable clusters.
