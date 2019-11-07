@@ -416,13 +416,12 @@
     			<b-list-group v-for="(cluster, index) in clusters" :key="index">
 					<b-list-group-item class="list-item">
 						<div class="overflow">
-							<!-- Display coloured circle, cluster name and number of nodes in cluster -->
-							<div class="clustername">
+							<!-- Display coloured circle, cluster name and number of nodes in cluster @click="select_cluster(cluster)" -->
+							<div class="clusternaxme">
 								<span class="dot"
 								v-bind:style="{ 'background-color': cluster.colour }"
 								@mouseover="!cluster_selected ? set_cluster_opacity(cluster, 0.2, 0.2) : null"
   								@mouseout="!cluster_selected ? set_cluster_opacity(cluster, 1.0, 1.0) : null"
-								@click="select_cluster(cluster)"
 								></span>
 								Cluster: <span class="bigger_font">{{ cluster.cluster_name }} </span>
 								<p> Number of nodes: {{cluster.labels.length}} </p>
