@@ -5,8 +5,6 @@ import json
 # Construct a networkx graph from the nodes and edges
 def construct_graph(nodes_set, edges):
 	nodes = list(nodes_set)
-	print("--------------------------------- nodes: " + str(nodes))
-	print("--------------------------------- edges: " + str(edges))
 	graph = nx.Graph()
 	# add nodes from a list of nodes
 	# [1,2,3,...]
@@ -14,7 +12,6 @@ def construct_graph(nodes_set, edges):
 	#print("graph nodes:" + str(graph.nodes))
 	# initialize the class of each node
 	for v, n in enumerate(graph.nodes):
-		print(graph.node[n])
 		graph.node[n]['class'] = v
 
 	# [(1,2), (2,3), ...]
