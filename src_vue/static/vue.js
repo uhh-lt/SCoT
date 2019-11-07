@@ -802,11 +802,11 @@ app = new Vue({
 						d.setAttribute("style", "stroke-opacity:" + link_opacity);
 					} 
 					if (cluster_nodes.includes(source) && cluster_nodes.includes(target)) {
-						if (opacity < 1) {
+						//if (opacity < 1) {
+						//	d.setAttribute("style", "stroke:" + cluster.colour);
+						//} else {
 							d.setAttribute("style", "stroke:" + cluster.colour);
-						} else {
-							d.setAttribute("style", "stroke: #999;");
-						}
+						//}
 					}
 				}) ;	
 			});
@@ -876,15 +876,15 @@ app = new Vue({
 
 				    var newClusteredNodes = this.newclusters.nodes;
 
+				    var texts = nodes.selectAll("g").select("text");
+				    var circles = nodes.selectAll("g").select("circle");
+
 				    for (var i=0; i<newClusteredNodes.length; i++) {
 				    	var node_id = newClusteredNodes[i].id;
 				    	var node_new_cluster = newClusteredNodes[i].class;
 				    	//var node_centr_score = newClusteredNodes[i].centrality_score;
-
-				    	var texts = nodes.selectAll("g").select("text");
-				    	var circles = nodes.selectAll("g").select("circle");
-
 				    	// assign the updated attributes to the nodes
+				    	// Careful, data is not bound to DOM!
 				    	texts.each(function(d,i) {
 				    		var t = d3.select(this);
 				    		if (t.attr("text") === node_id) {
@@ -898,7 +898,34 @@ app = new Vue({
 				    	})
 				    }
 				    // update the data variable clusters
-				    app.get_clusters()
+				    app.get_clusters();
+
+				    var links = d3.selectAll("line");
+
+				    links.each(function(d) {
+				    	var source = d.source.id;
+				    	var target = d.target.id;
+
+				    	var is_in_cluster = false;
+				    	for (var i=0; i<app.clusters.length; i++) {
+					    	var cluster_colour = app.clusters[i].colour;
+					    	var node_ids = []
+
+					    	app.clusters[i].labels.forEach(function(p) {
+					    		node_ids.push(p.text)
+					    	})
+					    	if (node_ids.includes(source) && node_ids.includes(target)) {
+					    		this.setAttribute("stroke", cluster_colour);
+					    		is_in_cluster = true;
+					    	}
+					    }
+					    if (is_in_cluster === false) {
+					    	this.setAttribute("stroke", "#999");
+					    }
+				    })
+
+				    
+
 				  })
 				  .catch(function (error) {
 				    console.log(error);

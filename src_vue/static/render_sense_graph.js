@@ -97,7 +97,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	
 	// create the graph links
 	var link = svg.append("g")
-			.attr("stroke", "#999")
+			//.attr("stroke", "#999")
 			//.attr("stroke-opacity", 0.8)
 			.attr("class", "link")
 		.selectAll("line")
@@ -108,7 +108,15 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 			.attr("weight", function(d) { return d.weight })
 			// set the stroke with in dependence to the weight attribute of the link
 			// TODO: sort the weights into three categories and only use three different thicknesses for links according to the category
-			.attr("stroke-width", function(d) { return Math.sqrt(d.weight/10);	});
+			.attr("stroke-width", function(d) { return Math.sqrt(d.weight/10);	})
+			.attr("stroke", function(d) {
+				if (d.source.class === d.target.class) {
+					return color(d.source.class);
+				} else {
+					return "#999";	
+				}
+				
+			});
 
 	// initialize drag behaviour
 	var drag_node = d3.drag()
@@ -162,7 +170,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 			if (d.centrality_score != NaN) {
 				return d.centrality_score;
 			} else {
-				return null
+				return null;
 			}
 		})
 		.attr("cluster", function(d) { return d.class; })
