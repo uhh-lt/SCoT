@@ -1,5 +1,5 @@
 Flask
 records
-networkx
+networkx==2.3
 mysqlclient
 flask_cors
