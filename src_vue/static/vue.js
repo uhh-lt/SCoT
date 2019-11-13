@@ -4,8 +4,8 @@ app = new Vue({
    		target_word : "happiness/NN",
      	start_year : 1520,
      	end_year : 2008,
-     	senses : 100,
-     	edges : 30,
+     	senses : 10,
+     	edges : 3,
      	time_diff : false,
      	start_years : [],
      	end_years : [],
@@ -23,8 +23,8 @@ app = new Vue({
      	singletons : [],
      	data_from_db : {},
      	simulation : null,
-     	update_senses : 150,
-     	update_edges : 50,
+     	update_senses : 15,
+     	update_edges : 5,
      	updated_nodes : null,
      	updated_links : null,
      	interval_start : 0,
@@ -367,6 +367,22 @@ app = new Vue({
 
 			app.created_cluster_colour = "";
 			app.created_cluster_name = "";
+
+			var links = d3.selectAll(".link")
+			links.each(function(d) {
+				var children = this.childNodes;
+				children.forEach(function(p) {
+					var source = p.getAttribute("source");
+					var target = p.getAttribute("target");
+					var source_colour = app.findColour(source);
+					var target_colour = app.findColour(target);
+					if (source_colour === target_colour) {
+						p.setAttribute("style", "stroke:" + source_colour);
+					} else {
+						p.setAttribute("style", "stroke: #999");
+					}
+				})
+			})
 		},
 		// Check if the selected nodes is a non cluster node. Only those should be considered for changing their cluster assignment
 		is_normal_node: function() {
@@ -381,6 +397,29 @@ app = new Vue({
 				}
 			});
 			return normal_node;
+		},
+		findColour: function(node_id) {
+			var nodes = d3.selectAll(".node").selectAll("g")
+			var colour;
+			
+			nodes.each(function(d) {
+				var node_name;
+				var children = this.childNodes;
+				children.forEach(function(p) {
+					if (p.tagName === "text") {
+						node_name = p.getAttribute("text");
+					}
+				})
+
+				if (node_name === node_id) {
+					children.forEach(function(p) {
+						if (p.tagName === "circle") {
+							colour = p.getAttribute("fill");
+						}
+					})
+				}
+			})
+			return colour;
 		},
 		/*
 		Assigns the newly selected cluster id, cluster name and cluster colour to the selected node node.
@@ -414,7 +453,24 @@ app = new Vue({
 				}
 			});
 			// update the information about the clusters in the graph in the data variable clusters.
-			app.get_clusters()
+			app.get_clusters();
+
+			var links = d3.selectAll(".link")
+			links.each(function(d) {
+				var children = this.childNodes;
+				children.forEach(function(p) {
+					var source = p.getAttribute("source");
+					var target = p.getAttribute("target");
+					var source_colour = app.findColour(source);
+					var target_colour = app.findColour(target);
+					if (source_colour === target_colour) {
+						p.setAttribute("style", "stroke:" + source_colour);
+					} else {
+						p.setAttribute("style", "stroke: #999");
+					}
+				})
+			})
+
 		},
 		/*
 		Return a list of all selected nodes as a list of objects

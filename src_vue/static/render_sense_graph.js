@@ -499,30 +499,6 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		return color(c);
 	}
 
-	function findColour(node_id) {
-		var nodes = svg.selectAll(".node").selectAll("g")
-		var colour;
-		
-		nodes.each(function(d) {
-			var node_name;
-			var children = this.childNodes;
-			children.forEach(function(p) {
-				if (p.tagName === "text") {
-					node_name = p.getAttribute("text");
-				}
-			})
-
-			if (node_name === node_id) {
-				children.forEach(function(p) {
-					if (p.tagName === "circle") {
-						colour = p.getAttribute("fill");
-					}
-				})
-			}
-		})
-		return colour;
-	}
-
 	// update the graph with the additional nodes and links
 	function update_graph() {
 		// Apply the general update pattern to the nodes.
@@ -599,8 +575,8 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 			.attr("target", function(d) { return d.target })
 			.attr("stroke-width", function(d) { return Math.sqrt(d.weight/10); })
 			.attr("stroke", function(d) {
-				var source_colour = findColour(d.source)
-				var target_colour = findColour(d.target)
+				var source_colour = app.findColour(d.source)
+				var target_colour = app.findColour(d.target)
 				if (source_colour === target_colour) {
 					//console.log(d.source.class, d.target.class)
 					return source_colour;
@@ -615,8 +591,8 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 			children.forEach(function(d) {
 				var source = d.getAttribute("source");
 				var target = d.getAttribute("target");
-				var source_colour = findColour(source);
-				var target_colour = findColour(target);
+				var source_colour = app.findColour(source);
+				var target_colour = app.findColour(target);
 				if (source_colour === target_colour) {
 					d.setAttribute("style", "stroke: " + source_colour);
 				} else {
