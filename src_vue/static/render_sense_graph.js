@@ -113,7 +113,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 				if (d.source.class === d.target.class) {
 					return color(d.source.class);
 				} else {
-					return "#999";	
+					return "#999";
 				}
 				
 			});
@@ -370,7 +370,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		   		.on("mouseout", mouseOut)
 		   		.on("click", function(d) {
 		   			console.log(d)
-	    			if (d.getAttribute("class") === "selected") {
+	    			if (d.selected) {
 	    				app.node_selected = true;
 	    			} else {
 	    				app.node_selected = false;
@@ -404,8 +404,8 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 			.attr("weight", 10)
 			.attr("source", function(d) { return d.source })
 			.attr("target", function(d) { return d.target })
-			//.attr("stroke-width", 5)
-			//.attr("stroke", "#eee")
+			//.style("stroke-width", 5)
+			.attr("stroke", "#eee")
 			.merge(link);
 
 		// Update and restart the app.simulation.
@@ -430,7 +430,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 	function addclusternode(name, colour, cluster_id) {
 		nodes.push({"id" : name, "colour" : colour, "cluster_id": cluster_id})
-		restart()	
+		restart()
 	}
 
 	// On backspace anywhere in the html body delete cluster node
@@ -447,12 +447,12 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 					var childnodes = this.childNodes;
 					var is_cluster_node;
 					var node_name;
-					var cluster_id;
+					//var cluster_id;
 
 					childnodes.forEach(function(d,i) {
 						if (d.tagName === "circle") {
 							is_cluster_node = d.getAttribute("cluster_node");
-							cluster_id = d.getAttribute("cluster_id");
+							//cluster_id = d.getAttribute("cluster_id");
 						}
 						if (d.tagName === "text") {
 							node_name = d.getAttribute("text");
@@ -461,7 +461,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 					if (is_cluster_node === "true") {
 						deletenode(node_name);
-						deletelinks(node_name, cluster_id);
+						deletelinks(node_name);
 						restart();
 					}
 				}
@@ -477,14 +477,16 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		}		
 	}
 	
-	// TODO: delete cluster_id as parameter 
-	function deletelinks(target, cluster_id) {
+	function deletelinks(node_id) {
 		var allLinks = d3.select(".link").selectAll("line");
+		console.log(node_id)
 
 		allLinks.each(function(d) {
-			if (this.getAttribute("target") === target) {
+			console.log(this.getAttribute("target"))
+			console.log(this.getAttribute("source"))
+			if (this.getAttribute("target") === node_id || this.getAttribute("source") === node_id) {
 				for (var i = 0; i < links.length; i++) {
-					if (links[i].target.id === target) {
+					if (links[i].target.id === node_id || links[i].source.id === node_id) {
 						links.splice(i, 1);
 					}
 				}
@@ -497,12 +499,35 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		return color(c);
 	}
 
+	function findColour(node_id) {
+		var nodes = svg.selectAll(".node").selectAll("g")
+		var colour;
+		
+		nodes.each(function(d) {
+			var node_name;
+			var children = this.childNodes;
+			children.forEach(function(p) {
+				if (p.tagName === "text") {
+					node_name = p.getAttribute("text");
+				}
+			})
+
+			if (node_name === node_id) {
+				children.forEach(function(p) {
+					if (p.tagName === "circle") {
+						colour = p.getAttribute("fill");
+					}
+				})
+			}
+		})
+		return colour;
+	}
+
 	// update the graph with the additional nodes and links
 	function update_graph() {
 		// Apply the general update pattern to the nodes.
 		node = node.data(nodes, function(d) { return d.id;});
 		node.exit().remove();
-
 		var g = node.enter()
 				.append("g")
 				.attr("stroke", "#fff")
@@ -523,7 +548,8 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	    			app.select_node_is_no_cluster_node = app.is_normal_node();
 	    			//console.log(this)
 	    			showContextMenu(this);
-	   			});
+	   			})
+	   	node = node.merge(g);
 
 
 	   	var circle = g.append("circle")
@@ -544,7 +570,9 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 			.attr('y', 3)
 			.attr("text", function(d) { return d.id; });
 
-		node = node.merge(g);
+		
+
+		//node = node.merge(g);
 
 		d3.select("#select_time_diff").on("change", function(d) {
 			if (app.time_diff === false) {
@@ -560,16 +588,42 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 
 		// Apply the general update pattern to the links.
-		link = link.data(links, function(d) { return d.source.id + "-" + d.target.id; });
+		// function(d) { return d.source.id + "-" + d.target.id; }
+		link = link.data(links);
 		link.exit().remove();
 		link = link.enter().append("line")
 			.attr("weight", function(d) { return d.weight })
-			.attr("source", function(d) { return d.source })
+			.attr("source", function(d) {
+				return d.source;
+			})
 			.attr("target", function(d) { return d.target })
 			.attr("stroke-width", function(d) { return Math.sqrt(d.weight/10); })
-			.attr("stroke", "#999")
-			.merge(link);
+			.attr("stroke", function(d) {
+				var source_colour = findColour(d.source)
+				var target_colour = findColour(d.target)
+				if (source_colour === target_colour) {
+					//console.log(d.source.class, d.target.class)
+					return source_colour;
+				} else {
+					return "#999";
+				}
+			}).merge(link);
 
+		var all_links = d3.selectAll(".link")
+		all_links.each(function(d) {
+			var children = this.childNodes;
+			children.forEach(function(d) {
+				var source = d.getAttribute("source");
+				var target = d.getAttribute("target");
+				var source_colour = findColour(source);
+				var target_colour = findColour(target);
+				if (source_colour === target_colour) {
+					d.setAttribute("style", "stroke: " + source_colour);
+				} else {
+					d.setAttribute("style", "stroke: #999");
+				}
+			})
+		})
 		// Update and restart the app.simulation.
 		app.simulation.nodes(nodes);
 		app.simulation.force("link").links(links);
@@ -632,6 +686,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	d3.select("#update_button").on("click", async function() {
 		app.update().then((res) => {
 			var existing_labels = [];
+			var new_labels = [];
 			for (var j = 0; j < app.clusters.length; j++) {
 				var cluster = app.clusters[j];
 			
@@ -642,6 +697,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 			for (var i = 0; i < app.updated_nodes.length; i++) {
 				var new_label = app.updated_nodes[i].id;
+				new_labels.push(new_label);
 				var cluster_class = app.updated_nodes[i].class;
 				var centr_score = app.updated_nodes[i].centrality_score
 				
@@ -677,16 +733,22 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 					}
 				}
 
+				for (var i = 0; i < existing_labels.length; i++) {
+					if (!new_labels.includes(existing_labels[i])) {
+						deletenode(existing_labels[i]);
+						deletelinks(existing_labels[i]);
+					}
+				}
+
 				nodes.forEach(function(d) {
 			    	d.selected = false;
 			   		d.previouslySelected = false;
 				});
 
+				console.log(app.updated_links.length)
 				for (var i = 0; i < app.updated_links.length; i++) {
-					if (! links.includes(app.updated_links[i])) {
-						// add new links to link array
-						links.push(app.updated_links[i]);	
-					}
+					//if (! links.includes(app.updated_links[i])) {
+					links.push(app.updated_links[i]);
 				}
 				update_graph()
 				app.get_clusters();
