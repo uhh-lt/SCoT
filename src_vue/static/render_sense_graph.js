@@ -110,7 +110,10 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 			// TODO: sort the weights into three categories and only use three different thicknesses for links according to the category
 			.attr("stroke-width", function(d) { return Math.sqrt(d.weight/10);	})
 			.attr("stroke", function(d) {
-				if (d.source.class === d.target.class) {
+				console.log(d.colour)
+				if (d.colour !== undefined) {
+					return d.colour
+				} else if (d.source.class === d.target.class) {
 					return color(d.source.class);
 				} else {
 					return "#999";

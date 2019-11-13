@@ -377,9 +377,9 @@ app = new Vue({
 					var source_colour = app.findColour(source);
 					var target_colour = app.findColour(target);
 					if (source_colour === target_colour) {
-						p.setAttribute("style", "stroke:" + source_colour);
+						p.setAttribute("stroke", source_colour);
 					} else {
-						p.setAttribute("style", "stroke: #999");
+						p.setAttribute("stroke", "#999");
 					}
 				})
 			})
@@ -464,9 +464,9 @@ app = new Vue({
 					var source_colour = app.findColour(source);
 					var target_colour = app.findColour(target);
 					if (source_colour === target_colour) {
-						p.setAttribute("style", "stroke:" + source_colour);
+						p.setAttribute("stroke", source_colour);
 					} else {
-						p.setAttribute("style", "stroke: #999");
+						p.setAttribute("stroke", "#999");
 					}
 				})
 			})
@@ -1206,11 +1206,14 @@ app = new Vue({
 				var source = this.getAttribute("source");
 				var target = this.getAttribute("target");
 				var weight = this.getAttribute("weight");
+				var colour = this.getAttribute("stroke");
+				console.log(colour)
 				var link = {};
 
 				link["source"] = source;
 				link["target"] = target;
 				link["weight"] = weight;
+				link["colour"] = colour;
 
 				graph_links.push(link);
 			});
