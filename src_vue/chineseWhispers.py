@@ -19,7 +19,7 @@ def construct_graph(nodes_set, edges):
 	return graph
 
 # Apply the Chinese Whispers Clustering Algorithm to the graph
-def chinese_whispers(nodes, edges, target_word, iterations=2):
+def chinese_whispers(nodes, edges, target_word, iterations=15):
 	graph = construct_graph(nodes, edges)
 
 	centrality_nodes = nx.betweenness_centrality(graph)
@@ -34,8 +34,10 @@ def chinese_whispers(nodes, edges, target_word, iterations=2):
 
 		for node in graph_nodes:
 			neighbours = graph[node]
+			#print(neighbours)
 			classes = {}
 			for neighbour in neighbours:
+				#print(classes)
 				if graph.node[neighbour]['class'] in classes:
 					classes[graph.node[neighbour]['class']] += graph[node][neighbour]['weight']
 				else:
@@ -44,6 +46,7 @@ def chinese_whispers(nodes, edges, target_word, iterations=2):
 			max = 0
 			maxclass = 0
 			for c in classes:
+				#print(max, maxclass)
 				if classes[c] > max:
 					max = classes[c]
 					maxclass = c
@@ -69,7 +72,7 @@ def construct_reclustering_graph(nodes, edges):
 
 # Apply Chinese Whispers again
 # TODO: try to avoid duplicated code!!
-def reclustering(nodes, edges, iterations=2):
+def reclustering(nodes, edges, iterations=15):
 	graph = construct_reclustering_graph(nodes, edges)
 
 	# calculate betweenness centrality of nodes
