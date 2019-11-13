@@ -110,6 +110,9 @@ app = new Vue({
 		}
 	},
 	methods: {
+		/*
+		Calculate how many nodes have a certain centrality score, so that the user has some reference when changing the thresholds
+		*/
 		calculateCentralityDistribution: function() {
 			app.centrality_score_distribution = [];
 			app.getCentralityScores();
@@ -134,21 +137,23 @@ app = new Vue({
 				}
 			});
 
-			app.centrality_score_distribution.push({"centrality_score": "0.0", "number": group0}, {"centrality_score": "0.0 - 0.1", "number": group1}, {"centrality_score": "0.1 - 0.2", "number": group2}, {"centrality_score": "0.2 - 0.3", "number": group3}, {"centrality_score": "over 0.3", "number": group4})
+			app.centrality_score_distribution.push({"centrality_score": "0.0", "number": group0}, {"centrality_score": "0.0 - 0.1", "number": group1}, {"centrality_score": "0.1 - 0.2", "number": group2}, {"centrality_score": "0.2 - 0.3", "number": group3}, {"centrality_score": "over 0.3", "number": group4});
 		},
 		getCentralityScores: function() {
 			app.centrality_scores = [];
+
 			var circles = d3.selectAll(".node").selectAll("g").select("circle");
 			var texts = d3.selectAll(".node").selectAll("g").select("text");
+
 			texts.each(function(d, i) {
 				var node = {};
 				node["text"] = this.getAttribute("text");
 
 				var circle = d3.select(circles.nodes()[i]);
 				var cen_score = circle.attr("centrality_score");
+
 				if (cen_score != null) {
 					node["centrality_score"] = parseFloat(cen_score);
-
 					app.centrality_scores.push(node);
 				}
 			});
@@ -156,6 +161,7 @@ app = new Vue({
 		resetCentralityHighlighting: function() {
 			var circles = d3.selectAll(".node").selectAll("g").select("circle");
 			var texts = d3.selectAll(".node").selectAll("g").select("text");
+
 			circles.each(function(d, i) {
 				if (this.getAttribute("centrality_score") != null) {
 					this.setAttribute("r", 5)
@@ -167,36 +173,40 @@ app = new Vue({
 		highlightCentralNodes: function(threshold_s, threshold_m) {
 			threshold_s = parseFloat(threshold_s);
 			threshold_m = parseFloat(threshold_m);
+
 			var nodes = d3.selectAll(".node").selectAll("g");
 			var texts = d3.selectAll(".node").selectAll("g").select("text");
+
 			nodes.each(function(d, i) {
 				var children = this.childNodes;
-				var text = d3.select(texts.nodes()[i])
+				var text = d3.select(texts.nodes()[i]);
+
 				children.forEach(function(d,i) {
 					if(d.tagName == "circle") {
 						if (d.getAttribute("centrality_score") != null) {
-							var centrality_score = parseFloat(d.getAttribute("centrality_score"))
+							var centrality_score = parseFloat(d.getAttribute("centrality_score"));
 							if (centrality_score <= threshold_s) {
-								d.setAttribute("r", 2.5)
-								text.style("font-size", "8px")
+								d.setAttribute("r", 2.5);
+								text.style("font-size", "8px");
 							} else if (centrality_score > threshold_s && centrality_score <= threshold_m) {
-								d.setAttribute("r", 10.0)
-								text.style("font-size", "14px")
+								d.setAttribute("r", 10.0);
+								text.style("font-size", "14px");
 							} else {
-								d.setAttribute("r", 20.0)
-								text.style("font-size", "20px")
+								d.setAttribute("r", 20.0);
+								text.style("font-size", "20px");
 							}
 						}
-						
 					}
-				})
-			})
+				});
+			});
 		},
 		unsearch_nodes: function() {
 			// undo highlighting
 			var nodes = d3.selectAll(".node").selectAll("g");
+
 			nodes.each(function(d) {
 				var children = this.childNodes;
+
 				children.forEach(function(d) {
 					if (d.tagName === "text") {
 						d.style.fill = "black";
@@ -209,42 +219,49 @@ app = new Vue({
 						if (r > 5) {
 							new_r = r / 2;
 							d.setAttribute("r", new_r);
-							d.style.stroke = "white"
+							d.style.stroke = "white";
 						}
 					}
-				})
-			})
+				});
+			});
 		},
 		search_node: function() {
 			found_matching_string = false;
+
 			if (app.searchterm === "") {
 				alert("Please enter a search term.");
 			} else {
 				// prefix matching
 				var nodes = d3.selectAll(".node").selectAll("g");
+
 				nodes.each(function(d) {
 					var children = this.childNodes;
 					text = "";
+
 					children.forEach(function(d) {
 						if (d.tagName === "text") {
 							text = d.getAttribute("text");
 						}
 					});
+
 					if (text.lastIndexOf(app.searchterm, 0) === 0) {
 						found_matching_string = true;
+
+						// highlight matching node
 						children.forEach(function(d) {
 							if (d.tagName === "text") {
-								//d.style.fill = "black";
 								d.style.fontSize = "16px";
 							}
 							if (d.tagName === "circle") {
 								r = d.getAttribute("r");
 								new_r = r * 2;
-								d.setAttribute("r", new_r)
+								d.setAttribute("r", new_r);
 								d.style.stroke = "yellow";
 							}
 						});
 					} else {
+						// reduce opacity of the other nodes
+						// TODO: reduce opacity of links -> coloured links are a bit to strong
 						children.forEach(function(d) {
 							if (d.tagName === "text") {
 								d.style.opacity = 0.4;
@@ -252,11 +269,11 @@ app = new Vue({
 							if (d.tagName === "circle") {
 								d.style.opacity = 0.4;
 							}
-						})
+						});
 					}
 				});
 				if (found_matching_string === false) {
-					alert("No match found. Please try a different search term.")
+					alert("No match found. Please try a different search term.");
 				}
 				app.searchterm = "";
 			}	
@@ -344,7 +361,7 @@ app = new Vue({
 
 				childnodes.forEach(function(d,i) {
 					if (d.tagName === "text") {
-						text = d.getAttribute("text");				
+						text = d.getAttribute("text");
 					}
 				})
 
@@ -368,7 +385,7 @@ app = new Vue({
 			app.created_cluster_colour = "";
 			app.created_cluster_name = "";
 
-			var links = d3.selectAll(".link")
+			var links = d3.selectAll(".link");
 			links.each(function(d) {
 				var children = this.childNodes;
 				children.forEach(function(p) {
@@ -388,16 +405,19 @@ app = new Vue({
 		is_normal_node: function() {
 			var normal_node;
 			var selected_node = d3.select(".selected").select("circle");
+
 			selected_node.each(function(d) {
 				var n = d3.select(this);
 				if (n.attr("cluster_node") === "true") {
-					normal_node = false;			
+					normal_node = false;
 				} else {
 					normal_node = true;
 				}
 			});
+
 			return normal_node;
 		},
+		// find the colour of a given node_id
 		findColour: function(node_id) {
 			var nodes = d3.selectAll(".node").selectAll("g")
 			var colour;
