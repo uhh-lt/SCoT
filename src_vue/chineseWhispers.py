@@ -34,10 +34,8 @@ def chinese_whispers(nodes, edges, target_word, iterations=15):
 
 		for node in graph_nodes:
 			neighbours = graph[node]
-			#print(neighbours)
 			classes = {}
 			for neighbour in neighbours:
-				#print(classes)
 				if graph.node[neighbour]['class'] in classes:
 					classes[graph.node[neighbour]['class']] += graph[node][neighbour]['weight']
 				else:
@@ -46,7 +44,6 @@ def chinese_whispers(nodes, edges, target_word, iterations=15):
 			max = 0
 			maxclass = 0
 			for c in classes:
-				#print(max, maxclass)
 				if classes[c] > max:
 					max = classes[c]
 					maxclass = c
