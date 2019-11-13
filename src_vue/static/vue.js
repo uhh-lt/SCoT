@@ -799,15 +799,16 @@ app = new Vue({
 					var source = d.getAttribute("source");
 					var target = d.getAttribute("target");
 					if (!cluster_nodes.includes(source) || !cluster_nodes.includes(target)) {
-						d.setAttribute("style", "stroke-opacity:" + link_opacity);
+						//d.setAttribute("style", "stroke-opacity:" + link_opacity);
+						d.style.strokeOpacity = link_opacity;
 					} 
-					if (cluster_nodes.includes(source) && cluster_nodes.includes(target)) {
+					//if (cluster_nodes.includes(source) && cluster_nodes.includes(target)) {
 						//if (opacity < 1) {
 						//	d.setAttribute("style", "stroke:" + cluster.colour);
 						//} else {
-							d.setAttribute("style", "stroke:" + cluster.colour);
+					//		d.setAttribute("style", "stroke:" + cluster.colour);
 						//}
-					}
+					//}
 				}) ;	
 			});
 		},
@@ -869,7 +870,7 @@ app = new Vue({
 			data["links"] = link_array;
 
 			axios.post('./reclustering', data)
-				.then(function (response) {
+				.then(async function (response) {
 				    this.newclusters = response.data;
 
 				    var colour = d3.scaleOrdinal(d3.schemePaired);
@@ -898,35 +899,35 @@ app = new Vue({
 				    	})
 				    }
 				    // update the data variable clusters
-				    app.get_clusters();
+				    await app.get_clusters();
 
-				    var links = d3.selectAll("line");
-
-				    links.each(function(d) {
-				    	var source = d.source.id;
-				    	var target = d.target.id;
-
-				    	var is_in_cluster = false;
-				    	for (var i=0; i<app.clusters.length; i++) {
-					    	var cluster_colour = app.clusters[i].colour;
-					    	var node_ids = []
-
-					    	app.clusters[i].labels.forEach(function(p) {
-					    		node_ids.push(p.text)
-					    	})
-					    	if (node_ids.includes(source) && node_ids.includes(target)) {
-					    		this.setAttribute("stroke", cluster_colour);
-					    		is_in_cluster = true;
-					    	}
-					    }
-					    if (is_in_cluster === false) {
-					    	this.setAttribute("stroke", "#999");
-					    }
-				    })
-
+				    //var links = d3.selectAll(".link");
 				    
 
-				  })
+				    links.each(function() {
+				    	var children = this.childNodes;
+				    	children.forEach(function(d,i) {
+				    		var is_in_cluster = false;
+							var source = d.getAttribute("source");
+							var target = d.getAttribute("target");
+							for (var i=0; i<app.clusters.length; i++) {
+					    		var node_ids = [];
+					    		app.clusters[i].labels.forEach(function(p) {
+					    			node_ids.push(p.text)
+					    		})
+					    		if (node_ids.includes(source) && node_ids.includes(target)) {
+						    		var cluster_colour = app.clusters[i].colour;
+						    		d.setAttribute("style", "stroke:" + cluster_colour);
+						    		is_in_cluster = true;
+						    	}
+
+					    	}
+					    	if (!is_in_cluster) {
+								d.setAttribute("style", "stroke:#999");
+							}
+						}) 
+				    })
+				})
 				  .catch(function (error) {
 				    console.log(error);
 				  });
@@ -1019,7 +1020,7 @@ app = new Vue({
 		Collect the information on the clusters from the graph and store it in the data variable clusters.
 		@return Array of objects with cluster information
 		*/
-		get_clusters: function() {
+		get_clusters: async function() {
 				app.clusters = [];
 				var clusters = [];
 				
@@ -1077,6 +1078,7 @@ app = new Vue({
 				for (var i=0; i < clusters.length; i++) {
 					Vue.set(app.clusters, i, clusters[i]);
 				}
+				return;
 		},
 		render_graph: async function() {
 			this.getData();
