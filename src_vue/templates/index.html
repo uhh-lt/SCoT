@@ -109,6 +109,7 @@
 				<!-- Nodes with balanced neighbourhood of clusters -->
 				<b-dropdown id="wobblyCandidatesCC" v-if="graph_rendered" text="Nodes between clusters" aria-expanded=true>
 					<b-dropdown-item v-on:click="highlightWobblyCandidates()"> <i class="fas fa-highlighter"></i> Highlight central nodes in graph </b-dropdown-item>
+					<b-dropdown-item v-on:click="resetCentralityHighlighting()"> <i class="fas fa-times"></i> Reset highlighting </b-dropdown-item>
 				</b-dropdown>
 
 				<!-- Inbetweenness Centrality Button-->
