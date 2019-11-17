@@ -46,7 +46,8 @@ app = new Vue({
      	centrality_threshold_m : "0.1",
      	centrality_score_distribution : [],
      	edit_column_open : false,
-     	highlightWobblies : false
+     	highlightWobblies : false,
+     	hightlighInbetweennessCentrality : false
 	},
 	computed: {
 		/*
@@ -163,6 +164,10 @@ app = new Vue({
 				neighbourhood = {cluster_id : counter}
 
 			*/
+			if (app.hightlighInbetweennessCentrality === true) {
+				app.resetCentralityHighlighting();
+				app.hightlighInbetweennessCentrality = false;
+			}
 			app.highlightWobblies = true;
 			var nodes = d3.selectAll(".node").selectAll("g");
 			var texts = d3.selectAll(".node").selectAll("g").select("text");
@@ -301,6 +306,7 @@ app = new Vue({
 				app.resetCentralityHighlighting();
 				app.highlightWobblies = false;
 			}
+			app.hightlighInbetweennessCentrality = true;
 			threshold_s = parseFloat(threshold_s);
 			threshold_m = parseFloat(threshold_m);
 
