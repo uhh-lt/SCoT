@@ -132,6 +132,19 @@ text {
 	font-size: 10px;
 }
 
+#wobblyCandidatesDD {
+	display:block;
+	float: right;
+	text-align: center;
+	/*word-spacing: -10px;*/
+	/*margin-right: 10px;*/
+	margin-left: 5px;
+}
+
+#wobblyCandidatesCC__BV_toggle_ {
+	font-size: 10px;
+}
+
 #edit_mask_button {
 	display: block;
 	float: right;
