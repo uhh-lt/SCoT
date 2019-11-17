@@ -110,6 +110,130 @@ app = new Vue({
 		}
 	},
 	methods: {
+		findClusterId: function(node_id) {
+			var cluster_id;
+			for (var i = 0; i < app.clusters.length; i++) {
+				var labels = [];
+				var cluster = app.clusters[i];
+				for(var j = 0; j < cluster.labels.length; j++) {
+					labels.push(cluster.labels[j].text);
+				}
+				if (labels.includes(node_id)) {
+					cluster_id = cluster.cluster_id;
+				}
+			}
+			return cluster_id.toString();
+		},
+		findNeighbourhoodClusters: function(node) {
+			neighbourhoodClusters = {};
+			var links = d3.selectAll(".link");
+			links.each(function(d) {
+				var children = this.childNodes;
+				var neighbour_cluster;
+				children.forEach(function(p) {
+					var source = p.getAttribute("source");
+					var target = p.getAttribute("target");
+					if (source === node) {
+						neighbour_cluster = app.findClusterId(target);
+						if (neighbourhoodClusters.hasOwnProperty(neighbour_cluster)) {
+							neighbourhoodClusters[neighbour_cluster] += 1
+						} else {
+							neighbourhoodClusters[neighbour_cluster] = 1
+						}
+					}
+					if (target === node) {
+						neighbour_cluster = app.findClusterId(source);
+						if (neighbourhoodClusters.hasOwnProperty(neighbour_cluster)) {
+							neighbourhoodClusters[neighbour_cluster] += 1
+						} else {
+							neighbourhoodClusters[neighbour_cluster] = 1
+						}
+					}
+				});
+				
+			});
+			return neighbourhoodClusters;
+		},
+		highlightWobblyCandidates: function() {
+			/*
+			for node in nodes:
+				cluster_assignment of node;
+				neighbours = get_neighbouring_nodes_and_their_cluster_assignment -> via links
+				neighbourhood = {cluster_id : counter}
+
+			*/
+			var nodes = d3.selectAll(".node").selectAll("g");
+			var texts = d3.selectAll(".node").selectAll("g").select("text");
+
+			nodes.each(function(d, i) {
+				var children = this.childNodes;
+				var text = d3.select(texts.nodes()[i]);
+				var cluster_id;
+				var node_text;
+
+				children.forEach(function(p) {
+					if (p.tagName === "text") {
+						node_text = p.getAttribute("text");
+					}
+					if (p.tagName === "circle") {
+						cluster_id = p.getAttribute("cluster_id");
+					}
+				});
+
+				var neighbourClusterDistr = app.findNeighbourhoodClusters(node_text);
+				console.log(neighbourClusterDistr)
+				var mean = 0;
+				Object.values(neighbourClusterDistr).forEach(function(d) {
+					mean += d;
+				})
+				mean = mean / Object.keys(neighbourClusterDistr).length;
+				console.log(mean)
+
+				max = 0;
+				Object.values(neighbourClusterDistr).forEach(function(d) {
+					if (d > max) {
+						max = d;
+					}
+				});
+
+				console.log(max)
+
+				var balanced = false;
+
+				Object.values(neighbourClusterDistr).forEach(function(d) {
+					if (d !== max) {
+						if (Object.keys(neighbourClusterDistr).length > 1 && max - d < mean/2) {
+						balanced = true;
+						}
+					}
+
+				})
+
+				console.log(balanced)
+				if (balanced === true) {
+					children.forEach(function(p) {
+						if (p.tagName === "circle") {
+							p.setAttribute("r", 20);
+							text.style("font-size", "20px");
+						}
+					})
+				}
+
+				// if node is connected to more than one cluster:
+				// should be the least strict constraint
+				else if (Object.keys(neighbourClusterDistr).length > 1) {
+					// make node bigger
+					// think of correlation of how well the clusters are distributed an the size of the node
+					children.forEach(function(p) {
+						if (p.tagName === "circle") {
+							p.setAttribute("r", 10);
+							text.style("font-size", "14px")
+						}
+					})
+				}
+
+			});
+		},
 		/*
 		Calculate how many nodes have a certain centrality score, so that the user has some reference when changing the thresholds
 		*/
