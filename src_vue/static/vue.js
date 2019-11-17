@@ -43,9 +43,10 @@ app = new Vue({
      	centrality_scores : [],
      	centrality_fields : [{key: "text", label: "Node", sortable: true}, {key: "centrality_score", sortable: true}],
      	centrality_threshold_s : "0.0",
-     	centrality_threshold_m: "0.1",
+     	centrality_threshold_m : "0.1",
      	centrality_score_distribution : [],
-     	edit_column_open: false
+     	edit_column_open : false,
+     	highlightWobblies : false
 	},
 	computed: {
 		/*
@@ -162,6 +163,7 @@ app = new Vue({
 				neighbourhood = {cluster_id : counter}
 
 			*/
+			app.highlightWobblies = true;
 			var nodes = d3.selectAll(".node").selectAll("g");
 			var texts = d3.selectAll(".node").selectAll("g").select("text");
 
@@ -295,6 +297,10 @@ app = new Vue({
 			})
 		},
 		highlightCentralNodes: function(threshold_s, threshold_m) {
+			if (app.highlightWobblies === true) {
+				app.resetCentralityHighlighting();
+				app.highlightWobblies = false;
+			}
 			threshold_s = parseFloat(threshold_s);
 			threshold_m = parseFloat(threshold_m);
 
@@ -1016,6 +1022,10 @@ app = new Vue({
 		Send all the nodes and edges to the backend, recluster them and change the nodes in the graph accordingly (cluster id, cluster name, colour)
 		*/
 		recluster: function() {
+			if (app.highlightWobblies === true) {
+				app.resetCentralityHighlighting();
+				app.highlightWobblies = false;
+			}
 			//document.getElementById("edit_clusters_popup").style.display = "none";			
 
 			var svg = d3.select("#svg");
