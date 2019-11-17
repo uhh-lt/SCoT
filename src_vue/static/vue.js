@@ -408,6 +408,17 @@ app = new Vue({
 						});
 					}
 				});
+
+				if (found_matching_string === true) {
+					var links = d3.selectAll(".link");
+					links.each(function(d) {
+						var children = this.childNodes;
+						children.forEach(function(p) {
+							p.style.strokeOpacity = 0.2;
+						})
+					})
+				}
+
 				if (found_matching_string === false) {
 					alert("No match found. Please try a different search term.");
 				}
