@@ -50,8 +50,9 @@ services:
     image: mariadb:10.4.6
     volumes:
       # database
-      - .db/dump.sql://docker-entrypoint-initdb.d/dump.sql
-      - ./db/dev_data:/var/lib/mysql
+      #- ${PWD}/db/dump.sql:/docker-entrypoint-initdb.d/dump.sql
+      - ${PWD}/db/dev_data:/var/lib/mysql
+      - ${PWD}/db/moreWordsforAlex:/var/lib/mysql-files
 
 
       # "database" : "mysql://user:password@db/scot" / local: "mysql://inga@0.0.0.0/scot"(config.json)
