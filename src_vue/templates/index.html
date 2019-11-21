@@ -115,8 +115,19 @@
 
 				<b-modal id="modal-wobbly-1" scrollable title="List of Nodes between Clusters" ok-only ok-title="Close">
 					<div>
-	    				<b-table striped hover :items="wobblyCandidates" :fields="wobblyCandidatesFields">
-	    					
+	    				<b-table striped hover responsive="sm" :items="wobblyCandidates" :fields="wobblyCandidatesFields">
+	    					<template v-slot:cell(show_details)="row">
+	    						<b-button size="sm" @click="row.toggleDetails" class="mr-2">
+						          {{ row.detailsShowing ? 'Hide' : 'Show'}} Details
+						        </b-button>
+	    					</template>
+	    					<template v-slot:row-details="row">
+	    						<b-card>
+	    							<ul v-for="n in row.item.neighbours">
+	    								<li> {{ n }} </li>
+	    							</ul>
+	    						</b-card>
+	    					</template>
 	    				</b-table>
 	  				</div>
 				</b-modal>

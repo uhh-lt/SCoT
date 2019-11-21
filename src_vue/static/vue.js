@@ -48,7 +48,7 @@ app = new Vue({
      	edit_column_open : false,
      	highlightWobblies : false,
      	hightlighInbetweennessCentrality : false,
-     	wobblyCandidatesFields : [{key:"text", label: "Node", sortable: true}, {key: "connected_clusters", label: "Connected Clusters", sortable: false}, {key: "balanced", label: "Balanced", sortable: true}],
+     	wobblyCandidatesFields : [{key:"text", label: "Node", sortable: true}, {key: "connected_clusters", label: "Connected Clusters", sortable: false}, {key: "balanced", label: "Balanced", sortable: true}, {key: "show_details", label: "Show Neighbours"}],
      	wobblyCandidates : []
 	},
 	computed: {
@@ -131,7 +131,6 @@ app = new Vue({
 				for(var j = 0; j < cluster.labels.length; j++) {
 					labels.push(cluster.labels[j].text);
 				}
-				console.log(node_id, labels)
 				if (labels.includes(node_id)) {
 					cluster_id = cluster.cluster_id;
 				}
@@ -209,6 +208,35 @@ app = new Vue({
 
 			return [balanced, b];
 		},
+		findNeighboursAndClusters: function(node) {
+			var neighbours = [];
+
+			var links = d3.selectAll(".link");
+			links.each(function(d) {
+				var children = this.childNodes;
+				children.forEach(function(p) {
+					var source = p.getAttribute("source");
+					var target = p.getAttribute("target");
+
+					if (source === node) {
+						var target_cluster_id = app.findClusterId(target);
+						if (target_cluster_id !== undefined) {
+							var neighbour = target + " (cluster: " + target_cluster_id + ")";
+							neighbours.push(neighbour);
+						}
+						
+					} else if (target === node) {
+						var source_cluster_id = app.findClusterId(source);
+						if (source_cluster_id !== undefined) {
+							var neighbour = source + " (cluster: " + source_cluster_id + ")";
+							neighbours.push(neighbour);
+						}
+					}
+				});
+			});
+
+			return neighbours
+		},
 		findWobblyCandidates: function() {
 			app.wobblyCandidates = []
 			if (app.hightlighInbetweennessCentrality === true) {
@@ -246,6 +274,7 @@ app = new Vue({
 					candidate["text"] = node_text;
 					candidate["connected_clusters"] = neighbourClusterDistr_string;
 					candidate["balanced"] = b;
+					candidate["neighbours"] = app.findNeighboursAndClusters(node_text);
 					app.wobblyCandidates.push(candidate);
 				}
 			});
@@ -284,15 +313,11 @@ app = new Vue({
 					}
 				});
 
-
-				console.log(node_text, cluster_id, is_cluster_node)
-
 				if (is_cluster_node === "false") {
 
 					var neighbourClusterDistr = app.findNeighbourhoodClusters(node_text)[0];
 					balanced = app.is_balanced(neighbourClusterDistr)[0];
 
-					console.log(balanced)
 					if (balanced === true) {
 						children.forEach(function(p) {
 							if (p.tagName === "circle") {
@@ -512,8 +537,6 @@ app = new Vue({
 				for (var i = 0; i < cluster.labels.length; i++) {
 					cluster_nodes.push(cluster.labels[i].text);
 				}
-				console.log(cluster_id);
-				console.log(cluster_nodes);
 
 				var links = d3.selectAll(".link").selectAll("line");
 
@@ -542,8 +565,6 @@ app = new Vue({
 				for (var i = 0; i < cluster.labels.length; i++) {
 					cluster_nodes.push(cluster.labels[i].text);
 				}
-				console.log(cluster_id);
-				console.log(cluster_nodes);
 
 				var links = d3.selectAll(".link").selectAll("line");
 
