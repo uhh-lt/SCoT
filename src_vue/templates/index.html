@@ -123,8 +123,10 @@
 	    					</template>
 	    					<template v-slot:row-details="row">
 	    						<b-card>
-	    							<ul v-for="n in row.item.neighbours">
-	    								<li> {{ n }} </li>
+	    							<ul v-for="c in row.item.neighbours">
+	    								<li> Cluster: {{ c.cluster_id }}
+	    									<div style="font-size: 12px;" v-for="n in c.neighbours"> {{ n }} </div>
+	    								</li>
 	    							</ul>
 	    						</b-card>
 	    					</template>

@@ -48,7 +48,7 @@ app = new Vue({
      	edit_column_open : false,
      	highlightWobblies : false,
      	hightlighInbetweennessCentrality : false,
-     	wobblyCandidatesFields : [{key:"text", label: "Node", sortable: true}, {key: "connected_clusters", label: "Connected Clusters", sortable: false}, {key: "balanced", label: "Balanced", sortable: true}, {key: "show_details", label: "Show Neighbours"}],
+     	wobblyCandidatesFields : [{key:"text", label: "Node", sortable: true}, {key: "connected_clusters", label: "Connected Clusters", sortable: false}, {key: "balanced", label: "Balanced", sortable: true}, {key: "show_details", label: "Show Details"}],
      	wobblyCandidates : []
 	},
 	computed: {
@@ -147,7 +147,6 @@ app = new Vue({
 					var source = p.getAttribute("source");
 					var target = p.getAttribute("target");
 					if (source === node) {
-						console.log(node)
 						neighbour_cluster = app.findClusterId(target);
 						if (neighbour_cluster !== undefined) {
 							if (neighbourhoodClusters.hasOwnProperty(neighbour_cluster.toString())) {
@@ -180,33 +179,81 @@ app = new Vue({
 			return [neighbourhoodClusters, neighbourhoodClusters_str.join(", ")];
 		},
 		is_balanced: function(clusterDistr) {
-			var mean = 0;
+			var balanced = false;
+			var b = "no";
 
+			if (Object.keys(clusterDistr).length > 1) {
+				var max = 0;
+				var mean = 0;
+
+				clusterDistrValues = Object.values(clusterDistr);
+
+				clusterDistrValues.forEach(function(d) {
+					mean += d;
+				});
+				console.log(mean)
+
+				// the mean number of connections per cluster
+				mean = mean / clusterDistrValues.length;
+
+				max = Math.max(...clusterDistrValues);
+
+				console.log(mean, max)
+
+				clusterDistrWithoutMax = clusterDistr;
+
+				for (cluster in clusterDistrWithoutMax) {
+					if (clusterDistrWithoutMax[cluster] === max) {
+						delete clusterDistrWithoutMax[cluster];
+						break;
+					}
+				}
+
+				Object.values(clusterDistrWithoutMax).forEach(function(d) {
+					if (max - d < mean/2) {
+						balanced = true;
+						b = "yes";
+					}
+				});
+
+			}
+
+			return [balanced, b];
+
+			/*var mean = 0;
 			Object.values(clusterDistr).forEach(function(d) {
 				mean += d;
 			});
 			mean = mean / Object.keys(clusterDistr).length;
 
-			max = 0;
+			var max = 0;
 			Object.values(clusterDistr).forEach(function(d) {
 				if (d > max) {
 					max = d;
 				}
 			});
 
+			var clusterDistrWithoutMax = clusterDistr;
+			for (cluster in clusterDistrWithoutMax) {
+				if (Object.keys(clusterDistrWithoutMax).length > 1 && clusterDistrWithoutMax[cluster] === max) {
+					delete clusterDistrWithoutMax[cluster];
+					break;
+				}
+			}
+
 			var balanced = false;
 			var b = "no";
 
-			Object.values(clusterDistr).forEach(function(d) {
-				if (d !== max) {
-					if (Object.keys(clusterDistr).length > 1 && max - d < mean/2) {
-						balanced = true;
-						b = "yes";
-					}
+			Object.values(clusterDistrWithoutMax).forEach(function(d) {
+				console.log(max, d, max-d, mean/2);
+				if (Object.keys(clusterDistr).length > 1 && max-d < mean/2) {
+					balanced = true;
+					b = "yes";
 				}
-			});
 
-			return [balanced, b];
+			});
+			console.log(balanced)
+			return [balanced, b];*/
 		},
 		findNeighboursAndClusters: function(node) {
 			var neighbours = [];
@@ -221,20 +268,39 @@ app = new Vue({
 					if (source === node) {
 						var target_cluster_id = app.findClusterId(target);
 						if (target_cluster_id !== undefined) {
-							var neighbour = target + " (cluster: " + target_cluster_id + ")";
-							neighbours.push(neighbour);
+							//var neighbour = target + " (cluster: " + target_cluster_id + ")";
+							//neighbours.push(neighbour);
+							var exists=false;
+							for (var i = 0; i < neighbours.length; i++) {
+								if (neighbours[i]["cluster_id"] === target_cluster_id) {
+									neighbours[i]["neighbours"].push(target);
+									exists = true;
+								}
+							}
+							if (exists === false) {
+								neighbours.push({"cluster_id": target_cluster_id, "neighbours": [target]});
+							}
 						}
 						
 					} else if (target === node) {
 						var source_cluster_id = app.findClusterId(source);
 						if (source_cluster_id !== undefined) {
-							var neighbour = source + " (cluster: " + source_cluster_id + ")";
-							neighbours.push(neighbour);
+							//var neighbour = source + " (cluster: " + source_cluster_id + ")";
+							//neighbours.push(neighbour);
+							var exists=false;
+							for (var i = 0; i < neighbours.length; i++) {
+								if (neighbours[i]["cluster_id"] === source_cluster_id) {
+									neighbours[i]["neighbours"].push(source);
+									exists = true;
+								}
+							}
+							if (exists === false) {
+								neighbours.push({"cluster_id": source_cluster_id, "neighbours": [source]});
+							}
 						}
 					}
 				});
 			});
-
 			return neighbours
 		},
 		findWobblyCandidates: function() {
