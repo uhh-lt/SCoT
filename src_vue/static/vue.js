@@ -47,7 +47,9 @@ app = new Vue({
      	centrality_score_distribution : [],
      	edit_column_open : false,
      	highlightWobblies : false,
-     	hightlighInbetweennessCentrality : false
+     	hightlighInbetweennessCentrality : false,
+     	wobblyCandidatesFields : [{key:"text", label: "Node", sortable: true}, {key: "connected_clusters", label: "Connected Clusters", sortable: false}, {key: "balanced", label: "Balanced", sortable: true}],
+     	wobblyCandidates : []
 	},
 	computed: {
 		/*
@@ -112,6 +114,15 @@ app = new Vue({
 		}
 	},
 	methods: {
+		getClusterNameFromID: function(id) {
+			var cluster_name;
+			for (var i=0; i < app.clusters.length; i++) {
+				if (id === app.clusters[i].cluster_id) {
+					cluster_name = app.clusters[i].cluster_name;
+				}
+			}
+			return cluster_name;
+		},
 		findClusterId: function(node_id) {
 			var cluster_id;
 			for (var i = 0; i < app.clusters.length; i++) {
@@ -120,11 +131,12 @@ app = new Vue({
 				for(var j = 0; j < cluster.labels.length; j++) {
 					labels.push(cluster.labels[j].text);
 				}
+				console.log(node_id, labels)
 				if (labels.includes(node_id)) {
 					cluster_id = cluster.cluster_id;
 				}
 			}
-			return cluster_id.toString();
+			return cluster_id;
 		},
 		findNeighbourhoodClusters: function(node) {
 			neighbourhoodClusters = {};
@@ -136,25 +148,107 @@ app = new Vue({
 					var source = p.getAttribute("source");
 					var target = p.getAttribute("target");
 					if (source === node) {
+						console.log(node)
 						neighbour_cluster = app.findClusterId(target);
-						if (neighbourhoodClusters.hasOwnProperty(neighbour_cluster)) {
-							neighbourhoodClusters[neighbour_cluster] += 1
-						} else {
-							neighbourhoodClusters[neighbour_cluster] = 1
+						if (neighbour_cluster !== undefined) {
+							if (neighbourhoodClusters.hasOwnProperty(neighbour_cluster.toString())) {
+								neighbourhoodClusters[neighbour_cluster] += 1;
+							} else {
+								neighbourhoodClusters[neighbour_cluster] = 1;
+							}
 						}
 					}
 					if (target === node) {
 						neighbour_cluster = app.findClusterId(source);
-						if (neighbourhoodClusters.hasOwnProperty(neighbour_cluster)) {
-							neighbourhoodClusters[neighbour_cluster] += 1
-						} else {
-							neighbourhoodClusters[neighbour_cluster] = 1
+						if (neighbour_cluster !== undefined) {
+							if (neighbourhoodClusters.hasOwnProperty(neighbour_cluster.toString())) {
+								neighbourhoodClusters[neighbour_cluster] += 1;
+							} else {
+								neighbourhoodClusters[neighbour_cluster] = 1;
+							}
 						}
+						
 					}
 				});
 				
 			});
-			return neighbourhoodClusters;
+			//console.log(neighbourhoodClusters)
+			var neighbourhoodClusters_str = []
+			Object.keys(neighbourhoodClusters).forEach(function(d) {
+				var name = app.getClusterNameFromID(d); 
+				neighbourhoodClusters_str.push(name + "(" + neighbourhoodClusters[d] + ")")
+			})
+			return [neighbourhoodClusters, neighbourhoodClusters_str.join(", ")];
+		},
+		is_balanced: function(clusterDistr) {
+			var mean = 0;
+
+			Object.values(clusterDistr).forEach(function(d) {
+				mean += d;
+			});
+			mean = mean / Object.keys(clusterDistr).length;
+
+			max = 0;
+			Object.values(clusterDistr).forEach(function(d) {
+				if (d > max) {
+					max = d;
+				}
+			});
+
+			var balanced = false;
+			var b = "no";
+
+			Object.values(clusterDistr).forEach(function(d) {
+				if (d !== max) {
+					if (Object.keys(clusterDistr).length > 1 && max - d < mean/2) {
+						balanced = true;
+						b = "yes";
+					}
+				}
+			});
+
+			return [balanced, b];
+		},
+		findWobblyCandidates: function() {
+			app.wobblyCandidates = []
+			if (app.hightlighInbetweennessCentrality === true) {
+				app.resetCentralityHighlighting();
+				app.hightlighInbetweennessCentrality = false;
+			}
+			var nodes = d3.selectAll(".node").selectAll("g");
+			var texts = d3.selectAll(".node").selectAll("g").select("text");
+
+			nodes.each(function(d, i) {
+				var children = this.childNodes;
+				var text = d3.select(texts.nodes()[i]);
+				var cluster_id;
+				var node_text;
+				var candidate = {};
+				var is_cluster_node;
+
+				children.forEach(function(p) {
+					if (p.tagName === "text") {
+						node_text = p.getAttribute("text");
+					}
+					if (p.tagName === "circle") {
+						cluster_id = p.getAttribute("cluster_id");
+						is_cluster_node = p.getAttribute("cluster_node");
+					}
+				});
+
+				if (is_cluster_node === "false") {
+					var result = app.findNeighbourhoodClusters(node_text)
+					var neighbourClusterDistr = result[0];
+					var neighbourClusterDistr_string = result[1];
+
+					b = app.is_balanced(neighbourClusterDistr)[1];
+					
+					candidate["text"] = node_text;
+					candidate["connected_clusters"] = neighbourClusterDistr_string;
+					candidate["balanced"] = b;
+					app.wobblyCandidates.push(candidate);
+				}
+			});
 		},
 		highlightWobblyCandidates: function() {
 			/*
@@ -177,6 +271,8 @@ app = new Vue({
 				var text = d3.select(texts.nodes()[i]);
 				var cluster_id;
 				var node_text;
+				var candidate = {}
+				var is_cluster_node;
 
 				children.forEach(function(p) {
 					if (p.tagName === "text") {
@@ -184,62 +280,43 @@ app = new Vue({
 					}
 					if (p.tagName === "circle") {
 						cluster_id = p.getAttribute("cluster_id");
+						is_cluster_node = p.getAttribute("cluster_node");
 					}
 				});
 
-				var neighbourClusterDistr = app.findNeighbourhoodClusters(node_text);
-				console.log(neighbourClusterDistr)
-				var mean = 0;
-				Object.values(neighbourClusterDistr).forEach(function(d) {
-					mean += d;
-				})
-				mean = mean / Object.keys(neighbourClusterDistr).length;
-				console.log(mean)
 
-				max = 0;
-				Object.values(neighbourClusterDistr).forEach(function(d) {
-					if (d > max) {
-						max = d;
-					}
-				});
+				console.log(node_text, cluster_id, is_cluster_node)
 
-				console.log(max)
+				if (is_cluster_node === "false") {
 
-				var balanced = false;
+					var neighbourClusterDistr = app.findNeighbourhoodClusters(node_text)[0];
+					balanced = app.is_balanced(neighbourClusterDistr)[0];
 
-				Object.values(neighbourClusterDistr).forEach(function(d) {
-					if (d !== max) {
-						if (Object.keys(neighbourClusterDistr).length > 1 && max - d < mean/2) {
-						balanced = true;
-						}
+					console.log(balanced)
+					if (balanced === true) {
+						children.forEach(function(p) {
+							if (p.tagName === "circle") {
+								p.setAttribute("r", 20);
+								text.style("font-size", "20px");
+							}
+						})
 					}
 
-				})
-
-				console.log(balanced)
-				if (balanced === true) {
-					children.forEach(function(p) {
-						if (p.tagName === "circle") {
-							p.setAttribute("r", 20);
-							text.style("font-size", "20px");
-						}
-					})
+					// if node is connected to more than one cluster:
+					// should be the least strict constraint
+					else if (Object.keys(neighbourClusterDistr).length > 1) {
+						// make node bigger
+						// think of correlation of how well the clusters are distributed an the size of the node
+						children.forEach(function(p) {
+							if (p.tagName === "circle") {
+								p.setAttribute("r", 10);
+								text.style("font-size", "14px")
+							}
+						})
+					}
 				}
-
-				// if node is connected to more than one cluster:
-				// should be the least strict constraint
-				else if (Object.keys(neighbourClusterDistr).length > 1) {
-					// make node bigger
-					// think of correlation of how well the clusters are distributed an the size of the node
-					children.forEach(function(p) {
-						if (p.tagName === "circle") {
-							p.setAttribute("r", 10);
-							text.style("font-size", "14px")
-						}
-					})
-				}
-
 			});
+				
 		},
 		/*
 		Calculate how many nodes have a certain centrality score, so that the user has some reference when changing the thresholds
@@ -637,7 +714,6 @@ app = new Vue({
 					}
 				})
 			})
-
 		},
 		/*
 		Return a list of all selected nodes as a list of objects
@@ -1152,8 +1228,8 @@ app = new Vue({
 					    	if (!is_in_cluster) {
 								d.setAttribute("style", "stroke:#999");
 							}
-						}) 
-				    })
+						}); 
+				    });
 				})
 				  .catch(function (error) {
 				    console.log(error);
@@ -1432,9 +1508,6 @@ app = new Vue({
 						}
 					}
 				})
-
-				
-				
 
 				graph_nodes.push(node);
 
