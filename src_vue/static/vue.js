@@ -191,14 +191,11 @@ app = new Vue({
 				clusterDistrValues.forEach(function(d) {
 					mean += d;
 				});
-				console.log(mean)
 
 				// the mean number of connections per cluster
 				mean = mean / clusterDistrValues.length;
 
 				max = Math.max(...clusterDistrValues);
-
-				console.log(mean, max)
 
 				clusterDistrWithoutMax = clusterDistr;
 
@@ -219,41 +216,6 @@ app = new Vue({
 			}
 
 			return [balanced, b];
-
-			/*var mean = 0;
-			Object.values(clusterDistr).forEach(function(d) {
-				mean += d;
-			});
-			mean = mean / Object.keys(clusterDistr).length;
-
-			var max = 0;
-			Object.values(clusterDistr).forEach(function(d) {
-				if (d > max) {
-					max = d;
-				}
-			});
-
-			var clusterDistrWithoutMax = clusterDistr;
-			for (cluster in clusterDistrWithoutMax) {
-				if (Object.keys(clusterDistrWithoutMax).length > 1 && clusterDistrWithoutMax[cluster] === max) {
-					delete clusterDistrWithoutMax[cluster];
-					break;
-				}
-			}
-
-			var balanced = false;
-			var b = "no";
-
-			Object.values(clusterDistrWithoutMax).forEach(function(d) {
-				console.log(max, d, max-d, mean/2);
-				if (Object.keys(clusterDistr).length > 1 && max-d < mean/2) {
-					balanced = true;
-					b = "yes";
-				}
-
-			});
-			console.log(balanced)
-			return [balanced, b];*/
 		},
 		findNeighboursAndClusters: function(node) {
 			var neighbours = [];
