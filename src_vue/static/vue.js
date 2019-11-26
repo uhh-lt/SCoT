@@ -4,8 +4,8 @@ app = new Vue({
    		target_word : "happiness/NN",
      	start_year : 1520,
      	end_year : 2008,
-     	senses : 10,
-     	edges : 3,
+     	senses : 100,
+     	edges : 30,
      	time_diff : false,
      	start_years : [],
      	end_years : [],
@@ -23,8 +23,8 @@ app = new Vue({
      	singletons : [],
      	data_from_db : {},
      	simulation : null,
-     	update_senses : 15,
-     	update_edges : 5,
+     	update_senses : 150,
+     	update_edges : 50,
      	updated_nodes : null,
      	updated_links : null,
      	interval_start : 0,
@@ -1212,7 +1212,7 @@ app = new Vue({
 						link['target'] = target;
 						link['weight'] = d.getAttribute("weight");
 
-						link_array.push(link);	
+						link_array.push(link);
 					}
 				});
 			});
@@ -1313,6 +1313,7 @@ app = new Vue({
 		applyClusterSettings: function() {
 			var svg = d3.select("#svg");
 			var nodes = svg.selectAll(".node");
+			var links = svg.selectAll(".link");
 
 			for (var i = 0; i < this.clusters.length; i++) {
 				var cluster_id = this.clusters[i].cluster_id;
@@ -1352,6 +1353,22 @@ app = new Vue({
 						});
 					}
 				});
+
+				// TODO: update colour of links
+				links.each(function(d) {
+					var children = this.childNodes;
+					var source;
+					var target;
+					children.forEach(function(p) {
+						source = p.getAttribute("source");
+						target = p.getAttribute("target");
+						if (text_labels.includes(source) && text_labels.includes(target)) {
+						    p.setAttribute("style", "stroke:" + colour);
+						}
+					});
+
+				});
+
 			}
 		},
 		showEditMask: function() {
