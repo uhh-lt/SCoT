@@ -108,7 +108,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 			.attr("weight", function(d) { return d.weight })
 			// set the stroke with in dependence to the weight attribute of the link
 			// TODO: sort the weights into three categories and only use three different thicknesses for links according to the category
-			.attr("stroke-width", function(d) { return Math.sqrt(d.weight/10);	})
+			.attr("stroke-width", function(d) { return Math.sqrt(d.weight/100);	})
 			.attr("stroke", function(d) {
 				console.log(d.colour)
 				if (d.colour !== undefined) {
@@ -576,7 +576,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 				return d.source;
 			})
 			.attr("target", function(d) { return d.target })
-			.attr("stroke-width", function(d) { return Math.sqrt(d.weight/10); })
+			.attr("stroke-width", function(d) { return Math.sqrt(d.weight/100); })
 			.attr("stroke", function(d) {
 				var source_colour = app.findColour(d.source)
 				var target_colour = app.findColour(d.target)
