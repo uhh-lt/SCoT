@@ -445,7 +445,7 @@
 					<b-list-group-item class="list-item">
 						<div class="overflow">
 							<!-- Display coloured circle, cluster name and number of nodes in cluster @click="select_cluster(cluster)" -->
-							<div class="clusternaxme">
+							<div class="clustername">
 								<span class="dot"
 								v-bind:style="{ 'background-color': cluster.colour }"
 								@mouseover="!cluster_selected ? set_cluster_opacity(cluster, 0.2, 0.2) : null"
@@ -492,6 +492,12 @@
 									      value="true"
 									      unchecked-value="false">
 									      Show cluster label in graph
+									    </b-form-checkbox>
+									    <b-form-checkbox
+									      v-model="cluster.delete_cluster"
+									      value="true"
+									      unchecked-value="false">
+									      Delete cluster
 									    </b-form-checkbox>
 									</b-form-group>
 

@@ -10,7 +10,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 	// Set initial parameters
 	var width = 950;
-	var height = 550;
+	var height = 600;
 	var shiftKey;
 	var radius = 5;
 
@@ -295,10 +295,12 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 				.on("end", function() {
 					d3.selectAll('.selected').each(dragend_sticky); });
 		} 
-	})
+	});
+
 
 	// Add cluster nodes when clicking on the apply button in the edit column
 	d3.select("#apply_settings_button").on("click", function() {
+
 		//DONE? I need a cluster ID + cluster node ID -> necessary for updating
 		for (var i = 0; i < app.clusters.length; i++) {
 			var cluster_name = app.clusters[i].cluster_name
@@ -306,6 +308,8 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 			var cluster_colour = app.clusters[i].colour;
 			var cluster_id = app.clusters[i].cluster_id;
 			var labels = app.clusters[i].labels;
+			var del_cluster = app.clusters[i].delete_cluster;
+
 
 			var text_labels = [];
 			var cluster_nodes = []
@@ -324,12 +328,44 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 				for (var k = 0; k < text_labels.length; k++) {
 					addlink(text_labels[k], cluster_name);
 				}
-
 			}
+
+			if (del_cluster === "true") {
+				delete_cluster(cluster_name, cluster_id, text_labels)
+			}
+
 		}
 		// restart the simulation with the additional nodes and links
 		restart();
 	})
+
+	async function delete_cluster(cluster_name, cluster_id, text_labels) {
+		console.log(cluster_name, cluster_id, text_labels)
+		var nodes = d3.selectAll(".node").selectAll("g");
+		nodes.each(function(d) {
+			childnodes = this.childNodes;
+			var node_id;
+			var id;
+
+			childnodes.forEach(function(d,i) {
+				if (d.tagName === "circle") {
+					id = d.getAttribute("cluster_id");
+				}
+				if (d.tagName === "text") {
+					node_id = d.getAttribute("text")
+				}
+			})
+			
+			if (id === cluster_id) {
+				deletenode(node_id)
+				deletelinks(node_id)
+
+			}
+		});
+		restart()
+		await app.get_clusters()
+		//console.log(app.clusters)
+	}
 
 	// check if a cluster node exists for a specific cluster
 	function cluster_node_exists(cluster_id) {
@@ -372,7 +408,6 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		    	.on("mouseover", mouseOver(0.2))
 		   		.on("mouseout", mouseOut)
 		   		.on("click", function(d) {
-		   			console.log(d)
 	    			if (d.selected) {
 	    				app.node_selected = true;
 	    			} else {
@@ -440,7 +475,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	// TODO: only focus this on the svg element, otherwise it is really annoying when entering stuff in input fields
 	d3.select("body").on("keydown", deleteClusterNode)
 
-	function deleteClusterNode(d) {
+	function deleteClusterNode() {
 		var KeyID = event.keyCode;
 		if (KeyID === 8) {
 			var selected_nodes = d3.selectAll(".node").selectAll("g");
@@ -482,11 +517,8 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	
 	function deletelinks(node_id) {
 		var allLinks = d3.select(".link").selectAll("line");
-		console.log(node_id)
 
 		allLinks.each(function(d) {
-			console.log(this.getAttribute("target"))
-			console.log(this.getAttribute("source"))
 			if (this.getAttribute("target") === node_id || this.getAttribute("source") === node_id) {
 				for (var i = 0; i < links.length; i++) {
 					if (links[i].target.id === node_id || links[i].source.id === node_id) {
@@ -733,6 +765,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 				app.get_clusters();
 		});
 	});
+
 
 
 	function showContextMenu(d) {

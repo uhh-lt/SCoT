@@ -49,7 +49,8 @@ app = new Vue({
      	highlightWobblies : false,
      	hightlighInbetweennessCentrality : false,
      	wobblyCandidatesFields : [{key:"text", label: "Node", sortable: true}, {key: "connected_clusters", label: "Connected Clusters", sortable: false}, {key: "balanced", label: "Balanced", sortable: true}, {key: "show_details", label: "Show Details"}],
-     	wobblyCandidates : []
+     	wobblyCandidates : [],
+     	deleteable_cluster : {}
 	},
 	computed: {
 		/*
@@ -1374,7 +1375,7 @@ app = new Vue({
 		showEditMask: function() {
 			if (app.time_diff==="false") {
 				//update clusters before fading in the column, keep the old clusters in time diff mode though, so that the user can still see the information about clusters
-				app.get_clusters();	
+				app.get_clusters();
 			}
 			if (app.edit_column_open === false) {
 				app.edit_column_open = true;
@@ -1394,9 +1395,10 @@ app = new Vue({
 				var clusters = [];
 				
 				var svg = d3.select("#svg");
-				var nodes = svg.selectAll(".node");
+				var nodes = svg.selectAll(".node").selectAll("g");
 
-				nodes.selectAll("g").each(function(d,i) {
+				nodes.each(function(d,i) {
+					console.log(d)
 					var cluster = {};
 					var exists = false;
 					var cluster_name;
@@ -1434,6 +1436,7 @@ app = new Vue({
 						cluster["cluster_name"] = cluster_name;
 						cluster["colour"] = colour;
 						cluster["add_cluster_node"] = false;
+						cluster["delete_cluster"] = false;
 						cluster.labels = [];
 						if (cluster_node === "false") {
 							cluster["labels"].push({"text": text, "cluster_node": cluster_node});
