@@ -1612,7 +1612,7 @@ app = new Vue({
 		    document.body.appendChild(a);
 		    const url = window.URL.createObjectURL(blob);
 		    a.href = url;
-		    a.download = "graph.json";
+		    a.download = app.target_word + "_" + app.senses + "_" + app.edges + ".json";
 		    a.click();
 		    setTimeout(() => {
 		      window.URL.revokeObjectURL(url);
