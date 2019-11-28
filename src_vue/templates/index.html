@@ -189,6 +189,18 @@
 				<b-button id="load_button" variant="danger" v-on:click="displayForm()"> <i class="fas fa-upload"></i> Load Graph</b-button>
 			</b-nav-form>
 
+			<b-nav-form>
+				<b-button v-b-modal.modal-settings-1 id="general_settings_button"><i class="fas fa-cog"></i> </b-button>
+			</b-nav-form>
+
+			<b-modal id="modal-settings-1" title="General Settings" @ok="update_general_settings">
+				<b-form-group class="input" label="Select SVG height in pixels">
+				  <b-form-input type="number" v-model="svg_height"></b-forn-input>
+				</b-form-input>
+				<b-form-group class="input" label="Select SVG width in pixels">
+				  <b-form-input type="number" v-model="svg_width"></b-forn-input>
+				</b-form-input>
+			</b-modal>
 		</b-navbar-nav>
 	</b-navbar>
 

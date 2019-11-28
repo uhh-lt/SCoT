@@ -1,6 +1,8 @@
 app = new Vue({
    el: "#vue-app",
    data: {
+   		svg_height : 550,
+   		svg_width : 950,
    		target_word : "happiness/NN",
      	start_year : 1520,
      	end_year : 2008,
@@ -115,6 +117,11 @@ app = new Vue({
 		}
 	},
 	methods: {
+		update_general_settings: function() {
+			var svg = d3.select("svg");
+			svg.attr("width", app.svg_width);
+			svg.attr("height", app.svg_height);
+		},
 		getClusterNameFromID: function(id) {
 			var cluster_name;
 			for (var i=0; i < app.clusters.length; i++) {

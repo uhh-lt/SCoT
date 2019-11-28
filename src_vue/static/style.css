@@ -189,6 +189,14 @@ text {
 	font-size: 10px;
 }
 
+#general_settings_button {
+	margin-top: 10px;
+	margin-bottom: 10px;
+	/*word-spacing: -10px;*/
+	font-size: 10px;
+	margin-left: 5px;
+}
+
 #cancel_button {
 	margin-top: 10px;
 	margin-bottom: 10px;

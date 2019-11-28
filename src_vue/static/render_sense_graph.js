@@ -9,8 +9,8 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 
 	// Set initial parameters
-	var width = 950;
-	var height = 600;
+	var width = app.svg_width;
+	var height = app.svg_height;
 	var shiftKey;
 	var radius = 5;
 
@@ -421,6 +421,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 	   	var circle = g.append("circle")
 				.attr("fill", function(d) { return d.colour; })
+				//.attr("fill-opacity", 0.5)
 				.attr("r", 10)
 				.attr("cluster_id", function(d) { return d.cluster_id; })
 		    	.attr("cluster_node", true);
