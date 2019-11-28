@@ -22,7 +22,7 @@ app = new Vue({
      	newclusters : {},
      	sticky_mode : "true",
      	charge : -50,
-     	linkdistance : 100,
+     	linkdistance : 50,
      	graph_from_file : false,
      	singletons : [],
      	data_from_db : {},
