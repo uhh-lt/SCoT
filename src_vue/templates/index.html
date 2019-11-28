@@ -189,18 +189,6 @@
 				<b-button id="load_button" variant="danger" v-on:click="displayForm()"> <i class="fas fa-upload"></i> Load Graph</b-button>
 			</b-nav-form>
 
-			<b-nav-form>
-				<b-button v-b-modal.modal-settings-1 id="general_settings_button"><i class="fas fa-cog"></i> </b-button>
-			</b-nav-form>
-
-			<b-modal id="modal-settings-1" title="General Settings" @ok="update_general_settings">
-				<b-form-group class="input" label="Select SVG height in pixels">
-				  <b-form-input type="number" v-model="svg_height"></b-forn-input>
-				</b-form-input>
-				<b-form-group class="input" label="Select SVG width in pixels">
-				  <b-form-input type="number" v-model="svg_width"></b-forn-input>
-				</b-form-input>
-			</b-modal>
 		</b-navbar-nav>
 	</b-navbar>
 
@@ -208,6 +196,25 @@
 
   	<!-- Column with input parameters (left column) -->
     <b-col id="input-options" class="input_options" sm="2">
+    		<b-button-group>
+				<b-button v-b-modal.modal-settings-1 id="general_settings_button"><i class="fas fa-cog"></i> General Settings</b-button>
+			</b-button-group>
+
+			<b-modal id="modal-settings-1" title="General Settings" @ok="update_general_settings">
+				<b-form-group class="input" label="Select view port height in pixels">
+				  <b-form-input type="number" v-model="viewport_height"></b-forn-input>
+				</b-form-input>
+				<b-form-group class="input" label="Select viewport width in pixels">
+				  <b-form-input type="number" v-model="viewport_width"></b-forn-input>
+				</b-form-input>
+				<div style="border: 1px solid; background-color: red;"> WARNING: Please set before rendering a graph. Changes to the size of the svg after rendering a graph will act like a zoom function.</div>
+				<b-form-group class="input" label="Select SVG height in pixels">
+				  <b-form-input type="number" v-model="svg_height"></b-forn-input>
+				</b-form-input>
+				<b-form-group class="input" label="Select SVG width in pixels">
+				  <b-form-input type="number" v-model="svg_width"></b-forn-input>
+				</b-form-input>
+			</b-modal>
 
     	<!-- Enter target word -->
     	<b-form-group class="input" label="Enter target word">  
