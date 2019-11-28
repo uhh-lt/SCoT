@@ -70,7 +70,7 @@ class Database:
 		target_word_senses = self.db.query(
 			'SELECT word1, time_id FROM similar_words ' 
 			'WHERE word2=:tw AND word1!=word2 '
-			'ORDER BY score DESC LIMIT 1000',
+			'ORDER BY score DESC',
 			tw=target_word 
 			)
 		for row in target_word_senses:
@@ -98,7 +98,7 @@ class Database:
 		target_word_senses = self.db.query(
 			'SELECT word1, time_id FROM similar_words ' 
 			'WHERE word2=:tw AND word1!=word2 '
-			'ORDER BY score DESC LIMIT 1000',
+			'ORDER BY score DESC',
 			tw=target_word 
 			)
 		for row in target_word_senses:
