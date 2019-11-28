@@ -121,6 +121,7 @@ app = new Vue({
 			var svg = d3.select("svg");
 			svg.attr("width", app.svg_width);
 			svg.attr("height", app.svg_height);
+			app.simulation.alpha(1).restart()
 		},
 		getClusterNameFromID: function(id) {
 			var cluster_name;

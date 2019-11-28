@@ -9,8 +9,6 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 
 	// Set initial parameters
-	var width = app.svg_width;
-	var height = app.svg_height;
 	var shiftKey;
 	var radius = 5;
 
@@ -27,8 +25,10 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		.each(function() { this.focus(); })
 		.append("svg")
 			.attr("id", "svg")
-			.attr("width", width)
-			.attr("height", height)
+			//.attr("width", app.svg_width)
+			//.attr("height", app.svg_height)
+			.attr("viewBox", "0 0 " + app.svg_width + " " + app.svg_height)
+			.attr("preserveAspectRatio", "xMinYMin meet")
 			.style("outline", "1px solid")
 			.style("margin", "3ex")
 		.call(d3.zoom().on("zoom", function () {
@@ -66,8 +66,8 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 	t.append("text")
 		.attr("class", "target")
-		.attr("x", (width/2))
-		.attr("y", (height/2))
+		.attr("x", (app.svg_width/2))
+		.attr("y", (app.svg_height/2))
 		.text(function(d) { return d.target_word; })
 
 	// create the force simulation
@@ -75,7 +75,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		.force("link", d3.forceLink(links).id(function(d) { return d.id; }).distance(function(d) { return app.linkdistance } ))
 		.force("charge", d3.forceManyBody().strength(app.charge).distanceMin(1).distanceMax(2000))
 		.force("collide", d3.forceCollide().radius(10))
-		.force("center", d3.forceCenter(width/2, height/2))
+		.force("center", d3.forceCenter(app.svg_width/2, app.svg_height/2))
 		.on('tick', ticked);
 
 	var forceLinkDistance = app.simulation.force("link");
@@ -232,7 +232,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 	if (sticky === "false") {
 		brush.call(d3.brush()
-	    	.extent([[0, 0], [width, height]])
+	    	.extent([[0, 0], [app.svg_width, app.svg_height]])
 	    	.on("start", brushstarted)
 	    	.on("brush", brushed)
 	    	.on("end", brushended));
@@ -262,7 +262,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		if (sticky === "false") {
 			brush.style("display", "inline")
 			brush.call(d3.brush()
-		    	.extent([[0, 0], [width, height]])
+		    	.extent([[0, 0], [app.svg_width, app.svg_height]])
 		    	.on("start", brushstarted)
 		    	.on("brush", brushed)
 		    	.on("end", brushended));
@@ -860,11 +860,11 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
         if (d.y < 0) {
             d.y = 0;
         };
-        if (d.x > width) {
-            d.x = width - 50;
+        if (d.x > app.svg_width) {
+            d.x = app.svg_width - 50;
         };
-        if (d.y > height) {
-            d.y = height - 50;
+        if (d.y > app.svg_height) {
+            d.y = app.svg_height - 50;
         };
         return "translate(" + d.x + "," + d.y + ")";
     }
