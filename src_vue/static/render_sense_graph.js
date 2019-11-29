@@ -27,7 +27,6 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 			.attr("id", "svg")
 			.attr("width", app.viewport_width)
 			.attr("height", app.viewport_height)
-			//.attr("viewPort", app.svg_width + " " + app.svg_height)
 			.attr("viewBox", "0 0 " + app.svg_height + " " + app.svg_width)
 			.attr("preserveAspectRatio", "xMinYMin slice")
 			.style("outline", "1px solid")
@@ -109,7 +108,13 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 			.attr("weight", function(d) { return d.weight })
 			// set the stroke with in dependence to the weight attribute of the link
 			// TODO: sort the weights into three categories and only use three different thicknesses for links according to the category
-			.attr("stroke-width", function(d) { return Math.sqrt(d.weight/100);	})
+			.attr("stroke-width", function(d) { 
+				if (app.link_thickness_scaled === "true") {
+					return Math.sqrt(d.weight / app.link_thickness_factor);
+				} else {
+					return Math.sqrt(app.link_thickness_value);
+				}
+			})
 			.attr("stroke", function(d) {
 				console.log(d.colour)
 				if (d.colour !== undefined) {
@@ -610,7 +615,13 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 				return d.source;
 			})
 			.attr("target", function(d) { return d.target })
-			.attr("stroke-width", function(d) { return Math.sqrt(d.weight/100); })
+			.attr("stroke-width", function(d) { 
+				if (app.link_thickness_scaled === "true") {
+					return Math.sqrt(d.weight / app.link_thickness_factor);
+				} else {
+					return Math.sqrt(app.link_thickness_value);
+				}
+			})
 			.attr("stroke", function(d) {
 				var source_colour = app.findColour(d.source)
 				var target_colour = app.findColour(d.target)

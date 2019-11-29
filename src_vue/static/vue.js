@@ -54,7 +54,10 @@ app = new Vue({
      	hightlighInbetweennessCentrality : false,
      	wobblyCandidatesFields : [{key:"text", label: "Node", sortable: true}, {key: "connected_clusters", label: "Connected Clusters", sortable: false}, {key: "balanced", label: "Balanced", sortable: true}, {key: "show_details", label: "Show Details"}],
      	wobblyCandidates : [],
-     	deleteable_cluster : {}
+     	deleteable_cluster : {},
+     	link_thickness_scaled : "true",
+     	link_thickness_value : 1,
+     	link_thickness_factor : 100,
 	},
 	computed: {
 		/*
@@ -124,6 +127,21 @@ app = new Vue({
 			svg.attr("viewBox", "0 0 " + app.svg_height + " " + app.svg_width)
 			svg.attr("width", app.viewport_width);
 			svg.attr("height", app.viewport_height);
+
+			var links = d3.selectAll(".link");
+			links.each(function(d) {
+				var children = this.childNodes;
+				children.forEach(function(p) {
+					var weight = p.getAttribute("weight");
+					var thickness;
+					if (app.link_thickness_scaled === "true") {
+						thickness = Math.sqrt(weight / app.link_thickness_factor);
+					} else {
+						thickness = Math.sqrt(app.link_thickness_value);
+					}
+					p.setAttribute("stroke-width", thickness)
+				})
+			})
 			app.simulation.alpha(0).restart()
 		},
 		getClusterNameFromID: function(id) {
