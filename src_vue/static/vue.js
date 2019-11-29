@@ -1427,7 +1427,6 @@ app = new Vue({
 				var nodes = svg.selectAll(".node").selectAll("g");
 
 				nodes.each(function(d,i) {
-					console.log(d)
 					var cluster = {};
 					var exists = false;
 					var cluster_name;
@@ -1552,7 +1551,6 @@ app = new Vue({
 				var target = this.getAttribute("target");
 				var weight = this.getAttribute("weight");
 				var colour = this.getAttribute("stroke");
-				console.log(colour)
 				var link = {};
 
 				link["source"] = source;

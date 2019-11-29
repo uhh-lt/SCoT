@@ -116,7 +116,6 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 				}
 			})
 			.attr("stroke", function(d) {
-				console.log(d.colour)
 				if (d.colour !== undefined) {
 					return d.colour
 				} else if (d.source.class === d.target.class) {
@@ -346,7 +345,6 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	})
 
 	async function delete_cluster(cluster_name, cluster_id, text_labels) {
-		console.log(cluster_name, cluster_id, text_labels)
 		var nodes = d3.selectAll(".node").selectAll("g");
 		nodes.each(function(d) {
 			childnodes = this.childNodes;
@@ -523,17 +521,17 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	}
 	
 	function deletelinks(node_id) {
-		var allLinks = d3.select(".link").selectAll("line");
+		//var allLinks = d3.select(".link").selectAll("line");
 
-		allLinks.each(function(d) {
-			if (this.getAttribute("target") === node_id || this.getAttribute("source") === node_id) {
+		//allLinks.each(function(d) {
+		//	if (this.getAttribute("target") === node_id || this.getAttribute("source") === node_id) {
 				for (var i = 0; i < links.length; i++) {
 					if (links[i].target.id === node_id || links[i].source.id === node_id) {
 						links.splice(i, 1);
 					}
 				}
-			}
-		});
+		//	}
+		//});
 	}
 
 
@@ -556,7 +554,6 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		    	.on("mouseover", mouseOver(0.2))
 		   		.on("mouseout", mouseOut)
 		   		.on("click", function(d) {
-		   			console.log(this)
 	    			if (this.getAttribute("class") === "selected") {
 	    				app.node_selected = true;
 	    			} else {
@@ -607,7 +604,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 		// Apply the general update pattern to the links.
 		// function(d) { return d.source.id + "-" + d.target.id; }
-		link = link.data(links);
+		link = link.data(links, function(d) { return d.source.id + "-" + d.target.id;});
 		link.exit().remove();
 		link = link.enter().append("line")
 			.attr("weight", function(d) { return d.weight })
@@ -622,16 +619,13 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 					return Math.sqrt(app.link_thickness_value);
 				}
 			})
-			.attr("stroke", function(d) {
-				var source_colour = app.findColour(d.source)
-				var target_colour = app.findColour(d.target)
-				if (source_colour === target_colour) {
-					//console.log(d.source.class, d.target.class)
-					return source_colour;
-				} else {
-					return "#999";
-				}
-			}).merge(link);
+			.merge(link);
+
+		
+		// Update and restart the app.simulation.
+		app.simulation.nodes(nodes);
+		app.simulation.force("link").links(links);
+		ticked();
 
 		var all_links = d3.selectAll(".link")
 		all_links.each(function(d) {
@@ -642,16 +636,13 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 				var source_colour = app.findColour(source);
 				var target_colour = app.findColour(target);
 				if (source_colour === target_colour) {
-					d.setAttribute("style", "stroke: " + source_colour);
+					d.setAttribute("stroke", source_colour);
 				} else {
-					d.setAttribute("style", "stroke: #999");
+					d.setAttribute("stroke", "#999");
 				}
 			})
 		})
-		// Update and restart the app.simulation.
-		app.simulation.nodes(nodes);
-		app.simulation.force("link").links(links);
-		ticked();
+
 		app.simulation.alpha(1).restart();
 
 		// keep track of the connected nodes
@@ -738,44 +729,55 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 							childnodes.forEach(function(d,i) {
 								if (d.tagName === "text") {
 									label = d.getAttribute("text");
-								}
-							});
-
-							if (new_label === label) {
-								childnodes.forEach(function(d,i) {
-									if (d.tagName === "circle") {
-										var colour = get_colour(cluster_class);
-
-										d.setAttribute("centrality_score", centr_score)
-										d.setAttribute("cluster_id", cluster_class);
-										d.setAttribute("fill", colour);
-										d.setAttribute("cluster", cluster_class);
-									}
-								});
 							}
 						});
+
+						if (new_label === label) {
+							childnodes.forEach(function(d,i) {
+								if (d.tagName === "circle") {
+									var colour = get_colour(cluster_class);
+
+									d.setAttribute("centrality_score", centr_score)
+									d.setAttribute("cluster_id", cluster_class);
+									d.setAttribute("fill", colour);
+									d.setAttribute("cluster", cluster_class);
+								}
+							});
+						}
+					});
+				}
+			}
+
+
+			for (var i = 0; i < existing_labels.length; i++) {
+				if (!new_labels.includes(existing_labels[i])) {
+					//console.log(existing_labels[i])
+					deletelinks(existing_labels[i]);
+					deletenode(existing_labels[i]);
+				}
+			}
+
+			nodes.forEach(function(d) {
+		    	d.selected = false;
+		   		d.previouslySelected = false;
+			});
+
+			for (var i = 0; i < app.updated_links.length; i++) {
+				var source = app.updated_links[i].source
+				var target = app.updated_links[i].target
+				var found = false
+
+				for (var j = 0; j < links.length; j++) {
+					if (links[j].source.id === source && links[j].target.id === target) {
+						found = true
 					}
 				}
-
-				for (var i = 0; i < existing_labels.length; i++) {
-					if (!new_labels.includes(existing_labels[i])) {
-						deletenode(existing_labels[i]);
-						deletelinks(existing_labels[i]);
-					}
-				}
-
-				nodes.forEach(function(d) {
-			    	d.selected = false;
-			   		d.previouslySelected = false;
-				});
-
-				console.log(app.updated_links.length)
-				for (var i = 0; i < app.updated_links.length; i++) {
-					//if (! links.includes(app.updated_links[i])) {
+				if (found === false) {
 					links.push(app.updated_links[i]);
 				}
-				update_graph()
-				app.get_clusters();
+			}
+			update_graph()
+			app.get_clusters();
 		});
 	});
 
