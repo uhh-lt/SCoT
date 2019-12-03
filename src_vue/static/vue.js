@@ -8,8 +8,8 @@ app = new Vue({
    		target_word : "happiness/NN",
      	start_year : 1520,
      	end_year : 2008,
-     	senses : 100,
-     	edges : 30,
+     	senses : 10,
+     	edges : 3,
      	time_diff : false,
      	start_years : [],
      	end_years : [],
@@ -27,8 +27,8 @@ app = new Vue({
      	singletons : [],
      	data_from_db : {},
      	simulation : null,
-     	update_senses : 150,
-     	update_edges : 50,
+     	update_senses : 15,
+     	update_edges : 5,
      	updated_nodes : null,
      	updated_links : null,
      	interval_start : 0,
@@ -122,6 +122,20 @@ app = new Vue({
 		}
 	},
 	methods: {
+		check_cluster_node_connection: function(link_endpoint){
+			var is_connected = false;
+			var nodes = d3.selectAll(".node").selectAll("g")
+			nodes.each(function() {
+				var children = this.childNodes;
+				children.forEach(function(d) {
+					is_cluster_node = d.getAttribute("cluster_node");
+				})
+				if (is_cluster_node === "true") {
+					is_connected = true;
+				}
+			})
+			return is_connected 
+		},
 		update_general_settings: function() {
 			var svg = d3.select("svg");
 			svg.attr("viewBox", "0 0 " + app.svg_height + " " + app.svg_width)
@@ -1276,7 +1290,7 @@ app = new Vue({
 				    			circle.attr("cluster", node_new_cluster)
 				    			circle.attr("fill", function() {return colour(node_new_cluster) })
 				    			circle.attr("cluster_id", node_new_cluster);
-				    			circle.attr("cluster_node", "false");
+				    			circle.attr("cluster_node", false);
 				    		}
 				    	})
 				    }
@@ -1290,29 +1304,48 @@ app = new Vue({
 				    	var children = this.childNodes;
 				    	children.forEach(function(d,i) {
 				    		var is_in_cluster = false;
+				    		var link = {}
 							var source = d.getAttribute("source");
 							var target = d.getAttribute("target");
-							for (var i=0; i<app.clusters.length; i++) {
-					    		var node_ids = [];
-					    		app.clusters[i].labels.forEach(function(p) {
-					    			node_ids.push(p.text)
-					    		})
-					    		if (node_ids.includes(source) && node_ids.includes(target)) {
-						    		var cluster_colour = app.clusters[i].colour;
-						    		d.setAttribute("style", "stroke:" + cluster_colour);
-						    		is_in_cluster = true;
+							var weight = d.getAttribute("weight");
+							link['source'] = source;
+							link['target'] = target;
+							link['weight'] = weight;
+							if (app.includes(link_array, link)) {
+								console.log("includes")
+								for (var i=0; i<app.clusters.length; i++) {
+						    		var node_ids = [];
+						    		app.clusters[i].labels.forEach(function(p) {
+						    			node_ids.push(p.text)
+						    		})
+						    		if (node_ids.includes(source) && node_ids.includes(target)) {
+							    		var cluster_colour = app.clusters[i].colour;
+							    		console.log(source, target, d.getAttribute("stroke"), cluster_colour)
+							    		d.setAttribute("stroke", cluster_colour);
+							    		console.log(d.getAttribute("stroke"))
+							    		is_in_cluster = true;
+							    	}
 						    	}
-
-					    	}
-					    	if (!is_in_cluster) {
-								d.setAttribute("style", "stroke:#999");
+						    	if (!is_in_cluster) {
+									d.setAttribute("stroke", "#999");
+								}
 							}
+							
 						}); 
 				    });
 				})
 				  .catch(function (error) {
 				    console.log(error);
 				  });
+		},
+		includes: function(array, obj) {
+			found = false
+			array.forEach((d) => {
+				if (d.source === obj.source && d.target === obj.target && d.weight === obj.weight) {
+					found = true;
+				} 
+			});
+			return found;
 		},
 		resetZoom: function() {
 			var svg = d3.select("#svg");
@@ -1393,7 +1426,7 @@ app = new Vue({
 						source = p.getAttribute("source");
 						target = p.getAttribute("target");
 						if (text_labels.includes(source) && text_labels.includes(target)) {
-						    p.setAttribute("style", "stroke:" + colour);
+						    p.setAttribute("stroke", colour);
 						}
 					});
 

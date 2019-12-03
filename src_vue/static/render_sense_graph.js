@@ -521,17 +521,18 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	}
 	
 	function deletelinks(node_id) {
-		//var allLinks = d3.select(".link").selectAll("line");
+		var allLinks = d3.select(".link").selectAll("line");
 
-		//allLinks.each(function(d) {
-		//	if (this.getAttribute("target") === node_id || this.getAttribute("source") === node_id) {
+		allLinks.each(function(d) {
+			if (this.getAttribute("target") === node_id || this.getAttribute("source") === node_id) {
 				for (var i = 0; i < links.length; i++) {
 					if (links[i].target.id === node_id || links[i].source.id === node_id) {
+						console.log(links[i])
 						links.splice(i, 1);
 					}
 				}
-		//	}
-		//});
+			}
+		});
 	}
 
 
@@ -629,17 +630,27 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 		var all_links = d3.selectAll(".link")
 		all_links.each(function(d) {
+			// check if link is connected to cluster node
 			var children = this.childNodes;
 			children.forEach(function(d) {
+				var is_connected_to_cluster_node = false;
 				var source = d.getAttribute("source");
 				var target = d.getAttribute("target");
 				var source_colour = app.findColour(source);
 				var target_colour = app.findColour(target);
-				if (source_colour === target_colour) {
-					d.setAttribute("stroke", source_colour);
-				} else {
-					d.setAttribute("stroke", "#999");
+				
+				is_connected_to_cluster_node = app.check_cluster_node_connection(source);
+				if (is_connected_to_cluster_node === false) {
+					is_connected_to_cluster_node = app.check_cluster_node_connection(target);
 				}
+				if (is_connected_to_cluster_node === false) {
+					if (source_colour === target_colour) {
+						d.setAttribute("stroke", source_colour);
+					} else {
+						d.setAttribute("stroke", "#999");
+					}
+				}
+				
 			})
 		})
 
