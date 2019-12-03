@@ -124,7 +124,8 @@ class Database:
 			)
 
 		for row in con:
-			if not row['word1']==row['word2'] and row['time_id'] in time_ids and len(connections)<=density*len(node_list):
+			if not row['word1']==row['word2'] and row['time_id'] in time_ids \
+				and len(connections)<=density*len(node_list):
 				connections.append([row['word1'], row['word2'], row['score']])
 		
 		potential_edges = {}
