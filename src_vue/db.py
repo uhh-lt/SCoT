@@ -112,8 +112,39 @@ class Database:
 		edges = []
 		connections = []
 		node_list = []
+		possible_singletons = []
+		singletons = []
+
 		for node in nodes:
 			node_list.append(node[0])
+
+		# Alternative way to find the edges, results in slightly different ones, differently distributed.
+		# for node in node_list:
+		# 	cons = self.db.query(
+		# 		'SELECT DISTINCT word1, word2, score '
+		# 		'FROM similar_words '
+		# 		'WHERE word1 IN :nodes AND word2 = :node AND word1!=word2 AND time_id IN :time_ids '
+		# 		'ORDER BY score DESC '
+		# 		'LIMIT :density', nodes=node_list, node=node, time_ids=time_ids, density=density
+		# 		)
+
+		# 	if len(cons.all()) > 0:
+		# 		for row in cons:
+		# 			edges.append([row[0], row[1], {'weight': row[2]}])
+		# 	else:
+		# 		possible_singletons.append(node) # potential singletons, are not source
+
+		# for s in possible_singletons:
+		# 	is_singleton = True
+		# 	for con in edges:
+		# 		if s == con[0] or s == con[1]:
+		# 			is_singleton = False
+
+		# 	if is_singleton:
+		# 		singletons.append(s)
+		# 		for node in nodes:
+		# 			if node[0] == s:
+		# 				nodes.remove(node)
 
 		con = self.db.query(
 			'SELECT word1, word2, score, time_id '
@@ -122,6 +153,7 @@ class Database:
 			'ORDER BY score DESC',
 			nodes=node_list
 			)
+
 
 		for row in con:
 			if not row['word1']==row['word2'] and row['time_id'] in time_ids \
