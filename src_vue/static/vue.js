@@ -1,6 +1,9 @@
 app = new Vue({
    el: "#vue-app",
    data: {
+   		linkedByIndex: {},
+   		node : "",
+   		link: "",
    		nodes : [],
    		links : [],
    		viewport_height : 550,
@@ -10,8 +13,8 @@ app = new Vue({
    		target_word : "happiness/NN",
      	start_year : 1520,
      	end_year : 2008,
-     	senses : 100,
-     	edges : 30,
+     	senses : 10,
+     	edges : 3,
      	time_diff : false,
      	start_years : [],
      	end_years : [],
@@ -29,8 +32,8 @@ app = new Vue({
      	singletons : [],
      	data_from_db : {},
      	simulation : null,
-     	update_senses : 150,
-     	update_edges : 50,
+     	update_senses : 15,
+     	update_edges : 5,
      	updated_nodes : null,
      	updated_links : null,
      	interval_start : 0,
@@ -124,6 +127,56 @@ app = new Vue({
 		}
 	},
 	methods: {
+		calc_linkedByIndex: function() {
+			app.linkedByIndex = {};
+			app.links.forEach(function(d) {
+			    app.linkedByIndex[d.source.id + "," + d.target.id] = 1;
+			});
+		},
+		delete_selected_nodes: function() {
+			app.findSelectedNodes();
+			app.clicked_nodes.forEach(function(d) {
+				console.log(d.id)
+				app.deletenode(d.id);
+				app.deletelinks(d.id);
+			})
+			
+			app.node.data(app.nodes, function(d) { return d.id }).exit().remove();
+
+			app.link.data(app.links, function(d) { return d.source.id + "-" + d.target.id; }).exit().remove();
+
+			app.simulation.nodes(app.nodes);
+			app.simulation.force("link").links(app.links);
+
+			app.simulation.alpha(1).restart();
+			app.get_clusters()
+		},
+		deletenode: function(node_id) {
+			for (var i=0; i < app.nodes.length; i++) {
+				//console.log(app.nodes[i]["id"], node_id)
+				if (app.nodes[i]["id"] === node_id) {
+					//console.log(app.nodes.length)
+					app.nodes.splice(i,1)
+					//console.log(app.nodes.length)
+				}
+			}
+			console.log(app.nodes)
+		},
+		deletelinks: function(node_id) {
+			var allLinks = d3.select(".link").selectAll("line");
+
+			allLinks.each(function(d) {
+				if (this.getAttribute("target") === node_id || this.getAttribute("source") === node_id) {
+					for (var i = 0; i < app.links.length; i++) {
+						if (app.links[i].target.id === node_id || app.links[i].source.id === node_id) {
+							//console.log(links[i])
+							app.links.splice(i, 1);
+						}
+					}
+				}
+			});
+		},
+	
 		check_cluster_node_connection: function(link_endpoint){
 			var is_connected = false;
 			var nodes = d3.selectAll(".node").selectAll("g")
