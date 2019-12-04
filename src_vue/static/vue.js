@@ -1,6 +1,8 @@
 app = new Vue({
    el: "#vue-app",
    data: {
+   		nodes : [],
+   		links : [],
    		viewport_height : 550,
    		viewport_width : 950,
    		svg_height : 1500,

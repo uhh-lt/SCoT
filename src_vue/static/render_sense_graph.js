@@ -48,14 +48,14 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	var brush = svg.append("g")
 		.attr("class", "brush");
 
-	var nodes = graph_nodes;
-	var links = graph_links;
+	app.nodes = graph_nodes;
+	app.links = graph_links;
 
 	// build a dictionary of nodes that are linked
 	var linkedByIndex = {}
 
 	// initialize the class attributes selected and previouslySelected for each node
-	nodes.forEach(function(d) {
+	app.nodes.forEach(function(d) {
 	    d.selected = false;
 	    d.previouslySelected = false;
 	  });
@@ -71,8 +71,8 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		.text(function(d) { return d.target_word; })
 
 	// create the force simulation
-	app.simulation = d3.forceSimulation(nodes)
-		.force("link", d3.forceLink(links).id(function(d) { return d.id; }).distance(function(d) { return app.linkdistance } ))
+	app.simulation = d3.forceSimulation(app.nodes)
+		.force("link", d3.forceLink(app.links).id(function(d) { return d.id; }).distance(function(d) { return app.linkdistance } ))
 		.force("charge", d3.forceManyBody().strength(app.charge).distanceMin(1).distanceMax(2000))
 		.force("collide", d3.forceCollide().radius(10))
 		.force("center", d3.forceCenter(app.svg_width/2, app.svg_height/2))
@@ -101,7 +101,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 			//.attr("stroke-opacity", 0.8)
 			.attr("class", "link")
 		.selectAll("line")
-		.data(links)
+		.data(app.links)
 		.enter().append("line")
 			.attr("source", function(d) { return d.source.id })
 			.attr("target", function(d) { return d.target.id })
@@ -140,7 +140,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	    	.attr("stroke-width", 1.5)
 	    	.attr("class", "node")
 	    .selectAll("g")
-	    .data(nodes)
+	    .data(app.nodes)
 	    .enter()
 	    .append("g")
 	    	.on("mousedown", mousedowned)
@@ -397,7 +397,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	// This function is for addin cluster nodes
 	function restart() {
 		// Apply the general update pattern to the nodes.
-		node = node.data(nodes, function(d) { return d.id;});
+		node = node.data(app.nodes, function(d) { return d.id;});
 		node.exit().remove();
 
 
@@ -441,7 +441,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		node = node.merge(g);
 
 		 // Apply the general update pattern to the links.
-		link = link.data(links, function(d) { return d.source.id + "-" + d.target.id; });
+		link = link.data(app.links, function(d) { return d.source.id + "-" + d.target.id; });
 		link.exit().remove();
 		link = link.enter().append("line")
 			.attr("weight", 10)
@@ -452,27 +452,27 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 			.merge(link);
 
 		// Update and restart the app.simulation.
-		app.simulation.nodes(nodes);
-		app.simulation.force("link").links(links);
+		app.simulation.nodes(app.nodes);
+		app.simulation.force("link").links(app.links);
 		ticked();
 		app.simulation.alpha(1).restart();
 
 		// update the object with connected nodes
 		linkedByIndex = {};
-		links.forEach(function(d) {
+		app.links.forEach(function(d) {
 		    linkedByIndex[d.source.id + "," + d.target.id] = 1;
 		});
 	}
 
 	function addlink(source, target) {
 		if((source !== undefined) && (target !== undefined)) {
-            links.push({"source": source, "target": target});
+            app.links.push({"source": source, "target": target});
             restart();
     	}
 	}
 
 	function addclusternode(name, colour, cluster_id) {
-		nodes.push({"id" : name, "colour" : colour, "cluster_id": cluster_id})
+		app.nodes.push({"id" : name, "colour" : colour, "cluster_id": cluster_id})
 		restart()
 	}
 
@@ -513,9 +513,9 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	}
 
 	function deletenode(id) {
-		for (var i=0; i < nodes.length; i++) {
-			if (nodes[i]["id"] === id) {
-				nodes.splice(i,1)
+		for (var i=0; i < app.nodes.length; i++) {
+			if (app.nodes[i]["id"] === id) {
+				app.nodes.splice(i,1)
 			}
 		}		
 	}
@@ -525,10 +525,10 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 		allLinks.each(function(d) {
 			if (this.getAttribute("target") === node_id || this.getAttribute("source") === node_id) {
-				for (var i = 0; i < links.length; i++) {
-					if (links[i].target.id === node_id || links[i].source.id === node_id) {
-						console.log(links[i])
-						links.splice(i, 1);
+				for (var i = 0; i < app.links.length; i++) {
+					if (app.links[i].target.id === node_id || app.links[i].source.id === node_id) {
+						//console.log(links[i])
+						app.links.splice(i, 1);
 					}
 				}
 			}
@@ -543,7 +543,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	// update the graph with the additional nodes and links
 	function update_graph() {
 		// Apply the general update pattern to the nodes.
-		node = node.data(nodes, function(d) { return d.id;});
+		node = node.data(app.nodes, function(d) { return d.id;});
 		node.exit().remove();
 		var g = node.enter()
 				.append("g")
@@ -605,7 +605,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 		// Apply the general update pattern to the links.
 		// function(d) { return d.source.id + "-" + d.target.id; }
-		link = link.data(links, function(d) { return d.source.id + "-" + d.target.id;});
+		link = link.data(app.links, function(d) { return d.source.id + "-" + d.target.id;});
 		link.exit().remove();
 		link = link.enter().append("line")
 			.attr("weight", function(d) { return d.weight })
@@ -624,8 +624,8 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 		
 		// Update and restart the app.simulation.
-		app.simulation.nodes(nodes);
-		app.simulation.force("link").links(links);
+		app.simulation.nodes(app.nodes);
+		app.simulation.force("link").links(app.links);
 		ticked();
 
 		var all_links = d3.selectAll(".link")
@@ -658,7 +658,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 		// keep track of the connected nodes
 		linkedByIndex = {};
-		links.forEach(function(d) {
+		app.links.forEach(function(d) {
 		    linkedByIndex[d.source.id + "," + d.target.id] = 1;
 		});
 	}
@@ -729,7 +729,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 				
 					if (!existing_labels.includes(new_label)) {
 						// add new nodes to the nodes array
-						nodes.push({"id": app.updated_nodes[i].id, "class": app.updated_nodes[i].class, "time_ids": app.updated_nodes[i].time_ids, "centrality_score": app.updated_nodes[i].centrality_score});
+						app.nodes.push({"id": app.updated_nodes[i].id, "class": app.updated_nodes[i].class, "time_ids": app.updated_nodes[i].time_ids, "centrality_score": app.updated_nodes[i].centrality_score});
 					} else {
 						// update existing ones (colour, cluster id and cluster name)
 						var existing_nodes = d3.selectAll(".node");
@@ -768,7 +768,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 				}
 			}
 
-			nodes.forEach(function(d) {
+			app.nodes.forEach(function(d) {
 		    	d.selected = false;
 		   		d.previouslySelected = false;
 			});
@@ -778,13 +778,13 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 				var target = app.updated_links[i].target
 				var found = false
 
-				for (var j = 0; j < links.length; j++) {
-					if (links[j].source.id === source && links[j].target.id === target) {
+				for (var j = 0; j < app.links.length; j++) {
+					if (app.links[j].source.id === source && app.links[j].target.id === target) {
 						found = true
 					}
 				}
 				if (found === false) {
-					links.push(app.updated_links[i]);
+					app.links.push(app.updated_links[i]);
 				}
 			}
 			update_graph()
@@ -896,7 +896,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
     // update the connected nodes
 	linkedByIndex = {};
-	links.forEach(function(d) {
+	app.links.forEach(function(d) {
     	linkedByIndex[d.source.id + "," + d.target.id] = 1;
 	});
 
