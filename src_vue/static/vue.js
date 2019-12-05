@@ -1719,7 +1719,13 @@ app = new Vue({
 		    document.body.appendChild(a);
 		    const url = window.URL.createObjectURL(blob);
 		    a.href = url;
-		    a.download = app.target_word + "_" + app.senses + "_" + app.edges + ".json";
+	
+		    if (app.updated_nodes === null && app.updated_links === null) {
+		    	a.download = app.target_word + "_" + app.senses + "_" + app.edges + ".json";
+		    } else {
+		    	a.download = app.target_word + "_" + app.update_senses + "_" + app.update_edges + ".json";
+		    }
+		    
 		    a.click();
 		    setTimeout(() => {
 		      window.URL.revokeObjectURL(url);
