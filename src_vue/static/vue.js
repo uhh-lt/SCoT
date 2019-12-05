@@ -59,7 +59,7 @@ app = new Vue({
      	hightlighInbetweennessCentrality : false,
      	wobblyCandidatesFields : [{key:"text", label: "Node", sortable: true}, {key: "connected_clusters", label: "Connected Clusters", sortable: false}, {key: "balanced", label: "Balanced", sortable: true}, {key: "show_details", label: "Show Details"}],
      	wobblyCandidates : [],
-     	deleteable_cluster : {},
+     	//deleteable_cluster : {},
      	link_thickness_scaled : "true",
      	link_thickness_value : 1,
      	link_thickness_factor : 100,
@@ -127,6 +127,43 @@ app = new Vue({
 		}
 	},
 	methods: {
+		delete_cluster: async function(cluster_name, cluster_id, labels) {
+			text_labels = []
+			for (var i = 0; i < labels.length; i++) {
+				text_labels.push(labels[i].text)
+			}
+			var nodes = d3.selectAll(".node").selectAll("g");
+			nodes.each(function(d) {
+				childnodes = this.childNodes;
+				var node_id;
+				var id;
+
+				childnodes.forEach(function(d,i) {
+					if (d.tagName === "circle") {
+						id = d.getAttribute("cluster_id");
+					}
+					if (d.tagName === "text") {
+						node_id = d.getAttribute("text")
+					}
+				})
+				
+				if (id === cluster_id) {
+					app.deletenode(node_id)
+					app.deletelinks(node_id)
+
+				}
+			});
+			app.node.data(app.nodes, function(d) { return d.id }).exit().remove();
+
+			app.link.data(app.links, function(d) { return d.source.id + "-" + d.target.id; }).exit().remove();
+
+			app.simulation.nodes(app.nodes);
+			app.simulation.force("link").links(app.links);
+
+			app.simulation.alpha(1).restart();
+			await app.get_clusters()
+			//console.log(app.clusters)
+		},
 		calc_linkedByIndex: function() {
 			app.linkedByIndex = {};
 			app.links.forEach(function(d) {
@@ -1552,7 +1589,7 @@ app = new Vue({
 						cluster["cluster_name"] = cluster_name;
 						cluster["colour"] = colour;
 						cluster["add_cluster_node"] = false;
-						cluster["delete_cluster"] = false;
+						//cluster["delete_cluster"] = false;
 						cluster.labels = [];
 						if (cluster_node === "false") {
 							cluster["labels"].push({"text": text, "cluster_node": cluster_node});

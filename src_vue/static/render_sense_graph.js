@@ -310,7 +310,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 			var cluster_colour = app.clusters[i].colour;
 			var cluster_id = app.clusters[i].cluster_id;
 			var labels = app.clusters[i].labels;
-			var del_cluster = app.clusters[i].delete_cluster;
+			//var del_cluster = app.clusters[i].delete_cluster;
 
 
 			var text_labels = [];
@@ -331,42 +331,10 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 					addlink(text_labels[k], cluster_name);
 				}
 			}
-
-			if (del_cluster === "true") {
-				delete_cluster(cluster_name, cluster_id, text_labels)
-			}
-
 		}
 		// restart the simulation with the additional nodes and links
 		restart();
 	})
-
-	async function delete_cluster(cluster_name, cluster_id, text_labels) {
-		var nodes = d3.selectAll(".node").selectAll("g");
-		nodes.each(function(d) {
-			childnodes = this.childNodes;
-			var node_id;
-			var id;
-
-			childnodes.forEach(function(d,i) {
-				if (d.tagName === "circle") {
-					id = d.getAttribute("cluster_id");
-				}
-				if (d.tagName === "text") {
-					node_id = d.getAttribute("text")
-				}
-			})
-			
-			if (id === cluster_id) {
-				app.deletenode(node_id)
-				app.deletelinks(node_id)
-
-			}
-		});
-		restart()
-		await app.get_clusters()
-		//console.log(app.clusters)
-	}
 
 	// check if a cluster node exists for a specific cluster
 	function cluster_node_exists(cluster_id) {
