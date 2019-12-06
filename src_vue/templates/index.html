@@ -509,8 +509,11 @@
 	      							<span class="when-closed"><i class="fa fa-chevron-up" aria-hidden="true"></i></span>
 								</b-button>
 
-								<b-button id="delete_cluster_button" class="edit_button" style="margin-left: 2px"v-on:click="delete_cluster(cluster.cluster_name, cluster.cluster_id, cluster.labels)" :disabled="time_diff == 1"> <i class="fas fa-trash"></i> </b-button>
+								<b-button v-b-modal="'modal-delete-' + index" class="edit_button" style="margin-left: 2px" :disabled="time_diff == 1"> <i class="fas fa-trash"></i> </b-button>
 							</p>
+
+							<b-modal :id="'modal-delete-' + index" title="Confirm Deletion" @ok="delete_cluster(cluster.cluster_name, cluster.cluster_id, cluster.labels)"> Are you sure you want to delete {{ cluster.cluster_name }}?
+							</b-modal>
 
 							<p>
 								<!-- collapse card for cluster edit options -->
