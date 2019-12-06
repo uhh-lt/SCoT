@@ -116,6 +116,23 @@
 
 				<b-modal id="modal-wobbly-1" scrollable title="List of Nodes between Clusters" ok-only ok-title="Close">
 					<div>
+					<b-button v-b-toggle.collapse-heuristic-1 aria-expanded="false"> Infos on heuristic </b-button>
+
+					<b-collapse :id="'collapse-heuristic-1'">
+						<b-card>
+							The neighbourhood of a node is balanced, if there are at least two clusters for which 
+							<div style="margin-left: 20px">
+							<span style="font-weight: bold"> max - d_i < mean/2 </span>
+							</div> holds true.
+							<ul>
+								<li>max: the max amount of nodes from the same cluster</li>
+								<li>d_i: the mount of nodes of cluster i</li>
+								<li>mean: the mean number of nodes per neighbouring cluster</li>
+							</ul>
+						</b-card>
+					</b-collapse>
+					</div>
+					<div>
 	    				<b-table striped hover responsive="sm" :items="wobblyCandidates" :fields="wobblyCandidatesFields">
 	    					<template v-slot:cell(show_details)="row">
 	    						<b-button size="sm" @click="row.toggleDetails" class="mr-2">

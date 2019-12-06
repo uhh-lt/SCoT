@@ -213,7 +213,6 @@ app = new Vue({
 				}
 			});
 		},
-	
 		check_cluster_node_connection: function(link_endpoint){
 			var is_connected = false;
 			var nodes = d3.selectAll(".node").selectAll("g")
@@ -226,7 +225,7 @@ app = new Vue({
 					is_connected = true;
 				}
 			})
-			return is_connected 
+			return is_connected;
 		},
 		update_general_settings: function() {
 			var svg = d3.select("svg");
@@ -1762,6 +1761,10 @@ app = new Vue({
 		    } else {
 		    	a.download = app.target_word + "_" + app.update_senses + "_" + app.update_edges + ".json";
 		    }
+
+		    // TODO What happens if nodes / clusters are deleted?
+
+		    //a.download = app.target_word + "_" + graph_nodes.length + "_" + graph_links.length + ".json"
 		    
 		    a.click();
 		    setTimeout(() => {
