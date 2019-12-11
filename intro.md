@@ -15,3 +15,4 @@ These include:
 "crisis/NN", "freedom/NN", "happiness/NN", "legitimate/JJ", "revolution/NN", "life/NN", "public/NN", "diversity/NN", "theory/NN", "history/NN", "scandal/NN", "experience/NN", "bank/NN", "sausage/NN", "hate/NN", "elephant/NN", "number/NN", "chain/NN"
 
 ## General Structure
+![The general structure](./images/general_structure.png "The general structure of the user interface" )
