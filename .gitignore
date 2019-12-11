@@ -4,8 +4,6 @@
 ### Data ###
 BackupData/
 CSV_gbooks/
-docker-compose.yml
-config.json
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
