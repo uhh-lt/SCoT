@@ -6,8 +6,8 @@ app = new Vue({
    		link: "",
    		nodes : [],
    		links : [],
-   		viewport_height : 550,
-   		viewport_width : 950,
+   		viewport_height : 800,
+   		viewport_width : 1250,
    		svg_height : 1500,
    		svg_width : 1500,
    		target_word : "happiness/NN",
@@ -607,6 +607,7 @@ app = new Vue({
 
 			nodes.each(function(d) {
 				var children = this.childNodes;
+				this.setAttribute("stroke", null);
 
 				children.forEach(function(d) {
 					if (d.tagName === "text") {
@@ -620,7 +621,6 @@ app = new Vue({
 						if (r > 5) {
 							new_r = r / 2;
 							d.setAttribute("r", new_r);
-							d.style.stroke = "white";
 						}
 					}
 				});
@@ -647,7 +647,7 @@ app = new Vue({
 
 					if (text.lastIndexOf(app.searchterm, 0) === 0) {
 						found_matching_string = true;
-
+						this.setAttribute("stroke", "yellow");
 						// highlight matching node
 						children.forEach(function(d) {
 							if (d.tagName === "text") {
@@ -657,7 +657,6 @@ app = new Vue({
 								r = d.getAttribute("r");
 								new_r = r * 2;
 								d.setAttribute("r", new_r);
-								d.style.stroke = "yellow";
 							}
 						});
 					} else {
