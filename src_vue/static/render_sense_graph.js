@@ -409,6 +409,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		link = app.link.data(app.links, function(d) { return d.source.id + "-" + d.target.id; });
 		link.exit().remove();
 		app.link = link.enter().append("line")
+			//.attr("class", "link")
 			.attr("weight", 10)
 			.attr("source", function(d) { return d.source })
 			.attr("target", function(d) { return d.target })
@@ -507,6 +508,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		// Apply the general update pattern to the nodes.
 		node = app.node.data(app.nodes, function(d) { return d.id;});
 		node.exit().remove();
+
 		var g = node.enter()
 				.append("g")
 				.attr("stroke", "#fff")
@@ -527,8 +529,6 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	    			//console.log(this)
 	    			showContextMenu(this);
 	   			})
-	   	//app.node = node.merge(g);
-
 
 	   	circle = g.append("circle")
 				.attr("fill", function(d) { return color(d.class); })
@@ -556,7 +556,6 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 			}
 		});
 
-
 		var text = g.append("text")
 			.text(function(d) { return d.id; })
 			.style('fill', "black")
@@ -565,10 +564,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 			.attr('y', 3)
 			.attr("text", function(d) { return d.id; });
 
-		
-
 		app.node = node.merge(g);
-
 
 		// Apply the general update pattern to the links.
 		// function(d) { return d.source.id + "-" + d.target.id; }
@@ -595,16 +591,15 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		app.simulation.force("link").links(app.links);
 		ticked();
 
-		var all_links = d3.selectAll(".link")
-		all_links.each(function(d) {
+		var all_links = svg.selectAll("line")
+		all_links.each(function() {
 			// check if link is connected to cluster node
-			var children = this.childNodes;
-			children.forEach(function(d) {
 				var is_connected_to_cluster_node = false;
-				var source = d.getAttribute("source");
-				var target = d.getAttribute("target");
+				var source = this.getAttribute("source");
+				var target = this.getAttribute("target");
 				var source_colour = app.findColour(source);
 				var target_colour = app.findColour(target);
+				console.log(source, source_colour, target, target_colour)
 				
 				is_connected_to_cluster_node = app.check_cluster_node_connection(source);
 				if (is_connected_to_cluster_node === false) {
@@ -612,13 +607,11 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 				}
 				if (is_connected_to_cluster_node === false) {
 					if (source_colour === target_colour) {
-						d.setAttribute("stroke", source_colour);
+						this.setAttribute("stroke", source_colour);
 					} else {
-						d.setAttribute("stroke", "#999");
+						this.setAttribute("stroke", "#999");
 					}
 				}
-				
-			})
 		})
 
 		app.simulation.alpha(1).restart();
@@ -678,6 +671,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	// add new nodes and edges to the graph when the user updated the number of nodes and edges
 	d3.select("#update_button").on("click", async function() {
 		app.update().then((res) => {
+
 			var existing_labels = [];
 			var new_labels = [];
 			for (var j = 0; j < app.clusters.length; j++) {
@@ -698,6 +692,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 						// add new nodes to the nodes array
 						app.nodes.push({"id": app.updated_nodes[i].id, "class": app.updated_nodes[i].class, "time_ids": app.updated_nodes[i].time_ids, "centrality_score": app.updated_nodes[i].centrality_score});
 					} else {
+						//console.log(new_label)
 						// update existing ones (colour, cluster id and cluster name)
 						var existing_nodes = d3.selectAll(".node");
 						existing_nodes.selectAll("g").each(function(d,i) {

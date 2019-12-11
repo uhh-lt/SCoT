@@ -132,6 +132,8 @@ app = new Vue({
 			for (var i = 0; i < labels.length; i++) {
 				text_labels.push(labels[i].text)
 			}
+			var number_of_nodes = text_labels.length;
+
 			var nodes = d3.selectAll(".node").selectAll("g");
 			nodes.each(function(d) {
 				childnodes = this.childNodes;
@@ -157,8 +159,14 @@ app = new Vue({
 
 			app.link.data(app.links, function(d) { return d.source.id + "-" + d.target.id; }).exit().remove();
 
+			if (app.updated_nodes != null) {
+				app.update_senses = app.update_senses - number_of_nodes;
+			}
+
 			app.simulation.nodes(app.nodes);
 			app.simulation.force("link").links(app.links);
+
+			app.senses = app.senses - number_of_nodes;
 
 			app.simulation.alpha(1).restart();
 			await app.get_clusters()
@@ -173,14 +181,25 @@ app = new Vue({
 		delete_selected_nodes: function() {
 			app.findSelectedNodes();
 			app.clicked_nodes.forEach(function(d) {
-				console.log(d.id)
 				app.deletenode(d.id);
 				app.deletelinks(d.id);
 			})
 			
-			app.node.data(app.nodes, function(d) { return d.id }).exit().remove();
+			// TODO: Why isn't the exit selection removed???
+			//console.log(app.node.data(app.nodes, function(d) { return d.id }).exit())
+			// Now everything BUT the selection is removed from app.node - not in the rendered graph though
+			var node = app.node.data(app.nodes, function(d) { return d.id })
+			node.exit().remove();
+			app.node = node.enter().append("g").merge(node);
 
-			app.link.data(app.links, function(d) { return d.source.id + "-" + d.target.id; }).exit().remove();
+			var link = app.link.data(app.links, function(d) { return d.source.id + "-" + d.target.id; })
+			link.exit().remove();
+			app.link = link.enter().append("line").merge(link);
+
+			app.senses = app.senses - 1;
+			if (app.updated_nodes != null) {
+				app.update_senses = app.update_senses - 1;
+			}
 
 			app.simulation.nodes(app.nodes);
 			app.simulation.force("link").links(app.links);
@@ -190,14 +209,10 @@ app = new Vue({
 		},
 		deletenode: function(node_id) {
 			for (var i=0; i < app.nodes.length; i++) {
-				//console.log(app.nodes[i]["id"], node_id)
 				if (app.nodes[i]["id"] === node_id) {
-					//console.log(app.nodes.length)
 					app.nodes.splice(i,1)
-					//console.log(app.nodes.length)
 				}
 			}
-			console.log(app.nodes)
 		},
 		deletelinks: function(node_id) {
 			var allLinks = d3.select(".link").selectAll("line");
@@ -212,6 +227,7 @@ app = new Vue({
 					}
 				}
 			});
+			console.log(app.links)
 		},
 		check_cluster_node_connection: function(link_endpoint){
 			var is_connected = false;
