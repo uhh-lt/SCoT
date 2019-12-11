@@ -11,10 +11,6 @@ If the user wants to render a new graph from the database, he or she needs to sp
 
 First, the user needs to enter a target word.
 
-**Note:** Since currently I am working with a reduced database, there are only a limited number of target words available. 
-These include:
-"crisis/NN", "freedom/NN", "development/NN", "system/NN", "culture/NN", "work/NN", "labour/NN", "labor/NN", "security/NN", "safety/NN", "autonomy/NN", "order/NN", "experience/NN", "normality/NN", "medium/NN", "communication/NN", "value/NN", "worth/NN", "network/NN", "complexity/NN", "program/NN", "programme/NN", "diversity/NN", "change/NN", "life/NN", "sabotage/NN".
-
 **Note:** For all words the respective part-of-speech tag needs to be appended to the query word. This is due to disambiguation purposes. The correct query word for "crisis" would therefore be "crisis/NN" or "crisis/NNP" (the latter is currently not contained in the database, since the target words are limited to the ones listed above). The data uses the [Penn Treebank POS tags](https://www.ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html).
 
 
