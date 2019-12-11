@@ -527,10 +527,10 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	    			//console.log(this)
 	    			showContextMenu(this);
 	   			})
-	   	app.node = node.merge(g);
+	   	//app.node = node.merge(g);
 
 
-	   	var circle = g.append("circle")
+	   	circle = g.append("circle")
 				.attr("fill", function(d) { return color(d.class); })
 				.attr("r", 5)
 				.attr("centrality_score", function(d) { return d.centrality_score; })
@@ -538,6 +538,23 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		    	.attr("cluster_node", false)
 		    	.attr("time_ids", function(d) { return d.time_ids})
 		    	.attr("cluster", function(d) { return d.class; });
+
+		d3.select("#select_time_diff").on("change", function(d) {
+			if (app.time_diff === false) {
+				circle.attr("fill", function(d) { return color(d.class); })
+				circle.on("mouseover", null);
+				circle.on("mouseout", null);
+				circles.attr("fill", function(d) { return color(d.class); })
+				circles.on("mouseover", null);
+				circles.on("mouseout", null);
+			}
+			if (app.time_diff === true) {
+				circle.on("mouseover", time_diff_tip.show);
+				circle.on("mouseout", time_diff_tip.hide);
+				circles.on("mouseover", time_diff_tip.show);
+				circles.on("mouseout", time_diff_tip.hide);
+			}
+		});
 
 
 		var text = g.append("text")
@@ -550,19 +567,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 		
 
-		//node = node.merge(g);
-
-		d3.select("#select_time_diff").on("change", function(d) {
-			if (app.time_diff === false) {
-				circles.attr("fill", function(d) { return color(d.class); })
-				circles.on("mouseover", null);
-				circles.on("mouseout", null);
-			}
-			if (app.time_diff === true) {
-				circles.on("mouseover", time_diff_tip.show);
-				circles.on("mouseout", time_diff_tip.hide);
-			}
-		});
+		app.node = node.merge(g);
 
 
 		// Apply the general update pattern to the links.
@@ -631,7 +636,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		if (app.time_diff === false) {
 			
 			//circles.style("stroke-opacity", 1);
-			link.style("stroke-opacity", 1);
+			app.link.style("stroke-opacity", 1);
 			
 			var circleChilds = d3.selectAll(".node").selectAll("g").selectAll("circle");
 
