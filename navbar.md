@@ -93,6 +93,14 @@ The following image shows the highlighted search results of the search for "gr".
 
 The user can reset the search highlighting by clicking on the "x" next to the search field.
 
+If the user does not enter a search term, an alert is displayed, urging the user to do so.
+
+![Alert no search term](./images/alert_no_searchterm.png)
+
+If the search does not yield any results, an alert is also displayed.
+
+![Alert no result found](./images/alert_no_searchresult.png)
+
 [To the top](#the-functions-of-the-navbar)
 
 
