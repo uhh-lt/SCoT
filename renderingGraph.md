@@ -37,7 +37,7 @@ The image shows a new session.
 
 If the user wants to render a new graph from the database, he or she needs to specify some parameters.
 
-![Enter Parameters](./images/enter_parameters.png "Enter parameters"){:height="75%" width="75%"}
+![Enter Parameters](./images/enter_parameters.png "Enter parameters"){:height="50%" width="50%"}
 
 First, the user needs to enter a target word.
 
