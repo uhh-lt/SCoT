@@ -1,20 +1,20 @@
 # The Functions of the Navbar
 
-[Nodes between Clusters](##Nodes-between-Clusters)
+[Nodes between Clusters](#nodes-between-nlusters)
 
-[Betweenness Centrality](##Betweenness-Centrality)
+[Betweenness Centrality](#betweenness-centrality)
 
-[The Search Function](##The-Search-Function)
+[The Search Function](#the-search-function)
 
-[Recluster Option](#Recluster-Option)
+[Recluster Option](#recluster-option)
 
-[Edit Graph Option](#Edit-Graph-Option)
+[Edit Graph Option](#edit-graph-option)
 
-[Reset Zoom Option](#Reset-Zoom-Option)
+[Reset Zoom Option](#reset-zoom-option)
 
-[Save the Current Graph](#Save-the-Current-Graph)
+[Save the Current Graph](#save-the-current-graph)
 
-[Load a Previously Saved Graph](#Load-a-Previously-Saved-Graph)
+[Load a Previously Saved Graph](#load-a-previously-saved-graph)
 
 ## Nodes-between-Clusters
 
