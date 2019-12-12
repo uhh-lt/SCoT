@@ -22,47 +22,5 @@ Last but not least, the user has to specify the time period in which the colloca
 
 
 ## Rendering a Graph From a File
-You can save a graph you have been working on to a JSON file by clicking on the "Save Graph" button in the top right-hand corner. Then the graph is downloaded as "graph.json". Where your graph is saved depends on your browser settings.
 
-The json file has the following format (pseudo code):
-```
-{
-  "links": [
-    {
-      "source": "joy/NN",
-      "target": "delight/NN",
-      "weight": "314"
-    },
-    ...
-    ],
-  "nodes": [
-    {
-      "id": "joy/NN",
-      "x": 515.5573938806319,
-      "y": 477.98070940597063,
-      "class": "0",
-      "cluster_name": "0",
-      "cluster_node": "false",
-      "colour": "#a6cee3",
-      "time_ids": "7,5,6,4,8,3,2,1"
-    },
-    ...
-    ],
-  "singletons": [
-    "unhappiness/NN",
-    "misery/NN"
-  ],
-  "target": "happiness/NN",
-  "link_distance": 100,
-  "charge": -10,
-  "start_year": 1520,
-  "end_year": 2008,
-  "time_diff": false
-}
-```
-
-The graph in the json file can be loaded into SCoT again via the "Load Graph" button in the top right-hand corner. When clicking on the button a panel is opened where you can browse for your desired graph.json file in your file system.
-
-![Load graph from file](./images/load_graph1.png)
-
-Select your file, click "Render" and continue to work on your graph.
+See [the functions of the navbar](navbar.md) for more information

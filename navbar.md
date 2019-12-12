@@ -116,8 +116,67 @@ This way, the user is able to see different hypothesis the system assumes about 
 
 ## Edit Graph Option
 
+Clicking the button "Edit Graph" toggles the sidebar with the edit options for the graph. [More info on the editing options](clusters.md)
+
 ## Reset Zoom Option
 
-## Save the Current Graph
+The button "Reset Zoom" resets all the zooming and panning activity to 0. You can zoom into the graph by scrolling in the box with the graph and pan by pressing and the moving the cursor within the box.
 
-## Load a Previously Saved Graph 
+![Zoom](./images/zoom_in.png)
+
+[To the top](#the-functions-of-the-navbar)
+
+## Save the Current Graph
+You can save a graph you have been working on to a JSON file by clicking on the "Save Graph" button in the top right-hand corner. The name of the files is composed of the input parameters, e.g. happiness_NN_100_30.json. This is the graph for the targetword "happiness/NN" with 100 nodes and 30 edges per node. Where your graph is saved depends on your browser settings.
+
+The json file has the following format (pseudo code):
+```
+{
+  "links": [
+    {
+      "source": "joy/NN",
+      "target": "gladness/NN",
+      "weight": "285",
+      "colour": "#a6cee3"
+    },
+    ...
+   ],
+
+  "nodes": [
+    {
+      "id": "joy/NN",
+      "x": 792.6155156103733,
+      "y": 727.7865505385854,
+      "class": "8",
+      "cluster_name": "8",
+      "cluster_node": "false",
+      "colour": "#a6cee3",
+      "time_ids": "7,5,6,4,8,3,2",
+      "centrality_score": "0.3214285714285714"
+    },
+    ...
+  ],
+
+  "singletons": [
+    "comfort/NN"
+  ],
+
+  "target": "happiness/NN",
+  "link_distance": 50,
+  "charge": -50,
+  "start_year": 1520,
+  "end_year": 2008,
+  "time_diff": false,
+  "senses": "10",
+  "edges": "3"
+}
+
+```
+
+## Load a Previously Saved Graph
+
+A graph that has been previously saved to a json file can be loaded into SCoT again via the "Load Graph" button in the top right-hand corner. When clicking on the button a panel is opened where you can browse for your desired graph.json file in your file system.
+
+![Load graph from file](./images/load_graph.png)
+
+Select your file, click "Render" and continue to work on your graph.
