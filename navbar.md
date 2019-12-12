@@ -72,13 +72,13 @@ A node can have one of three possible sizes depending on their centrality score.
 
 The second option "Customize highlighting thresholds" allows the user to determine which nodes should be small, medium-sized, or large based on their betweenness centrality score.
 
-![Customize thresholds](./images/customize_thresholds.png){:height="75%" width="75%"}
+![Customize thresholds](./images/customize_thresholds.png){:height="50%" width="50%"}
 
 The option "Reset highlighting" reverts the size of the nodes back to their original sizes.
 
 When the user selects the option "List centrality node scores" all the nodes are listed together with their respective betweenness centrality scores. The columns of the table are sortable.
 
-![List betweenness cetrality scores](./images/list_betweenness_centrality.png){:height="75%" width="75%"}
+![List betweenness cetrality scores](./images/list_betweenness_centrality.png){:height="50%" width="50%"}
 
 [To the top](#the-functions-of-the-navbar)
 
