@@ -8,7 +8,7 @@ A sidebar to change the general settings of SCoT and enter the parameters for re
 
 [Rendering a Graph from a File](#rendering-a-graph-from-a-file)
 
-[Update a Graph](#update-a-graph)
+[Update a Graph](#updating-a-graph)
 
 
 ## General Settings
