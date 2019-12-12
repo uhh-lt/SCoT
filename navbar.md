@@ -118,6 +118,9 @@ This way, the user is able to see different hypothesis the system assumes about 
 
 Clicking the button "Edit Graph" toggles the sidebar with the edit options for the graph. [More info on the editing options](clusters.md)
 
+[To the top](#the-functions-of-the-navbar)
+
+
 ## Reset Zoom Option
 
 The button "Reset Zoom" resets all the zooming and panning activity to 0. You can zoom into the graph by scrolling in the box with the graph and pan by pressing and the moving the cursor within the box.
@@ -125,6 +128,7 @@ The button "Reset Zoom" resets all the zooming and panning activity to 0. You ca
 ![Zoom](./images/zoom_in.png){:height="50%" width="50%"}
 
 [To the top](#the-functions-of-the-navbar)
+
 
 ## Save the Current Graph
 You can save a graph you have been working on to a JSON file by clicking on the "Save Graph" button in the top right-hand corner. The name of the files is composed of the input parameters, e.g. happiness_NN_100_30.json. This is the graph for the targetword "happiness/NN" with 100 nodes and 30 edges per node. Where your graph is saved depends on your browser settings.
