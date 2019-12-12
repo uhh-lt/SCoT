@@ -1,10 +1,23 @@
-# Rendering a Graph
+# Parameter Input and General Settings
+
+A sidebar to change the general settings of SCoT and enter the parameters for rendering and updating a graph is located to the left side of the page.
+
+## General Settings
+
+![General Settings](./images/general_settings.png){:height="75%" width="75%"}
+
+Via the general settings the user can change the size of the viewport as well as the size of the SVG of the graph. The latter should be done before the graph is rendered, otherwise it will only act as a zoom function, without allowing the graph more room on the SVG. The default viewport is 550 x 950 pixels. The default SVG size is 1500 x 1500 pixels.
+
+The user can also decide how the link thickness should be calculated. It can either be scaled depending on the similarity score between nodes or it can be set as an absolute pixel value.
+If the user wishes to scale the link thickness with respect to the similarity the nodes it connects, the thickness is calculated as **sqrt(similarity_score / factor)**. The user can set the variable *factor*.
+
+## Parameter Input for Rendering a Graph
 When the user first opens SCoT, they may either render a new graph by entering the required parameters in the left column or they can load a previously stored graph again from a file.
 
 ![Clean new session](./images/new_session.png "New Session")
 
 
-## Rendering a New Graph From the Database
+### Rendering a New Graph From the Database
 If the user wants to render a new graph from the database, he or she needs to specify some parameters.
 
 ![Enter Parameters](./images/Enter_data_to_render_from_db.png "Enter parameters")
@@ -21,6 +34,8 @@ Another parameter is the mode. However, a graph is always rendered in the sense 
 Last but not least, the user has to specify the time period in which the collocations should occur. Per default this is set to encompass all the time slices (1520 - 2008).
 
 
-## Rendering a Graph From a File
+### Rendering a Graph From a File
 
 See [the functions of the navbar](navbar.md) for more information
+
+### Updating a Graph
