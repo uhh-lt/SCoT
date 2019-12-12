@@ -1,10 +1,22 @@
 # The Functions of the Navbar
 
 [Nodes between Clusters](##Nodes-between-Clusters)
+
 [Betweenness Centrality](##Betweenness-Centrality)
 
+[The Search Function](##The-Search-Function)
 
-##Nodes-between-Clusters
+[Recluster Option](#Recluster-Option)
+
+[Edit Graph Option](#Edit-Graph-Option)
+
+[Reset Zoom Option](#Reset-Zoom-Option)
+
+[Save the Current Graph](#Save-the-Current-Graph)
+
+[Load a Previously Saved Graph](#Load-a-Previously-Saved-Graph)
+
+## Nodes-between-Clusters
 
 ![Dropdown Menu for Nodes Between Clusters](./images/dropdown_nodes_between_clusters.png "Dropdown menu for showing nodes between clusters")
 
@@ -38,7 +50,7 @@ Selecting the third option "List nodes" gives the user information about the nei
 Clicking on the "Show Details" button lists all the nodes the node is connected to grouped by cluster.
 
 
-##Betweenness-Centrality
+## Betweenness-Centrality
 
 ## The Search Function
 
