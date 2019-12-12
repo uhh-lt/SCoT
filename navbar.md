@@ -95,11 +95,11 @@ The user can reset the search highlighting by clicking on the "x" next to the se
 
 If the user does not enter a search term, an alert is displayed, urging the user to do so.
 
-![Alert no search term](./images/alert_no_searchterm.png){:height="75%" width="75%"}
+![Alert no search term](./images/alert_no_searchterm.png){:height="50%" width="50%"}
 
 If the search does not yield any results, an alert is also displayed.
 
-![Alert no result found](./images/alert_no_searchresult.png){:height="75%" width="75%"}
+![Alert no result found](./images/alert_no_searchresult.png){:height="50%" width="50%"}
 
 [To the top](#the-functions-of-the-navbar)
 
@@ -122,7 +122,7 @@ Clicking the button "Edit Graph" toggles the sidebar with the edit options for t
 
 The button "Reset Zoom" resets all the zooming and panning activity to 0. You can zoom into the graph by scrolling in the box with the graph and pan by pressing and the moving the cursor within the box.
 
-![Zoom](./images/zoom_in.png)
+![Zoom](./images/zoom_in.png){:height="50%" width="50%"}
 
 [To the top](#the-functions-of-the-navbar)
 
@@ -173,6 +173,9 @@ The json file has the following format (pseudo code):
 
 ```
 
+[To the top](#the-functions-of-the-navbar)
+
+
 ## Load a Previously Saved Graph
 
 A graph that has been previously saved to a json file can be loaded into SCoT again via the "Load Graph" button in the top right-hand corner. When clicking on the button a panel is opened where you can browse for your desired graph.json file in your file system.
@@ -180,3 +183,5 @@ A graph that has been previously saved to a json file can be loaded into SCoT ag
 ![Load graph from file](./images/load_graph.png)
 
 Select your file, click "Render" and continue to work on your graph.
+
+[To the top](#the-functions-of-the-navbar)
