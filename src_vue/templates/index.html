@@ -264,12 +264,6 @@
 			<b-form-input type="number" v-model="edges" min="0" placeholder="number of edges" size="sm"></b-form-input>
 		</b-form-group>
 
-		<!-- Select time diff or sense clustering mode -->
-		<b-form-group class="input" label="Mode" id="select_time_diff">
-		    <b-form-radio v-model="time_diff" name="time_diff" v-bind:value="false"> Sense Clustering (CW) </b-form-radio>
-		    <b-form-radio v-model="time_diff" name="time_diff" v-bind:value="true">Time Diff</b-form-radio>
-    	</b-form-group>
-
     	<!-- Enter an start year -->
     	<b-form-group class="input" label="Select a start year">
 			<b-form-select v-model="start_year" :options="start_years" size="sm"></b-form-select>
@@ -313,6 +307,12 @@
 				</b-card>
 			</b-collapse>
     	</div>
+
+    			<!-- Select time diff or sense clustering mode -->
+		<b-form-group class="input" label="Mode" id="select_time_diff">
+		    <b-form-radio v-model="time_diff" name="time_diff" v-bind:value="false"> Sense Clustering (CW) </b-form-radio>
+		    <b-form-radio v-model="time_diff" name="time_diff" v-bind:value="true">Time Diff</b-form-radio>
+    	</b-form-group>
 
     </b-col>
 
