@@ -4,7 +4,7 @@
 [Betweenness Centrality](##Betweenness-Centrality)
 
 
-(##Nodes-between-Clusters)
+##Nodes-between-Clusters
 
 ![Dropdown Menu for Nodes Between Clusters](./images/dropdown_nodes_between_clusters.png "Dropdown menu for showing nodes between clusters")
 
@@ -38,7 +38,7 @@ Selecting the third option "List nodes" gives the user information about the nei
 Clicking on the "Show Details" button lists all the nodes the node is connected to grouped by cluster.
 
 
-(##Betweenness-Centrality)
+##Betweenness-Centrality
 
 ## The Search Function
 
