@@ -53,7 +53,35 @@ Clicking on the "Show Details" button lists all the nodes the node is connected 
 
 [To the top](#the-functions-of-the-navbar)
 
-## Betweenness-Centrality
+
+## Betweenness Centrality
+
+Betweenness centrality is a common measure of centrality for graphs based on shortest paths. The betweenness centrality for each node is the number of shortest paths that pass through it. For more information see [Wikipedia](https://en.wikipedia.org/wiki/Betweenness_centrality) and the [Networkx documentation](https://networkx.github.io/documentation/latest/reference/algorithms/generated/networkx.algorithms.centrality.betweenness_centrality.html#networkx.algorithms.centrality.betweenness_centrality).
+
+When clicking on the betweenness centrality button, a dropdown menu opens and the user can select different options.
+
+The first option is to "Highlight central nodes in graph". Depending on their betweenness centrality score the nodes are displayed in different sizes.
+
+![Betweenness centrality](./images/betweenness_centrality_graph.png){:height="75%" width="75%"}
+
+A node can have one of three possible sizes depending on their centrality score. The defaults are:
+
+1. Small nodes - nodes that have a centrality score of 0.0
+2. Medium-sized - nodes that have a centrality score between 0.0 and 0.1
+3. Large nodes - nodes that have a centrality score greater than 0.1
+
+The second option "Customize highlighting thresholds" allows the user to determine which nodes should be small, medium-sized, or large based on their betweenness centrality score.
+
+![Customize thresholds](./images/customize_thresholds.png){:height="75%" width="75%"}
+
+The option "Reset highlighting" reverts the size of the nodes back to their original sizes.
+
+When the user selects the option "List centrality node scores" all the nodes are listed together with their respective betweenness centrality scores. The columns of the table are sortable.
+
+![List betweenness cetrality scores](./images/list_betweenness_centrality.png){:height="75%" width="75%"}
+
+[To the top](#the-functions-of-the-navbar)
+
 
 ## The Search Function
 
