@@ -85,7 +85,26 @@ When the user selects the option "List centrality node scores" all the nodes are
 
 ## The Search Function
 
+Since graphs with many nodes and links can get very complex, the user can search the graph for specific nodes. The search used prefix matching between the search term and the node labels. If one or more nodes that match the search term are found, they are highlighted in the graph.
+
+The following image shows the highlighted search results of the search for "gr".
+
+![Search highlighting](./images/search_gr.png){:height="50%" width="50%"}
+
+The user can reset the search highlighting by clicking on the "x" next to the search field.
+
+[To the top](#the-functions-of-the-navbar)
+
+
 ## Recluster Option
+
+The clusters in the graph are calculated using the Chinese Whispers algorithm. The algorithm is very fast, but non-deterministic. So you never know upfront how many clusters you will get and which nodes will belong to which cluster. Because of this, executing the algorithm several times may result in a different clustering each time. 
+
+The user can execute the algorithm again by clicking on the button "Recluster".
+This way, the user is able to see different hypothesis the system assumes about the senses of the target word. For more information on the Chinese Whispers Clustering Algorithm click [here](http://delivery.acm.org/10.1145/1660000/1654774/p73-biemann.pdf?ip=77.20.250.85&id=1654774&acc=OPEN&key=4D4702B0C3E38B35%2E4D4702B0C3E38B35%2E4D4702B0C3E38B35%2E6D218144511F3437&__acm__=1568553032_2c17e0dabf68573cf049cc4c8c1491be).
+
+[To the top](#the-functions-of-the-navbar)
+
 
 ## Edit Graph Option
 
