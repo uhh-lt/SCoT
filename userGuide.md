@@ -2,6 +2,8 @@
 
 [Introduction](intro.md)
 
+[The Functions in the Navbar](navbar.md)
+
 [Rendering a Graph](renderingGraph.md)
 
 [Interacting With a Graph](interacting.md)
