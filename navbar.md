@@ -28,7 +28,7 @@ Clicking on the option "Highlight nodes in graph" results in the increased size 
 2. Medium-sized nodes - are connected to more than one cluster, but do not have a balanced neighbourhood
 3. Large nodes - are connected to more than one cluster and have a balanced neighbourhood
 
-![Highlighted Nodes Between Clusters](./images/graph_highlighting_balanced_neighbourhood.png "Highlighted nodes between clusters")
+![Highlighted Nodes Between Clusters](./images/graph_highlighting_balanced_neighbourhood.png "Highlighted nodes between clusters"){:height="75%" width="75%"}
 
 We use a heuristic to decide whether a node has a balanced neighbourhood or not.
 
@@ -43,12 +43,15 @@ Where
 
 The option "Reset highlighting" reverts all the nodes to their original size.
 
-Selecting the third option "List nodes" gives the user information about the neighbourhood of each node. For each node the connected clusters are listed, as well as the number of nodes this specific node is connected to in each respective cluster. The list also tells the user, if the neighbourhood of the node was consideres balances or not. 
+Selecting the third option "List nodes" gives the user information about the neighbourhood of each node. For each node the connected clusters are listed, as well as the number of nodes this specific node is connected to in each respective cluster. The list also tells the user, if the neighbourhood of the node was considered balanced or not. When the user clicks on the button "Infos on heuristic", they can see the heuristic we used to decide whether a node has a balanced neighbourhood.
 
-![List Nodes Between Clusters](./images/list_balanced_nodes.png ){:height="50%" width="50%"}
+![List Nodes Between Clusters](./images/list_balanced_nodes.png ){:height="75%" width="75%"}
 
 Clicking on the "Show Details" button lists all the nodes the node is connected to grouped by cluster.
 
+![Show neighbourhood details](./images/show_detailed_neighbourhood.png ){:height="75%" width="75%"}
+
+[To the top](#the-functions-of-the-navbar)
 
 ## Betweenness-Centrality
 
