@@ -95,11 +95,11 @@ The user can reset the search highlighting by clicking on the "x" next to the se
 
 If the user does not enter a search term, an alert is displayed, urging the user to do so.
 
-![Alert no search term](./images/alert_no_searchterm.png)
+![Alert no search term](./images/alert_no_searchterm.png){:height="75%" width="75%"}
 
 If the search does not yield any results, an alert is also displayed.
 
-![Alert no result found](./images/alert_no_searchresult.png)
+![Alert no result found](./images/alert_no_searchresult.png){:height="75%" width="75%"}
 
 [To the top](#the-functions-of-the-navbar)
 
