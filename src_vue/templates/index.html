@@ -274,6 +274,12 @@
 			<b-form-select v-model="end_year" :options="end_years" size="sm"></b-form-select>
 		</b-from-group>
 
+		<!-- Select time diff or sense clustering mode -->
+		<b-form-group class="input" label="Mode" id="select_time_diff">
+		    <b-form-radio v-model="time_diff" name="time_diff" v-bind:value="false"> Sense Clustering (CW) </b-form-radio>
+		    <b-form-radio v-model="time_diff" name="time_diff" v-bind:value="true">Time Diff</b-form-radio>
+    	</b-form-group>
+
 		<!-- Render button -->
     	<b-button id="render_button" v-on:click="render_graph()">Render Graph</b-button>
 
@@ -285,7 +291,7 @@
 
 		<div>
 			<!-- Card collape to enter number of nodes and edges for update -->
-			<b-collapse v-show="time_diff==0" :id="'collapse-update-1'" class="mt-2">
+			<b-collapse :id="'collapse-update-1'" class="mt-2">
 				<b-card class="input_cluster" style="color: black">
 
 					<!-- Enter new number of neighbouring nodes to the target word -->
@@ -307,12 +313,6 @@
 				</b-card>
 			</b-collapse>
     	</div>
-
-    			<!-- Select time diff or sense clustering mode -->
-		<b-form-group class="input" label="Mode" id="select_time_diff">
-		    <b-form-radio v-model="time_diff" name="time_diff" v-bind:value="false"> Sense Clustering (CW) </b-form-radio>
-		    <b-form-radio v-model="time_diff" name="time_diff" v-bind:value="true">Time Diff</b-form-radio>
-    	</b-form-group>
 
     </b-col>
 
