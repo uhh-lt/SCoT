@@ -20,5 +20,8 @@ The picture above shows the general structure of the web page after a graph was 
 
 At the top, the user finds a navigation bar with different functions. Here the user can save a graph to a JSON file and upload a previously saved graph again. The user can also view different centrality measures for the graph - one using betweenness centrality, the other highlighting nodes that are connected to more than one cluster in a balanced fashion. Moreover, there is search field available for looking up specific nodes in the graph. In addition, the graph can be reclustered via a navbar function. Should the user have zoomed into the graph, the zoom can be reset via the navbar. The sidebar with editing options for the graph can be toggled via a button in the navbar. Find more info on the functions of the navbar [here](navbar.md).
 
-To the left side the user finds the options sidebar. The input fields for the graph parameters are located here, as well as the general settings and a function to change the amount of nodes and edges in the graph after it has been rendered. Find more infor on the options sidebar [here](sidebar.md)
+To the left side the user finds the options sidebar. The input fields for the graph parameters are located here, as well as the general settings and a function to change the amount of nodes and edges in the graph after it has been rendered. Find more info on the options sidebar [here](sidebar.md)
 
+To the right side the graph can be edited via the options in the togglable sidebar. The sidebar can be opened and closed via a button in the navbar. For a detailed description of the editing options please click [here](clusters.md)
+
+In the center of the page, the word sense graph is displayed. The user can interact with the graph in different ways.
