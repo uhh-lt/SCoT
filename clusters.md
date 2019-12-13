@@ -3,12 +3,19 @@
 The graph and the clusters produced by the program can be edited and, if necessary, corrected. The user can decide between two different dragging behaviours, as well as influence parameters of the force simulation, which is used to calculate the position of the nodes in the graph. In this section I will describe all the functionalities avaibable in the toggable editing sidebar. For more information on how to manipulate the graph directly, see [the section on interacting with the graph](interacting.md).
 
 [Choosing the Dragging Behaviour](#choosing-the-dragging-behaviour)
+
 [Manipulate the Simulation](#manipulate-the-simulation)
+
 [Editing the Clusters](#editing-the-clusters)
+
 [Edit Cluster Name](#edit-cluster-name)
+
 [Edit Cluster Colour](#edit-cluster-colour)
+
 [Add Cluster Node](#add-cluster-node)
+
 [Delete Cluster Node](#delete-cluster-node)
+
 [Delete Complete Cluster](#delete-complete-cluster)
 
 
@@ -36,7 +43,7 @@ SCoT lets you edit two simulation parameters: the charge strength between the no
 The default value for the charge strength is -50, the default value for the link distance is 50.
 A graph with 100 nodes, 30 edges and these simulation parameter values looks like this:
 
-![Default Graph](./images/graph_for_intro.png)
+![Default Graph](./images/graph_for_intro.png){:height="75%" width="75%"}
 
 The use can change the value of the charge strength from values in the range of -200 to 100. Changing the charge strength influences the repelling forces between the nodes. The same graph with a charge strength of -100 and the default link distance looks as follows:
 
@@ -72,7 +79,7 @@ In some cases, nodes are not connected to any other in the graph. They are only 
 
 The program only numbers the clusters and it is up to the user to name the cluster. A cluster name can be changed via the edit button of a cluster.
 
-![Edit Cluster Name](./images/edit_cluster_name.png)
+![Edit Cluster Name](./images/edit_cluster_name.png){:height="75%" width="75%"}
 
 The user can enter the new name in the text input field "cluster name". The name of the cluster is automatically updated while typing.
 
@@ -124,6 +131,6 @@ In case the user wants to get rid of the cluster node of a cluster, they have tw
 
 Complete cluster can be deleted via the button with the trash icon. The user then has to confirm the deletion in a confirmation message. When the user confirms all the nodes and links of the cluster are deleted.
 
-![Confirm Cluster Deletion](./images/confirmation_cluster_deletion.png)
+![Confirm Cluster Deletion](./images/confirmation_cluster_deletion.png){:height="75%" width="75%"}
 
 [To the top](#editing-the-graph-via-the-functions-of-the-editing-sidebar)
