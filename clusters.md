@@ -79,7 +79,7 @@ In some cases, nodes are not connected to any other in the graph. They are only 
 
 The program only numbers the clusters and it is up to the user to name the cluster. A cluster name can be changed via the edit button of a cluster.
 
-![Edit Cluster Name](./images/edit_cluster_name.png){:height="75%" width="75%"}
+![Edit Cluster Name](./images/edit_cluster_name.png){:height="40%" width="40%"}
 
 The user can enter the new name in the text input field "cluster name". The name of the cluster is automatically updated while typing.
 
