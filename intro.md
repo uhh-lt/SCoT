@@ -25,3 +25,5 @@ To the left side the user finds the options sidebar. The input fields for the gr
 To the right side the graph can be edited via the options in the togglable sidebar. The sidebar can be opened and closed via a button in the navbar. [More info on the editing options](clusters.md)
 
 In the center of the page, the word sense graph is displayed. The user can interact with the graph in different ways.
+
+**Note:** Most of the manipulation functionalities are only available in the sense clustering mode. The buttons to edit the graph are only faded in, if a graph is rendered.
