@@ -219,8 +219,12 @@
 			</b-button-group>
 
 			<b-modal id="modal-settings-1" scrollable size="xl" title="General Settings" @ok="update_general_settings">
-				<b-link href="https://github.com/IngaKe/SCoT"> View on GitHub </b-link>
-				<b-link hreft="https://ingake.github.io/SCoT/index.html"> View User Guide </b-link>
+				<div>
+					<b-link href="https://github.com/IngaKe/SCoT"><i class="fab fa-github"></i> View on GitHub </b-link>
+				</div>
+				<div>
+					<b-link href="https://ingake.github.io/SCoT/index.html"> <i class="fas fa-question-circle"></i> View User Guide </b-link>
+				</div>
 				<b-form-group class="input" label="Select view port height in pixels">
 				  <b-form-input type="number" v-model="viewport_height"></b-form-input>
 				</b-form-group>
