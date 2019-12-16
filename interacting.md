@@ -52,6 +52,9 @@ When the user selects a node, a button "Options" is faded in in the navbar. When
  2. Creating a new cluster and assigning the node to it
  3. Delete the node from the graph
 
+[To the top](#interacting-with-the-graph)
+
+
 ### Assigning a Node to a Different Cluster
 In case the user does not agree with the system's hypothesis, they can assign a node to a different existing cluster.
 
@@ -63,13 +66,24 @@ On clicking "OK", the node's colour changes to the one of the newly assigned clu
 
 If cluster labels are used, they do not automatically update, but have to be deleted manually and reentered with the updated clusters via the edit function of the respective cluster.
 
+[To the top](#interacting-with-the-graph)
+
+
 ### Creating a New Cluster for a Node
-TBA
+
+If the user does not agree with the cluster assignment of a node and does not feel that the node would fit into any of the other clusters, the user can create a new cluster for a node.
+For this, the user selects the option "Create new cluster". The following modal is displayed to the user.
+
+![Create a New Cluster](./images/create_new_cluster_modal.png)
+
+The selected node is displayed to the user, so that they can verify that they are working on the correct node. They can then choose a name for the new cluster as well as a colour. The colour picker displayed in the image above is opened after the user has clicked on the coloured box for selecting a new colour.
+
+After clicking the "ok" button in the modal, the new cluster is created. The node is coloured in the selected colour and its cluster changed. The cluster now appears in the cluster list in the edit sidebar. Other nodes can also be assigned to the newly created cluster via the function "Assign to different cluster".
+
 
 ## Deleting a Node
-<!-- normal node -->
+A selected node in the graph and the links connecting it to any of the nodes in the graph can deleted via the "Delete node" function in the node options menu. This applies for both normal word nodes as well as cluster nodes. 
 
-<!-- cluster node -->
 Cluster labels can also be deleted via selecting them (clicking on them) and then pressing `BACKSPACE`.
 
 **Note of caution:** Currently, selected cluster nodes are always deleted when pressing `BACKSPACE`. So please check, if any cluster nodes are selected beforehand!
