@@ -76,9 +76,11 @@ For this, the user selects the option "Create new cluster". The following modal 
 
 ![Create a New Cluster](./images/create_new_cluster_modal.png)
 
-The selected node is displayed to the user, so that they can verify that they are working on the correct node. They can then choose a name for the new cluster as well as a colour. The colour picker displayed in the image above is opened after the user has clicked on the coloured box for selecting a new colour.
+The selected node is displayed to the user, so that they can verify that they are working on the correct node. They can then choose a name for the new cluster as well as a colour. A colour picker displayed to the user after they have clicked on the coloured box for selecting a new colour.
 
 After clicking the "ok" button in the modal, the new cluster is created. The node is coloured in the selected colour and its cluster changed. The cluster now appears in the cluster list in the edit sidebar. Other nodes can also be assigned to the newly created cluster via the function "Assign to different cluster".
+
+[To the top](#interacting-with-the-graph)
 
 
 ## Deleting a Node
@@ -87,3 +89,5 @@ A selected node in the graph and the links connecting it to any of the nodes in 
 Cluster labels can also be deleted via selecting them (clicking on them) and then pressing `BACKSPACE`.
 
 **Note of caution:** Currently, selected cluster nodes are always deleted when pressing `BACKSPACE`. So please check, if any cluster nodes are selected beforehand!
+
+[To the top](#interacting-with-the-graph)
