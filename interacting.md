@@ -2,15 +2,14 @@
 
 This section describes how the user can manipulate the graph directly.
 
-[Hover over Nodes](#hover-over-nodes)
+## Contents
 
-[Dragging Nodes](#dragging-nodes)
-
-[The Node Options Menu](#the-node-options-menu)
-
-* [Assigning a Node to a Different Cluster](#asigning-a-node-to-a-different-cluster)
-* [Creating a New Cluster for a Node](#creating-a-new-cluster-for-a-node)
-* [Deleting a Node](#deleting-a-node)
+* [Hover over Nodes](#hover-over-nodes)
+* [Dragging Nodes](#dragging-nodes)
+* [The Node Options Menu](#the-node-options-menu)
+** [Assigning a Node to a Different Cluster](#asigning-a-node-to-a-different-cluster)
+** [Creating a New Cluster for a Node](#creating-a-new-cluster-for-a-node)
+** [Deleting a Node](#deleting-a-node)
 
 
 ## Hover over Nodes

@@ -2,13 +2,12 @@
 
 A sidebar to change the general settings of SCoT and enter the parameters for rendering and updating a graph is located to the left side of the page.
 
-[General Settings](#general-settings)
+## Content
 
-[Rendering a Graph from the Database](#rendering-a-new-graph-from-the-database)
-
-[Rendering a Graph from a File](#rendering-a-graph-from-a-file)
-
-[Update a Graph](#updating-a-graph)
+* [General Settings](#general-settings)
+* [Rendering a Graph from the Database](#rendering-a-new-graph-from-the-database)
+* [Rendering a Graph from a File](#rendering-a-graph-from-a-file)
+* [Update a Graph](#updating-a-graph)
 
 
 ## General Settings
