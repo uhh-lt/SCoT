@@ -620,6 +620,7 @@ app = new Vue({
 		unsearch_nodes: function() {
 			// undo highlighting
 			var nodes = d3.selectAll(".node").selectAll("g");
+			var links = d3.selectAll(".link");
 
 			nodes.each(function(d) {
 				var children = this.childNodes;
@@ -641,6 +642,13 @@ app = new Vue({
 					}
 				});
 			});
+
+			links.each(function(d) {
+				var children = this.childNodes;
+				children.forEach(function(p) {
+					p.style.strokeOpacity = 1.0;
+				})
+			})
 		},
 		search_node: function() {
 			found_matching_string = false;
@@ -653,7 +661,7 @@ app = new Vue({
 
 				nodes.each(function(d) {
 					var children = this.childNodes;
-					text = "";
+					var text = "";
 
 					children.forEach(function(d) {
 						if (d.tagName === "text") {
@@ -663,43 +671,57 @@ app = new Vue({
 
 					if (text.lastIndexOf(app.searchterm, 0) === 0) {
 						found_matching_string = true;
-						this.setAttribute("stroke", "yellow");
-						// highlight matching node
-						children.forEach(function(d) {
-							if (d.tagName === "text") {
-								d.style.fontSize = "16px";
-							}
-							if (d.tagName === "circle") {
-								r = d.getAttribute("r");
-								new_r = r * 2;
-								d.setAttribute("r", new_r);
-							}
-						});
-					} else {
-						// reduce opacity of the other nodes
-						// TODO: reduce opacity of links -> coloured links are a bit to strong
-						children.forEach(function(d) {
-							if (d.tagName === "text") {
-								d.style.opacity = 0.4;
-							}
-							if (d.tagName === "circle") {
-								d.style.opacity = 0.4;
-							}
-						});
+
 					}
-				});
+				})
 
 				if (found_matching_string === true) {
-					var links = d3.selectAll(".link");
-					links.each(function(d) {
+					nodes.each(function(d) {
 						var children = this.childNodes;
-						children.forEach(function(p) {
-							p.style.strokeOpacity = 0.2;
-						})
-					})
-				}
+						var text = "";
 
-				if (found_matching_string === false) {
+						children.forEach(function(d) {
+							if (d.tagName === "text") {
+								text = d.getAttribute("text");
+							}
+						});
+
+						if (text.lastIndexOf(app.searchterm, 0) === 0) {
+							this.setAttribute("stroke", "yellow");
+							// highlight matching node
+							children.forEach(function(d) {
+								if (d.tagName === "text") {
+									d.style.fontSize = "16px";
+								}
+								if (d.tagName === "circle") {
+									r = d.getAttribute("r");
+									new_r = r * 2;
+									d.setAttribute("r", new_r);
+								}
+							});
+						
+						} else {
+							// reduce opacity of the other nodes
+							// TODO: reduce opacity of links -> coloured links are a bit to strong
+							children.forEach(function(d) {
+								if (d.tagName === "text") {
+									d.style.opacity = 0.4;
+								}
+								if (d.tagName === "circle") {
+									d.style.opacity = 0.4;
+								}
+							});
+						}
+
+						var links = d3.selectAll(".link");
+						links.each(function(d) {
+							var children = this.childNodes;
+							children.forEach(function(p) {
+								p.style.strokeOpacity = 0.2;
+							})
+						})
+					});
+				} else if (found_matching_string === false) {
 					alert("No match found. Please try a different search term.");
 				}
 				app.searchterm = "";
