@@ -17,8 +17,9 @@ This section describes how the user can manipulate the graph directly.
 
 When hovering over a node in the graph only the node itself and its neighbouring nodes and the edges connecting them are faded in. This way, the user can explore the direct vicinity of a node more easily.
 
-<!-- TODO: replace screenshot -->
-![Fade In Neighbouring Nodes](./images/mouseover_node.png)
+![Fade In Neighbouring Nodes](./images/hover_fade_in.png)
+
+[To the top](#interacting-with-the-graph)
 
 
 ## Dragging Nodes
@@ -30,7 +31,6 @@ In the edit column the dragging behaviour of the nodes can be selected.
 SCoT provides two different types of dragging behaviours for nodes. The default dragging behaviour is "Keep force for dragging (no brush available)".
 Using this dragging behaviour, only one node at a time can be selected. The user selects a node by clicking on it. Then the selected node is marked with a red circle around it.
 
-<!-- TODO: replace screenshot -->
 ![Selected Node](./images/selected_node.png)
 
 The selected node can then be moved to a different position through drag & drop. The nodes in the graph reposition themselves automatically according to the force simulation, as long as they have not been moved manually before. If a node as been dragged to a different position, it stays in that position, even if the simulation parameters are changed.
@@ -39,12 +39,14 @@ The other dragging behaviour is "Enable brush and single node movement". Using t
 
 With the button "Restart Simulation" the user can release all the fixed nodes.
 
+[To the top](#interacting-with-the-graph)
+
 
 ## The Node Options Menu
 
 When the user selects a node, a button "Options" is faded in in the navbar. When clicking on the "Options" button, a drop down menu opens with functions to manipulate the selected node. For normal nodes, there are three functions available to the user.
 
-<!-- TODO: insert screenshot of node options menu -->
+![Node Options Menu](./images/node_options_menu.png)
 
  1. Assigning the node to a different cluster
  2. Creating a new cluster and assigning the node to it
