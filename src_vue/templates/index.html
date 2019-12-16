@@ -220,20 +220,40 @@
 
 			<b-modal id="modal-settings-1" scrollable size="xl" title="General Settings" @ok="update_general_settings">
 				<div>
-					<b-link href="https://github.com/IngaKe/SCoT"><i class="fab fa-github"></i> View on GitHub </b-link>
+					<div style="font-size: 20px; font-weight:bold;">
+						Useful links
+					</div>
+
+					<div style="margin-top: 2ex;">
+						<b-link href="https://github.com/IngaKe/SCoT"><i class="fab fa-github"></i> View on GitHub </b-link>
+					</div>
+					<div>
+						<b-link href="https://ingake.github.io/SCoT/index.html"> <i class="fas fa-question-circle"></i> View User Guide </b-link>
+					</div>
 				</div>
-				<div>
-					<b-link href="https://ingake.github.io/SCoT/index.html"> <i class="fas fa-question-circle"></i> View User Guide </b-link>
+
+				<hr>
+
+				<div style="font-size: 20px; font-weight:bold; margin-top:2ex;">
+					Select view port size
 				</div>
 				<b-form-group class="input" label="Select view port height in pixels">
-				  <b-form-input type="number" v-model="viewport_height"></b-form-input>
+				  <b-form-input size="sm" type="number" v-model="viewport_height"></b-form-input>
 				</b-form-group>
 
 				<b-form-group class="input" label="Select viewport width in pixels">
-				  <b-form-input type="number" v-model="viewport_width"></b-form-input>
+				  <b-form-input size="sm" type="number" v-model="viewport_width"></b-form-input>
 				</b-form-group>
 
-				<div style="border: 1px solid; background-color: red;"> WARNING: Please set before rendering a graph. Changes to the size of the svg after rendering a graph will act like a zoom function.</div>
+				<hr>
+
+				<div style="font-size: 20px; font-weight:bold; margin-top:2ex;">
+					Select SVG size
+				</div>
+
+				<div style="margin-top: 1ex;">
+				<span style="border-left: 5px solid red; background-color: moccasin; padding: 5pt;"> WARNING: Please set before rendering a graph. Changes to the size of the svg after rendering a graph will act like a zoom function.</span>
+				</div>
 
 				<b-form-group class="input" label="Select SVG height in pixels">
 				  <b-form-input type="number" v-model="svg_height"></b-form-input>
