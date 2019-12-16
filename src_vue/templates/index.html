@@ -114,7 +114,7 @@
 					<b-dropdown-item v-on:click="findWobblyCandidates()" v-b-modal.modal-wobbly-1> <i class="fas fa-bars"></i> List nodes </b-dropdown-item>
 				</b-dropdown>
 
-				<b-modal id="modal-wobbly-1" scrollable title="List of Nodes between Clusters" ok-only ok-title="Close">
+				<b-modal id="modal-wobbly-1" size="xl" scrollable title="List of Nodes between Clusters" ok-only ok-title="Close">
 					<div>
 					<b-button v-b-toggle.collapse-heuristic-1 aria-expanded="false"> Infos on heuristic </b-button>
 
@@ -219,6 +219,8 @@
 			</b-button-group>
 
 			<b-modal id="modal-settings-1" scrollable size="xl" title="General Settings" @ok="update_general_settings">
+				<b-link href="https://github.com/IngaKe/SCoT"> View on GitHub </b-link>
+				<b-link hreft="https://ingake.github.io/SCoT/index.html"> View User Guide </b-link>
 				<b-form-group class="input" label="Select view port height in pixels">
 				  <b-form-input type="number" v-model="viewport_height"></b-form-input>
 				</b-form-group>
