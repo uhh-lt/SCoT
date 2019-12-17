@@ -116,18 +116,18 @@
 
 				<b-modal id="modal-wobbly-1" size="xl" scrollable title="List of Nodes between Clusters" ok-only ok-title="Close">
 					<div>
-					<b-button v-b-toggle.collapse-heuristic-1 aria-expanded="false"> Infos on heuristic </b-button>
+					<b-button size="sm" style="margin-bottom: 15px;" v-b-toggle.collapse-heuristic-1 aria-expanded="false"> <i class="fas fa-info-circle"></i> Infos on heuristic </b-button>
 
 					<b-collapse :id="'collapse-heuristic-1'">
 						<b-card>
-							The neighbourhood of a node is balanced, if there are at least two clusters for which 
+							The neighbourhood of a node is balanced, if there are at least two clusters in the node's neighbourhood for which 
 							<div style="margin-left: 20px">
-							<span style="font-weight: bold"> max - d_i < mean/2 </span>
+							<span style="font-weight: bold"> max - d_i < mean / 2 </span>
 							</div> holds true.
 							<ul>
-								<li>max: the max number of nodes from the same cluster</li>
-								<li>d_i: the number of nodes of cluster i</li>
-								<li>mean: the mean number of nodes of a neighbouring cluster</li>
+								<li><span style="font-style: italic">max</span>: the max number of nodes from the same cluster</li>
+								<li><span style="font-style: italic">d_i</span>: the number of nodes of cluster i</li>
+								<li><span style="font-style: italic">mean</span>: the mean number of nodes of a neighbouring cluster</li>
 							</ul>
 						</b-card>
 					</b-collapse>
@@ -142,7 +142,7 @@
 	    					<template v-slot:row-details="row">
 	    						<b-card>
 	    							<ul v-for="c in row.item.neighbours">
-	    								<li> Cluster: {{ c.cluster_id }}
+	    								<li> <span style="font-weight: bold;"> Cluster: {{ c.cluster_id }} </span>
 	    									<div style="font-size: 12px;" v-for="n in c.neighbours"> {{ n }} </div>
 	    								</li>
 	    							</ul>
@@ -167,10 +167,21 @@
 	    				<b-table small striped hover :items="centrality_score_distribution"></b-table>
 	  				</div>
 
+	  				<hr>
+
 	  				<div>
-	  					Small radius: 0.0 - {{centrality_threshold_s}}: <b-form-input size="sm" type="text" v-model="centrality_threshold_s"> </b-form-input>
-	  					Medium radius: {{centrality_threshold_s}} - {{centrality_threshold_m}}: <b-form-input size="sm" type="text" v-model="centrality_threshold_m"> </b-form-input>
-	  					Large radius over {{centrality_threshold_m}}
+	  					<div style="font-size: 20px; font-weight:bold;">
+							Customize Thresholds
+						</div>
+	  					<div style="margin-top: 2ex">
+	  						<span style="text-decoration: underline">Small radius</span> for nodes with centrality score: 0.0 - {{centrality_threshold_s}}: <b-form-input size="sm" type="text" v-model="centrality_threshold_s"> </b-form-input>
+	  					</div>
+	  					<div style="margin-top: 2ex">
+	  						<span style="text-decoration: underline;">Medium radius</span> for nodes with centrality score: {{centrality_threshold_s}} - {{centrality_threshold_m}}: <b-form-input size="sm" type="text" v-model="centrality_threshold_m"> </b-form-input>
+	  					</div>
+	  					<div style="margin-top: 2ex">
+	  						<span style="text-decoration: underline">Large radius</span> for nodes with centrality score over {{centrality_threshold_m}}
+	  					</div>
 	  				</div>
 		    		
 		    	</b-modal>
@@ -234,45 +245,62 @@
 
 				<hr>
 
-				<div style="font-size: 20px; font-weight:bold; margin-top:2ex;">
-					Select view port size
-				</div>
-				<b-form-group class="input" label="Select view port height in pixels">
-				  <b-form-input size="sm" type="number" v-model="viewport_height"></b-form-input>
-				</b-form-group>
+				<div>
+					<div style="font-size: 20px; font-weight:bold; margin-top:2ex;">
+						Select view port size
+					</div>
+					<b-form-group class="input" label="Select view port height in pixels">
+					  <b-form-input size="sm" type="number" v-model="viewport_height"></b-form-input>
+					</b-form-group>
 
-				<b-form-group class="input" label="Select viewport width in pixels">
-				  <b-form-input size="sm" type="number" v-model="viewport_width"></b-form-input>
-				</b-form-group>
+					<b-form-group class="input" label="Select viewport width in pixels">
+					  <b-form-input size="sm" type="number" v-model="viewport_width"></b-form-input>
+					</b-form-group>
+				</div>
 
 				<hr>
 
-				<div style="font-size: 20px; font-weight:bold; margin-top:2ex;">
-					Select SVG size
+				<div>
+					<div style="font-size: 20px; font-weight:bold; margin-top:2ex;">
+						Select SVG size
+					</div>
+
+					<div style="margin-top: 1ex;">
+					<span style="border-left: 5px solid red; background-color: moccasin; padding: 5pt;"> WARNING: Please set before rendering a graph. Changes to the size of the svg after rendering a graph will act like a zoom function.</span>
+					</div>
+
+					<b-form-group class="input" label="Select SVG height in pixels">
+					  <b-form-input size="sm" type="number" v-model="svg_height"></b-form-input>
+					</b-form-group>
+
+					<b-form-group class="input" label="Select SVG width in pixels">
+					  <b-form-input size="sm" type="number" v-model="svg_width"></b-form-input>
+					</b-form-group>
 				</div>
-
-				<div style="margin-top: 1ex;">
-				<span style="border-left: 5px solid red; background-color: moccasin; padding: 5pt;"> WARNING: Please set before rendering a graph. Changes to the size of the svg after rendering a graph will act like a zoom function.</span>
-				</div>
-
-				<b-form-group class="input" label="Select SVG height in pixels">
-				  <b-form-input type="number" v-model="svg_height"></b-form-input>
-				</b-form-group>
-
-				<b-form-group class="input" label="Select SVG width in pixels">
-				  <b-form-input type="number" v-model="svg_width"></b-form-input>
-				</b-form-group>
-
 				<hr>
 
-				<b-form-group class="input" label="Link thickness">
-				  <b-form-radio v-model="link_thickness_scaled" value="true">Scale by similarity score</b-form-radio>
-				  Scale by factor:
-				  <b-form-input v-model="link_thickness_factor" type="number"></b-form-input>
-				  <b-form-radio v-model="link_thickness_scaled" value="false">Use same thickness for every link</b-form-radio>
-				  Thickness:
-				  <b-form-input v-model="link_thickness_value" type="number"></b-form-input>
-				</b-form-group>
+				<div>
+					<div style="font-size: 20px; font-weight:bold; margin-top:2ex;">
+						Link Thickness Calculation
+					</div>
+
+					<b-form-group class="input">
+					  <b-form-radio v-model="link_thickness_scaled" value="true">Calculate edge thinkness with respect to the similarity score between neighbours
+					  </b-form-radio>
+
+					  <div style="margin-left: 25px; margin-bottom: 2ex;">
+					    <span style="font-size: 10pt;">Scale the similarity score using sqrt(similatity score / x), x being:</span>
+					    <b-form-input size="sm" v-model="link_thickness_factor" type="number"></b-form-input>
+					  </div>
+
+					  <b-form-radio v-model="link_thickness_scaled" value="false">Use same thickness for every link
+					  </b-form-radio>
+					  <div style="margin-left: 25px;">
+					    <span style="font-size: 10pt">Thickness in pixels:</span>
+					    <b-form-input size="sm" v-model="link_thickness_value" type="number"></b-form-input>
+					  </div>
+					</b-form-group>
+				</div>
 			</b-modal>
 
     	<!-- Enter target word -->
