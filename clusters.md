@@ -1,5 +1,7 @@
 # Editing the Graph via the Functions of the Editing Sidebar
 
+[Back to user guide contents list](userGuide.md)
+
 The graph and the clusters produced by the program can be edited and, if necessary, corrected. The user can decide between two different dragging behaviours, as well as influence parameters of the force simulation, which is used to calculate the position of the nodes in the graph. In this section I will describe all the functionalities avaibable in the toggable editing sidebar. For more information on how to manipulate the graph directly, see [the section on interacting with the graph](interacting.md).
 
 ## Contents

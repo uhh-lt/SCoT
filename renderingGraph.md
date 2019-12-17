@@ -1,5 +1,7 @@
 # Parameter Input and General Settings
 
+[Back to user guide contents list](userGuide.md)
+
 A sidebar to change the general settings of SCoT and enter the parameters for rendering and updating a graph is located to the left side of the page.
 
 ## Content

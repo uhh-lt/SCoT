@@ -1,5 +1,7 @@
 # Time Diff Mode
 
+[Back to user guide contents list](userGuide.md)
+
 When selecting "time diff" mode in the parameter input column, two options are faded in: "Select interval" and "Skip through time slices".
 
 ![Time Diff](./images/time_diff.png)

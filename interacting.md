@@ -1,5 +1,7 @@
 # Interacting with the Graph
 
+[Back to user guide contents list](userGuide.md)
+
 This section describes how the user can manipulate the graph directly.
 
 ## Contents

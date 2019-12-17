@@ -1,5 +1,7 @@
 # Introduction
 
+[Back to user guide contents list](userGuide.md)
+
 You can find SCoT at <http://ltdemos.informatik.uni-hamburg.de/scot/>.
 
 SCoT was developed in the context of digital humanities. The aim is to provide a means to help linguists and others interested in diachronic semantics to visualize the different senses of a word over time. 

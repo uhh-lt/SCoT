@@ -1,13 +1,10 @@
 # User Guide
 
-[Introduction](intro.md)
+[Back](index.md)
 
-[The Functions in the Navbar](navbar.md)
-
-[Rendering a Graph](renderingGraph.md)
-
-[Interacting With a Graph](interacting.md)
-
-[Edit Cluster Hypothesis](clusters.md)
-
-[View Difference Over Time (Time Diff)](timeDiff.md)
+1. [Introduction](intro.md)
+2. [The Functions in the Navbar](navbar.md)
+3. [Rendering a Graph](renderingGraph.md)
+4. [Interacting With a Graph](interacting.md)
+5. [Edit Cluster Hypothesis](clusters.md)
+6. [View Difference Over Time (Time Diff)](timeDiff.md)

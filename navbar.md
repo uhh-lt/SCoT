@@ -1,5 +1,7 @@
 # The Functions of the Navbar
 
+[Back to user guide contents list](userGuide.md)
+
 ## Contents
 
 * [Nodes between Clusters](#nodes-between-nlusters)
