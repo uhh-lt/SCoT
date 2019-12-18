@@ -5,15 +5,16 @@ Renders the graph on the svg element
 @param object target: the target word
 */
 async function render_graph(graph_nodes, graph_links, target) {
+
 	// Set initial parameters
 	var shiftKey;
 	var radius = 5;
 
 	// Choose a predefined colour scheme
-	var color = d3.scaleOrdinal(d3.schemePaired)
+	var color = d3.scaleOrdinal(d3.schemePaired);
 
 	// Always remove the svg element. Otherwise a new one is appended every time you click the render button
-	d3.select("#graph2").select("svg").remove()
+	d3.select("#graph2").select("svg").remove();
 
 	// Create the svg element on which you want to render the graph
 	var svg = d3.select("#graph2")
@@ -43,7 +44,7 @@ async function render_graph(graph_nodes, graph_links, target) {
 
 	// append the brush to the svg for dragging multiple nodes at the same time
 	var brush = svg.append("g")
-		.attr("class", "brush");
+		.attr("class", "brush")
 
 	app.nodes = graph_nodes;
 	app.links = graph_links;
@@ -52,7 +53,7 @@ async function render_graph(graph_nodes, graph_links, target) {
 	app.nodes.forEach(function(d) {
 		d.selected = false;
 		d.previouslySelected = false;
-	  });
+	});
 
 	// append the target word to the center of the svg
 	var t = svg.append("g")
@@ -117,7 +118,6 @@ async function render_graph(graph_nodes, graph_links, target) {
 				} else {
 					return "#999";
 				}
-				
 			});
 
 	// initialize drag behaviour
@@ -203,7 +203,7 @@ async function render_graph(graph_nodes, graph_links, target) {
 		.attr('y', 3)
 		.attr("text", function(d) { return d.id; });
 
-	app.simulation.on("tick", ticked)
+	app.simulation.on("tick", ticked);
 
 	// update the cluster information in the Vue data variable after initializing the graph
 	app.get_clusters();
@@ -235,7 +235,7 @@ async function render_graph(graph_nodes, graph_links, target) {
 			.on("drag", function() {
 				d3.selectAll('.selected').each(dragmove); })
 			.on("end", function() {
-				d3.selectAll('.selected').each(dragend); });	
+				d3.selectAll('.selected').each(dragend); });
 
 	} else if (sticky === "true") {
 		drag_node
@@ -724,6 +724,7 @@ async function render_graph(graph_nodes, graph_links, target) {
 		if (app.node_selected) {
 			d3.select('#nodeOptionsDD')
 				.style('display', 'block')
+
 			d3.event.preventDefault();
 		} else {
 			d3.select('#nodeOptionsDD')
