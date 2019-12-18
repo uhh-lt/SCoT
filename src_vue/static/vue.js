@@ -19,13 +19,13 @@ app = new Vue({
 		// represents the DOM element for a node (see render_sense_graph.js)
 		node : "",
 		// represents the DOM element for a link (see render_sense_graph.js)
-		link: "",
+		link : "",
 		// node data
 		nodes : [],
 		// link data
 		links : [],
 		// An object for remembering which nodes are connected. The key is of the form "source, target"
-		linkedByIndex: {},
+		linkedByIndex : {},
 		// array with node ids that are not connected to any other nodes
 		singletons : [],
 		// clipboard for data from db in update() and getData()
@@ -114,7 +114,7 @@ app = new Vue({
 			{key: "show_details", label: "Show Details"}
 			],
 		// array containing information about the neighbourhood of each node
-		wobblyCandidates : [],
+		wobblyCandidates : []
 	},
 	computed: {
 		/*
@@ -129,7 +129,7 @@ app = new Vue({
 			for (var i=0; i < app.clusters.length; i++) {
 				options.push(
 					{"text": app.clusters[i].cluster_name, "value": {"cluster_id" : app.clusters[i].id, "cluster_name": app.clusters[i].cluster_name, "colour": app.clusters[i].colour}}
-				);			
+				);
 			}
 			return options;
 		},
@@ -140,7 +140,7 @@ app = new Vue({
 		reducedStartYears: function() {
 			reducedStartYears = [];
 			for (var i=0; i < app.start_years.length; i++) {
-				if (app.start_years[i].value >= app.start_year && app.end_year > app.start_years[i].value ) {
+				if (app.start_years[i].value >= app.start_year && app.end_year > app.start_years[i].value) {
 					reducedStartYears.push(app.start_years[i]);
 				} 
 			}
