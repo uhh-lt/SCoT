@@ -1,676 +1,676 @@
 <!DOCTYPE html>
 <head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-	<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+		<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 
-	<title>SCoT - Sense Clustering over Time</title>
+		<title>SCoT - Sense Clustering over Time</title>
 
-	<!-- D3 and vue.js -->
-	<script src="https://d3js.org/d3.v5.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3-tip/0.9.1/d3-tip.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.min.js"></script>
-	<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/vue-clickaway@2.2.2/dist/vue-clickaway.min.js"></script>
+		<!-- D3 and vue.js -->
+		<script src="https://d3js.org/d3.v5.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/d3-tip/0.9.1/d3-tip.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.min.js"></script>
+		<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/vue-clickaway@2.2.2/dist/vue-clickaway.min.js"></script>
 
-    <!-- Other JavaScript files -->
-	<script type="text/javascript" src=".%% url_for('static', filename='render_sense_graph.js') %%"></script>
+		<!-- Other JavaScript files -->
+		<script type="text/javascript" src=".%% url_for('static', filename='render_sense_graph.js') %%"></script>
 
-	 <!-- Stylesheets -->
-	<link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css"/>
-	<link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap-vue@2.0.2/dist/bootstrap-vue.css"/>
-	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous"/>
-	<link rel= "stylesheet" type= "text/css" href=".%% url_for('static', filename='style.css') %%"/>
+		 <!-- Stylesheets -->
+		<link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css"/>
+		<link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap-vue@2.0.2/dist/bootstrap-vue.css"/>
+		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous"/>
+		<link rel= "stylesheet" type= "text/css" href=".%% url_for('static', filename='style.css') %%"/>
 
-	<!-- Bootstrap Vue -->
-	<script src="https://unpkg.com/vue"></script>
-	<script src="https://unpkg.com/bootstrap-vue@2.0.2/dist/bootstrap-vue.js"></script>
+		<!-- Bootstrap Vue -->
+		<script src="https://unpkg.com/vue"></script>
+		<script src="https://unpkg.com/bootstrap-vue@2.0.2/dist/bootstrap-vue.js"></script>
 </head>
 
 <body>
 <div id="vue-app">
 <b-container id="body-container" class="body" fluid>
 
-	<!-- Navbar with option buttons -->
-	<b-navbar type="dark" variant="dark" class="">
+		<!-- Navbar with option buttons -->
+		<b-navbar type="dark" variant="dark" class="">
 
-		<b-navbar-brand tag="h1" class="header">SCoT SenseViewer</b-navbar-brand>
-		
-		<b-navbar-nav class="ml-auto">
-			<b-nav-form>
-				<!-- Options Drop Down for node options -->
-				<div>
-			    	<b-dropdown  variant="light" id="nodeOptionsDD" v-if="!time_diff && sticky_mode === 'true'" text="Node options" aria-expanded=true style="display:none; margin-right:5px" >
-			    		<!-- Node options -->
-			    		<!-- only available for non cluster nodes -->
-			    		<b-dropdown-item v-show="select_node_is_no_cluster_node" v-on:click="findSelectedNodes()" v-b-modal.modal-1> <i class="fas fa-exchange-alt"></i> Assign to different cluster </b-dropdown-item>
-			    		<b-dropdown-item v-show="select_node_is_no_cluster_node" v-on:click="findSelectedNodes()" v-b-modal.modal-2> <i class="fas fa-plus"></i> Create new cluster </b-dropdown-item>
-			    		<b-dropdown-item v-on:click="delete_selected_nodes()"> <i class="fas fa-trash"></i> Delete node </b-dropdown-item>
-			    	</b-dropdown> 
-		    	</div>
+				<b-navbar-brand tag="h1" class="header">SCoT SenseViewer</b-navbar-brand>
+				
+				<b-navbar-nav class="ml-auto">
+						<b-nav-form>
+								<!-- Options Drop Down for node options -->
+								<div>
+										<b-dropdown  variant="light" id="nodeOptionsDD" v-if="!time_diff && sticky_mode === 'true'" text="Node options" aria-expanded=true style="display:none; margin-right:5px" >
+												<!-- Node options -->
+												<!-- only available for non cluster nodes -->
+												<b-dropdown-item v-show="select_node_is_no_cluster_node" v-on:click="findSelectedNodes()" v-b-modal.modal-1> <i class="fas fa-exchange-alt"></i> Assign to different cluster </b-dropdown-item>
+												<b-dropdown-item v-show="select_node_is_no_cluster_node" v-on:click="findSelectedNodes()" v-b-modal.modal-2> <i class="fas fa-plus"></i> Create new cluster </b-dropdown-item>
+												<b-dropdown-item v-on:click="delete_selected_nodes()"> <i class="fas fa-trash"></i> Delete node </b-dropdown-item>
+										</b-dropdown> 
+								</div>
 
-		    	<!-- Modal to change cluster assignment of a node -->
-		    	<b-modal id="modal-1" title="Change Cluster Assignment" @ok="assignNewCluster()">
-				  <div v-for="node in clicked_nodes">
+								<!-- Modal to change cluster assignment of a node -->
+								<b-modal id="modal-1" title="Change Cluster Assignment" @ok="assignNewCluster()">
+									<div v-for="node in clicked_nodes">
 
-				  	<!-- Show selected nodes -->
-				  	<div>
-				  	    Selected node: {{node.id}}
-				    </div>
+										<!-- Show selected nodes -->
+										<div>
+												Selected node: {{node.id}}
+										</div>
 
-				  	<br>
-				  	
-				  	<!-- Show current cluster -->
-				  	<div>
-				  		Current cluster: <span class="dot-sm" v-bind:style="{'background-color': node.colour}"></span>{{ node.cluster_name }}, (ID: {{node.cluster_id}})
-				  	</div>
+										<br>
+										
+										<!-- Show current cluster -->
+										<div>
+												Current cluster: <span class="dot-sm" v-bind:style="{'background-color': node.colour}"></span>{{ node.cluster_name }}, (ID: {{node.cluster_id}})
+										</div>
 
-				  	<!-- Choose a new cluster -->
-				  	<div>
-				  		Select new cluster:
-				  		<span class="dot-sm" v-bind:style="{'background-color': new_assigned_cluster.colour}"></span> {{new_assigned_cluster.cluster_name}}
+										<!-- Choose a new cluster -->
+										<div>
+												Select new cluster:
+												<span class="dot-sm" v-bind:style="{'background-color': new_assigned_cluster.colour}"></span> {{new_assigned_cluster.cluster_name}}
 
-				  		<b-form-select v-model="new_assigned_cluster" size="sm" class="mt-3">
-				  			<option :value="{}" disabled> Select a cluster </option>
-				  			<option v-for="cluster in cluster_options" :value="cluster.value">
-				  			{{cluster.text}}
-				  			</option>
-				  		</b-form-select>
-				  	</div>
-				  </div>
-				</b-modal>
+												<b-form-select v-model="new_assigned_cluster" size="sm" class="mt-3">
+														<option :value="{}" disabled> Select a cluster </option>
+														<option v-for="cluster in cluster_options" :value="cluster.value">
+														{{cluster.text}}
+														</option>
+												</b-form-select>
+										</div>
+									</div>
+								</b-modal>
 
-				<!-- Modal for creating a new cluster an adding the clicked node to it -->
-				<b-modal id="modal-2" title="Create new cluster" @ok="createNewCluster()">
-					<div v-for="node in clicked_nodes">
+								<!-- Modal for creating a new cluster an adding the clicked node to it -->
+								<b-modal id="modal-2" title="Create new cluster" @ok="createNewCluster()">
+										<div v-for="node in clicked_nodes">
 
-						<div>
-							Selected node: {{node.id}}
-						</div>
+												<div>
+														Selected node: {{node.id}}
+												</div>
 
-						<br>
+												<br>
 
-						<div>
-							<span style="font-size: 16pt"> Create a new cluster </span>
-							<br>
-							<div>
-							<b-form-group label="Choose cluster name">
-								<b-form-input v-model="created_cluster_name" placeholder="Enter cluster name"></b-form-input>
-							</b-form-group>
+												<div>
+														<span style="font-size: 16pt"> Create a new cluster </span>
+														<br>
+														<div>
+														<b-form-group label="Choose cluster name">
+																<b-form-input v-model="created_cluster_name" placeholder="Enter cluster name"></b-form-input>
+														</b-form-group>
 
-							<b-form-group label="Choose cluster colour">
-								<b-form-input class="color-select" v-model="created_cluster_colour" type="color"> </b-form-input>
-							</b-form-group>
-							</div>
-						</div>
-					</div>
-				</b-modal>
+														<b-form-group label="Choose cluster colour">
+																<b-form-input class="color-select" v-model="created_cluster_colour" type="color"> </b-form-input>
+														</b-form-group>
+														</div>
+												</div>
+										</div>
+								</b-modal>
 
-				<!-- Nodes with balanced neighbourhood of clusters -->
-				<b-dropdown id="wobblyCandidatesCC" v-if="graph_rendered" text="Nodes between clusters" aria-expanded=true>
-					<b-dropdown-item v-on:click="highlightWobblyCandidates()"> <i class="fas fa-highlighter"></i> Highlight nodes in graph </b-dropdown-item>
-					<b-dropdown-item v-on:click="resetCentralityHighlighting()"> <i class="fas fa-times"></i> Reset highlighting </b-dropdown-item>
-					<b-dropdown-item v-on:click="findWobblyCandidates()" v-b-modal.modal-wobbly-1> <i class="fas fa-bars"></i> List nodes </b-dropdown-item>
-				</b-dropdown>
+								<!-- Nodes with balanced neighbourhood of clusters -->
+								<b-dropdown id="wobblyCandidatesCC" v-if="graph_rendered" text="Nodes between clusters" aria-expanded=true>
+										<b-dropdown-item v-on:click="highlightWobblyCandidates()"> <i class="fas fa-highlighter"></i> Highlight nodes in graph </b-dropdown-item>
+										<b-dropdown-item v-on:click="resetCentralityHighlighting()"> <i class="fas fa-times"></i> Reset highlighting </b-dropdown-item>
+										<b-dropdown-item v-on:click="findWobblyCandidates()" v-b-modal.modal-wobbly-1> <i class="fas fa-bars"></i> List nodes </b-dropdown-item>
+								</b-dropdown>
 
-				<b-modal id="modal-wobbly-1" size="xl" scrollable title="List of Nodes between Clusters" ok-only ok-title="Close">
-					<div>
-					<b-button size="sm" style="margin-bottom: 15px;" v-b-toggle.collapse-heuristic-1 aria-expanded="false"> <i class="fas fa-info-circle"></i> Infos on heuristic </b-button>
+								<b-modal id="modal-wobbly-1" size="xl" scrollable title="List of Nodes between Clusters" ok-only ok-title="Close">
+										<div>
+										<b-button size="sm" style="margin-bottom: 15px;" v-b-toggle.collapse-heuristic-1 aria-expanded="false"> <i class="fas fa-info-circle"></i> Infos on heuristic </b-button>
 
-					<b-collapse :id="'collapse-heuristic-1'">
-						<b-card>
-							The neighbourhood of a node is balanced, if there are at least two clusters in the node's neighbourhood for which 
-							<div style="margin-left: 20px">
-							<span style="font-weight: bold"> max - d_i < mean / 2 </span>
-							</div> holds true.
-							<ul>
-								<li><span style="font-style: italic">max</span>: the max number of nodes from the same cluster</li>
-								<li><span style="font-style: italic">d_i</span>: the number of nodes of cluster i</li>
-								<li><span style="font-style: italic">mean</span>: the mean number of nodes of a neighbouring cluster</li>
-							</ul>
-						</b-card>
-					</b-collapse>
-					</div>
-					<div>
-	    				<b-table striped hover responsive="sm" :items="wobblyCandidates" :fields="wobblyCandidatesFields">
-	    					<template v-slot:cell(show_details)="row">
-	    						<b-button size="sm" @click="row.toggleDetails" class="mr-2">
-						          {{ row.detailsShowing ? 'Hide' : 'Show'}} Details
-						        </b-button>
-	    					</template>
-	    					<template v-slot:row-details="row">
-	    						<b-card>
-	    							<ul v-for="c in row.item.neighbours">
-	    								<li> <span style="font-weight: bold;"> Cluster: {{ c.cluster_id }} </span>
-	    									<div style="font-size: 12px;" v-for="n in c.neighbours"> {{ n }} </div>
-	    								</li>
-	    							</ul>
-	    						</b-card>
-	    					</template>
-	    				</b-table>
-	  				</div>
-				</b-modal>
+										<b-collapse :id="'collapse-heuristic-1'">
+												<b-card>
+														The neighbourhood of a node is balanced, if there are at least two clusters in the node's neighbourhood for which 
+														<div style="margin-left: 20px">
+														<span style="font-weight: bold"> max - d_i < mean / 2 </span>
+														</div> holds true.
+														<ul>
+																<li><span style="font-style: italic">max</span>: the max number of nodes from the same cluster</li>
+																<li><span style="font-style: italic">d_i</span>: the number of nodes of cluster i</li>
+																<li><span style="font-style: italic">mean</span>: the mean number of nodes of a neighbouring cluster</li>
+														</ul>
+												</b-card>
+										</b-collapse>
+										</div>
+										<div>
+												<b-table striped hover responsive="sm" :items="wobblyCandidates" :fields="wobblyCandidatesFields">
+														<template v-slot:cell(show_details)="row">
+																<b-button size="sm" @click="row.toggleDetails" class="mr-2">
+																	{{ row.detailsShowing ? 'Hide' : 'Show'}} Details
+																</b-button>
+														</template>
+														<template v-slot:row-details="row">
+																<b-card>
+																		<ul v-for="c in row.item.neighbours">
+																				<li> <span style="font-weight: bold;"> Cluster: {{ c.cluster_id }} </span>
+																						<div style="font-size: 12px;" v-for="n in c.neighbours"> {{ n }} </div>
+																				</li>
+																		</ul>
+																</b-card>
+														</template>
+												</b-table>
+										</div>
+								</b-modal>
 
-				<!-- Inbetweenness Centrality Button-->
-				<b-dropdown id="centralityDD" v-if="graph_rendered" text="Betweenness Centrality" aria-expanded=true>
-		    		<!-- Node options -->
-		    		<!-- only available for non cluster nodes -->
-		    		<b-dropdown-item v-on:click="highlightCentralNodes(centrality_threshold_s, centrality_threshold_m)"> <i class="fas fa-highlighter"></i> Highlight central nodes in graph </b-dropdown-item>
-		    		<b-dropdown-item v-on:click="calculateCentralityDistribution()" v-b-modal.modal-centrality-1> <i class="fas fa-cogs"></i> Customize highlighting thresholds </b-dropdown-item>
-		    		<b-dropdown-item v-on:click="resetCentralityHighlighting()"> <i class="fas fa-times"></i> Reset highlighting </b-dropdown-item>
-		    		<b-dropdown-item v-on:click="getCentralityScores()" v-b-modal.modal-centrality-2> <i class="fas fa-bars"></i> List centrality node scores </b-dropdown-item>
-		    	</b-dropdown>
+								<!-- Inbetweenness Centrality Button-->
+								<b-dropdown id="centralityDD" v-if="graph_rendered" text="Betweenness Centrality" aria-expanded=true>
+										<!-- Node options -->
+										<!-- only available for non cluster nodes -->
+										<b-dropdown-item v-on:click="highlightCentralNodes(centrality_threshold_s, centrality_threshold_m)"> <i class="fas fa-highlighter"></i> Highlight central nodes in graph </b-dropdown-item>
+										<b-dropdown-item v-on:click="calculateCentralityDistribution()" v-b-modal.modal-centrality-1> <i class="fas fa-cogs"></i> Customize highlighting thresholds </b-dropdown-item>
+										<b-dropdown-item v-on:click="resetCentralityHighlighting()"> <i class="fas fa-times"></i> Reset highlighting </b-dropdown-item>
+										<b-dropdown-item v-on:click="getCentralityScores()" v-b-modal.modal-centrality-2> <i class="fas fa-bars"></i> List centrality node scores </b-dropdown-item>
+								</b-dropdown>
 
-		    	<b-modal id="modal-centrality-1" title="Customize Highlighting Thresholds" @ok="highlightCentralNodes(centrality_threshold_s, centrality_threshold_m)">
-		    		<div>
-	    				<b-table small striped hover :items="centrality_score_distribution"></b-table>
-	  				</div>
+								<b-modal id="modal-centrality-1" title="Customize Highlighting Thresholds" @ok="highlightCentralNodes(centrality_threshold_s, centrality_threshold_m)">
+										<div>
+												<b-table small striped hover :items="centrality_score_distribution"></b-table>
+										</div>
 
-	  				<hr>
+										<hr>
 
-	  				<div>
-	  					<div style="font-size: 20px; font-weight:bold;">
-							Customize Thresholds
-						</div>
-	  					<div style="margin-top: 2ex">
-	  						<span style="text-decoration: underline">Small radius</span> for nodes with centrality score: 0.0 - {{centrality_threshold_s}}: <b-form-input size="sm" type="text" v-model="centrality_threshold_s"> </b-form-input>
-	  					</div>
-	  					<div style="margin-top: 2ex">
-	  						<span style="text-decoration: underline;">Medium radius</span> for nodes with centrality score: {{centrality_threshold_s}} - {{centrality_threshold_m}}: <b-form-input size="sm" type="text" v-model="centrality_threshold_m"> </b-form-input>
-	  					</div>
-	  					<div style="margin-top: 2ex">
-	  						<span style="text-decoration: underline">Large radius</span> for nodes with centrality score over {{centrality_threshold_m}}
-	  					</div>
-	  				</div>
-		    		
-		    	</b-modal>
+										<div>
+												<div style="font-size: 20px; font-weight:bold;">
+														Customize Thresholds
+												</div>
+												<div style="margin-top: 2ex">
+														<span style="text-decoration: underline">Small radius</span> for nodes with centrality score: 0.0 - {{centrality_threshold_s}}: <b-form-input size="sm" type="text" v-model="centrality_threshold_s"> </b-form-input>
+												</div>
+												<div style="margin-top: 2ex">
+														<span style="text-decoration: underline;">Medium radius</span> for nodes with centrality score: {{centrality_threshold_s}} - {{centrality_threshold_m}}: <b-form-input size="sm" type="text" v-model="centrality_threshold_m"> </b-form-input>
+												</div>
+												<div style="margin-top: 2ex">
+														<span style="text-decoration: underline">Large radius</span> for nodes with centrality score over {{centrality_threshold_m}}
+												</div>
+										</div>
+										
+								</b-modal>
 
-		    	<b-modal id="modal-centrality-2" scrollable  ok-only ok-title="Close" title="List of Centrality Node Scores">
-			    	<div>
-	    				<b-table striped hover :items="centrality_scores" :fields="centrality_fields"></b-table>
-	  				</div>
-		    	</b-modal>
+								<b-modal id="modal-centrality-2" scrollable  ok-only ok-title="Close" title="List of Centrality Node Scores">
+										<div>
+												<b-table striped hover :items="centrality_scores" :fields="centrality_fields"></b-table>
+										</div>
+								</b-modal>
 
-				<!-- search bar -->
-				<b-input-group v-if="graph_rendered">
-					<b-form-input size="sm" v-model="searchterm" type="text" placeholder="Search graph for ..." style="margin-left: 5px"> </b-form-input>
-					<b-input-group-append>
-      					<b-button id="search_button" size="sm" @click="search_node()"><i class="fas fa-search"></i></b-button>
-      					<b-button id="search_button" size="sm" variant="danger" @click="unsearch_nodes()"><i class="fas fa-times"></i></i></b-button>
-      				</b-input-group-append>
-				</b-input-group>
+								<!-- search bar -->
+								<b-input-group v-if="graph_rendered">
+										<b-form-input size="sm" v-model="searchterm" type="text" placeholder="Search graph for ..." style="margin-left: 5px"> </b-form-input>
+										<b-input-group-append>
+												<b-button id="search_button" size="sm" @click="search_node()"><i class="fas fa-search"></i></b-button>
+												<b-button id="search_button" size="sm" variant="danger" @click="unsearch_nodes()"><i class="fas fa-times"></i></i></b-button>
+										</b-input-group-append>
+								</b-input-group>
 
-				<!-- Recluster button -->
-				<b-button :disabled="time_diff == 1" v-if="graph_rendered" id="recluster_button" v-on:click="recluster()"> Recluster</b-button>
+								<!-- Recluster button -->
+								<b-button :disabled="time_diff == 1" v-if="graph_rendered" id="recluster_button" v-on:click="recluster()"> Recluster</b-button>
 
-				<!-- Edit button -->
-				<b-button v-if="graph_rendered" id="edit_mask_button" v-on:click="showEditMask()">Edit Graph</b-button>
+								<!-- Edit button -->
+								<b-button v-if="graph_rendered" id="edit_mask_button" v-on:click="showEditMask()">Edit Graph</b-button>
 
-				<!-- Resetz Zoom button -->
-				<b-button v-if="graph_rendered" id="reset_zoom_button" v-on:click="resetZoom()">Reset Zoom</b-button>
-			</b-nav-form>
+								<!-- Resetz Zoom button -->
+								<b-button v-if="graph_rendered" id="reset_zoom_button" v-on:click="resetZoom()">Reset Zoom</b-button>
+						</b-nav-form>
 
-			<!-- Save and Load Graph buttons -->
-			<b-nav-form>
-				<b-button :disabled="time_diff == 1" id="download_button" variant="success" v-on:click="saveGraph()" download="graph.json" href=""><i class="fas fa-download"></i> Save Graph</b-button>
+						<!-- Save and Load Graph buttons -->
+						<b-nav-form>
+								<b-button :disabled="time_diff == 1" id="download_button" variant="success" v-on:click="saveGraph()" download="graph.json" href=""><i class="fas fa-download"></i> Save Graph</b-button>
 
-				<b-button id="load_button" variant="danger" v-on:click="displayForm()"> <i class="fas fa-upload"></i> Load Graph</b-button>
-			</b-nav-form>
+								<b-button id="load_button" variant="danger" v-on:click="displayForm()"> <i class="fas fa-upload"></i> Load Graph</b-button>
+						</b-nav-form>
 
-		</b-navbar-nav>
-	</b-navbar>
+				</b-navbar-nav>
+		</b-navbar>
 
-  <b-row id="rows">
+	<b-row id="rows">
 
-  	<!-- Column with input parameters (left column) -->
-    <b-col id="input-options" class="input_options" sm="2">
-    		<b-button-group>
-				<b-button v-b-modal.modal-settings-1 id="general_settings_button"><i class="fas fa-cog"></i> General Settings</b-button>
-			</b-button-group>
+		<!-- Column with input parameters (left column) -->
+		<b-col id="input-options" class="input_options" sm="2">
+						<b-button-group>
+								<b-button v-b-modal.modal-settings-1 id="general_settings_button"><i class="fas fa-cog"></i> General Settings</b-button>
+						</b-button-group>
 
-			<b-modal id="modal-settings-1" scrollable size="xl" title="General Settings" @ok="update_general_settings">
-				<div>
-					<div style="font-size: 20px; font-weight:bold;">
-						Useful links
-					</div>
+						<b-modal id="modal-settings-1" scrollable size="xl" title="General Settings" @ok="update_general_settings">
+								<div>
+										<div style="font-size: 20px; font-weight:bold;">
+												Useful links
+										</div>
 
-					<div style="margin-top: 2ex;">
-						<b-link href="https://github.com/IngaKe/SCoT"><i class="fab fa-github"></i> View on GitHub </b-link>
-					</div>
-					<div>
-						<b-link href="https://ingake.github.io/SCoT/index.html"> <i class="fas fa-question-circle"></i> View User Guide </b-link>
-					</div>
-				</div>
+										<div style="margin-top: 2ex;">
+												<b-link href="https://github.com/IngaKe/SCoT"><i class="fab fa-github"></i> View on GitHub </b-link>
+										</div>
+										<div>
+												<b-link href="https://ingake.github.io/SCoT/index.html"> <i class="fas fa-question-circle"></i> View User Guide </b-link>
+										</div>
+								</div>
 
-				<hr>
+								<hr>
 
-				<div>
-					<div style="font-size: 20px; font-weight:bold; margin-top:2ex;">
-						Select view port size
-					</div>
-					<b-form-group class="input" label="Select view port height in pixels">
-					  <b-form-input size="sm" type="number" v-model="viewport_height"></b-form-input>
-					</b-form-group>
+								<div>
+										<div style="font-size: 20px; font-weight:bold; margin-top:2ex;">
+												Select view port size
+										</div>
+										<b-form-group class="input" label="Select view port height in pixels">
+											<b-form-input size="sm" type="number" v-model="viewport_height"></b-form-input>
+										</b-form-group>
 
-					<b-form-group class="input" label="Select viewport width in pixels">
-					  <b-form-input size="sm" type="number" v-model="viewport_width"></b-form-input>
-					</b-form-group>
-				</div>
+										<b-form-group class="input" label="Select viewport width in pixels">
+											<b-form-input size="sm" type="number" v-model="viewport_width"></b-form-input>
+										</b-form-group>
+								</div>
 
-				<hr>
+								<hr>
 
-				<div>
-					<div style="font-size: 20px; font-weight:bold; margin-top:2ex;">
-						Select SVG size
-					</div>
+								<div>
+										<div style="font-size: 20px; font-weight:bold; margin-top:2ex;">
+												Select SVG size
+										</div>
 
-					<div style="margin-top: 1ex;">
-					<span style="border-left: 5px solid red; background-color: moccasin; padding: 5pt;"> WARNING: Please set before rendering a graph. Changes to the size of the svg after rendering a graph will act like a zoom function.</span>
-					</div>
+										<div style="margin-top: 1ex;">
+										<span style="border-left: 5px solid red; background-color: moccasin; padding: 5pt;"> WARNING: Please set before rendering a graph. Changes to the size of the svg after rendering a graph will act like a zoom function.</span>
+										</div>
 
-					<b-form-group class="input" label="Select SVG height in pixels">
-					  <b-form-input size="sm" type="number" v-model="svg_height"></b-form-input>
-					</b-form-group>
+										<b-form-group class="input" label="Select SVG height in pixels">
+											<b-form-input size="sm" type="number" v-model="svg_height"></b-form-input>
+										</b-form-group>
 
-					<b-form-group class="input" label="Select SVG width in pixels">
-					  <b-form-input size="sm" type="number" v-model="svg_width"></b-form-input>
-					</b-form-group>
-				</div>
-				<hr>
+										<b-form-group class="input" label="Select SVG width in pixels">
+											<b-form-input size="sm" type="number" v-model="svg_width"></b-form-input>
+										</b-form-group>
+								</div>
+								<hr>
 
-				<div>
-					<div style="font-size: 20px; font-weight:bold; margin-top:2ex;">
-						Link Thickness Calculation
-					</div>
+								<div>
+										<div style="font-size: 20px; font-weight:bold; margin-top:2ex;">
+												Link Thickness Calculation
+										</div>
 
-					<b-form-group class="input">
-					  <b-form-radio v-model="link_thickness_scaled" value="true">Calculate edge thinkness with respect to the similarity score between neighbours
-					  </b-form-radio>
+										<b-form-group class="input">
+											<b-form-radio v-model="link_thickness_scaled" value="true">Calculate edge thinkness with respect to the similarity score between neighbours
+											</b-form-radio>
 
-					  <div style="margin-left: 25px; margin-bottom: 2ex;">
-					    <span style="font-size: 10pt;">Scale the similarity score using sqrt(similatity score / x), x being:</span>
-					    <b-form-input size="sm" v-model="link_thickness_factor" type="number"></b-form-input>
-					  </div>
+											<div style="margin-left: 25px; margin-bottom: 2ex;">
+												<span style="font-size: 10pt;">Scale the similarity score using sqrt(similatity score / x), x being:</span>
+												<b-form-input size="sm" v-model="link_thickness_factor" type="number"></b-form-input>
+											</div>
 
-					  <b-form-radio v-model="link_thickness_scaled" value="false">Use same thickness for every link
-					  </b-form-radio>
-					  <div style="margin-left: 25px;">
-					    <span style="font-size: 10pt">Thickness in pixels:</span>
-					    <b-form-input size="sm" v-model="link_thickness_value" type="number"></b-form-input>
-					  </div>
-					</b-form-group>
-				</div>
-			</b-modal>
+											<b-form-radio v-model="link_thickness_scaled" value="false">Use same thickness for every link
+											</b-form-radio>
+											<div style="margin-left: 25px;">
+												<span style="font-size: 10pt">Thickness in pixels:</span>
+												<b-form-input size="sm" v-model="link_thickness_value" type="number"></b-form-input>
+											</div>
+										</b-form-group>
+								</div>
+						</b-modal>
 
-    	<!-- Enter target word -->
-    	<b-form-group class="input" label="Enter target word">  
-			<b-form-input v-model="target_word" placeholder="target word" size="sm"></b-form-input>
-		</b-form-group>
+				<!-- Enter target word -->
+				<b-form-group class="input" label="Enter target word">  
+						<b-form-input v-model="target_word" placeholder="target word" size="sm"></b-form-input>
+				</b-form-group>
 
-		<!-- Enter number of neighbouring nodes -->
-		<b-form-group class="input" label="Ḿax. number of neighbours">  
-			<b-form-input type="number" v-model="senses" min="0" placeholder="number of neighbours" size="sm"></b-form-input>
-		</b-form-group>
+				<!-- Enter number of neighbouring nodes -->
+				<b-form-group class="input" label="Ḿax. number of neighbours">  
+						<b-form-input type="number" v-model="senses" min="0" placeholder="number of neighbours" size="sm"></b-form-input>
+				</b-form-group>
 
-		<!-- Enter maximum number of edges per node -->
-		<b-form-group class="input" label="Max. number of edges">  
-			<b-form-input type="number" v-model="edges" min="0" placeholder="number of edges" size="sm"></b-form-input>
-		</b-form-group>
+				<!-- Enter maximum number of edges per node -->
+				<b-form-group class="input" label="Max. number of edges">  
+						<b-form-input type="number" v-model="edges" min="0" placeholder="number of edges" size="sm"></b-form-input>
+				</b-form-group>
 
-    	<!-- Enter an start year -->
-    	<b-form-group class="input" label="Select a start year">
-			<b-form-select v-model="start_year" :options="start_years" size="sm"></b-form-select>
-		</b-from-group>
+				<!-- Enter an start year -->
+				<b-form-group class="input" label="Select a start year">
+						<b-form-select v-model="start_year" :options="start_years" size="sm"></b-form-select>
+				</b-from-group>
 
-		<!-- Enter an end year -->
-		<b-form-group class="input" label="Select an end year">
-			<b-form-select v-model="end_year" :options="end_years" size="sm"></b-form-select>
-		</b-from-group>
+				<!-- Enter an end year -->
+				<b-form-group class="input" label="Select an end year">
+						<b-form-select v-model="end_year" :options="end_years" size="sm"></b-form-select>
+				</b-from-group>
 
-		<!-- Select time diff or sense clustering mode -->
-		<b-form-group class="input" label="Mode" id="select_time_diff">
-		    <b-form-radio v-model="time_diff" name="time_diff" v-bind:value="false"> Sense Clustering (CW) </b-form-radio>
-		    <b-form-radio v-model="time_diff" name="time_diff" v-bind:value="true">Time Diff</b-form-radio>
-    	</b-form-group>
+				<!-- Select time diff or sense clustering mode -->
+				<b-form-group class="input" label="Mode" id="select_time_diff">
+						<b-form-radio v-model="time_diff" name="time_diff" v-bind:value="false"> Sense Clustering (CW) </b-form-radio>
+						<b-form-radio v-model="time_diff" name="time_diff" v-bind:value="true">Time Diff</b-form-radio>
+				</b-form-group>
 
-		<!-- Render button -->
-    	<b-button id="render_button" v-on:click="render_graph()">Render Graph</b-button>
+				<!-- Render button -->
+				<b-button id="render_button" v-on:click="render_graph()">Render Graph</b-button>
 
-    	<p>
-    		<!-- Update button to add more nodes and edges to graph -->
-    		<b-button :disabled="time_diff == 1" v-if="graph_rendered" v-b-toggle.collapse-update-1 id="add_update_button"> Update Graph
-			</b-button>
-		</p>
-
-		<div>
-			<!-- Card collape to enter number of nodes and edges for update -->
-			<b-collapse :id="'collapse-update-1'" class="mt-2">
-				<b-card class="input_cluster" style="color: black">
-
-					<!-- Enter new number of neighbouring nodes to the target word -->
-					<b-form-group class="input" label="Number of neighbours">  
-						<b-form-input type="number" v-model="update_senses" min="0" placeholder="number of neighbours" size="sm"></b-form-input>
-					</b-form-group>
-
-					<!-- Enter new max. number of edges per node -->
-					<b-form-group class="input" label="Max. number of edges per node">
-						<b-form-input type="number" v-model="update_edges" min="0" placeholder="number of edges" size="sm"></b-form-input>
-					</b-form-group>
-
-					<p>
-						<!-- Update button -->
-			    		<b-button id="update_button"> Update
+				<p>
+						<!-- Update button to add more nodes and edges to graph -->
+						<b-button :disabled="time_diff == 1" v-if="graph_rendered" v-b-toggle.collapse-update-1 id="add_update_button"> Update Graph
 						</b-button>
-					</p>
+				</p>
 
-				</b-card>
-			</b-collapse>
-    	</div>
+				<div>
+						<!-- Card collape to enter number of nodes and edges for update -->
+						<b-collapse :id="'collapse-update-1'" class="mt-2">
+								<b-card class="input_cluster" style="color: black">
 
-    </b-col>
+										<!-- Enter new number of neighbouring nodes to the target word -->
+										<b-form-group class="input" label="Number of neighbours">  
+												<b-form-input type="number" v-model="update_senses" min="0" placeholder="number of neighbours" size="sm"></b-form-input>
+										</b-form-group>
 
-    <!-- Graph display column (middle) + Options button for ndoes + card for time diff options -->
-    <b-col id="graph_display" sm="8">
+										<!-- Enter new max. number of edges per node -->
+										<b-form-group class="input" label="Max. number of edges per node">
+												<b-form-input type="number" v-model="update_edges" min="0" placeholder="number of edges" size="sm"></b-form-input>
+										</b-form-group>
 
-		<!-- TIME DIFF -->
-		<!-- Card with time diff options -->
-    	 <b-card v-if="time_diff" id="time_diff_card">
+										<p>
+												<!-- Update button -->
+												<b-button id="update_button"> Update
+												</b-button>
+										</p>
 
-    	 	<p>
-    	 		<!-- Option compare time intervals -->
-    			<b-button v-b-toggle.collapse-interval-1 id="show_diff_button">
-    				Select Interval
-    			</b-button>
+								</b-card>
+						</b-collapse>
+				</div>
 
-    			<!-- Option skip through time slices -->
-    			<b-button v-b-toggle.collapse-skip-1 id="skip_through_button" aria-expanded="false">
-    				Skip Through Time Slices
-    			</b-button>
-    		</p>
+		</b-col>
 
-    		<!-- Collapse card for option compare time intervals -->
-    		<b-collapse id="collapse-interval-1">
-    			<b-card>
+		<!-- Graph display column (middle) + Options button for ndoes + card for time diff options -->
+		<b-col id="graph_display" sm="8">
 
-    				<p>
-		    			Select an interval for time diff:
-		    		</p>
+				<!-- TIME DIFF -->
+				<!-- Card with time diff options -->
+				 <b-card v-if="time_diff" id="time_diff_card">
 
-		    		<div>
-		    			{{start_year}} - 
-		    			<!-- Select start year for small interval -->
-						<b-form-select v-model="interval_start" class="interval_input" size="sm">
-						<option  v-for="s in reducedStartYears"> {{ s.text }} </option> 
-						</b-form-select>
-						- 
-						<!-- Select end year for small interval -->
-						<b-form-select v-model="interval_end" class="interval_input" size="sm">
-						<option  v-for="e in reducedEndYears"> {{ e.text }} </option> 
-						</b-form-select>
-						- {{end_year}}
-
-						<!-- Button to show difference in graph -->
-			    		<b-button v-on:click="show_time_diff" id="time_diff_button">  Show Difference </b-button>
-
-			    		<!-- Legend: Colour of node categories, show nodes belonging to a category -->
-			    		<!-- On mouseover over circle show nodes of the respective category in graph -->
-			    		<div style="font-size: 10px; border: solid 0.5px; margin-top: 10px">
-
-			    			<!-- deceased nodes -->
-			    			<div>
-			    				<span class="dot-sm" style="background-color: red;"
-			    				v-on:mouseover="fade_in_nodes('red')"
-			    				v-on:mouseout="reset_opacity()"></span> Nodes that cease to occur between {{ interval_start}} and {{ interval_end }} (deceased)
-			    			</div>
-
-							<!-- button collapse to show nodes belonging to category -->
-			    			<div>
-			    				<b-button variant="light" class="show-nodes-button" v-b-toggle.collapse-deceased-1>Deceased Nodes 
-			    					<span class="when-opened"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
-	      							<span class="when-closed"><i class="fa fa-chevron-up" aria-hidden="true"></i></span>
-	      						</b-button>
-	      						<b-collapse id="collapse-deceased-1">
-		      						<b-card>
-				    					<div v-for="node in time_diff_nodes.deceased"> {{ node }} </div>
-				    				</b-card>
-			    				</b-collapse>
-			    			</div>
-
-			    			<!-- shortlived nodes -->
-			    			<div>
-			    				<span class="dot-sm" style="background-color: yellow;" v-on:mouseover="fade_in_nodes('yellow')"
-			    				v-on:mouseout="reset_opacity()"></span>Nodes that occur only between {{ interval_start }} and {{ interval_end }} (shortlived)
-			    			</div>
-
-			    			<!-- button collapse to show nodes belonging to category -->
-			    			<div>
-			    				<b-button variant="light" class="show-nodes-button" v-b-toggle.collapse-shortlived-1>Shortlived Nodes
-				    				<span class="when-opened"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
-		      						<span class="when-closed"><i class="fa fa-chevron-up" aria-hidden="true"></i></span>
-			    				</b-button>
-			    				<b-collapse id="collapse-shortlived-1">
-				    				<b-card>
-				    					<div v-for="node in time_diff_nodes.shortlived"> {{ node }} </div>
-				    				</b-card>
-			    				</b-collapse>
-			    			</div>
-
-			    			<!-- born nodes -->
-			    			<div>
-			    				<span class="dot-sm" style="background-color: green;" v-on:mouseover="fade_in_nodes('green')"
-			    				v-on:mouseout="reset_opacity()"></span> Nodes that start to occur between {{ interval_start }} and {{interval_end }} (born)
-			    			</div>
-
-			    			<!-- button collapse to show nodes belonging to category -->
-			    			<div>
-			    				<b-button variant="light" class="show-nodes-button" v-b-toggle.collapse-born-1>Born Nodes
-			    					<span class="when-opened"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
-	      							<span class="when-closed"><i class="fa fa-chevron-up" aria-hidden="true"></i></span>
-			    				</b-button>
-			    				<b-collapse id="collapse-born-1">
-				    				<b-card>
-				    					<div v-for="node in time_diff_nodes.born"> {{ node }} </div>
-				    				</b-card>
-			    				</b-collapse>
-			    			</div>
-
-			    			<!-- consistent nodes -->
-			    			<div>
-			    				<span class="dot-sm" style="background-color: grey;" 
-			    				v-on:mouseover="fade_in_nodes('grey')"
-			    				v-on:mouseout="reset_opacity()"></span> Nodes that occur before and after {{ interval_start }} and {{interval_end}}
-			    			</div>
-
-			    			<!-- button collapse to show nodes belonging to category -->
-			    			<div>
-			    				<b-button variant="light" class="show-nodes-button" v-b-toggle.collapse-normal-1>Consistent Nodes
-			    					<span class="when-opened"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
-	      							<span class="when-closed"><i class="fa fa-chevron-up" aria-hidden="true"></i></span>
-			    				</b-button>
-			    				<b-collapse id="collapse-normal-1">
-				    				<b-card>
-				    					<div v-for="node in time_diff_nodes.normal"> {{ node }} </div>
-				    				</b-card>
-			    				</b-collapse>
-			    			</div>
-			    			
-			    		</div>
-		    		</div>
-	    		</b-card>
-    		</b-collapse>
-
-    		<!-- card collapse for skipping through time slice (range input) -->
-    		<b-collapse id = "collapse-skip-1">
-    			<b-card>
-		    		<div>
-			    		<b-form-group> 
-			    			<!-- Show the current time slice while skipping through -->
-			    			Current time slice: {{ time_slice_from_interval }}
-				    		<b-form-input id="range_time_slices" v-model="interval_id" type="range" v-bind:min="min_time_id" v-bind:max="max_time_id" v-on:change="skip_through_time_slices"></b-form-input>
-				    	</b-form-group>
-			    	</div>
-			    </b-card>
-			</b-collase>
-    	</b-card>
-
-    	<!-- div to render the svg with the graph in (see render_sense_graph.js) -->
-    	<!-- for some weird reason it did not work with id="graph", but with id="graph2"... don't ask me why -->
-    	<div id="graph2"></div>
-
-    </b-col>
-
-
-    <!-- edit column (right column) -->
-    <b-col class="edit_clusters col-auto" id="edit_clusters_popup" sm="2">
-
-    		<!-- Set dragging behaviour -->
-    		<b-form-group id="sticky" class="input" label="Dragging">
-		    	<b-form-radio name="sticky_mode" value="false" v-model="sticky_mode"> Enable brush (no force) </b-form-radio>
-		   		<b-form-radio name="sticky_mode" value="true" v-model="sticky_mode"> Use force (no brush available) </b-form-radio>
-	    	</b-form-group>
-
-	    	<!-- Button to restart simulation with all the nodes -->
-    		<p>
-				<b-button id="restart_button"> Restart Simulation </b-button>
-			</p>
-			
-	    	<!-- Set charge strength for simulation -->
-	    	<b-form-group> Charge strength (-200, 100): {{charge}}
-	    		<b-form-input id="range_charge" v-model="charge" type="range" min="-200" max="100"></b-form-input>
-	    	</b-form-group>
-
-	    	<!-- Set link distance for simulation -->
-	    	<b-form-group> Link distance (-10, 200): {{linkdistance}}
-	    		<b-form-input id="range_linkdistance" v-model="linkdistance" type="range" min="-10" max="200"></b-form-input>
-	    	</b-form-group>
-
-    		<!-- list with clusters -->
-    		<div class="edit_cluster_textbox">
-    			<b-list-group v-for="(cluster, index) in clusters" :key="index">
-					<b-list-group-item class="list-item">
-						<div class="overflow">
-							<!-- Display coloured circle, cluster name and number of nodes in cluster @click="select_cluster(cluster)" -->
-							<div class="clustername">
-								<span class="dot"
-								v-bind:style="{ 'background-color': cluster.colour }"
-								@mouseover="!cluster_selected ? set_cluster_opacity(cluster, 0.2, 0.2) : null"
-  								@mouseout="!cluster_selected ? set_cluster_opacity(cluster, 1.0, 1.0) : null"
-								></span>
-								Cluster: <span class="bigger_font">{{ cluster.cluster_name }} </span>
-								<p> Number of nodes: {{cluster.labels.length}} </p>
-							</div>
-
-						<!-- 
-							v-on:mouseover="set_cluster_opacity(cluster, 0.2, 0.2)"
-							v-on:mouseout="set_cluster_opacity(cluster, 1.0, 0.6)"
-
-							<b-button class="edit_button" v-on:click="select_cluster(cluster)"> Select cluster
-							</b-button>
-
-						-->
-							
-							<p>
-								<!-- Button for opening edit options of cluster -->
-								<b-button v-b-toggle="'collapse-edit-' + index" id="edit_button" class="edit_button" :disabled="time_diff == 1"> <i class="fas fa-pen"></i> </b-button>
-
-								<!-- Button for opening list of nodes in cluster -->
-								<b-button v-b-toggle="'collapse-nodes-' + index" id="accordion"> Nodes
-									<span class="when-opened"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
-	      							<span class="when-closed"><i class="fa fa-chevron-up" aria-hidden="true"></i></span>
+						<p>
+								<!-- Option compare time intervals -->
+								<b-button v-b-toggle.collapse-interval-1 id="show_diff_button">
+										Select Interval
 								</b-button>
 
-								<b-button v-b-modal="'modal-delete-' + index" class="edit_button" style="margin-left: 2px" :disabled="time_diff == 1"> <i class="fas fa-trash"></i> </b-button>
-							</p>
+								<!-- Option skip through time slices -->
+								<b-button v-b-toggle.collapse-skip-1 id="skip_through_button" aria-expanded="false">
+										Skip Through Time Slices
+								</b-button>
+						</p>
 
-							<b-modal :id="'modal-delete-' + index" title="Confirm Deletion" @ok="delete_cluster(cluster.cluster_name, cluster.cluster_id, cluster.labels)"> Are you sure you want to delete {{ cluster.cluster_name }}?
-							</b-modal>
+						<!-- Collapse card for option compare time intervals -->
+						<b-collapse id="collapse-interval-1">
+								<b-card>
 
-							<p>
-								<!-- collapse card for cluster edit options -->
-								<b-collapse :id="'collapse-edit-' + index" class="mt-2"  aria-expanded="false">
-									<b-card class="input_cluster">
+										<p>
+												Select an interval for time diff:
+										</p>
 
-									<!-- Input for cluster name edit -->
-									<b-form-group label="cluster name"> 
-										<b-form-input v-model="cluster.cluster_name" size="sm"></b-form-input>
-									</b-form-group>
+										<div>
+												{{start_year}} - 
+												<!-- Select start year for small interval -->
+												<b-form-select v-model="interval_start" class="interval_input" size="sm">
+												<option  v-for="s in reducedStartYears"> {{ s.text }} </option> 
+												</b-form-select>
+												- 
+												<!-- Select end year for small interval -->
+												<b-form-select v-model="interval_end" class="interval_input" size="sm">
+												<option  v-for="e in reducedEndYears"> {{ e.text }} </option> 
+												</b-form-select>
+												- {{end_year}}
 
-									<!-- Checkbox to add cluster label to graph -->
-									<b-form-group>
-										<b-form-checkbox
-									      v-model="cluster.add_cluster_node"
-									      value="true"
-									      unchecked-value="false">
-									      Show cluster label in graph
-									    </b-form-checkbox>
-									   <!-- <b-form-checkbox
-									      v-model="cluster.delete_cluster"
-									      value="true"
-									      unchecked-value="false">
-									      Delete cluster
-									    </b-form-checkbox> -->
-									</b-form-group>
+												<!-- Button to show difference in graph -->
+												<b-button v-on:click="show_time_diff" id="time_diff_button">  Show Difference </b-button>
 
-									<!-- Change colour of cluster -->
-									<b-form-group label="Select cluster colour">
-										<b-form-input class="color-select" v-model="cluster.colour" type="color" :value="cluster.colour"> </b-form-input>
-									</b-form-group>
+												<!-- Legend: Colour of node categories, show nodes belonging to a category -->
+												<!-- On mouseover over circle show nodes of the respective category in graph -->
+												<div style="font-size: 10px; border: solid 0.5px; margin-top: 10px">
 
-									</b-card>
-								</b-collapse>
-							</p>
-							
+														<!-- deceased nodes -->
+														<div>
+																<span class="dot-sm" style="background-color: red;"
+																v-on:mouseover="fade_in_nodes('red')"
+																v-on:mouseout="reset_opacity()"></span> Nodes that cease to occur between {{ interval_start}} and {{ interval_end }} (deceased)
+														</div>
 
-							<!-- Show list of nodes in cluster -->
-							<div>
-								<b-collapse :id="'collapse-nodes-' + index" class="mt-2">
-									<b-card class="input_cluster">
-										<div v-for="label in cluster.labels"> {{ label.text }}</div>
-									</b-card>
-								</b-collapse>
-							</div>
+														<!-- button collapse to show nodes belonging to category -->
+														<div>
+																<b-button variant="light" class="show-nodes-button" v-b-toggle.collapse-deceased-1>Deceased Nodes 
+																		<span class="when-opened"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
+																		<span class="when-closed"><i class="fa fa-chevron-up" aria-hidden="true"></i></span>
+																</b-button>
+																<b-collapse id="collapse-deceased-1">
+																		<b-card>
+																				<div v-for="node in time_diff_nodes.deceased"> {{ node }} </div>
+																		</b-card>
+																</b-collapse>
+														</div>
 
+														<!-- shortlived nodes -->
+														<div>
+																<span class="dot-sm" style="background-color: yellow;" v-on:mouseover="fade_in_nodes('yellow')"
+																v-on:mouseout="reset_opacity()"></span>Nodes that occur only between {{ interval_start }} and {{ interval_end }} (shortlived)
+														</div>
+
+														<!-- button collapse to show nodes belonging to category -->
+														<div>
+																<b-button variant="light" class="show-nodes-button" v-b-toggle.collapse-shortlived-1>Shortlived Nodes
+																		<span class="when-opened"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
+																		<span class="when-closed"><i class="fa fa-chevron-up" aria-hidden="true"></i></span>
+																</b-button>
+																<b-collapse id="collapse-shortlived-1">
+																		<b-card>
+																				<div v-for="node in time_diff_nodes.shortlived"> {{ node }} </div>
+																		</b-card>
+																</b-collapse>
+														</div>
+
+														<!-- born nodes -->
+														<div>
+																<span class="dot-sm" style="background-color: green;" v-on:mouseover="fade_in_nodes('green')"
+																v-on:mouseout="reset_opacity()"></span> Nodes that start to occur between {{ interval_start }} and {{interval_end }} (born)
+														</div>
+
+														<!-- button collapse to show nodes belonging to category -->
+														<div>
+																<b-button variant="light" class="show-nodes-button" v-b-toggle.collapse-born-1>Born Nodes
+																		<span class="when-opened"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
+																		<span class="when-closed"><i class="fa fa-chevron-up" aria-hidden="true"></i></span>
+																</b-button>
+																<b-collapse id="collapse-born-1">
+																		<b-card>
+																				<div v-for="node in time_diff_nodes.born"> {{ node }} </div>
+																		</b-card>
+																</b-collapse>
+														</div>
+
+														<!-- consistent nodes -->
+														<div>
+																<span class="dot-sm" style="background-color: grey;" 
+																v-on:mouseover="fade_in_nodes('grey')"
+																v-on:mouseout="reset_opacity()"></span> Nodes that occur before and after {{ interval_start }} and {{interval_end}}
+														</div>
+
+														<!-- button collapse to show nodes belonging to category -->
+														<div>
+																<b-button variant="light" class="show-nodes-button" v-b-toggle.collapse-normal-1>Consistent Nodes
+																		<span class="when-opened"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
+																		<span class="when-closed"><i class="fa fa-chevron-up" aria-hidden="true"></i></span>
+																</b-button>
+																<b-collapse id="collapse-normal-1">
+																		<b-card>
+																				<div v-for="node in time_diff_nodes.normal"> {{ node }} </div>
+																		</b-card>
+																</b-collapse>
+														</div>
+														
+												</div>
+										</div>
+								</b-card>
+						</b-collapse>
+
+						<!-- card collapse for skipping through time slice (range input) -->
+						<b-collapse id = "collapse-skip-1">
+								<b-card>
+										<div>
+												<b-form-group> 
+														<!-- Show the current time slice while skipping through -->
+														Current time slice: {{ time_slice_from_interval }}
+														<b-form-input id="range_time_slices" v-model="interval_id" type="range" v-bind:min="min_time_id" v-bind:max="max_time_id" v-on:change="skip_through_time_slices"></b-form-input>
+												</b-form-group>
+										</div>
+								</b-card>
+						</b-collase>
+				</b-card>
+
+				<!-- div to render the svg with the graph in (see render_sense_graph.js) -->
+				<!-- for some weird reason it did not work with id="graph", but with id="graph2"... don't ask me why -->
+				<div id="graph2"></div>
+
+		</b-col>
+
+
+		<!-- edit column (right column) -->
+		<b-col class="edit_clusters col-auto" id="edit_clusters_popup" sm="2">
+
+						<!-- Set dragging behaviour -->
+						<b-form-group id="sticky" class="input" label="Dragging">
+								<b-form-radio name="sticky_mode" value="false" v-model="sticky_mode"> Enable brush (no force) </b-form-radio>
+								<b-form-radio name="sticky_mode" value="true" v-model="sticky_mode"> Use force (no brush available) </b-form-radio>
+						</b-form-group>
+
+						<!-- Button to restart simulation with all the nodes -->
+						<p>
+								<b-button id="restart_button"> Restart Simulation </b-button>
+						</p>
+						
+						<!-- Set charge strength for simulation -->
+						<b-form-group> Charge strength (-200, 100): {{charge}}
+								<b-form-input id="range_charge" v-model="charge" type="range" min="-200" max="100"></b-form-input>
+						</b-form-group>
+
+						<!-- Set link distance for simulation -->
+						<b-form-group> Link distance (-10, 200): {{linkdistance}}
+								<b-form-input id="range_linkdistance" v-model="linkdistance" type="range" min="-10" max="200"></b-form-input>
+						</b-form-group>
+
+						<!-- list with clusters -->
+						<div class="edit_cluster_textbox">
+								<b-list-group v-for="(cluster, index) in clusters" :key="index">
+										<b-list-group-item class="list-item">
+												<div class="overflow">
+														<!-- Display coloured circle, cluster name and number of nodes in cluster @click="select_cluster(cluster)" -->
+														<div class="clustername">
+																<span class="dot"
+																v-bind:style="{ 'background-color': cluster.colour }"
+																@mouseover="!cluster_selected ? set_cluster_opacity(cluster, 0.2, 0.2) : null"
+																@mouseout="!cluster_selected ? set_cluster_opacity(cluster, 1.0, 1.0) : null"
+																></span>
+																Cluster: <span class="bigger_font">{{ cluster.cluster_name }} </span>
+																<p> Number of nodes: {{cluster.labels.length}} </p>
+														</div>
+
+												<!-- 
+														v-on:mouseover="set_cluster_opacity(cluster, 0.2, 0.2)"
+														v-on:mouseout="set_cluster_opacity(cluster, 1.0, 0.6)"
+
+														<b-button class="edit_button" v-on:click="select_cluster(cluster)"> Select cluster
+														</b-button>
+
+												-->
+														
+														<p>
+																<!-- Button for opening edit options of cluster -->
+																<b-button v-b-toggle="'collapse-edit-' + index" id="edit_button" class="edit_button" :disabled="time_diff == 1"> <i class="fas fa-pen"></i> </b-button>
+
+																<!-- Button for opening list of nodes in cluster -->
+																<b-button v-b-toggle="'collapse-nodes-' + index" id="accordion"> Nodes
+																		<span class="when-opened"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
+																		<span class="when-closed"><i class="fa fa-chevron-up" aria-hidden="true"></i></span>
+																</b-button>
+
+																<b-button v-b-modal="'modal-delete-' + index" class="edit_button" style="margin-left: 2px" :disabled="time_diff == 1"> <i class="fas fa-trash"></i> </b-button>
+														</p>
+
+														<b-modal :id="'modal-delete-' + index" title="Confirm Deletion" @ok="delete_cluster(cluster.cluster_name, cluster.cluster_id, cluster.labels)"> Are you sure you want to delete {{ cluster.cluster_name }}?
+														</b-modal>
+
+														<p>
+																<!-- collapse card for cluster edit options -->
+																<b-collapse :id="'collapse-edit-' + index" class="mt-2"  aria-expanded="false">
+																		<b-card class="input_cluster">
+
+																		<!-- Input for cluster name edit -->
+																		<b-form-group label="cluster name"> 
+																				<b-form-input v-model="cluster.cluster_name" size="sm"></b-form-input>
+																		</b-form-group>
+
+																		<!-- Checkbox to add cluster label to graph -->
+																		<b-form-group>
+																				<b-form-checkbox
+																					v-model="cluster.add_cluster_node"
+																					value="true"
+																					unchecked-value="false">
+																					Show cluster label in graph
+																				</b-form-checkbox>
+																			 <!-- <b-form-checkbox
+																					v-model="cluster.delete_cluster"
+																					value="true"
+																					unchecked-value="false">
+																					Delete cluster
+																				</b-form-checkbox> -->
+																		</b-form-group>
+
+																		<!-- Change colour of cluster -->
+																		<b-form-group label="Select cluster colour">
+																				<b-form-input class="color-select" v-model="cluster.colour" type="color" :value="cluster.colour"> </b-form-input>
+																		</b-form-group>
+
+																		</b-card>
+																</b-collapse>
+														</p>
+														
+
+														<!-- Show list of nodes in cluster -->
+														<div>
+																<b-collapse :id="'collapse-nodes-' + index" class="mt-2">
+																		<b-card class="input_cluster">
+																				<div v-for="label in cluster.labels"> {{ label.text }}</div>
+																		</b-card>
+																</b-collapse>
+														</div>
+
+												</div>
+										</b-list-group>
+								</b-list-group>
 						</div>
-					</b-list-group>
-    			</b-list-group>
-    		</div>
 
-    		<!-- Show list of singletons -->
-    		<p>
-	    		<b-button v-b-toggle.collapse-singletons-1 id="singleton_button"> Singletons ({{singletons.length}})
-					<span class="when-opened"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
-					<span class="when-closed"><i class="fa fa-chevron-up" aria-hidden="true"></i></span>
-				</b-button>
-			</p>
-			<div>
-				<b-collapse :id="'collapse-singletons-1'" class="mt-2">
-					<b-card class="input_cluster">
-						<div v-for="node in singletons" style="color: black;">{{node}}</div>
-					</b-card>
-				</b-collapse>
-    		</div>
-    	
-    		<p style="display: block;float: left;">
-    			<!-- Button to apply changes to graph -->
-	    		<b-button id="apply_settings_button" class="close_button" v-on:click="applyClusterSettings()" :disabled="time_diff == 1">Apply</b-button>
+						<!-- Show list of singletons -->
+						<p>
+								<b-button v-b-toggle.collapse-singletons-1 id="singleton_button"> Singletons ({{singletons.length}})
+										<span class="when-opened"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
+										<span class="when-closed"><i class="fa fa-chevron-up" aria-hidden="true"></i></span>
+								</b-button>
+						</p>
+						<div>
+								<b-collapse :id="'collapse-singletons-1'" class="mt-2">
+										<b-card class="input_cluster">
+												<div v-for="node in singletons" style="color: black;">{{node}}</div>
+										</b-card>
+								</b-collapse>
+						</div>
+				
+						<p style="display: block;float: left;">
+								<!-- Button to apply changes to graph -->
+								<b-button id="apply_settings_button" class="close_button" v-on:click="applyClusterSettings()" :disabled="time_diff == 1">Apply</b-button>
 
-	    		<!-- Button to "close" column -->
-	    		<b-button class="close_button" variant="danger" v-on:click="closeForm('edit_clusters_popup')">Close</b-button>
-    		</p>
-    </b-col>
+								<!-- Button to "close" column -->
+								<b-button class="close_button" variant="danger" v-on:click="closeForm('edit_clusters_popup')">Close</b-button>
+						</p>
+		</b-col>
 
-  </b-row>
+	</b-row>
 
-	<!-- card for selecting a file to render graph -->
-	<b-card class="form-popup" id="loadpopup">
-		<b-card-text> Select a .json file to render graph from</b-card-text>
-			
-		<b-form-file id="file_input" v-model="file" :state="Boolean(file)" placeholder="Choose a file..." drop-placeholder="Drop file here..."> </b-form-file>
+		<!-- card for selecting a file to render graph -->
+		<b-card class="form-popup" id="loadpopup">
+				<b-card-text> Select a .json file to render graph from</b-card-text>
+						
+				<b-form-file id="file_input" v-model="file" :state="Boolean(file)" placeholder="Choose a file..." drop-placeholder="Drop file here..."> </b-form-file>
 
-		<b-button id="render_file_button" href="#" variant="success" v-on:click="loadGraph()">Render</b-button>
+				<b-button id="render_file_button" href="#" variant="success" v-on:click="loadGraph()">Render</b-button>
 
-		<b-button id="cancel_button" href="#" variant="danger" v-on:click="closeForm('loadpopup')">Close</b-button>
-	</b-card>
+				<b-button id="cancel_button" href="#" variant="danger" v-on:click="closeForm('loadpopup')">Close</b-button>
+		</b-card>
 
 </b-container> 
 
