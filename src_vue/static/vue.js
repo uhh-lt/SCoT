@@ -1826,7 +1826,7 @@ app = new Vue({
 					var target = [this.data_from_db[1]];
 					app.singletons = this.data_from_db[2].singletons;
 					// Call D3 function to render graph
-					render_graph(nodes, links, target, this.time_diff)
+					render_graph(nodes, links, target)
 					this.graph_rendered = true;
 					// Update cluster information
 					app.get_clusters();

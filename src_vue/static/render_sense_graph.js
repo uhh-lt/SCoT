@@ -3,11 +3,8 @@ Renders the graph on the svg element
 @param array of objects graph_nodes
 @param array of objects graph_links
 @param object target: the target word
-TODO: NOT NEEDED, DELETE @param string time_diff
 */
-async function render_graph(graph_nodes, graph_links, target, time_diff) {
-
-
+async function render_graph(graph_nodes, graph_links, target) {
 	// Set initial parameters
 	var shiftKey;
 	var radius = 5;
@@ -32,9 +29,9 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 			.style("outline", "1px solid")
 			.style("margin", "3ex")
 		.call(d3.zoom().on("zoom", function () {
-    		svg.attr("transform", d3.event.transform)
- 			}))
- 		.append("g")
+			svg.attr("transform", d3.event.transform)
+			}))
+		.append("g")
 
 	function keydowned(){
 		shiftKey = d3.event.shiftKey || d3.event.metaKey;
@@ -53,8 +50,8 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 	// initialize the class attributes selected and previouslySelected for each node
 	app.nodes.forEach(function(d) {
-	    d.selected = false;
-	    d.previouslySelected = false;
+		d.selected = false;
+		d.previouslySelected = false;
 	  });
 
 	// append the target word to the center of the svg
@@ -133,29 +130,27 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 	// create the nodes
 	app.node = svg.append("g")
-	    	.attr("stroke", "#fff")
-	    	.attr("stroke-width", 1.5)
-	    	.attr("class", "node")
-	    .selectAll("g")
-	    .data(app.nodes)
-	    .enter()
-	    .append("g")
-	    	.on("mousedown", mousedowned)
-	    		.call(drag_node)
-	    	.on("mouseover", mouseOver(0.2))
-	    	.on("mouseout", mouseOut)
-	    	.on("click", function(d) {
-	    		if (this.getAttribute("class") === "selected") {
-	    			app.node_selected = true;
-	    		} else {
-	    			app.node_selected = false;
-	    		}
-	    		
-	    		app.select_node_is_no_cluster_node = app.is_normal_node();
-	    		//console.log(this)
-	    		showContextMenu(this);
-	   		})
-	   		//.on("contextmenu", showContextMenu);
+			.attr("stroke", "#fff")
+			.attr("stroke-width", 1.5)
+			.attr("class", "node")
+		.selectAll("g")
+		.data(app.nodes)
+		.enter()
+		.append("g")
+			.on("mousedown", mousedowned)
+				.call(drag_node)
+			.on("mouseover", mouseOver(0.2))
+			.on("mouseout", mouseOut)
+			.on("click", function(d) {
+				if (this.getAttribute("class") === "selected") {
+					app.node_selected = true;
+				} else {
+					app.node_selected = false;
+				}
+				
+				app.select_node_is_no_cluster_node = app.is_normal_node();
+				showContextMenu(this);
+			})
 	
 	// call the time diff tooltip from the svg
 	svg.call(time_diff_tip);
@@ -200,18 +195,13 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		});
 
 	// append a label to the node which displays its id
- 	var labels = app.node.append("text")
+	var labels = app.node.append("text")
 		.text(function(d) { return d.id; })
 		.style('fill', 'black')
 		.style('stroke', 'black')
 		.attr('x', 6)
 		.attr('y', 3)
 		.attr("text", function(d) { return d.id; });
-
-
-	//d3.select("body").on("click", function(d) {
-	//		console.log("clicked")
-	//})
 
 	app.simulation.on("tick", ticked)
 
@@ -234,12 +224,12 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 	if (sticky === "false") {
 		brush.call(d3.brush()
-	    	.extent([[0, 0], [app.svg_width, app.svg_height]])
-	    	.on("start", brushstarted)
-	    	.on("brush", brushed)
-	    	.on("end", brushended));
+			.extent([[0, 0], [app.svg_width, app.svg_height]])
+			.on("start", brushstarted)
+			.on("brush", brushed)
+			.on("end", brushended));
 
-	    drag_node
+		drag_node
 			.on("start", function() {
 				d3.selectAll('.selected').each(dragstart); })
 			.on("drag", function() {
@@ -264,12 +254,12 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		if (sticky === "false") {
 			brush.style("display", "inline")
 			brush.call(d3.brush()
-		    	.extent([[0, 0], [app.svg_width, app.svg_height]])
-		    	.on("start", brushstarted)
-		    	.on("brush", brushed)
-		    	.on("end", brushended));
+				.extent([[0, 0], [app.svg_width, app.svg_height]])
+				.on("start", brushstarted)
+				.on("brush", brushed)
+				.on("end", brushended));
 
-		    drag_node
+			drag_node
 				.on("start", function() {
 					d3.selectAll('.selected').each(dragstart); })
 				.on("drag", function() {
@@ -302,16 +292,12 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 	// Add cluster nodes when clicking on the apply button in the edit column
 	d3.select("#apply_settings_button").on("click", function() {
-
-		//DONE? I need a cluster ID + cluster node ID -> necessary for updating
 		for (var i = 0; i < app.clusters.length; i++) {
 			var cluster_name = app.clusters[i].cluster_name
 			var add_cluster_node = app.clusters[i].add_cluster_node;
 			var cluster_colour = app.clusters[i].colour;
 			var cluster_id = app.clusters[i].cluster_id;
 			var labels = app.clusters[i].labels;
-			//var del_cluster = app.clusters[i].delete_cluster;
-
 
 			var text_labels = [];
 			var cluster_nodes = []
@@ -359,41 +345,37 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	}
 
 	// Add or remove cluster nodes and edges to the graph and restart the simulation
-	// This function is for addin cluster nodes
+	// This function is for adding cluster nodes
 	function restart() {
 		// Apply the general update pattern to the nodes.
 		node = app.node.data(app.nodes, function(d) { return d.id;});
 		node.exit().remove();
 
-
-
 		var g = node.enter()
 				.append("g")
 				.attr("stroke", "#fff")
-		    	.attr("stroke-width", 1.5)
-		    	//.attr("class", "node")
+				.attr("stroke-width", 1.5)
+				//.attr("class", "node")
 				.on("mousedown", mousedowned)
-		    		.call(drag_node)
-		    	.on("mouseover", mouseOver(0.2))
-		   		.on("mouseout", mouseOut)
-		   		.on("click", function(d) {
-	    			if (d.selected) {
-	    				app.node_selected = true;
-	    			} else {
-	    				app.node_selected = false;
-	    			}
-	    		
-	    			app.select_node_is_no_cluster_node = app.is_normal_node();
-	    			//console.log(this)
-	    			showContextMenu(this);
-	   			});
+					.call(drag_node)
+				.on("mouseover", mouseOver(0.2))
+				.on("mouseout", mouseOut)
+				.on("click", function(d) {
+					if (d.selected) {
+						app.node_selected = true;
+					} else {
+						app.node_selected = false;
+					}
+					app.select_node_is_no_cluster_node = app.is_normal_node();
+					showContextMenu(this);
+				});
 
-	   	var circle = g.append("circle")
+		var circle = g.append("circle")
 				.attr("fill", function(d) { return d.colour; })
 				//.attr("fill-opacity", 0.5)
 				.attr("r", 10)
 				.attr("cluster_id", function(d) { return d.cluster_id; })
-		    	.attr("cluster_node", true);
+				.attr("cluster_node", true);
 
 		var text = g.append("text")
 			.text(function(d) { return d.id; })
@@ -429,9 +411,9 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 	function addlink(source, target) {
 		if((source !== undefined) && (target !== undefined)) {
-            app.links.push({"source": source, "target": target});
-            restart();
-    	}
+			app.links.push({"source": source, "target": target});
+			restart();
+		}
 	}
 
 	function addclusternode(name, colour, cluster_id) {
@@ -475,35 +457,11 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		}
 	}
 
-	// function deletenode(id) {
-	// 	for (var i=0; i < app.nodes.length; i++) {
-	// 		if (app.nodes[i]["id"] === id) {
-	// 			app.nodes.splice(i,1)
-	// 		}
-	// 	}		
-	// }
-	
-	// function deletelinks(node_id) {
-	// 	var allLinks = d3.select(".link").selectAll("line");
-
-	// 	allLinks.each(function(d) {
-	// 		if (this.getAttribute("target") === node_id || this.getAttribute("source") === node_id) {
-	// 			for (var i = 0; i < app.links.length; i++) {
-	// 				if (app.links[i].target.id === node_id || app.links[i].source.id === node_id) {
-	// 					//console.log(links[i])
-	// 					app.links.splice(i, 1);
-	// 				}
-	// 			}
-	// 		}
-	// 	});
-	// }
-
-
 	function get_colour(c) {
 		return color(c);
 	}
 
-	// // update the graph with the additional nodes and links
+	// update the graph with the additional nodes and links
 	function update_graph() {
 		// Apply the general update pattern to the nodes.
 		node = app.node.data(app.nodes, function(d) { return d.id;});
@@ -512,32 +470,32 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		var g = node.enter()
 				.append("g")
 				.attr("stroke", "#fff")
-		    	.attr("stroke-width", 1.5)
-		    	//.attr("class", "node")
+				.attr("stroke-width", 1.5)
+				//.attr("class", "node")
 				.on("mousedown", mousedowned)
-		    		.call(drag_node)
-		    	.on("mouseover", mouseOver(0.2))
-		   		.on("mouseout", mouseOut)
-		   		.on("click", function(d) {
-	    			if (this.getAttribute("class") === "selected") {
-	    				app.node_selected = true;
-	    			} else {
-	    				app.node_selected = false;
-	    			}
-	    		
-	    			app.select_node_is_no_cluster_node = app.is_normal_node();
-	    			//console.log(this)
-	    			showContextMenu(this);
-	   			})
+					.call(drag_node)
+				.on("mouseover", mouseOver(0.2))
+				.on("mouseout", mouseOut)
+				.on("click", function(d) {
+					if (this.getAttribute("class") === "selected") {
+						app.node_selected = true;
+					} else {
+						app.node_selected = false;
+					}
+				
+					app.select_node_is_no_cluster_node = app.is_normal_node();
+					//console.log(this)
+					showContextMenu(this);
+				})
 
-	   	circle = g.append("circle")
+		circle = g.append("circle")
 				.attr("fill", function(d) { return color(d.class); })
 				.attr("r", 5)
 				.attr("centrality_score", function(d) { return d.centrality_score; })
 				.attr("cluster_id", function(d) { return d.class; })
-		    	.attr("cluster_node", false)
-		    	.attr("time_ids", function(d) { return d.time_ids})
-		    	.attr("cluster", function(d) { return d.class; });
+				.attr("cluster_node", false)
+				.attr("time_ids", function(d) { return d.time_ids})
+				.attr("cluster", function(d) { return d.class; });
 
 		d3.select("#select_time_diff").on("change", function(d) {
 			if (app.time_diff === false) {
@@ -567,7 +525,6 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		app.node = node.merge(g);
 
 		// Apply the general update pattern to the links.
-		// function(d) { return d.source.id + "-" + d.target.id; }
 		link = app.link.data(app.links, function(d) { return d.source.id + "-" + d.target.id;});
 		link.exit().remove();
 		app.link = link.enter().append("line")
@@ -591,9 +548,10 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		app.simulation.force("link").links(app.links);
 		ticked();
 
+		// colour the links
 		var all_links = svg.selectAll("line")
 		all_links.each(function() {
-			// check if link is connected to cluster node
+				// check if link is connected to cluster node
 				var is_connected_to_cluster_node = false;
 				var source = this.getAttribute("source");
 				var target = this.getAttribute("target");
@@ -617,10 +575,11 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 		app.simulation.alpha(1).restart();
 
 		// keep track of the connected nodes
-		linkedByIndex = {};
-		app.links.forEach(function(d) {
-		    linkedByIndex[d.source.id + "," + d.target.id] = 1;
-		});
+		app.calc_linkedByIndex();
+		// linkedByIndex = {};
+		// app.links.forEach(function(d) {
+		// 	linkedByIndex[d.source.id + "," + d.target.id] = 1;
+		// });
 	}
 
 	// Switch between time diff and sense clustering mode
@@ -685,14 +644,18 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 			for (var i = 0; i < app.updated_nodes.length; i++) {
 				var new_label = app.updated_nodes[i].id;
 				new_labels.push(new_label);
+
 				var cluster_class = app.updated_nodes[i].class;
 				var centr_score = app.updated_nodes[i].centrality_score
 				
 					if (!existing_labels.includes(new_label)) {
 						// add new nodes to the nodes array
-						app.nodes.push({"id": app.updated_nodes[i].id, "class": app.updated_nodes[i].class, "time_ids": app.updated_nodes[i].time_ids, "centrality_score": app.updated_nodes[i].centrality_score});
+						app.nodes.push({"id": app.updated_nodes[i].id,
+							"class": app.updated_nodes[i].class,
+							"time_ids": app.updated_nodes[i].time_ids,
+							"centrality_score": app.updated_nodes[i].centrality_score}
+							);
 					} else {
-						//console.log(new_label)
 						// update existing ones (colour, cluster id and cluster name)
 						var existing_nodes = d3.selectAll(".node");
 						existing_nodes.selectAll("g").each(function(d,i) {
@@ -721,7 +684,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 				}
 			}
 
-
+			// downscale graph
 			for (var i = 0; i < existing_labels.length; i++) {
 				if (!new_labels.includes(existing_labels[i])) {
 					//console.log(existing_labels[i])
@@ -731,10 +694,11 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 			}
 
 			app.nodes.forEach(function(d) {
-		    	d.selected = false;
-		   		d.previouslySelected = false;
+				d.selected = false;
+				d.previouslySelected = false;
 			});
 
+			// update the links too
 			for (var i = 0; i < app.updated_links.length; i++) {
 				var source = app.updated_links[i].source
 				var target = app.updated_links[i].target
@@ -758,23 +722,10 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 	function showContextMenu(d) {
 		if (app.node_selected) {
-			//console.log(app.node_selected);
-			//console.log("selected");
-			//console.log("Show context menu");
-			//var x = d3.event.pageX;
-			//var y = d3.event.pageY;
-    		d3.select('#nodeOptionsDD')
-      			//.style('position', 'absolute')
-      			.style('display', 'block')
-      			//.style('left', x)
-      			//.style('top', y);
-
+			d3.select('#nodeOptionsDD')
+				.style('display', 'block')
 			d3.event.preventDefault();
-			
 		} else {
-			//console.log(app.node_selected);
-			//console.log("not selected");
-			
 			d3.select('#nodeOptionsDD')
 				.style('display', 'none');
 		}
@@ -801,7 +752,7 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 	function brushended() {
 		if (d3.event.selection != null) {
-  			d3.select(this).call(d3.event.target.move, null);
+			d3.select(this).call(d3.event.target.move, null);
 		}
 	}
 
@@ -830,8 +781,8 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	// update node and link positions
 	function ticked() {
 		app.node
-    		.attr("transform", positionNode);
-	 	app.link
+			.attr("transform", positionNode);
+		app.link
 			.attr("x1", function(d) { return d.source.x; })
 			.attr("y1", function(d) { return d.source.y; })
 			.attr("x2", function(d) { return d.target.x; })
@@ -839,63 +790,63 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 
 	}
 
-    function positionNode(d) {
-        // keep the node within the boundaries of the svg
-        if (d.x < 0) {
-            d.x = 0;
-        };
-        if (d.y < 0) {
-            d.y = 0;
-        };
-        if (d.x > app.svg_width) {
-            d.x = app.svg_width - 50;
-        };
-        if (d.y > app.svg_height) {
-            d.y = app.svg_height - 50;
-        };
-        return "translate(" + d.x + "," + d.y + ")";
-    }
+	function positionNode(d) {
+		// keep the node within the boundaries of the svg
+		if (d.x < 0) {
+			d.x = 0;
+		};
+		if (d.y < 0) {
+			d.y = 0;
+		};
+		if (d.x > app.svg_width) {
+			d.x = app.svg_width - 50;
+		};
+		if (d.y > app.svg_height) {
+			d.y = app.svg_height - 50;
+		};
+		return "translate(" + d.x + "," + d.y + ")";
+	}
 
-    // update the connected nodes
+	// update the connected nodes
 	app.calc_linkedByIndex();
 
 	// check the dictionary to see if nodes are linked
 	function isConnected(a, b) {
-    	return app.linkedByIndex[a.id + "," + b.id] || app.linkedByIndex[b.id + "," + a.id] || a.id == b.id;
+		return app.linkedByIndex[a.id + "," + b.id] || app.linkedByIndex[b.id + "," + a.id] || a.id == b.id;
 	}
 
 	// fade nodes on hover
 	function mouseOver(opacity) {
 		return function(d) {
-        	// check all other nodes to see if they're connected
-        	// to this one. if so, keep the opacity at 1, otherwise
-        	// fade
-        	app.node.style("stroke-opacity", function(o) {
-            	thisOpacity = isConnected(d, o) ? 1 : opacity;
-            	return thisOpacity;
-        	});
-        	app.node.style("fill-opacity", function(o) {
-            	thisOpacity = isConnected(d, o) ? 1 : opacity;
-            	return thisOpacity;
-        	});
-        	// also style link accordingly
-        	app.link.style("stroke-opacity", function(o) {
-            	return o.source === d || o.target === d ? 1 : opacity;
-        	});
-        	//link.style("stroke", function(o){
-        		// TODO: how to get o.source.colour for graph rendered from db?
-        		// works for graph loaded from file
-        	//	return o.source === d || o.target === d ? o.source.colour : "#ddd";
-        	//});
-    	}        
+			// check all other nodes to see if they're connected
+			// to this one. if so, keep the opacity at 1, otherwise
+			// fade
+			app.node.style("stroke-opacity", function(o) {
+				thisOpacity = isConnected(d, o) ? 1 : opacity;
+				return thisOpacity;
+			});
+			app.node.style("fill-opacity", function(o) {
+				thisOpacity = isConnected(d, o) ? 1 : opacity;
+				return thisOpacity;
+			});
+			// also style link accordingly
+			app.link.style("stroke-opacity", function(o) {
+				return o.source === d || o.target === d ? 1 : opacity;
+			});
+			//link.style("stroke", function(o){
+				// TODO: how to get o.source.colour for graph rendered from db?
+				// works for graph loaded from file
+			//	return o.source === d || o.target === d ? o.source.colour : "#ddd";
+			//});
+		}
 	}
 
 	// fade everything back in
 	function mouseOut() {
-    	app.node.style("stroke-opacity", 1);
-    	app.node.style("fill-opacity", 1);
-    	app.link.style("stroke-opacity", 1);
-    	//link.style("stroke", "#ddd");
+		app.node.style("stroke-opacity", 1);
+		app.node.style("fill-opacity", 1);
+		app.link.style("stroke-opacity", 1);
+		//link.style("stroke", "#ddd");
 	}
 
 	function dragstart(d) {
@@ -903,10 +854,10 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	}
 
 	function dragmove(d) {
-    	d.x += d3.event.dx;
-    	d.y += d3.event.dy;
-    	d.fx = d.x;
-    	d.fy = d.y;
+		d.x += d3.event.dx;
+		d.y += d3.event.dy;
+		d.fx = d.x;
+		d.fy = d.y;
 		ticked();
 	}
 
@@ -915,23 +866,23 @@ async function render_graph(graph_nodes, graph_links, target, time_diff) {
 	}
 
 	function dragstart_sticky(d) {
-    	if (!d3.event.active) {
-    		app.simulation.alphaTarget(0.3).restart();
+		if (!d3.event.active) {
+			app.simulation.alphaTarget(0.3).restart();
 		}
 	}
 
 	function dragmove_sticky(d) {
 		d.x = d3.event.x;
 		d.y = d3.event.y;
-    	d.fx = d3.event.x;
-    	d.fy = d3.event.y;
+		d.fx = d3.event.x;
+		d.fy = d3.event.y;
 	}
 
 	function dragend_sticky(d) {
-    	if (!d3.event.active) {
-    		app.simulation.alphaTarget(0);
-    	}
-    	//d.fx = null;
-    	//d.fy = null;
+		if (!d3.event.active) {
+			app.simulation.alphaTarget(0);
+		}
+		//d.fx = null;
+		//d.fy = null;
 	}
 }
