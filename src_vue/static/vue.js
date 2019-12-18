@@ -12,13 +12,10 @@ app = new Vue({
 		start_years : [],
 		// all possible end years queried from the database
 		end_years : [],
-		// the time id of the graph start year
-		// TODO check if needed, if not delete
+		// the time id of the graph start year, user input for skipping through time slices
 		min_time_id : 1,
-		// the time_id of the graph end year
-		// TODO check if needed, if not delete
+		// the time_id of the graph end year, user input for skipping through time slices
 		max_time_id: 10,
-
 		// represents the DOM element for a node (see render_sense_graph.js)
 		node : "",
 		// represents the DOM element for a link (see render_sense_graph.js)
@@ -29,40 +26,10 @@ app = new Vue({
 		links : [],
 		// An object for remembering which nodes are connected. The key is of the form "source, target"
 		linkedByIndex: {},
-
-		// for setting the view port size for the graph
-		viewport_height : 800,
-		viewport_width : 1250,
-		// for setting the svg size for the graph
-		svg_height : 1500,
-		svg_width : 1500,
-
-		// link thickness parameters
-		link_thickness_scaled : "true",
-		link_thickness_value : 1,
-		link_thickness_factor : 100,
-
-		// file from which a graph is to be loaded
-		file : null,
-		// graph loaded from file
-		read_graph : null,
-
-		// true, if a graph is rendered. Used in the HTML to only show buttons if a graph is rendered
-		graph_rendered : false,
-
-		// list of objects to store all the information on the clusters in a rendered graph (see function get_clusters())
-		clusters : [],
-		// new clusters calculated by reclustering the graph
-		newclusters : {},
-		// dragging behaviour sticky_mode === "true" -> force, sticky_mode === "false" -> brush
-		sticky_mode : "true",
-		// simulation parameters
-		charge : -50,
-		linkdistance : 50,
 		// array with node ids that are not connected to any other nodes
 		singletons : [],
 		// clipboard for data from db in update() and getData()
-		// TODO: check if needed, if not delete
+		// TODO: can probably be deleted
 		data_from_db : {},
 		// the force simulation
 		simulation : null,
@@ -73,12 +40,34 @@ app = new Vue({
 		updated_nodes : null,
 		// all the links in the updated graph
 		updated_links : null,
-
+		// for setting the view port size for the graph
+		viewport_height : 800,
+		viewport_width : 1250,
+		// for setting the svg size for the graph
+		svg_height : 1500,
+		svg_width : 1500,
+		// link thickness parameters
+		link_thickness_scaled : "true",
+		link_thickness_value : 1,
+		link_thickness_factor : 100,
+		// file from which a graph is to be loaded
+		file : null,
+		// graph loaded from file
+		read_graph : null,
+		// true, if a graph is rendered. Used in the HTML to only show buttons if a graph is rendered
+		graph_rendered : false,
+		// list of objects to store all the information on the clusters in a rendered graph (see function get_clusters())
+		clusters : [],
+		// new clusters calculated by reclustering the graph
+		newclusters : {},
+		// dragging behaviour sticky_mode === "true" -> force, sticky_mode === "false" -> brush
+		sticky_mode : "true",
+		// simulation parameters
+		charge : -50,
+		linkdistance : 50,
 		// time ids for the time diff mode
 		interval_start : 0,
 		interval_end : 0,
-		// TODO check if needed, if not delete
-		interval_time_ids : [],
 		// user input: time slice id for skipping through time slices in time diff mode
 		interval_id : 0,
 		// accumulate which nodes are born, deceased, shortlived or normal
