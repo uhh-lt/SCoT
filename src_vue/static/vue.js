@@ -1,68 +1,131 @@
 app = new Vue({
    el: "#vue-app",
    data: {
-   		linkedByIndex: {},
-   		node : "",
-   		link: "",
-   		nodes : [],
-   		links : [],
-   		viewport_height : 800,
-   		viewport_width : 1250,
-   		svg_height : 1500,
-   		svg_width : 1500,
-   		target_word : "happiness/NN",
-     	start_year : 1520,
-     	end_year : 2008,
-     	senses : 100,
-     	edges : 30,
-     	time_diff : false,
-     	start_years : [],
-     	end_years : [],
-     	min_time_id : 1,
-     	max_time_id: 10,
-     	file : null,
-     	read_graph : null,
-     	graph_rendered : false,
-     	clusters : [],
-     	newclusters : {},
-     	sticky_mode : "true",
-     	charge : -50,
-     	linkdistance : 50,
-     	graph_from_file : false,
-     	singletons : [],
-     	data_from_db : {},
-     	simulation : null,
-     	update_senses : 150,
-     	update_edges : 50,
-     	updated_nodes : null,
-     	updated_links : null,
-     	interval_start : 0,
-     	interval_end : 0,
-     	interval_time_ids : [],
-     	interval_id : 0,
-     	time_diff_nodes : {},
-     	node_selected : false,
-     	select_node_is_no_cluster_node : true,
-     	clicked_nodes : [],
-     	new_assigned_cluster : {},
-     	created_cluster_name : "",
-     	created_cluster_colour : "",
-     	cluster_selected : false,
-     	searchterm : "",
-     	centrality_scores : [],
-     	centrality_fields : [{key: "text", label: "Node", sortable: true}, {key: "centrality_score", sortable: true}],
-     	centrality_threshold_s : "0.0",
-     	centrality_threshold_m : "0.1",
-     	centrality_score_distribution : [],
-     	edit_column_open : false,
-     	highlightWobblies : false,
-     	hightlighInbetweennessCentrality : false,
-     	wobblyCandidatesFields : [{key:"text", label: "Node", sortable: true}, {key: "connected_clusters", label: "Connected Clusters", sortable: false}, {key: "balanced", label: "Balanced", sortable: true}, {key: "show_details", label: "Show Details"}],
-     	wobblyCandidates : [],
-     	//deleteable_cluster : {},
-     	link_thickness_scaled : "true",
-     	link_thickness_value : 1,
-     	link_thickness_factor : 100,
+		// user parameters
+		target_word : "happiness/NN",
+		start_year : 1520,
+		end_year : 2008,
+		senses : 100,
+		edges : 30,
+		time_diff : false,
+		// all possible start years queried from the database
+		start_years : [],
+		// all possible end years queried from the database
+		end_years : [],
+		// the time id of the graph start year
+		// TODO check if needed, if not delete
+		min_time_id : 1,
+		// the time_id of the graph end year
+		// TODO check if needed, if not delete
+		max_time_id: 10,
+
+		// represents the DOM element for a node (see render_sense_graph.js)
+		node : "",
+		// represents the DOM element for a link (see render_sense_graph.js)
+		link: "",
+		// node data
+		nodes : [],
+		// link data
+		links : [],
+		// An object for remembering which nodes are connected. The key is of the form "source, target"
+		linkedByIndex: {},
+
+		// for setting the view port size for the graph
+		viewport_height : 800,
+		viewport_width : 1250,
+		// for setting the svg size for the graph
+		svg_height : 1500,
+		svg_width : 1500,
+
+		// link thickness parameters
+		link_thickness_scaled : "true",
+		link_thickness_value : 1,
+		link_thickness_factor : 100,
+
+		// file from which a graph is to be loaded
+		file : null,
+		// graph loaded from file
+		read_graph : null,
+
+		// true, if a graph is rendered. Used in the HTML to only show buttons if a graph is rendered
+		graph_rendered : false,
+
+		// list of objects to store all the information on the clusters in a rendered graph (see function get_clusters())
+		clusters : [],
+		// new clusters calculated by reclustering the graph
+		newclusters : {},
+		// dragging behaviour sticky_mode === "true" -> force, sticky_mode === "false" -> brush
+		sticky_mode : "true",
+		// simulation parameters
+		charge : -50,
+		linkdistance : 50,
+		// array with node ids that are not connected to any other nodes
+		singletons : [],
+		// clipboard for data from db in update() and getData()
+		// TODO: check if needed, if not delete
+		data_from_db : {},
+		// the force simulation
+		simulation : null,
+		// parameters for updating the graph
+		update_senses : 150,
+		update_edges : 50,
+		// all the nodes in the updated graph
+		updated_nodes : null,
+		// all the links in the updated graph
+		updated_links : null,
+
+		// time ids for the time diff mode
+		interval_start : 0,
+		interval_end : 0,
+		// TODO check if needed, if not delete
+		interval_time_ids : [],
+		// user input: time slice id for skipping through time slices in time diff mode
+		interval_id : 0,
+		// accumulate which nodes are born, deceased, shortlived or normal
+		time_diff_nodes : {},
+		// true if a node is selected, for showing node option menu
+		node_selected : false,
+		// check if selected node is cluster node, for options in the node option menu
+		select_node_is_no_cluster_node : true,
+		// array that holds information about all selected nodes
+		clicked_nodes : [],
+		// user input for assignment to different cluster (text, colour)
+		new_assigned_cluster : {},
+		// user input new cluster name
+		created_cluster_name : "",
+		// user input new cluster colour
+		created_cluster_colour : "",
+		// true if the user has selected a cluster
+		// TODO implement functionality, currently buggy and not in use
+		cluster_selected : false,
+		// search term for searching a node in the graph
+		searchterm : "",
+		// betweenness centrality
+		centrality_scores : [],
+		// for table display
+		centrality_fields : [
+			{key: "text", label: "Node", sortable: true},
+			{key: "centrality_score", sortable: true}
+			],
+		// user input
+		centrality_threshold_s : "0.0",
+		centrality_threshold_m : "0.1",
+		centrality_score_distribution : [],
+		// toggling the edit column
+		edit_column_open : false,
+		// highlight balanced neighbourhood
+		highlightWobblies : false,
+		// highlight betweenness centrality
+		hightlighInbetweennessCentrality : false,
+		// balanced neighbourhood table fields
+		wobblyCandidatesFields : [
+			{key:"text", label: "Node", sortable: true},
+			{key: "connected_clusters", label: "Connected Clusters", sortable: false},
+			{key: "balanced", label: "Balanced", sortable: true},
+			{key: "show_details", label: "Show Details"}
+			],
+		// array containing information about the neighbourhood of each node
+		wobblyCandidates : [],
 	},
 	computed: {
 		/*
@@ -175,7 +238,7 @@ app = new Vue({
 		calc_linkedByIndex: function() {
 			app.linkedByIndex = {};
 			app.links.forEach(function(d) {
-			    app.linkedByIndex[d.source.id + "," + d.target.id] = 1;
+				app.linkedByIndex[d.source.id + "," + d.target.id] = 1;
 			});
 		},
 		delete_selected_nodes: function() {
@@ -549,7 +612,7 @@ app = new Vue({
 				}
 			});
 
-			app.centrality_score_distribution.push({"centrality_score": "0.0", "number": group0}, {"centrality_score": "0.0 - 0.1", "number": group1}, {"centrality_score": "0.1 - 0.2", "number": group2}, {"centrality_score": "0.2 - 0.3", "number": group3}, {"centrality_score": "over 0.3", "number": group4});
+			app.centrality_score_distribution.push({"centrality_score": "0.0", "number_of_nodes": group0}, {"centrality_score": "0.0 - 0.1", "number": group1}, {"centrality_score": "0.1 - 0.2", "number": group2}, {"centrality_score": "0.2 - 0.3", "number": group3}, {"centrality_score": "over 0.3", "number": group4});
 		},
 		getCentralityScores: function() {
 			app.centrality_scores = [];
@@ -1395,44 +1458,44 @@ app = new Vue({
 
 			axios.post('./reclustering', data)
 				.then(async function (response) {
-				    this.newclusters = response.data;
+					this.newclusters = response.data;
 
-				    var colour = d3.scaleOrdinal(d3.schemePaired);
+					var colour = d3.scaleOrdinal(d3.schemePaired);
 
-				    var newClusteredNodes = this.newclusters.nodes;
+					var newClusteredNodes = this.newclusters.nodes;
 
-				    var texts = nodes.selectAll("g").select("text");
-				    var circles = nodes.selectAll("g").select("circle");
+					var texts = nodes.selectAll("g").select("text");
+					var circles = nodes.selectAll("g").select("circle");
 
-				    for (var i=0; i<newClusteredNodes.length; i++) {
-				    	var node_id = newClusteredNodes[i].id;
-				    	var node_new_cluster = newClusteredNodes[i].class;
-				    	//var node_centr_score = newClusteredNodes[i].centrality_score;
-				    	// assign the updated attributes to the nodes
-				    	// Careful, data is not bound to DOM!
-				    	texts.each(function(d,i) {
-				    		var t = d3.select(this);
-				    		if (t.attr("text") === node_id) {
-				    			var circle = d3.select(circles.nodes()[i])
-				    			//circle.attr("centrality_score", node_centr_score)
-				    			circle.attr("cluster", node_new_cluster)
-				    			circle.attr("fill", function() {return colour(node_new_cluster) })
-				    			circle.attr("cluster_id", node_new_cluster);
-				    			circle.attr("cluster_node", false);
-				    		}
-				    	})
-				    }
-				    // update the data variable clusters
-				    await app.get_clusters();
+					for (var i=0; i<newClusteredNodes.length; i++) {
+						var node_id = newClusteredNodes[i].id;
+						var node_new_cluster = newClusteredNodes[i].class;
+						//var node_centr_score = newClusteredNodes[i].centrality_score;
+						// assign the updated attributes to the nodes
+						// Careful, data is not bound to DOM!
+						texts.each(function(d,i) {
+							var t = d3.select(this);
+							if (t.attr("text") === node_id) {
+								var circle = d3.select(circles.nodes()[i])
+								//circle.attr("centrality_score", node_centr_score)
+								circle.attr("cluster", node_new_cluster)
+								circle.attr("fill", function() {return colour(node_new_cluster) })
+								circle.attr("cluster_id", node_new_cluster);
+								circle.attr("cluster_node", false);
+							}
+						})
+					}
+					// update the data variable clusters
+					await app.get_clusters();
 
-				    //var links = d3.selectAll(".link");
-				    
+					//var links = d3.selectAll(".link");
+					
 
-				    links.each(function() {
-				    	var children = this.childNodes;
-				    	children.forEach(function(d,i) {
-				    		var is_in_cluster = false;
-				    		var link = {}
+					links.each(function() {
+						var children = this.childNodes;
+						children.forEach(function(d,i) {
+							var is_in_cluster = false;
+							var link = {}
 							var source = d.getAttribute("source");
 							var target = d.getAttribute("target");
 							var weight = d.getAttribute("weight");
@@ -1442,28 +1505,28 @@ app = new Vue({
 							if (app.includes(link_array, link)) {
 								console.log("includes")
 								for (var i=0; i<app.clusters.length; i++) {
-						    		var node_ids = [];
-						    		app.clusters[i].labels.forEach(function(p) {
-						    			node_ids.push(p.text)
-						    		})
-						    		if (node_ids.includes(source) && node_ids.includes(target)) {
-							    		var cluster_colour = app.clusters[i].colour;
-							    		console.log(source, target, d.getAttribute("stroke"), cluster_colour)
-							    		d.setAttribute("stroke", cluster_colour);
-							    		console.log(d.getAttribute("stroke"))
-							    		is_in_cluster = true;
-							    	}
-						    	}
-						    	if (!is_in_cluster) {
+									var node_ids = [];
+									app.clusters[i].labels.forEach(function(p) {
+										node_ids.push(p.text)
+									})
+									if (node_ids.includes(source) && node_ids.includes(target)) {
+										var cluster_colour = app.clusters[i].colour;
+										console.log(source, target, d.getAttribute("stroke"), cluster_colour)
+										d.setAttribute("stroke", cluster_colour);
+										console.log(d.getAttribute("stroke"))
+										is_in_cluster = true;
+									}
+								}
+								if (!is_in_cluster) {
 									d.setAttribute("stroke", "#999");
 								}
 							}
 							
 						}); 
-				    });
+					});
 				})
 				  .catch(function (error) {
-				    console.log(error);
+					console.log(error);
 				  });
 		},
 		includes: function(array, obj) {
@@ -1554,7 +1617,7 @@ app = new Vue({
 						source = p.getAttribute("source");
 						target = p.getAttribute("target");
 						if (text_labels.includes(source) && text_labels.includes(target)) {
-						    p.setAttribute("stroke", colour);
+							p.setAttribute("stroke", colour);
 						}
 					});
 
@@ -1634,7 +1697,7 @@ app = new Vue({
 							clusters.push(cluster);
 						}	
 					}
-			 	});
+				});
 
 				for (var i=0; i < clusters.length; i++) {
 					Vue.set(app.clusters, i, clusters[i]);
@@ -1643,7 +1706,6 @@ app = new Vue({
 		},
 		render_graph: async function() {
 			this.getData();
-			this.graph_from_file = false;
 			this.graph_rendered = false;
 			await this.$nextTick();
 		},
@@ -1789,25 +1851,25 @@ app = new Vue({
 			var blob = new Blob([data], {type: 'text/plain'});
 
 			const a = document.createElement('a');
-		    document.body.appendChild(a);
-		    const url = window.URL.createObjectURL(blob);
-		    a.href = url;
+			document.body.appendChild(a);
+			const url = window.URL.createObjectURL(blob);
+			a.href = url;
 	
-		    if (app.updated_nodes === null && app.updated_links === null) {
-		    	a.download = app.target_word + "_" + app.senses + "_" + app.edges + ".json";
-		    } else {
-		    	a.download = app.target_word + "_" + app.update_senses + "_" + app.update_edges + ".json";
-		    }
+			if (app.updated_nodes === null && app.updated_links === null) {
+				a.download = app.target_word + "_" + app.senses + "_" + app.edges + ".json";
+			} else {
+				a.download = app.target_word + "_" + app.update_senses + "_" + app.update_edges + ".json";
+			}
 
-		    // TODO What happens if nodes / clusters are deleted?
+			// TODO What happens if nodes / clusters are deleted?
 
-		    //a.download = app.target_word + "_" + graph_nodes.length + "_" + graph_links.length + ".json"
-		    
-		    a.click();
-		    setTimeout(() => {
-		      window.URL.revokeObjectURL(url);
-		      document.body.removeChild(a);
-		    }, 0)
+			//a.download = app.target_word + "_" + graph_nodes.length + "_" + graph_links.length + ".json"
+			
+			a.click();
+			setTimeout(() => {
+			  window.URL.revokeObjectURL(url);
+			  document.body.removeChild(a);
+			}, 0)
 
 		},
 		/*
@@ -1815,17 +1877,16 @@ app = new Vue({
 		*/
 		loadGraph: function() {
 			document.getElementById("loadpopup").style.display = "none";
-			document.getElementById("edit_clusters_popup").style.display = "none";	
-			app.graph_from_file = true;
+			document.getElementById("edit_clusters_popup").style.display = "none";
 			const file = this.file;
 			const reader = new FileReader()
 
 			reader.onload = function(e) {
 			  this.read_graph = JSON.parse(reader.result);
 			  if (this.read_graph.singletons) {
-			  	app.singletons = this.read_graph.singletons;
+				app.singletons = this.read_graph.singletons;
 			  } else {
-			  	app.singletons = [];
+				app.singletons = [];
 			  }
 			  
 			  var nodes = this.read_graph.nodes;
