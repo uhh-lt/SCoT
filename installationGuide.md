@@ -103,4 +103,6 @@ For styling the frontend I used [Bootstrap-Vue](https://bootstrap-vue.js.org/), 
 
 The backend is implemented in Python and MySQL. For accessibility reasons I decided to use Python [records](https://github.com/kennethreitz/records) to query the database. Records is an easy-to-use library to access most relational database types. Since SCoT only queries the database, records is sufficient.
 The REST API is implemented with [Flask](https://palletsprojects.com/p/flask/), a lightwight WSGI web application framework. For deploying the Flask app I use a combination of [uWSGI and nginx](https://github.com/tiangolo/uwsgi-nginx-flask-docker) in the Dockerfile.
-To calculate the clusters in the graph, I apply the [Chinese Whispers](http://delivery.acm.org/10.1145/1660000/1654774/p73-biemann.pdf?ip=134.100.17.59&id=1654774&acc=OPEN&key=2BA2C432AB83DA15%2EBB626F2563133BE7%2E4D4702B0C3E38B35%2E6D218144511F3437&__acm__=1568987463_33679382996da1745b5f5c68b46dd4da) algorithm.
+To calculate the clusters in the graph, I apply the [Chinese Whispers](https://www.inf.uni-hamburg.de/en/inst/ab/lt/publications/2006-biemann-cw-textgraph.pdf) algorithm.
+
+To calculate the similarities between words you can use e.g. [JoBimText](http://ltmaggie.informatik.uni-hamburg.de/jobimtext/).
