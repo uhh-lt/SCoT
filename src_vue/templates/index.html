@@ -532,7 +532,7 @@
 								<b-button v-b-modal="'modal-delete-' + index" class="edit_button" style="margin-left: 2px" :disabled="time_diff == 1"> <i class="fas fa-trash"></i> </b-button>
 							</p>
 
-							<b-modal :id="'modal-delete-' + index" title="Confirm Deletion" @ok="delete_cluster(cluster.cluster_name, cluster.cluster_id, cluster.labels)"> Are you sure you want to delete {{ cluster.cluster_name }}?
+							<b-modal :id="'modal-delete-' + index" title="Confirm Deletion" @ok="delete_cluster(cluster.cluster_name, cluster.cluster_id, cluster.labels)"> Are you sure you want to delete the cluster "{{ cluster.cluster_name }}"?
 							</b-modal>
 
 							<p>
