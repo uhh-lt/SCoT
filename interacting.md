@@ -16,7 +16,7 @@ This section describes how the user can manipulate the graph directly.
 
 ## Hover over Nodes
 
-When hovering over a node in the graph only the node itself and its neighbouring nodes and the edges connecting them are faded in. This way, the user can explore the direct vicinity of a node more easily.
+When hovering over a node in the graph, only the node itself and its neighbouring nodes and the edges connecting them are faded in. This way, the user can explore the direct vicinity of a node more easily.
 
 ![Fade In Neighbouring Nodes](./images/hover_fade_in.png)
 
@@ -25,7 +25,7 @@ When hovering over a node in the graph only the node itself and its neighbouring
 
 ## Dragging Nodes
 
-In the edit column the dragging behaviour of the nodes can be selected.
+In the edit column, the dragging behaviour of the nodes can be selected.
 
 ![Dragging Behaviour Setting](./images/dragging_restart_sim.png)
 
@@ -38,7 +38,7 @@ The selected node can then be moved to a different position through drag & drop.
 
 The other dragging behaviour is "Enable brush and single node movement". Using the dragging behaviour pauses the simulation, meaning you can select a node and drag it around without any other nodes following. You can also *brush* over several nodes to select them. To use the brush, hold down and drag the cursor, which the opens up a kind of box. All the nodes in this box are selected and can be dragged at the same time maintaining their exact positions to each other. To drag multiple selected nodes, click on one of those nodes and drag it to its new position. The other nodes are moved simultaneously. Again, nodes that have been dragged are fixed to their position from then on.
 
-With the button "Restart Simulation" the user can release all the fixed nodes.
+With the button "Restart Simulation", the user can release all the fixed nodes.
 
 [To the top](#interacting-with-the-graph)
 
@@ -57,7 +57,7 @@ When the user selects a node, a button "Options" is faded in in the navbar. When
 
 
 ### Assigning a Node to a Different Cluster
-In case the user does not agree with the system's hypothesis, they can assign a node to a different existing cluster.
+To support free editing of graphs for various purposes, users can assign nodes to a different existing cluster.
 
 After selecting the option "Assign to different cluster", a modal is opened,  which shows the selected node, its current cluster, and an input field in which the user can enter the new cluster of the node.
 
