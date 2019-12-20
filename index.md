@@ -6,10 +6,10 @@ SCoT is developed since 2019. The project is maintained by the [Language Technol
 
 **Developers:**
 * [Inga Kempfert](https://github.com/IngaKe)
-* [Saba Anwar](https://www.inf.uni-hamburg.de/en/inst/ab/lt/people/saba-anwar.html>)
+* [Saba Anwar](https://www.inf.uni-hamburg.de/en/inst/ab/lt/people/saba-anwar.html)
 
 **Supervision:**
-* [Seid Muhie Yimam](https://seyyaw.github.io/>)
+* [Seid Muhie Yimam](https://seyyaw.github.io/)
 * [Alexander Friedrich](https://www.philosophie.tu-darmstadt.de/institut_phil/mitarbeiter_innen_phil/wissenschaftlichemitarbeiter_innen_phil/friedrich_pwt/index.de.jsp)
 * [Chris Biemann](https://www.inf.uni-hamburg.de/en/inst/ab/lt/people/chris-biemann.html)
 
