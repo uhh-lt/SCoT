@@ -17,7 +17,7 @@
 
 ![Dropdown Menu for Nodes Between Clusters](./images/dropdown_nodes_between_clusters.png "Dropdown menu for showing nodes between clusters")
 
-The above images shows dropdown menu options for highlighting nodes that are connected to more than one cluster with around the same amount of edges. Let's call them nodes with a balanced neighbourhood.
+The above images shows dropdown menu options for highlighting nodes that are connected to more than one cluster with around the same amount of edges, also known as "hubs".
 
 Clicking on the option "Highlight nodes in graph" results in the increased size of some nodes in the graph. There are three different sizes:
 
@@ -106,7 +106,7 @@ If the search does not yield any results, an alert is also displayed.
 The clusters in the graph are calculated using the Chinese Whispers algorithm. The algorithm is very fast, but non-deterministic. So you never know upfront how many clusters you will get and which nodes will belong to which cluster. Because of this, executing the algorithm several times may result in a different clustering each time. 
 
 The user can execute the algorithm again by clicking on the button "Recluster".
-This way, the user is able to see different hypothesis the system assumes about the senses of the target word. For more information on the Chinese Whispers Clustering Algorithm click [here](http://delivery.acm.org/10.1145/1660000/1654774/p73-biemann.pdf?ip=77.20.250.85&id=1654774&acc=OPEN&key=4D4702B0C3E38B35%2E4D4702B0C3E38B35%2E4D4702B0C3E38B35%2E6D218144511F3437&__acm__=1568553032_2c17e0dabf68573cf049cc4c8c1491be).
+This way, the user is able to see different hypothesis the system assumes about the senses of the target word. For more information on the Chinese Whispers Clustering Algorithm click [here](https://www.inf.uni-hamburg.de/en/inst/ab/lt/publications/2006-biemann-cw-textgraph.pdf).
 
 [To the top](#the-functions-of-the-navbar)
 
@@ -128,7 +128,7 @@ The button "Reset Zoom" resets all the zooming and panning activity to 0. You ca
 
 
 ## Save the Current Graph
-You can save a graph you have been working on to a JSON file by clicking on the "Save Graph" button in the top right-hand corner. The name of the files is composed of the input parameters, e.g. happiness_NN_100_30.json. This is the graph for the targetword "happiness/NN" with 100 nodes and 30 edges per node. Where your graph is saved depends on your browser settings.
+You can save a graph you have been working to a local JSON file by clicking on the "Save Graph" button in the top right-hand corner. The name of the files is composed of the input parameters, e.g. happiness_NN_100_30.json. This is the graph for the targetword "happiness/NN" with 100 nodes and 30 edges per node. Where your graph is saved depends on your browser settings.
 
 The json file has the following format (pseudo code):
 ```
