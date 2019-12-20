@@ -16,7 +16,7 @@ A sidebar to change the general settings of SCoT and enter the parameters for re
 
 ![General Settings](./images/general_settings.png){:height="75%" width="75%"}
 
-Via the general settings the user can change the size of the viewport as well as the size of the SVG of the graph. The latter should be done before the graph is rendered, otherwise it will only act as a zoom function, without allowing the graph more room on the SVG. The default viewport is 550 x 950 pixels. The default SVG size is 1500 x 1500 pixels.
+Via the general settings, the user can change the size of the viewport as well as the size of the SVG of the graph. The latter should be done before the graph is rendered, otherwise it will only act as a zoom function, without allowing the graph more room on the SVG. The default viewport is 550 x 950 pixels. The default SVG size is 1500 x 1500 pixels.
 
 The user can also decide how the link thickness should be calculated. It can either be scaled depending on the similarity score between nodes or it can be set as an absolute pixel value.
 If the user wishes to scale the link thickness with respect to the similarity the nodes it connects, the thickness is calculated as **sqrt(similarity_score / factor)**. The user can set the variable *factor*.
@@ -42,16 +42,17 @@ If the user wants to render a new graph from the database, he or she needs to sp
 
 First, the user needs to enter a target word.
 
-**Note:** For all words the respective part-of-speech tag needs to be appended to the query word. This is due to disambiguation purposes. The correct query word for "crisis" would therefore be "crisis/NN" or "crisis/NNP" (the latter is currently not contained in the database, since the target words are limited to the ones listed above). The data uses the [Penn Treebank POS tags](https://www.ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html).
+<!-- Leave note -->
+**Note:** For the Google Books data, the respective part-of-speech tag needs to be appended to the query word. The correct query word for “crisis” would therefore be “crisis/NN” or “crisis/NNP”. The data uses the [Penn Treebank POS tags](https://www.ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html). Other data might have different tags, or none.
 
 If the user enters a target word, for which there is no match in the database, they will recieve the following alert.
 
 ![No Matching Target word found in database](./images/alert_no_matching_target.png)
 
 
-Secondly, the user needs to be specify how many nodes the graph should contain (a.k.a. "Number of neighbours"), as well as the maximum number of edges on a node. Per default the number of neighbours is set to 100 and the maximum number of edges is set to 30.
+Secondly, the user needs to be specify how many nodes the graph should contain (a.k.a. "Number of neighbours"), as well as the maximum number of edges on a node. default, the number of neighbours is set to 100 (regulating the number of visible paradigms) and the maximum number of edges per paradigm is set to 30 (regulating the density of the graph, smaller numbers result usually in more clusters).
 
-Last but not least, the user has to specify the time period in which the collocations should occur. Per default this is set to encompass all the time slices (1520 - 2008).
+Last but not least, the user has to specify the time period in which the collocations should occur. Per default, this is set to encompass all the time slices (1520 - 2008 for Google Books).
 
 Another parameter is the mode. However, a graph is always rendered in the sense clustering mode, so I recommend to just leave it as it is when rendering a new graph. The "Time Diff" mode is described in a separate [section](timeDiff.md).
 
