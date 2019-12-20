@@ -10,6 +10,7 @@ SCoT was developed in the context of digital humanities to support a digital his
 
 The main idea is that users enter a word they are interested in and the different senses of the queried word are displayed in a clustered graph of its paradigms for a selected time interval. Paradigms are words that appear in contexts similar to the contexts of the queried target word. The clusters are visualized via the node colours. An edge is drawn between two nodes if they are paradigms, weighted by their respective context similarity. The clusters are calculated using the Chinese Whispers algorithm and should be understood as only a first automatic hypothesis. The user can edit and correct clusters in different ways. The clustering algorithm is non-deterministic, which means that the system may provide different clusterings for the same graph if the algorithm is executed again.
 
+<!-- Delete notes after indexing of Gbooks is done -->
 **Note**: SCoT currently runs on a reduced database of Google Books ranging from 1520 to 2008. The data is split into eight time slices. This means that no exact years or time periods other than these time slices can be queried.
 
 **Note:** Since currently I am working with a reduced database, there are only a limited number of target words available. 
