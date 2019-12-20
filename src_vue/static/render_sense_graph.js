@@ -173,7 +173,13 @@ async function render_graph(graph_nodes, graph_links, target) {
 				return null;
 			}
 		})
-		.attr("cluster", function(d) { return d.class; })
+		.attr("cluster", function(d) { 
+			if (d.cluster_name) {
+				return d.cluster_name;
+			} else {
+				return d.class;
+			}
+		})
 		.attr("cluster_id", function(d) { return d.class })
 		.attr("cluster_node", function(d) {
 			// check if the node is a cluster node and make that information known for later
