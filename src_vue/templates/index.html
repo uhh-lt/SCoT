@@ -349,18 +349,18 @@
 			<b-card v-if="time_diff" id="time_diff_card">
 					<p>
 						<!-- Option compare time intervals -->
-						<b-button v-b-toggle.collapse-interval-1 id="show_diff_button">
+						<b-button v-b-toggle.collapse-interval-1 id="show_diff_button" aria-expanded="false">
 								Select Interval
 						</b-button>
 
 						<!-- Option skip through time slices -->
-						<b-button v-b-toggle.collapse-skip-1 id="skip_through_button" aria-expanded="false">
+						<b-button v-b-toggle.collapse-skip-1 id="skip_through_button" aria-expanded="false" v-on:click="reset_time_diff_colours()">
 								Skip Through Time Slices
 						</b-button>
 					</p>
 
 					<!-- Collapse card for option compare time intervals -->
-					<b-collapse id="collapse-interval-1">
+					<b-collapse id="collapse-interval-1" accordion="time-diff-accordion">
 						<b-card>
 							<p>
 								Select an interval for time diff:
@@ -459,7 +459,7 @@
 				</b-collapse>
 
 				<!-- card collapse for skipping through time slice (range input) -->
-				<b-collapse id = "collapse-skip-1">
+				<b-collapse id="collapse-skip-1" accordion="time-diff-accordion">
 					<b-card>
 						<div>
 							<b-form-group> 

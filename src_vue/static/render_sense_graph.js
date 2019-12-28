@@ -139,8 +139,8 @@ async function render_graph(graph_nodes, graph_links, target) {
 		.append("g")
 			.on("mousedown", mousedowned)
 				.call(drag_node)
-			.on("mouseover", mouseOver(0.2))
-			.on("mouseout", mouseOut)
+			.on("mouseover", app.mouseOver(0.2))
+			.on("mouseout", app.mouseOut)
 			.on("click", function(d) {
 				if (this.getAttribute("class") === "selected") {
 					app.node_selected = true;
@@ -157,7 +157,7 @@ async function render_graph(graph_nodes, graph_links, target) {
 	
 	// append circles to the node
 	// this is the way the nodes are displayed in the graph
-	var circles = app.node.append("circle")
+	app.circles = app.node.append("circle")
 		.attr("r", function(d) {
 			if (d.cluster_node === "true") {
 				// if the node is a cluster node make it twice as big
@@ -364,8 +364,8 @@ async function render_graph(graph_nodes, graph_links, target) {
 				//.attr("class", "node")
 				.on("mousedown", mousedowned)
 					.call(drag_node)
-				.on("mouseover", mouseOver(0.2))
-				.on("mouseout", mouseOut)
+				.on("mouseover", app.mouseOver(0.2))
+				.on("mouseout", app.mouseOut)
 				.on("click", function(d) {
 					if (d.selected) {
 						app.node_selected = true;
@@ -480,8 +480,8 @@ async function render_graph(graph_nodes, graph_links, target) {
 				//.attr("class", "node")
 				.on("mousedown", mousedowned)
 					.call(drag_node)
-				.on("mouseover", mouseOver(0.2))
-				.on("mouseout", mouseOut)
+				.on("mouseover", app.mouseOver(0.2))
+				.on("mouseout", app.mouseOut)
 				.on("click", function(d) {
 					if (this.getAttribute("class") === "selected") {
 						app.node_selected = true;
@@ -508,15 +508,15 @@ async function render_graph(graph_nodes, graph_links, target) {
 				circle.attr("fill", function(d) { return color(d.class); })
 				circle.on("mouseover", null);
 				circle.on("mouseout", null);
-				circles.attr("fill", function(d) { return color(d.class); })
-				circles.on("mouseover", null);
-				circles.on("mouseout", null);
+				app.circles.attr("fill", function(d) { return color(d.class); })
+				app.circles.on("mouseover", null);
+				app.circles.on("mouseout", null);
 			}
 			if (app.time_diff === true) {
 				circle.on("mouseover", time_diff_tip.show);
 				circle.on("mouseout", time_diff_tip.hide);
-				circles.on("mouseover", time_diff_tip.show);
-				circles.on("mouseout", time_diff_tip.hide);
+				app.circles.on("mouseover", time_diff_tip.show);
+				app.circles.on("mouseout", time_diff_tip.hide);
 			}
 		});
 
@@ -593,40 +593,20 @@ async function render_graph(graph_nodes, graph_links, target) {
 		// sense clustering
 		if (app.time_diff === false) {
 			
-			//circles.style("stroke-opacity", 1);
-			app.link.style("stroke-opacity", 1);
-			
-			var circleChilds = d3.selectAll(".node").selectAll("g").selectAll("circle");
-
-			circleChilds.each(function(d) {
-				var node_cluster_id = this.getAttribute("cluster_id");
-				for (var i=0; i < app.clusters.length; i++) {
-					// set the colour of the nodes back to the cluster colours
-					if (node_cluster_id === app.clusters[i].cluster_id) {
-						this.setAttribute("fill", app.clusters[i].colour);
-					}
-				}
-			})
-			app.node.style("stroke-opacity", 1);
-			app.node.style("fill-opacity", 1)
-			// don't show time diff tooltip
-			circles.on("mouseover", null);
-			circles.on("mouseout", null);
-			app.node.on("mouseover", mouseOver(0.2));
-			app.node.on("mouseout", mouseOut);
+			app.reset_time_diff_colours();
 		}
 		if (app.time_diff === true) {
 			// show time diff tooltip
-			circles.on("mouseover", time_diff_tip.show);
-			circles.on("mouseout", time_diff_tip.hide);
+			app.circles.on("mouseover", time_diff_tip.show);
+			app.circles.on("mouseout", time_diff_tip.hide);
 
 			d3.select("#skip_through_button").on("click", function(d) {
 				if (this.getAttribute("aria-expanded") === "true") {
 					app.node.on("mouseover", null);
 					app.node.on("mouseout", null);
 				} else {
-					app.node.on("mouseover", mouseOver(0.2));
-					app.node.on("mouseout", mouseOut);
+					app.node.on("mouseover", app.mouseOver(0.2));
+					app.node.on("mouseout", app.mouseOut);
 				}
 				
 			})
@@ -816,45 +796,6 @@ async function render_graph(graph_nodes, graph_links, target) {
 
 	// update the connected nodes
 	app.calc_linkedByIndex();
-
-	// check the dictionary to see if nodes are linked
-	function isConnected(a, b) {
-		return app.linkedByIndex[a.id + "," + b.id] || app.linkedByIndex[b.id + "," + a.id] || a.id == b.id;
-	}
-
-	// fade nodes on hover
-	function mouseOver(opacity) {
-		return function(d) {
-			// check all other nodes to see if they're connected
-			// to this one. if so, keep the opacity at 1, otherwise
-			// fade
-			app.node.style("stroke-opacity", function(o) {
-				thisOpacity = isConnected(d, o) ? 1 : opacity;
-				return thisOpacity;
-			});
-			app.node.style("fill-opacity", function(o) {
-				thisOpacity = isConnected(d, o) ? 1 : opacity;
-				return thisOpacity;
-			});
-			// also style link accordingly
-			app.link.style("stroke-opacity", function(o) {
-				return o.source === d || o.target === d ? 1 : opacity;
-			});
-			//link.style("stroke", function(o){
-				// TODO: how to get o.source.colour for graph rendered from db?
-				// works for graph loaded from file
-			//	return o.source === d || o.target === d ? o.source.colour : "#ddd";
-			//});
-		}
-	}
-
-	// fade everything back in
-	function mouseOut() {
-		app.node.style("stroke-opacity", 1);
-		app.node.style("fill-opacity", 1);
-		app.link.style("stroke-opacity", 1);
-		//link.style("stroke", "#ddd");
-	}
 
 	function dragstart(d) {
 		app.simulation.stop()

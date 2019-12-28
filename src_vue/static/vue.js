@@ -22,6 +22,7 @@ app = new Vue({
 		link : "",
 		// node data
 		nodes : [],
+		circles : [],
 		// link data
 		links : [],
 		// An object for remembering which nodes are connected. The key is of the form "source, target"
@@ -181,6 +182,62 @@ app = new Vue({
 		}
 	},
 	methods: {
+		// fade nodes on hover
+		mouseOver: function(opacity) {
+			return function(d) {
+				// check all other nodes to see if they're connected
+				// to this one. if so, keep the opacity at 1, otherwise
+				// fade
+				app.node.style("stroke-opacity", function(o) {
+					thisOpacity = app.isConnected(d, o) ? 1 : opacity;
+					return thisOpacity;
+				});
+				app.node.style("fill-opacity", function(o) {
+					thisOpacity = app.isConnected(d, o) ? 1 : opacity;
+					return thisOpacity;
+				});
+				// also style link accordingly
+				app.link.style("stroke-opacity", function(o) {
+					return o.source === d || o.target === d ? 1 : opacity;
+				});
+				//link.style("stroke", function(o){
+					// TODO: how to get o.source.colour for graph rendered from db?
+					// works for graph loaded from file
+				//	return o.source === d || o.target === d ? o.source.colour : "#ddd";
+				//});
+			}
+		},
+
+		// fade everything back in
+		mouseOut: function() {
+			app.node.style("stroke-opacity", 1);
+			app.node.style("fill-opacity", 1);
+			app.link.style("stroke-opacity", 1);
+			//link.style("stroke", "#ddd");
+		},
+		reset_time_diff_colours: function() {
+			//circles.style("stroke-opacity", 1);
+			app.link.style("stroke-opacity", 1);
+			
+			var circleChilds = d3.selectAll(".node").selectAll("g").selectAll("circle");
+
+			circleChilds.each(function(d) {
+				var node_cluster_id = this.getAttribute("cluster_id");
+				for (var i=0; i < app.clusters.length; i++) {
+					// set the colour of the nodes back to the cluster colours
+					if (node_cluster_id === app.clusters[i].cluster_id) {
+						this.setAttribute("fill", app.clusters[i].colour);
+					}
+				}
+			})
+			app.node.style("stroke-opacity", 1);
+			app.node.style("fill-opacity", 1)
+			// don't show time diff tooltip
+			app.circles.on("mouseover", null);
+			app.circles.on("mouseout", null);
+			app.node.on("mouseover", app.mouseOver(0.2));
+			app.node.on("mouseout", app.mouseOut);
+		},
 		/*
 		Deletes a complete cluster
 		*/
@@ -236,6 +293,10 @@ app = new Vue({
 
 			// recalculate the cluster information
 			await app.get_clusters()
+		},
+			// check the dictionary to see if nodes are linked
+		isConnected: function(a, b) {
+			return app.linkedByIndex[a.id + "," + b.id] || app.linkedByIndex[b.id + "," + a.id] || a.id == b.id;
 		},
 		/*
 		Returns an object with the connections in the graph
