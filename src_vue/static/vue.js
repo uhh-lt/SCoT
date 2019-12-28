@@ -22,6 +22,7 @@ app = new Vue({
 		link : "",
 		// node data
 		nodes : [],
+		// the circles of updated nodes
 		circles : [],
 		// link data
 		links : [],
@@ -215,6 +216,7 @@ app = new Vue({
 			app.link.style("stroke-opacity", 1);
 			//link.style("stroke", "#ddd");
 		},
+		// reset the colour of the nodes to cluster colours
 		reset_time_diff_colours: function() {
 			//circles.style("stroke-opacity", 1);
 			app.link.style("stroke-opacity", 1);
