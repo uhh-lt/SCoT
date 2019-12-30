@@ -20,7 +20,7 @@ RUN pip install --trusted-host pypi.python.org -r requirements.txt
 
 # Define environment variable
 # ENV FLASK_APP="scot.py"
-# ENV FLASK_ENV="development"
+# ENV FLASK_ENV="production"
 
 # Run app.py when the container launches
 # CMD ["python", "scot.py"]
