@@ -68,8 +68,8 @@ class Database:
 			time_ids):
 		nodes = []
 		target_word_senses = self.db.query(
-			'SELECT word1, time_id FROM similar_words ' 
-			'WHERE word2=:tw AND word1!=word2 '
+			'SELECT word2, time_id FROM similar_words '
+			'WHERE word1=:tw AND word1!=word2 '
 			'ORDER BY score DESC',
 			tw=target_word 
 			)
@@ -77,13 +77,13 @@ class Database:
 			exists = False
 			if row['time_id'] in time_ids and len(nodes) < size:
 				for node in nodes:
-					if node[0] == row['word1']:
+					if node[0] == row['word2']:
 						exists = True
 						if not row["time_id"] in node[1]["time_ids"]:
 							node[1]["time_ids"].append(row['time_id'])
 				
 				if not exists:
-					nodes.append([row['word1'], {"time_ids": [row['time_id']]}])
+					nodes.append([row['word2'], {"time_ids": [row['time_id']]}])
 
 		return nodes
 
@@ -96,14 +96,14 @@ class Database:
 		):
 		nodes = set()
 		target_word_senses = self.db.query(
-			'SELECT word1, time_id FROM similar_words ' 
-			'WHERE word2=:tw AND word1!=word2 '
+			'SELECT word2, time_id FROM similar_words '
+			'WHERE word1=:tw AND word1!=word2 '
 			'ORDER BY score DESC',
-			tw=target_word 
+			tw=target_word
 			)
 		for row in target_word_senses:
 			if row['time_id'] in time_ids and len(nodes)<=size-1:
-				nodes.add(row['word1'])
+				nodes.add(row['word2'])
 		return nodes
 
 
@@ -145,6 +145,7 @@ class Database:
 		# 		for node in nodes:
 		# 			if node[0] == s:
 		# 				nodes.remove(node)
+
 
 		con = self.db.query(
 			'SELECT word1, word2, score, time_id '
