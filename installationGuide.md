@@ -6,7 +6,7 @@ This guide is designed to help you run SCoT on your own server or local machine.
 Just clone the repository from GitHub.
 
 ```
-$ git clone git@github.com:IngaKe/SCoT.git
+$ git clone git@github.com:uhh-lt/SCoT.git
 ```
 
 In the SCoT/ directory type
@@ -23,7 +23,7 @@ For this, provide this file as an entrypoint for Docker database in the `docker-
     image: mariadb:10.4.6
     volumes:
       - ./db/dump.sql:/docker-entrypoint-initdb.d/dump.sql
-      - ./db/data:/var/lib/mysql
+      - ./db/dev_data:/var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: ROOT_PASSWORD
       MYSQL_DATABASE: DATABASE
@@ -39,7 +39,7 @@ Your config.json should look like this:
 	"database" : "mysql://USER:PASSWORD@db/DATABASE"
 }
 ```
-Feel free to connect your own database to SCoT. Make sure to follow the `schema.sql` when creating your database.
+Feel free to connect your own database to SCoT. Make sure to follow the [`schema.sql`](https://github.com/uhh-lt/SCoT/blob/master/Utility_Files/schema.sql) when creating your database.
 
 <!--One trick to create a dump.sql is to build an SQL file yourself identical to the provided dump.sql, if your data - like mine - is distributed across multiple databases. You can then use that SQL file as an entrypoint for Docker and create a new volume from it.
 -->
@@ -64,21 +64,19 @@ CREATE DATABASE scot;
 
 USE scot;
 
-DROP TABLE IF EXISTS time_slices;
-CREATE TABLE time_slices (
-	id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-	start_year SMALLINT UNSIGNED NOT NULL,
-	end_year SMALLINT UNSIGNED NOT NULL,
-	PRIMARY KEY (id)
-);
-
 DROP TABLE IF EXISTS similar_words;
 CREATE TABLE similar_words (
-	word1 VARCHAR(64) NOT NULL,
-	word2 VARCHAR(64) NOT NULL,
-	score INT UNSIGNED NOT NULL,
-	time_id INT UNSIGNED NOT NULL
-);
+  word1 varchar(64) NOT NULL,
+  word2 varchar(64) NOT NULL,
+  score int(10) unsigned NOT NULL,
+  time_id int(10) unsigned NOT NULL) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+DROP TABLE IF EXISTS time_slices;
+CREATE TABLE time_slices (
+    id INT UNSIGNED NOT NULL,
+    start_year SMALLINT UNSIGNED NOT NULL,
+    end_year SMALLINT UNSIGNED NOT NULL
+)ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 CREATE INDEX word1_idx ON similar_words(word1);
 CREATE INDEX word2_idx ON similar_words(word2);
