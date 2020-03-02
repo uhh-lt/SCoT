@@ -1,6 +1,6 @@
 #python insertdb.py sorted_all_years.tsv
 import csv
-# import MySQLdb
+import MySQLdb
 import mysql.connector as mysql
 import sys
 
@@ -18,20 +18,20 @@ cursor = db.cursor()
 query = 'INSERT INTO similar_words(word1,word2,score,time_id) VALUES(%s, %s, %s, %s)'
 my_data = []
 count = 0
-with open(filename) as csvfile:
-    readCSV = csv.reader(csvfile, delimiter='\t')
+print ("Start inserting...")
 
-    for row in readCSV:
+with open(filename, 'r', encoding='utf-8') as fp:
+    for line in fp:
+        row = line.split('\t') 
         count += 1
         my_data.append(tuple(row))
         if count % 10000 == 0: # IT depends on your machine Memory
-           print(count)
-           cursor.executemany(query, my_data)
-           my_data = []
-           count = 0
+            cursor.executemany(query, my_data)
+            my_data = []
+            print(count)
+            count = 0
 
 
-print ("Start inserting...")
 cursor.execute('SET autocommit = 0')
 cursor.executemany(query, my_data)
 cursor.close()
