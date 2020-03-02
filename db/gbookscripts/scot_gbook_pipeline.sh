@@ -1,7 +1,7 @@
 # make sure to create the scot database afresh. See the file: createschema.sql
 # login mysql Database and run
 #    CREATE DATABASE IF NOT EXISTS scot;
-echo "Create duplicate entires for gbooks sim file"
+echo "Create duplicate enteries for gbooks sim file"
 python duplicate.py ../gbooks/1520_1908_sim
 python duplicate.py ../gbooks/1909_1953_sim
 python duplicate.py ../gbooks/1954_1972_sim
@@ -44,7 +44,7 @@ python gbooks2csv.py uniq_sort_dup_2006_2008_sim 8
 
 ## Merge all csv files so that they can be sorted by w1
 
-echo "Mergin all files"
+echo "Merging all files"
 cat uniq_sort_dup_1520_1908_sim.csv uniq_sort_dup_1909_1953_sim.csv uniq_sort_dup_1954_1972_sim.csv uniq_sort_dup_1973_1986_sim.csv uniq_sort_dup_1987_1995_sim.csv uniq_sort_dup_1996_2001_sim.csv uniq_sort_dup_2002_2005_sim.csv uniq_sort_dup_2006_2008_sim.csv > all_years.csv
 
 echo "convert to tab separated format"
@@ -54,9 +54,7 @@ echo "Sorting the merged tsv files"
 sh sort_merged.sh
 
 echo "Inserting into the database"
-python insertdb.py sorted_all_years.tsv
-echo "Insert statements completed"
-
+python insertdb.py sorted_all_years.tsv DT_finNews_trigram
 echo "Insert statements completed"
 
 # Run the following to create the index from mysql db

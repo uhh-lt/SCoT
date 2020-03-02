@@ -6,7 +6,7 @@ import csv
 
 duplinefilename = sys.argv[1]
 t = sys.argv[2] # time slice
-w = csv.writer(open(duplinefilename+".csv","w"))
+w = csv.writer(open(duplinefilename.replace(".tsv", ".csv"),"w"))
 
 for line in open(duplinefilename, "r"):
     try:

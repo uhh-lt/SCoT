@@ -5,14 +5,24 @@ import traceback
 import os
 duplinefilename = sys.argv[1]
 
+if len(sys.argv)==3:
+    score_threshold = float(sys.argv[2])
+else:
+    score_threshold = 1.0
+
 outfile = open("dup_"+os.path.basename(duplinefilename), "w")
+print(duplinefilename)
+print('score_threshold: %s ' %score_threshold)
 for line in open(duplinefilename, "r"):
     try:
-       l = line.split("\t") # whole line
-       f =  l[2].strip() # this is the score
-       if float(f)>1.0 : # filter those lines with score less than 2
-           outfile.write(line.strip()+"\n") # write the line as it is
-           outfile.write(l[1].strip()+"\t"+l[0].strip()+"\t"+l[2].strip()+"\t"+l[3].strip()+"\n") # swap the first and second columns (word2, word1)
+        l = line.split("\t") # whole line
+        f =  l[2].strip() # this is the score
+        if float(f)>score_threshold : # filter those lines with score less than 2
+            outfile.write(line.strip()+"\n") # write the line as it is
+            outfile.write(l[1].strip()+"\t"+l[0].strip()+"\t"+l[2].strip()+"\n") # swap the first and second columns (word2, word1)
+#            outfile.write(l[1].strip()+"\t"+l[0].strip()+"\t"+l[2].strip()+"\t"+l[3].strip()+"\n") # if feature is also present
+
+
     except Exception:
         print(traceback.format_exc())
         print("line " + line + " is wrong\n")

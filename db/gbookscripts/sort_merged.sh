@@ -1,1 +1,1 @@
-sort -t"        "  -k1,1  -k4,4n -k3,3nr tabbed_all_years.csv > sorted_all_years.tsv
+sort -k1,1  -k4,4n -k3,3nr all_years.tsv > sorted_all_years.tsv
