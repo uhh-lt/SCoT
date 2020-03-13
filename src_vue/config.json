@@ -1,12 +1,14 @@
 {
-	"host" : "0.0.0.0",
+	"host" : "127.0.0.1",
 	"databases" : {
-		"default" : "mysql://user:password@db/scot",
-		"en_books" : "mysql://user:password@db/scot",
-		"fi_news" : "mysql://user:password@db/scot"
+		"default" : "mysql://user:password@localhost/scot",
+		"en_books" : "mysql://user:password@localhost/scot",
+		"fi_news" : "mysql://user:password@localhost/scot2"
 	},
 	"databases_info":{
 		"English Books": "en_books",
 		"Finnish News" : "fi_news" 
 	}
+	
+	
 }

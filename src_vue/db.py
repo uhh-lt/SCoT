@@ -2,8 +2,8 @@ import records
 import json
 
 class Database:
-	def __init__(self, database):
-		with open('config.json') as config_file:
+	def __init__(self, database, configfile = 'config.json'):
+		with open(configfile) as config_file:
 			config = json.load(config_file)
 		if (database in [*config["databases"]]):
 			self.db = records.Database(config["databases"][database])
