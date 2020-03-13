@@ -52,7 +52,7 @@ matching db-connection-string from the config.json If the key is wrong, it takes
 
  
 Enjoy.
-If you have any questions, please do not hesitate emailing me at haase@informatik.uni-hamburg.de
+If you have any questions, please do not hesitate emailing me at haase[at]informatik.uni-hamburg.de
 
 Best,
 Christian
