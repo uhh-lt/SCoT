@@ -4,12 +4,9 @@ SCOT MULTIUPDATE
 The new Scot multi-database version enables the use of different collections/databases
 A separate database is used for each Scot collection
 
-Scope
-App is already fully functional
-Applies to files in folder src_vue
-
 Changes:
 The following changes have been made to Scot, which also require new settings in the Config.json
+changes apply to app-files in folder src_vue
 
 1 Config.json
 The config.json is the most important point to set up the different collections with their names, db-connection-strings and frontend information.
@@ -52,7 +49,7 @@ matching db-connection-string from the config.json If the key is wrong, it takes
 
  
 Enjoy.
-If you have any questions, please do not hesitate emailing me at haase@informatik.uni-hamburg.de
+If you have any questions, please do not hesitate emailing me at haase[at]informatik.uni-hamburg.de
 
 Best,
 Christian

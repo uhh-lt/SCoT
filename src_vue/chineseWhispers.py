@@ -2,6 +2,11 @@ import networkx as nx
 import random
 import json
 
+#  For the algorithm see the following paper
+#  Chris Biemann (2006):
+#  Chinese Whispers - an Efficient Graph Clustering Algorithm 
+#  https://www.aclweb.org/anthology/W06-3812.pdf
+# 
 # Construct a networkx graph from the nodes and edges
 def construct_graph(nodes_set, edges):
 	nodes = list(nodes_set)
