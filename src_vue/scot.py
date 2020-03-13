@@ -28,16 +28,28 @@ app = CustomFlask(__name__,
 app.config.from_object(__name__)
 CORS(app)
 
+def getDbFromRequest(db):
+	if db != "" and db != None:
+		return db
+	else:
+		return "default"
+	
+
 @app.route('/')
 def index():
 	return render_template('index.html')
 
+@app.route('/databases_info')
+def databases_info():
+	with open('config.json') as config_file:
+			config = json.load(config_file)
+	return json.dumps(config["databases_info"])
 
-@app.route('/interval/<int:start>/<int:end>')
+
+@app.route('/<string:db>/interval/<int:start>/<int:end>')
 # retrieve the time id(s) of a certain interval between a specified start and end year
-def interval(start, end):
-	print(start,end)
-	db = Database()
+def interval(start, end, db):
+	db = Database(getDbFromRequest(db))
 	interval = db.get_time_ids(start, end)
 	return json.dumps(interval)
 
@@ -58,25 +70,26 @@ def recluster():
 		return json.dumps(reclustered_graph)
 
 
-@app.route('/start_years')
+@app.route('/<string:db>/start_years')
 # retrieve all possible start years from the database
-def get_start_years():
-	db = Database()
+def get_start_years(db):
+	db = Database(getDbFromRequest(db))
 	start_years = db.get_all_years("start_year")
 	return json.dumps(start_years)
 
 
-@app.route('/end_years')
+@app.route('/<string:db>/end_years')
 # retrieve all possible end years from the database
-def get_end_years():
-	db = Database()
+def get_end_years(db):
+	db = Database(getDbFromRequest(db))
 	end_years = db.get_all_years("end_year")
 	return json.dumps(end_years)
 
 
-@app.route('/sense_graph/<path:target_word>/<int:start_year>/<int:end_year>/<int:direct_neighbours>/<int:density>')
+@app.route('/<string:db>/sense_graph/<path:target_word>/<int:start_year>/<int:end_year>/<int:direct_neighbours>/<int:density>')
 # retrieve the clustered graph data according to the input parameters of the user and return it as json
 def get_clustered_graph(
+		db,
 		target_word,
 		start_year,
 		end_year,
@@ -87,19 +100,20 @@ def get_clustered_graph(
 	paradigms = direct_neighbours
 
 	def clusters(
+		db, 
 		target_word,
 		start_year,
 		end_year,
 		paradigms,
 		density):
-		db = Database()
+		db = Database(getDbFromRequest(db))
 		time_ids = db.get_time_ids(start_year, end_year)
 		nodes = db.get_nodes(target_word, paradigms, time_ids)
 		edges, nodes, singletons = db.get_edges(nodes, density, time_ids)
 
 		return singletons, chineseWhispers.chinese_whispers(nodes, edges, target_word)
 
-	singletons, clustered_graph = clusters(target_word,
+	singletons, clustered_graph = clusters(db, target_word,
 		start_year,
 		end_year,
 		paradigms,

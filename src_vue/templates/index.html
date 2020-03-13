@@ -276,6 +276,10 @@
 						</b-form-group>
 					</div>
 			</b-modal>
+			<!-- Enter database -->
+			<b-form-group class="input" label="Select collection">  
+				<b-form-select v-on:change="onChangeDb" v-model="db_key" :options="databases_keys" size="sm"></b-form-select>
+			</b-form-group>
 
 			<!-- Enter target word -->
 			<b-form-group class="input" label="Enter target word">  

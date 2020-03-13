@@ -1,13 +1,18 @@
 app = new Vue({
    el: "#vue-app",
    data: {
-		// user parameters
+		// default values for init
 		target_word : "happiness/NN",
 		start_year : 1520,
 		end_year : 2008,
 		senses : 100,
 		edges : 30,
 		time_diff : false,
+		db : "en_books",
+		db_key: "English Books",
+		// all possible databases and selection texts queried from database
+		databases : {},
+		databases_keys: [],
 		// all possible start years queried from the database
 		start_years : [],
 		// all possible end years queried from the database
@@ -183,6 +188,30 @@ app = new Vue({
 		}
 	},
 	methods: {
+		// on change database in frontend - update function
+		onChangeDb: function(){
+			
+			this.db = this.databases[this.db_key]
+			console.log("in onchange " + this.db)
+			console.log("in onchange " + this.db_key)
+			this.getStartYears()
+			this.getEndYears()
+			
+		},
+				
+		// init databases from axios
+		getDatabases: function(){
+			
+			axios.get('./databases_info')
+				.then((res) => {
+					this.databases = res.data;
+					this.databases_keys = Object.keys(this.databases);
+				})
+				.catch((error) => {
+					console.error(error);
+				});
+			},
+
 		// fade nodes on hover
 		mouseOver: function(opacity) {
 			return function(d) {
@@ -1289,7 +1318,7 @@ app = new Vue({
 		show_time_diff: async function() {
 			
 			var big_time_interval = [];
-			await axios.get("./interval/" + app.start_year + "/" + app.end_year)
+			await axios.get("./"+ this.db + "/interval/" + app.start_year + "/" + app.end_year)
 				.then((res) => {
 					big_time_interval = res.data;
 				})
@@ -1298,7 +1327,7 @@ app = new Vue({
 				});
 
 			var small_time_interval = [];
-			await axios.get("./interval/" + app.interval_start + "/" + app.interval_end)
+			await axios.get("./"+ this.db + "/interval/" + app.interval_start + "/" + app.interval_end)
 				.then((res) => {
 					small_time_interval = res.data;
 				})
@@ -1399,7 +1428,7 @@ app = new Vue({
 			var time_diff = this.time_diff;
 
 			app.time_diff = false;
-			var url = './sense_graph' + '/' + target_word + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges;
+			var url = './'+ this.db + '/sense_graph' + '/' + target_word + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges;
 			
 			return axios.get(url)
 				.then((res) => {
@@ -1691,7 +1720,7 @@ app = new Vue({
 				.attr("transform", "translate(0.0, 0.0) scale(1.0)");
 		},
 		getStartYears: function() {
-			axios.get('./start_years')
+			axios.get('./'+ this.db + '/start_years')
 				.then((res) => {
 					this.start_years = res.data;
 				})
@@ -1700,7 +1729,7 @@ app = new Vue({
 				});
 		},
 		getEndYears: function() {
-			axios.get('./end_years')
+			axios.get('./'+ this.db + '/end_years')
 				.then((res) => {
 					this.end_years = res.data;
 				})
@@ -1879,7 +1908,7 @@ app = new Vue({
 				}
 			});
 
-			var url = './sense_graph' + '/' + target_word + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges;
+			var url = './'+ this.db + '/sense_graph' + '/' + target_word + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges;
 			
 			axios.get(url)
 				.then((res) => {
@@ -2076,6 +2105,7 @@ app = new Vue({
 	created() {
 		this.getStartYears();
 		this.getEndYears();
+		this.getDatabases();
 	}
 
 });
