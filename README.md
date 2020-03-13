@@ -1,4 +1,4 @@
 # SCoT
 A web application for interactive clustering of word senses over time.
 
-This tool is developed in the context of the Master Project "Web Interfaces for Language Processing Systems" in the sommer semster 2019 at the University of Hamburg.
+Scot is a project of the language technology group of the University of Hamburg, which is led by Chris Biemann. The software is advanced and maintained by the Language Technology Group and Hitec. Large parts of the application were initially developed by Inga Kempfer. 
