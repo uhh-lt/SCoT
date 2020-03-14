@@ -28,9 +28,9 @@ app = CustomFlask(__name__,
 app.config.from_object(__name__)
 CORS(app)
 
-def getDbFromRequest(db):
-	if db != "" and db != None:
-		return db
+def getDbFromRequest(collection):
+	if collection != "" and collection != None:
+		return collection
 	else:
 		return "default"
 	
@@ -39,22 +39,22 @@ def getDbFromRequest(db):
 def index():
 	return render_template('index.html')
 
-@app.route('/databases_info')
+@app.route('/api/collections')
 def databases_info():
 	with open('config.json') as config_file:
 			config = json.load(config_file)
-	return json.dumps(config["databases_info"])
+	return json.dumps(config["collections_info"])
 
 
-@app.route('/<string:db>/interval/<int:start>/<int:end>')
+@app.route('/api/collections/<string:collection>/interval/<int:start>/<int:end>')
 # retrieve the time id(s) of a certain interval between a specified start and end year
-def interval(start, end, db):
-	db = Database(getDbFromRequest(db))
+def interval(start, end, collection):
+	db = Database(getDbFromRequest(collection))
 	interval = db.get_time_ids(start, end)
 	return json.dumps(interval)
 
 
-@app.route('/reclustering', methods=['POST'])
+@app.route('/api/reclustering', methods=['POST'])
 # recluster the existing graph by running Chinese Whispers on it again
 def recluster():
 	nodes = []
@@ -70,26 +70,26 @@ def recluster():
 		return json.dumps(reclustered_graph)
 
 
-@app.route('/<string:db>/start_years')
+@app.route('/api/collections/<string:collection>/start_years')
 # retrieve all possible start years from the database
-def get_start_years(db):
-	db = Database(getDbFromRequest(db))
+def get_start_years(collection):
+	db = Database(getDbFromRequest(collection))
 	start_years = db.get_all_years("start_year")
 	return json.dumps(start_years)
 
 
-@app.route('/<string:db>/end_years')
+@app.route('/api/collections/<string:collection>/end_years')
 # retrieve all possible end years from the database
-def get_end_years(db):
-	db = Database(getDbFromRequest(db))
+def get_end_years(collection):
+	db = Database(getDbFromRequest(collection))
 	end_years = db.get_all_years("end_year")
 	return json.dumps(end_years)
 
 
-@app.route('/<string:db>/sense_graph/<path:target_word>/<int:start_year>/<int:end_year>/<int:direct_neighbours>/<int:density>')
+@app.route('/api/collections/<string:collection>/sense_graph/<path:target_word>/<int:start_year>/<int:end_year>/<int:direct_neighbours>/<int:density>')
 # retrieve the clustered graph data according to the input parameters of the user and return it as json
 def get_clustered_graph(
-		db,
+		collection,
 		target_word,
 		start_year,
 		end_year,
@@ -100,20 +100,20 @@ def get_clustered_graph(
 	paradigms = direct_neighbours
 
 	def clusters(
-		db, 
+		collection, 
 		target_word,
 		start_year,
 		end_year,
 		paradigms,
 		density):
-		db = Database(getDbFromRequest(db))
+		db = Database(getDbFromRequest(collection))
 		time_ids = db.get_time_ids(start_year, end_year)
 		nodes = db.get_nodes(target_word, paradigms, time_ids)
 		edges, nodes, singletons = db.get_edges(nodes, density, time_ids)
 
 		return singletons, chineseWhispers.chinese_whispers(nodes, edges, target_word)
 
-	singletons, clustered_graph = clusters(db, target_word,
+	singletons, clustered_graph = clusters(collection, target_word,
 		start_year,
 		end_year,
 		paradigms,

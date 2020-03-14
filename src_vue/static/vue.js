@@ -8,11 +8,11 @@ app = new Vue({
 		senses : 100,
 		edges : 30,
 		time_diff : false,
-		db : "en_books",
-		db_key: "English Books",
-		// all possible databases and selection texts queried from database
-		databases : {},
-		databases_keys: [],
+		collection_key : "en_books",
+		collection_name: "English Books",
+		// all possible collections queried from database
+		collections : {}, // collections keys and names
+		collections_names: [], // collections_names
 		// all possible start years queried from the database
 		start_years : [],
 		// all possible end years queried from the database
@@ -191,21 +191,21 @@ app = new Vue({
 		// on change database in frontend - update function
 		onChangeDb: function(){
 			
-			this.db = this.databases[this.db_key]
-			console.log("in onchange " + this.db)
-			console.log("in onchange " + this.db_key)
+			this.collection_key = this.collections[this.collection_name]
+			console.log("in onchange " + this.collection_key)
+			console.log("in onchange " + this.collection_name)
 			this.getStartYears()
 			this.getEndYears()
 			
 		},
 				
-		// init databases from axios
-		getDatabases: function(){
+		// init collections from axios
+		getCollections: function(){
 			
-			axios.get('./databases_info')
+			axios.get('./api/collections')
 				.then((res) => {
-					this.databases = res.data;
-					this.databases_keys = Object.keys(this.databases);
+					this.collections = res.data;
+					this.collections_names = Object.keys(this.collections);
 				})
 				.catch((error) => {
 					console.error(error);
@@ -1318,7 +1318,7 @@ app = new Vue({
 		show_time_diff: async function() {
 			
 			var big_time_interval = [];
-			await axios.get("./"+ this.db + "/interval/" + app.start_year + "/" + app.end_year)
+			await axios.get("./api/collections/"+ this.collection_key + "/interval/" + app.start_year + "/" + app.end_year)
 				.then((res) => {
 					big_time_interval = res.data;
 				})
@@ -1327,7 +1327,7 @@ app = new Vue({
 				});
 
 			var small_time_interval = [];
-			await axios.get("./"+ this.db + "/interval/" + app.interval_start + "/" + app.interval_end)
+			await axios.get("./api/collections/"+ this.collection_key + "/interval/" + app.interval_start + "/" + app.interval_end)
 				.then((res) => {
 					small_time_interval = res.data;
 				})
@@ -1428,7 +1428,7 @@ app = new Vue({
 			var time_diff = this.time_diff;
 
 			app.time_diff = false;
-			var url = './'+ this.db + '/sense_graph' + '/' + target_word + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges;
+			var url = './api/collections/'+ this.collection_key + '/sense_graph' + '/' + target_word + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges;
 			
 			return axios.get(url)
 				.then((res) => {
@@ -1632,7 +1632,7 @@ app = new Vue({
 			data["nodes"] = nodes_array;
 			data["links"] = link_array;
 
-			axios.post('./reclustering', data)
+			axios.post('./api/reclustering', data)
 				.then(async function (response) {
 					this.newclusters = response.data;
 
@@ -1720,7 +1720,7 @@ app = new Vue({
 				.attr("transform", "translate(0.0, 0.0) scale(1.0)");
 		},
 		getStartYears: function() {
-			axios.get('./'+ this.db + '/start_years')
+			axios.get('./api/collections/'+ this.collection_key + '/start_years')
 				.then((res) => {
 					this.start_years = res.data;
 				})
@@ -1729,7 +1729,7 @@ app = new Vue({
 				});
 		},
 		getEndYears: function() {
-			axios.get('./'+ this.db + '/end_years')
+			axios.get('./api/collections/'+ this.collection_key + '/end_years')
 				.then((res) => {
 					this.end_years = res.data;
 				})
@@ -1908,7 +1908,7 @@ app = new Vue({
 				}
 			});
 
-			var url = './'+ this.db + '/sense_graph' + '/' + target_word + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges;
+			var url = './api/collections/'+ this.collection_key + '/sense_graph' + '/' + target_word + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges;
 			
 			axios.get(url)
 				.then((res) => {
@@ -2105,7 +2105,7 @@ app = new Vue({
 	created() {
 		this.getStartYears();
 		this.getEndYears();
-		this.getDatabases();
+		this.getCollections();
 	}
 
 });

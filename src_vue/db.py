@@ -2,13 +2,13 @@ import records
 import json
 
 class Database:
-	def __init__(self, database, configfile = 'config.json'):
+	def __init__(self, collection, configfile = 'config.json'):
 		with open(configfile) as config_file:
 			config = json.load(config_file)
-		if (database in [*config["databases"]]):
-			self.db = records.Database(config["databases"][database])
+		if (collection in [*config["collections"]]):
+			self.db = records.Database(config["collections"][collection])
 		else:
-			self.db = records.Database(config["databases"]['default'])
+			self.db = records.Database(config["collections"]['default'])
 
 	def get_all_years(self, position):
 		# get all the information on a certain column in the time_slices table, e.g. position='start_year'
