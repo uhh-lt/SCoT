@@ -1,7 +1,7 @@
 
 SCOT MULTIUPDATE 
 
-The new Scot multi-colelction version enables the use of different collections, such as English Google Books, Finnish News etc.
+The new Scot multi-collection version enables the use of different collections, such as English Google Books, Finnish News etc.
 A separate database is used for each Scot collection
 
 Changes:
