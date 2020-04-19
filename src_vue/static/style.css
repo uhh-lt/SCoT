@@ -26,8 +26,6 @@ text {
 	/*word-spacing: -10px;*/
 	background: #343a40;
 	color: white;
-	padding-left: 2px
-	padding-right: 2px;
 	width: 80%;
 }
 
@@ -86,7 +84,7 @@ text {
 	display: block;
 	float: right;
 	text-align: center;
-	font-size: 10px;	
+	font-size: 10px;
 }
 
 #time_diff_button {
@@ -251,10 +249,10 @@ text {
 	right: 10px;
 	border: 1px solid #343a40;
 	max-width: 300px;
-  	padding: 10px;
-  	background-color: lightgrey;
-  	/*word-spacing: -10px;*/
-  	font-size: 12px;
+	padding: 10px;
+	background-color: lightgrey;
+	/*word-spacing: -10px;*/
+	font-size: 12px;
 }
 
 
@@ -271,10 +269,11 @@ text {
 	text-align: left;
 	/*word-spacing: -10px;*/
 	background: #343a40;
+	/*background: #6c757d;*/
+	/*background: #d9d9d9;*/
 	color: white;
-	padding-right: : 2px;
 	width: 80%;
-	display: none;
+	display: block;
 }
 
 .close_button{
@@ -346,7 +345,7 @@ text {
 
 .collapsed > .when-opened,
 :not(.collapsed) > .when-closed {
-  display: none;
+	display: none;
 }
 
 .input_cluster {
@@ -377,30 +376,30 @@ text {
 }
 
 .d3-tip {
-      line-height: 1;
-      padding: 6px;
-      background: rgba(0, 0, 0, 0.8);
-      color: #fff;
-      border-radius: 4px;
-      font-size: 12px;
-    }
- 
+	line-height: 1;
+	padding: 6px;
+	background: rgba(0, 0, 0, 0.8);
+	color: #fff;
+	border-radius: 4px;
+	font-size: 12px;
+}
+
 /* Creates a small triangle extender for the tooltip */
 .d3-tip:after {
-  box-sizing: border-box;
-  display: inline;
-  font-size: 10px;
-  width: 100%;
-  line-height: 1;
-  color: rgba(0, 0, 0, 0.8);
-  content: "\25BC";
-  position: absolute;
-  text-align: center;
+	box-sizing: border-box;
+	display: inline;
+	font-size: 10px;
+	width: 100%;
+	line-height: 1;
+	color: rgba(0, 0, 0, 0.8);
+	content: "\25BC";
+	position: absolute;
+	text-align: center;
 }
 
 /* Style northward tooltips specifically */
 .d3-tip.n:after {
-  margin: -2px 0 0 0;
-  top: 100%;
-  left: 0;
+	margin: -2px 0 0 0;
+	top: 100%;
+	left: 0;
 }

@@ -1,12 +1,13 @@
 app = new Vue({
    el: "#vue-app",
    data: {
+	   // special
 		// default values for init
 		target_word : "happiness/NN",
 		start_year : 1520,
 		end_year : 2008,
-		senses : 100,
-		edges : 30,
+		senses : 1,
+		edges : 1,
 		time_diff : false,
 		collection_key : "en_books",
 		collection_name: "English Books",
@@ -48,11 +49,11 @@ app = new Vue({
 		// all the links in the updated graph
 		updated_links : null,
 		// for setting the view port size for the graph
-		viewport_height : 800,
-		viewport_width : 1250,
+		viewport_height : 600,
+		viewport_width : 1200,
 		// for setting the svg size for the graph
-		svg_height : 1500,
-		svg_width : 1500,
+		svg_height : 600,
+		svg_width : 1200,
 		// link thickness parameters
 		link_thickness_scaled : "true",
 		link_thickness_value : 1,

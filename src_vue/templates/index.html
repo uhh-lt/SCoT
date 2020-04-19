@@ -32,21 +32,84 @@
 <b-container id="body-container" class="body" fluid>
 
 	<!-- Navbar with option buttons -->
-	<b-navbar type="dark" variant="dark" class="">
-		<b-navbar-brand tag="h1" class="header">SCoT SenseViewer</b-navbar-brand>
-			<b-navbar-nav class="ml-auto">
-				<b-nav-form>
+	<b-navbar type="dark" variant="secondary" toggleable="lg" >
+		<b-navbar-brand tag="h1" class="header" >Sense Clustering over Time</b-navbar-brand>
 
-					<!-- Options Drop Down for node options -->
+				<b-nav-form >
+
+					<!-- Options Drop Down for node options TODO Update Options-->
 					<div>
-						<b-dropdown  variant="light" id="nodeOptionsDD" v-if="!time_diff && sticky_mode === 'true'" text="Node options" aria-expanded=true style="display:none; margin-right:5px" >
-							<!-- Node options -->
-							<!-- only available for non cluster nodes -->
-							<b-dropdown-item v-show="select_node_is_no_cluster_node" v-on:click="findSelectedNodes()" v-b-modal.modal-1> <i class="fas fa-exchange-alt"></i> Assign to different cluster </b-dropdown-item>
-							<b-dropdown-item v-show="select_node_is_no_cluster_node" v-on:click="findSelectedNodes()" v-b-modal.modal-2> <i class="fas fa-plus"></i> Create new cluster </b-dropdown-item>
-							<b-dropdown-item v-on:click="delete_selected_nodes()"> <i class="fas fa-trash"></i> Delete node </b-dropdown-item>
-						</b-dropdown> 
+						<b-button-group>
+
+							<b-button v-b-modal.modal-settings-1 id="general_settings_button"> Graph: settings</b-button>
+						</b-button-group>
 					</div>
+					<b-modal id="modal-settings-1" scrollable size="xl" title="General Settings" @ok="update_general_settings">
+						<div>
+							<div style="font-size: 20px; font-weight:bold;">
+								Useful links
+							</div>
+							<div style="margin-top: 2ex;">
+								<b-link href="https://github.com/IngaKe/SCoT"><i class="fab fa-github"></i> View on GitHub </b-link>
+							</div>
+							<div>
+								<b-link href="https://ingake.github.io/SCoT/index.html"> <i class="fas fa-question-circle"></i> View User Guide </b-link>
+							</div>
+						</div>
+						<hr>
+						<div>
+							<div style="font-size: 20px; font-weight:bold; margin-top:2ex;">
+								Select view port size
+							</div>
+							<b-form-group class="input" label="Select view port height in pixels">
+								<b-form-input size="sm" type="number" v-model="viewport_height"></b-form-input>
+							</b-form-group>
+
+							<b-form-group class="input" label="Select viewport width in pixels">
+								<b-form-input size="sm" type="number" v-model="viewport_width"></b-form-input>
+							</b-form-group>
+						</div>
+						<hr>
+						<div>
+							<div style="font-size: 20px; font-weight:bold; margin-top:2ex;">
+								Select SVG size
+							</div>
+
+							<div style="margin-top: 1ex;">
+								<span style="border-left: 5px solid red; background-color: moccasin; padding: 5pt;"> WARNING: Please set before rendering a graph. Changes to the size of the svg after rendering a graph will act like a zoom function.</span>
+							</div>
+
+							<b-form-group class="input" label="Select SVG height in pixels">
+								<b-form-input size="sm" type="number" v-model="svg_height"></b-form-input>
+							</b-form-group>
+
+							<b-form-group class="input" label="Select SVG width in pixels">
+								<b-form-input size="sm" type="number" v-model="svg_width"></b-form-input>
+							</b-form-group>
+						</div>
+						<hr>
+						<div>
+							<div style="font-size: 20px; font-weight:bold; margin-top:2ex;">
+								Link Thickness Calculation
+							</div>
+
+							<b-form-group class="input">
+								<b-form-radio v-model="link_thickness_scaled" value="true">Calculate edge thinkness with respect to the similarity score between neighbours</b-form-radio>
+
+								<div style="margin-left: 25px; margin-bottom: 2ex;">
+									<span style="font-size: 10pt;">Scale the similarity score using sqrt(similatity score / x), x being:</span>
+									<b-form-input size="sm" v-model="link_thickness_factor" type="number"></b-form-input>
+								</div>
+
+								<b-form-radio v-model="link_thickness_scaled" value="false">Use same thickness for every link</b-form-radio>
+								<div style="margin-left: 25px;">
+									<span style="font-size: 10pt">Thickness in pixels:</span>
+									<b-form-input size="sm" v-model="link_thickness_value" type="number"></b-form-input>
+								</div>
+							</b-form-group>
+						</div>
+					</b-modal>
+
 
 					<!-- Modal to change cluster assignment of a node -->
 					<b-modal id="modal-1" title="Change Cluster Assignment" @ok="assignNewCluster()">
@@ -96,52 +159,9 @@
 						</div>
 					</b-modal>
 
-					<!-- Nodes with balanced neighbourhood of clusters -->
-					<b-dropdown id="wobblyCandidatesCC" v-if="graph_rendered" text="Nodes between clusters" aria-expanded=true>
-						<b-dropdown-item v-on:click="highlightWobblyCandidates()"> <i class="fas fa-highlighter"></i> Highlight nodes in graph </b-dropdown-item>
-						<b-dropdown-item v-on:click="resetCentralityHighlighting()"> <i class="fas fa-times"></i> Reset highlighting </b-dropdown-item>
-						<b-dropdown-item v-on:click="findWobblyCandidates()" v-b-modal.modal-wobbly-1> <i class="fas fa-bars"></i> List nodes </b-dropdown-item>
-					</b-dropdown>
-
-					<b-modal id="modal-wobbly-1" size="xl" scrollable title="List of Nodes between Clusters" ok-only ok-title="Close">
-						<div>
-							<b-button size="sm" style="margin-bottom: 15px;" v-b-toggle.collapse-heuristic-1 aria-expanded="false"> <i class="fas fa-info-circle"></i> Infos on heuristic </b-button>
-							<b-collapse :id="'collapse-heuristic-1'">
-								<b-card>
-									The neighbourhood of a node is balanced, if there are at least two clusters in the node's neighbourhood for which 
-									<div style="margin-left: 20px">
-										<span style="font-weight: bold"> max - d_i < mean / 2 </span>
-									</div> holds true.
-									<ul>
-										<li><span style="font-style: italic">max</span>: the max number of nodes from the same cluster</li>
-										<li><span style="font-style: italic">d_i</span>: the number of nodes of cluster i</li>
-										<li><span style="font-style: italic">mean</span>: the mean number of nodes of a neighbouring cluster</li>
-									</ul>
-								</b-card>
-							</b-collapse>
-						</div>
-						<div>
-							<b-table striped hover responsive="sm" :items="wobblyCandidates" :fields="wobblyCandidatesFields">
-								<template v-slot:cell(show_details)="row">
-									<b-button size="sm" @click="row.toggleDetails" class="mr-2">
-										{{ row.detailsShowing ? 'Hide' : 'Show'}} Details
-									</b-button>
-								</template>
-								<template v-slot:row-details="row">
-									<b-card>
-										<ul v-for="c in row.item.neighbours">
-											<li> <span style="font-weight: bold;"> Cluster: {{ c.cluster_id }} </span>
-												<div style="font-size: 12px;" v-for="n in c.neighbours"> {{ n }} </div>
-											</li>
-										</ul>
-									</b-card>
-								</template>
-							</b-table>
-						</div>
-					</b-modal>
 
 					<!-- Inbetweenness Centrality Button-->
-					<b-dropdown id="centralityDD" v-if="graph_rendered" text="Betweenness Centrality" aria-expanded=true>
+					<b-dropdown id="centralityDD" text="Graph: Central Nodes" aria-expanded=true>
 						<!-- Node options -->
 						<!-- only available for non cluster nodes -->
 						<b-dropdown-item v-on:click="highlightCentralNodes(centrality_threshold_s, centrality_threshold_m)"> <i class="fas fa-highlighter"></i> Highlight central nodes in graph </b-dropdown-item>
@@ -179,25 +199,93 @@
 						</div>
 					</b-modal>
 
+					<!-- Resetz Zoom button -->
+					<b-button id="reset_zoom_button" v-on:click="resetZoom()">Graph: Reset Zoom</b-button>
+
+
+					<div>
+						<b-dropdown  id="nodeOptionsDD" text="Cluster Node_Editor" aria-expanded=true >
+							<!-- Node options -->
+							<!-- only available for non cluster nodes -->
+							<b-dropdown-item v-show="select_node_is_no_cluster_node" v-on:click="findSelectedNodes()" v-b-modal.modal-1> <i class="fas fa-exchange-alt"></i> Assign to different cluster </b-dropdown-item>
+							<b-dropdown-item v-show="select_node_is_no_cluster_node" v-on:click="findSelectedNodes()" v-b-modal.modal-2> <i class="fas fa-plus"></i> Create new cluster </b-dropdown-item>
+							<b-dropdown-item v-on:click="delete_selected_nodes()"> <i class="fas fa-trash"></i> Delete node </b-dropdown-item>
+						</b-dropdown>
+					</div>
+					<!-- Nodes with balanced neighbourhood of clusters -->
+					<b-dropdown id="wobblyCandidatesCC" text="Clusters: Shared Nodes" aria-expanded=true>
+						<b-dropdown-item disabled="true" v-on:click="highlightWobblyCandidates()"> <i class="fas fa-highlighter"></i> Highlight shared nodes </b-dropdown-item>
+						<b-dropdown-item v-on:click="resetCentralityHighlighting()"> <i class="fas fa-times"></i> Reset highlighting </b-dropdown-item>
+						<b-dropdown-item v-on:click="findWobblyCandidates()" v-b-modal.modal-wobbly-1> <i class="fas fa-bars"></i> List nodes </b-dropdown-item>
+					</b-dropdown>
+
+					<b-modal id="modal-wobbly-1" size="xl" scrollable title="List of Nodes between Clusters" ok-only ok-title="Close">
+						<div>
+							<b-button size="sm" style="margin-bottom: 15px;" v-b-toggle.collapse-heuristic-1 aria-expanded="false"> <i class="fas fa-info-circle"></i> Infos on heuristic </b-button>
+							<b-collapse :id="'collapse-heuristic-1'">
+								<b-card>
+									The neighbourhood of a node is balanced, if there are at least two clusters in the node's neighbourhood for which
+									<div style="margin-left: 20px">
+										<span style="font-weight: bold"> max - d_i < mean / 2 </span>
+									</div> holds true.
+									<ul>
+										<li><span style="font-style: italic">max</span>: the max number of nodes from the same cluster</li>
+										<li><span style="font-style: italic">d_i</span>: the number of nodes of cluster i</li>
+										<li><span style="font-style: italic">mean</span>: the mean number of nodes of a neighbouring cluster</li>
+									</ul>
+								</b-card>
+							</b-collapse>
+						</div>
+						<div>
+							<b-table striped hover responsive="sm" :items="wobblyCandidates" :fields="wobblyCandidatesFields">
+								<template v-slot:cell(show_details)="row">
+									<b-button size="sm" @click="row.toggleDetails" class="mr-2">
+										{{ row.detailsShowing ? 'Hide' : 'Show'}} Details
+									</b-button>
+								</template>
+								<template v-slot:row-details="row">
+									<b-card>
+										<ul v-for="c in row.item.neighbours">
+											<li> <span style="font-weight: bold;"> Cluster: {{ c.cluster_id }} </span>
+												<div style="font-size: 12px;" v-for="n in c.neighbours"> {{ n }} </div>
+											</li>
+										</ul>
+									</b-card>
+								</template>
+							</b-table>
+						</div>
+					</b-modal>
+					<!-- ToDo update Menu hier-->
+					<b-dropdown id="wobblyCandidatesCC" text="Clusters: Edge Analysis" aria-expanded=true>
+						<b-dropdown-item disabled="true" v-on:click="highlightWobblyCandidates()"> <i class="fas fa-highlighter"></i> Highlight shared nodes </b-dropdown-item>
+						<b-dropdown-item v-on:click="resetCentralityHighlighting()"> <i class="fas fa-times"></i> Reset highlighting </b-dropdown-item>
+						<b-dropdown-item v-on:click="findWobblyCandidates()" v-b-modal.modal-wobbly-1> <i class="fas fa-bars"></i> List nodes </b-dropdown-item>
+					</b-dropdown>
+
+				</b-nav-form>
+			<b-navbar-nav class="ml-auto">
+
+
+				<b-nav-form>
+					<!-- Select time diff or sense clustering mode -->
+
+						<b-form-radio v-model="time_diff" name="time_diff" v-bind:value="false"> Time Off </b-form-radio>
+						<b-form-radio v-model="time_diff" name="time_diff" v-bind:value="true">Time On</b-form-radio>
+
+					<!-- Edit button -->
+					<b-button id="edit_mask_button" v-on:click="showEditMask()">View Cluster Pane</b-button>
+					<!-- Recluster button -->
+					<b-button :disabled="time_diff == 1" id="recluster_button" v-on:click="recluster()"> Recluster</b-button>
+					<!-- Options Drop Down for node options -->
 					<!-- Search bar -->
-					<b-input-group v-if="graph_rendered">
-						<b-form-input size="sm" v-model="searchterm" type="text" placeholder="Search graph for ..." style="margin-left: 5px"> </b-form-input>
+					<b-input-group >
+						<b-form-input size="sm" v-model="searchterm" type="text" placeholder="Search node in graph" style="margin-left: 5px"> </b-form-input>
 						<b-input-group-append>
 							<b-button id="search_button" size="sm" @click="search_node()"><i class="fas fa-search"></i></b-button>
 							<b-button id="search_button" size="sm" variant="danger" @click="unsearch_nodes()"><i class="fas fa-times"></i></i></b-button>
 						</b-input-group-append>
 					</b-input-group>
-
-					<!-- Recluster button -->
-					<b-button :disabled="time_diff == 1" v-if="graph_rendered" id="recluster_button" v-on:click="recluster()"> Recluster</b-button>
-					<!-- Edit button -->
-					<b-button v-if="graph_rendered" id="edit_mask_button" v-on:click="showEditMask()">Edit Graph</b-button>
-					<!-- Resetz Zoom button -->
-					<b-button v-if="graph_rendered" id="reset_zoom_button" v-on:click="resetZoom()">Reset Zoom</b-button>
-				</b-nav-form>
-
-				<!-- Save and Load Graph buttons -->
-				<b-nav-form>
+					<!-- Save and Load Graph buttons -->
 					<b-button :disabled="time_diff == 1" id="download_button" variant="success" v-on:click="saveGraph()" download="graph.json" href=""><i class="fas fa-download"></i> Save Graph</b-button>
 					<b-button id="load_button" variant="danger" v-on:click="displayForm()"> <i class="fas fa-upload"></i> Load Graph</b-button>
 				</b-nav-form>
@@ -207,75 +295,16 @@
 	<b-row id="rows">
 		<!-- Column with input parameters (left column) -->
 		<b-col id="input-options" class="input_options" sm="2">
-			<b-button-group>
-					<b-button v-b-modal.modal-settings-1 id="general_settings_button"><i class="fas fa-cog"></i> General Settings</b-button>
-			</b-button-group>
 
-			<b-modal id="modal-settings-1" scrollable size="xl" title="General Settings" @ok="update_general_settings">
-				<div>
-					<div style="font-size: 20px; font-weight:bold;">
-						Useful links
-					</div>
-					<div style="margin-top: 2ex;">
-						<b-link href="https://github.com/IngaKe/SCoT"><i class="fab fa-github"></i> View on GitHub </b-link>
-					</div>
-					<div>
-						<b-link href="https://ingake.github.io/SCoT/index.html"> <i class="fas fa-question-circle"></i> View User Guide </b-link>
-					</div>
-				</div>
-				<hr>
-					<div>
-						<div style="font-size: 20px; font-weight:bold; margin-top:2ex;">
-							Select view port size
-						</div>
-						<b-form-group class="input" label="Select view port height in pixels">
-							<b-form-input size="sm" type="number" v-model="viewport_height"></b-form-input>
-						</b-form-group>
-
-						<b-form-group class="input" label="Select viewport width in pixels">
-							<b-form-input size="sm" type="number" v-model="viewport_width"></b-form-input>
-						</b-form-group>
-					</div>
-					<hr>
-					<div>
-						<div style="font-size: 20px; font-weight:bold; margin-top:2ex;">
-							Select SVG size
-						</div>
-
-						<div style="margin-top: 1ex;">
-							<span style="border-left: 5px solid red; background-color: moccasin; padding: 5pt;"> WARNING: Please set before rendering a graph. Changes to the size of the svg after rendering a graph will act like a zoom function.</span>
-						</div>
-
-						<b-form-group class="input" label="Select SVG height in pixels">
-							<b-form-input size="sm" type="number" v-model="svg_height"></b-form-input>
-						</b-form-group>
-
-						<b-form-group class="input" label="Select SVG width in pixels">
-							<b-form-input size="sm" type="number" v-model="svg_width"></b-form-input>
-						</b-form-group>
-					</div>
-					<hr>
-					<div>
-						<div style="font-size: 20px; font-weight:bold; margin-top:2ex;">
-							Link Thickness Calculation
-						</div>
-
-						<b-form-group class="input">
-							<b-form-radio v-model="link_thickness_scaled" value="true">Calculate edge thinkness with respect to the similarity score between neighbours</b-form-radio>
-
-							<div style="margin-left: 25px; margin-bottom: 2ex;">
-								<span style="font-size: 10pt;">Scale the similarity score using sqrt(similatity score / x), x being:</span>
-								<b-form-input size="sm" v-model="link_thickness_factor" type="number"></b-form-input>
-							</div>
-
-							<b-form-radio v-model="link_thickness_scaled" value="false">Use same thickness for every link</b-form-radio>
-							<div style="margin-left: 25px;">
-								<span style="font-size: 10pt">Thickness in pixels:</span>
-								<b-form-input size="sm" v-model="link_thickness_value" type="number"></b-form-input>
-							</div>
-						</b-form-group>
-					</div>
-			</b-modal>
+			<br>
+			<h5 class="sidebar-section__title"> </h5>
+			<!--<hr>-->
+			<p style="color:blue;font-size:140%">
+				<a href="https://uhh-lt.github.io/SCoT/">User guide</a>
+				<br>
+				<a href="https://github.com/uhh-lt/SCoT">Source code</a>
+			</p>
+			<hr style="border: 1px solid gray;" />
 			<!-- Enter database -->
 			<b-form-group class="input" label="Select collection">  
 				<b-form-select v-on:change="onChangeDb" v-model="collection_name" :options="collections_names" size="sm"></b-form-select>
@@ -287,12 +316,12 @@
 			</b-form-group>
 
 			<!-- Enter number of neighbouring nodes -->
-			<b-form-group class="input" label="Ḿax. number of neighbours">  
+			<b-form-group class="input" label="Ḿax. number of neighbours [in all time-slices]">
 				<b-form-input type="number" v-model="senses" min="0" placeholder="number of neighbours" size="sm"></b-form-input>
 			</b-form-group>
 
 			<!-- Enter maximum number of edges per node -->
-			<b-form-group class="input" label="Max. number of edges">  
+			<b-form-group class="input" label="Max. number of edges [per paradigm]">
 				<b-form-input type="number" v-model="edges" min="0" placeholder="number of edges" size="sm"></b-form-input>
 			</b-form-group>
 
@@ -306,30 +335,37 @@
 				<b-form-select v-model="end_year" :options="end_years" size="sm"></b-form-select>
 			</b-from-group>
 
-			<!-- Select time diff or sense clustering mode -->
-			<b-form-group class="input" label="Mode" id="select_time_diff">
-				<b-form-radio v-model="time_diff" name="time_diff" v-bind:value="false"> Sense Clustering (CW) </b-form-radio>
-				<b-form-radio v-model="time_diff" name="time_diff" v-bind:value="true">Time Diff</b-form-radio>
-			</b-form-group>
+
 
 			<!-- Render button -->
 			<b-button id="render_button" v-on:click="render_graph()">Render Graph</b-button>
+				<hr style="border: 1px solid gray;" />
+				<!-- Set dragging behaviour -->
+				<b-form-group id="sticky" class="input" label="Dragging">
+					<b-form-radio name="sticky_mode" value="false" v-model="sticky_mode"> Enable brush (no force) </b-form-radio>
+					<b-form-radio name="sticky_mode" value="true" v-model="sticky_mode"> Use force (no brush available) </b-form-radio>
+				</b-form-group>
+				<!-- Button to restart simulation with all the nodes -->
+				<p>
+					<b-button id="restart_button"> Restart Simulation </b-button>
+				</p>
+				<!-- Set charge strength for simulation -->
+				<b-form-group> Charge strength (-200, 100): {{charge}}
+					<b-form-input id="range_charge" v-model="charge" type="range" min="-200" max="100"></b-form-input>
+				</b-form-group>
+				<!-- Set link distance for simulation -->
+				<b-form-group> Link distance (-10, 200): {{linkdistance}}
+					<b-form-input id="range_linkdistance" v-model="linkdistance" type="range" min="-10" max="200"></b-form-input>
+				</b-form-group>
 
 			<p>
 				<!-- Update button to add more nodes and edges to graph -->
-				<b-button :disabled="time_diff == 1" v-if="graph_rendered" v-b-toggle.collapse-update-1 id="add_update_button"> Update Graph
+				<b-button :disabled="time_diff == 1" v-if="graph_rendered" v-b-toggle.collapse-update-1 id="add_update_button" style="display:none"> Update Graph
 				</b-button>
 			</p>
-			
+
 			<br>
-			<hr style="border: 1px solid gray;" />
-			<h5 class="sidebar-section__title"> GitHub Pages:</h5>
-			<!--<hr>-->
-			<p style="color:blue;font-size:140%">
-			<a href="https://github.com/uhh-lt/SCoT">Source code</a>
-			<br>
-			<a href="https://uhh-lt.github.io/SCoT/">User guide</a>
-			</p>
+
 
 			<div>
 				<!-- Card collape to enter number of nodes and edges for update -->
@@ -337,7 +373,7 @@
 					<b-card class="input_cluster" style="color: black">
 
 						<!-- Enter new number of neighbouring nodes to the target word -->
-						<b-form-group class="input" label="Number of neighbours">  
+						<b-form-group class="input" label="Number of neighbours">
 							<b-form-input type="number" v-model="update_senses" min="0" placeholder="number of neighbours" size="sm"></b-form-input>
 						</b-form-group>
 
@@ -357,7 +393,10 @@
 		</b-col>
 
 		<!-- Graph display column (middle) + Options button for ndoes + card for time diff options -->
-		<b-col id="graph_display" sm="8">
+		<b-col sm="8">
+			<b-row>
+		<b-col id="graph_display" >
+
 			<!-- TIME DIFF -->
 			<!-- Card with time diff options -->
 			<b-card v-if="time_diff" id="time_diff_card">
@@ -490,26 +529,156 @@
 			<!-- for some weird reason it did not work with id="graph", but with id="graph2"... don't ask me why -->
 			<div id="graph2"></div>
 		</b-col>
+			</b-row>
+			<b-row  >
+				<b-col sm="4">
+					<div class="data-container" style="height: 328px;" >
+						<table class="table table-condensed table-hover"  >
+							<thead>
+							<tr>
+								<th data-toggle="sort" data-sort-dir="asc" data-type="string" class="sortable">
+									Paradigm [Node]
+								</th>
+								<th data-toggle="sort" data-sort-dir="desc" data-type="float" class="text-right sortable">
+									Sim to main
+								</th>
+							</tr>
+							</thead>
+							<tbody>
 
+							<tr>
+								<td class="token">mouse#NN</td>
+								<td style="text-align:right">746</td>
+							</tr>
+							<tr>
+								<td class="token" style="color: rgb(31, 119, 180);">rat#NN</td>
+								<td style="text-align:right">192</td>
+							</tr>
+							<tr>
+								<td class="token" style="color: rgb(31, 119, 180);">rodent#NN</td>
+								<td style="text-align:right">122</td>
+							</tr>
+							<tr>
+								<td class="token" style="color: rgb(31, 119, 180);">monkey#NN</td>
+								<td style="text-align:right">112</td>
+							</tr>
+							<tr>
+								<td class="token" style="color: rgb(31, 119, 180);">pig#NN</td>
+								<td style="text-align:right">103</td>
+							</tr>
+							</tbody>
+						</table>
+					</div>
+				</b-col>
+				<b-col sm="4">
+					<div class="data-container" style="height: 328px;">
+						<table class="table table-condensed table-hover">
+							<thead>
+							<tr>
+								<th data-toggle="sort" data-sort-dir="asc" data-type="string" class="sortable">
+									Related Paradigm [Node]
+								</th>
+								<th data-toggle="sort" data-sort-dir="desc" data-type="float" class="text-right sortable">
+									Sim to Para 1
+								</th>
+							</tr>
+							</thead>
+							<tbody>
+
+							<tr>
+								<td>
+									<div class="element-caption">wound#NN#-prep_in</div>
+								</td>
+								<td style="text-align:right">83.30</td>
+								<td style="text-align:right"></td>
+							</tr><tr>
+								<td>
+									<div class="element-caption">worm#NN#conj_and</div>
+								</td>
+								<td style="text-align:right">44.20</td>
+								<td style="text-align:right"></td>
+							</tr><tr>
+								<td>
+									<div class="element-caption">worm#NN#-conj_and</div>
+								</td>
+								<td style="text-align:right">54.62</td>
+								<td style="text-align:right"></td>
+							</tr><tr>
+								<td>
+									<div class="element-caption">works#VB#-prep_in</div>
+								</td>
+								<td style="text-align:right">40.19</td>
+								<td style="text-align:right"></td>
+							</tr><tr>
+								<td>
+									<div class="element-caption">works#VB#-nsubj</div>
+								</td>
+								<td style="text-align:right">53.72</td>
+								<td style="text-align:right"></td>
+							</tr>
+							</tbody>
+						</table>
+					</div>
+				</b-col>
+				<b-col sm="4">
+					<div class="data-container" style="height: 328px;">
+						<table class="table table-condensed table-hover">
+							<thead>
+							<tr>
+								<th data-toggle="sort" data-sort-dir="asc" data-type="string" class="sortable">
+									Sim-Context [Edge]
+
+								<th class="text-right sortable" data-toggle="sort" data-sort-dir="asc" data-type="float">
+									Score
+								</th>
+								<th class="text-right sortable sort-asc" data-toggle="sort" data-sort-dir="desc" data-type="float">
+									Count
+
+							</tr>
+							</thead>
+							<tbody>
+							<tr>
+								<td>
+									<div class="element-caption">zebrafish#NN#conj_and</div>
+								</td>
+								<td style="text-align:right">40.91</td>
+								<td style="text-align:right"></td>
+							</tr><tr>
+								<td>
+									<div class="element-caption">your#PRP$#poss</div>
+								</td>
+								<td style="text-align:right">1791.63</td>
+								<td style="text-align:right"></td>
+							</tr><tr>
+								<td>
+									<div class="element-caption">young#JJ#amod</div>
+								</td>
+								<td style="text-align:right">111.19</td>
+								<td style="text-align:right"></td>
+							</tr><tr>
+								<td>
+									<div class="element-caption">yanagisawa#NP#poss</div>
+								</td>
+								<td style="text-align:right">79.88</td>
+								<td style="text-align:right"></td>
+							</tr><tr>
+								<td>
+									<div class="element-caption">x5#NP#nn</div>
+								</td>
+								<td style="text-align:right">55.25</td>
+								<td style="text-align:right"></td>
+							</tr>
+							</tbody>
+						</table>
+					</div>
+				</b-col>
+			</b-row>
+
+
+		</b-col>
 		<!-- edit column (right column) -->
 		<b-col class="edit_clusters col-auto" id="edit_clusters_popup" sm="2">
-			<!-- Set dragging behaviour -->
-			<b-form-group id="sticky" class="input" label="Dragging">
-					<b-form-radio name="sticky_mode" value="false" v-model="sticky_mode"> Enable brush (no force) </b-form-radio>
-					<b-form-radio name="sticky_mode" value="true" v-model="sticky_mode"> Use force (no brush available) </b-form-radio>
-			</b-form-group>
-			<!-- Button to restart simulation with all the nodes -->
-			<p>
-				<b-button id="restart_button"> Restart Simulation </b-button>
-			</p>
-			<!-- Set charge strength for simulation -->
-			<b-form-group> Charge strength (-200, 100): {{charge}}
-				<b-form-input id="range_charge" v-model="charge" type="range" min="-200" max="100"></b-form-input>
-			</b-form-group>
-			<!-- Set link distance for simulation -->
-			<b-form-group> Link distance (-10, 200): {{linkdistance}}
-				<b-form-input id="range_linkdistance" v-model="linkdistance" type="range" min="-10" max="200"></b-form-input>
-			</b-form-group>
+
 			<!-- list with clusters -->
 			<div class="edit_cluster_textbox">
 				<b-list-group v-for="(cluster, index) in clusters" :key="index">

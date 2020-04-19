@@ -1,10 +1,3 @@
-# TODOs
-# 1. How to include the target word 
-# 2. Gravity
-# 3. Time Diff Graph
-# 4. Integrate Graph in vue.js to make it better editable?
-# and show the relationships between words better?
-
 from flask import Flask, jsonify, render_template, request, Response
 from flask_cors import CORS
 
@@ -54,22 +47,6 @@ def interval(start, end, collection):
 	return json.dumps(interval)
 
 
-@app.route('/api/reclustering', methods=['POST'])
-# recluster the existing graph by running Chinese Whispers on it again
-def recluster():
-	nodes = []
-	links = []
-	if request.method == 'POST':
-		data = json.loads(request.data)
-		nodes = data["nodes"]
-		links_list = data["links"]
-		for item in links_list:
-			links.append((item["source"], item["target"], {'weight': int(item["weight"])}))
-
-		reclustered_graph = chineseWhispers.reclustering(nodes, links)
-		return json.dumps(reclustered_graph)
-
-
 @app.route('/api/collections/<string:collection>/start_years')
 # retrieve all possible start years from the database
 def get_start_years(collection):
@@ -110,14 +87,10 @@ def get_clustered_graph(
 		time_ids = db.get_time_ids(start_year, end_year)
 		nodes = db.get_nodes(target_word, paradigms, time_ids)
 		edges, nodes, singletons = db.get_edges(nodes, density, time_ids)
-
+		
 		return singletons, chineseWhispers.chinese_whispers(nodes, edges, target_word)
-
-	singletons, clustered_graph = clusters(collection, target_word,
-		start_year,
-		end_year,
-		paradigms,
-		density)
+	
+	singletons, clustered_graph = clusters(collection, target_word, start_year, end_year, paradigms, density)
 
 	c_graph = json.dumps([clustered_graph, {'target_word': target_word}, {'singletons': singletons}], sort_keys=False, indent=4)
 	
