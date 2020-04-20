@@ -38,12 +38,7 @@
 				<b-nav-form >
 
 					<!-- Options Drop Down for node options TODO Update Options-->
-					<div>
-						<b-button-group>
-
-							<b-button v-b-modal.modal-settings-1 id="general_settings_button"> Graph: settings</b-button>
-						</b-button-group>
-					</div>
+					
 					<b-modal id="modal-settings-1" scrollable size="xl" title="General Settings" @ok="update_general_settings">
 						<div>
 							<div style="font-size: 20px; font-weight:bold;">
@@ -160,8 +155,8 @@
 					</b-modal>
 
 
-					<!-- Inbetweenness Centrality Button-->
-					<b-dropdown id="centralityDD" text="Graph: Central Nodes" aria-expanded=true>
+					<!-- Inbetweenness Centrality Button id="centralityDD"-->
+					<b-dropdown  text="Betweeness Centrality" aria-expanded=true>
 						<!-- Node options -->
 						<!-- only available for non cluster nodes -->
 						<b-dropdown-item v-on:click="highlightCentralNodes(centrality_threshold_s, centrality_threshold_m)"> <i class="fas fa-highlighter"></i> Highlight central nodes in graph </b-dropdown-item>
@@ -199,12 +194,12 @@
 						</div>
 					</b-modal>
 
-					<!-- Resetz Zoom button -->
-					<b-button id="reset_zoom_button" v-on:click="resetZoom()">Graph: Reset Zoom</b-button>
+					
 
 
 					<div>
-						<b-dropdown  id="nodeOptionsDD" text="Cluster Node_Editor" aria-expanded=true >
+						<!--id="nodeOptionsDD"-->
+						<b-dropdown   text="Node_Editor" aria-expanded=true >
 							<!-- Node options -->
 							<!-- only available for non cluster nodes -->
 							<b-dropdown-item v-show="select_node_is_no_cluster_node" v-on:click="findSelectedNodes()" v-b-modal.modal-1> <i class="fas fa-exchange-alt"></i> Assign to different cluster </b-dropdown-item>
@@ -212,9 +207,9 @@
 							<b-dropdown-item v-on:click="delete_selected_nodes()"> <i class="fas fa-trash"></i> Delete node </b-dropdown-item>
 						</b-dropdown>
 					</div>
-					<!-- Nodes with balanced neighbourhood of clusters -->
-					<b-dropdown id="wobblyCandidatesCC" text="Clusters: Shared Nodes" aria-expanded=true>
-						<b-dropdown-item disabled="true" v-on:click="highlightWobblyCandidates()"> <i class="fas fa-highlighter"></i> Highlight shared nodes </b-dropdown-item>
+					<!-- Nodes with balanced neighbourhood of clusters id="wobblyCandidatesCC" -->
+					<b-dropdown text="Nodes between clusters" aria-expanded=true>
+						<b-dropdown-item v-on:click="highlightWobblyCandidates()"> <i class="fas fa-highlighter"></i> Highlight nodes between clusters </b-dropdown-item>
 						<b-dropdown-item v-on:click="resetCentralityHighlighting()"> <i class="fas fa-times"></i> Reset highlighting </b-dropdown-item>
 						<b-dropdown-item v-on:click="findWobblyCandidates()" v-b-modal.modal-wobbly-1> <i class="fas fa-bars"></i> List nodes </b-dropdown-item>
 					</b-dropdown>
@@ -255,12 +250,7 @@
 							</b-table>
 						</div>
 					</b-modal>
-					<!-- ToDo update Menu hier-->
-					<b-dropdown id="wobblyCandidatesCC" text="Clusters: Edge Analysis" aria-expanded=true>
-						<b-dropdown-item disabled="true" v-on:click="highlightWobblyCandidates()"> <i class="fas fa-highlighter"></i> Highlight shared nodes </b-dropdown-item>
-						<b-dropdown-item v-on:click="resetCentralityHighlighting()"> <i class="fas fa-times"></i> Reset highlighting </b-dropdown-item>
-						<b-dropdown-item v-on:click="findWobblyCandidates()" v-b-modal.modal-wobbly-1> <i class="fas fa-bars"></i> List nodes </b-dropdown-item>
-					</b-dropdown>
+					
 
 				</b-nav-form>
 			<b-navbar-nav class="ml-auto">
@@ -268,14 +258,13 @@
 
 				<b-nav-form>
 					<!-- Select time diff or sense clustering mode -->
+					<b-button @click='toggle_time_diff()'>Time Diff</b-button>
 
-						<b-form-radio v-model="time_diff" name="time_diff" v-bind:value="false"> Time Off </b-form-radio>
-						<b-form-radio v-model="time_diff" name="time_diff" v-bind:value="true">Time On</b-form-radio>
 
 					<!-- Edit button -->
-					<b-button id="edit_mask_button" v-on:click="showEditMask()">View Cluster Pane</b-button>
-					<!-- Recluster button -->
-					<b-button :disabled="time_diff == 1" id="recluster_button" v-on:click="recluster()"> Recluster</b-button>
+					<!-- <b-button id="edit_mask_button" v-on:click="showEditMask()">View Cluster Pane</b-button> -->
+					<!-- Recluster button id="recluster_button"-->
+				<b-button :disabled="time_diff == 1"  v-on:click="recluster()"> Recluster</b-button>
 					<!-- Options Drop Down for node options -->
 					<!-- Search bar -->
 					<b-input-group >
@@ -316,12 +305,12 @@
 			</b-form-group>
 
 			<!-- Enter number of neighbouring nodes -->
-			<b-form-group class="input" label="Ḿax. number of neighbours [in all time-slices]">
+			<b-form-group class="input" label="Max. paradigms">
 				<b-form-input type="number" v-model="senses" min="0" placeholder="number of neighbours" size="sm"></b-form-input>
 			</b-form-group>
 
 			<!-- Enter maximum number of edges per node -->
-			<b-form-group class="input" label="Max. number of edges [per paradigm]">
+			<b-form-group class="input" label="Max. edges per paradigm ">
 				<b-form-input type="number" v-model="edges" min="0" placeholder="number of edges" size="sm"></b-form-input>
 			</b-form-group>
 
@@ -335,10 +324,17 @@
 				<b-form-select v-model="end_year" :options="end_years" size="sm"></b-form-select>
 			</b-from-group>
 
-
-
 			<!-- Render button -->
+			
 			<b-button id="render_button" v-on:click="render_graph()">Render Graph</b-button>
+				<hr style="border: 1px solid gray;" />
+				<div>
+					<b-button-group>
+						<!-- Resetz Zoom button -->
+						<b-button id="reset_zoom_button" v-on:click="resetZoom()">Graph: Reset Zoom</b-button>
+						<!--<b-button v-b-modal.modal-settings-1 id="general_settings_button"> Graph: settings</b-button>-->
+					</b-button-group>
+				</div>
 				<hr style="border: 1px solid gray;" />
 				<!-- Set dragging behaviour -->
 				<b-form-group id="sticky" class="input" label="Dragging">
@@ -357,7 +353,8 @@
 				<b-form-group> Link distance (-10, 200): {{linkdistance}}
 					<b-form-input id="range_linkdistance" v-model="linkdistance" type="range" min="-10" max="200"></b-form-input>
 				</b-form-group>
-
+				
+				
 			<p>
 				<!-- Update button to add more nodes and edges to graph -->
 				<b-button :disabled="time_diff == 1" v-if="graph_rendered" v-b-toggle.collapse-update-1 id="add_update_button" style="display:none"> Update Graph
@@ -396,10 +393,25 @@
 		<b-col sm="8">
 			<b-row>
 		<b-col id="graph_display" >
-
+					<div v-if="graph_rendered === false && wait_rendering === false" class="image">
+			<img src="https://www.dropbox.com/s/5uv104vwnxj72i6/tempsnip.jpg?raw=1" >
+		</div>
+		<b-col id="graph_display" >
+			<div v-if="graph_rendered === false && wait_rendering === true" class="image">
+			<img src="https://www.dropbox.com/s/l1ywsdz45gjqycw/wait.jpg?raw=1" >
+		</div>
+			<!-- div to render the svg with the graph in (see render_sense_graph.js) -->
+			<!-- for some weird reason it did not work with id="graph", but with id="graph2"... don't ask me why -->
+			
+			<div id="graph2"></div>
+		
+		</b-col>
+	</b-row>
+	<b-row  v-if="time_diff">
+		
 			<!-- TIME DIFF -->
 			<!-- Card with time diff options -->
-			<b-card v-if="time_diff" id="time_diff_card">
+			<b-card  id="time_diff_card">
 					<p>
 						<!-- Option compare time intervals -->
 						<b-button v-b-toggle.collapse-interval-1 id="show_diff_button" aria-expanded="false">
@@ -523,24 +535,21 @@
 						</div>
 					</b-card>
 				</b-collase>
-			</b-card>
-
-			<!-- div to render the svg with the graph in (see render_sense_graph.js) -->
-			<!-- for some weird reason it did not work with id="graph", but with id="graph2"... don't ask me why -->
-			<div id="graph2"></div>
-		</b-col>
+					</b-card>
+				
 			</b-row>
-			<b-row  >
+			<b-row v-if="time_diff === false">
+			
 				<b-col sm="4">
-					<div class="data-container" style="height: 328px;" >
+					<div class="data-container">
 						<table class="table table-condensed table-hover"  >
 							<thead>
 							<tr>
 								<th data-toggle="sort" data-sort-dir="asc" data-type="string" class="sortable">
-									Paradigm [Node]
+									Node 1
 								</th>
 								<th data-toggle="sort" data-sort-dir="desc" data-type="float" class="text-right sortable">
-									Sim to main
+									Related to Main in TimeID
 								</th>
 							</tr>
 							</thead>
@@ -548,91 +557,42 @@
 
 							<tr>
 								<td class="token">mouse#NN</td>
-								<td style="text-align:right">746</td>
+								<td style="text-align:right">7, 4, 6</td>
 							</tr>
 							<tr>
 								<td class="token" style="color: rgb(31, 119, 180);">rat#NN</td>
-								<td style="text-align:right">192</td>
+								<td style="text-align:right">1, 2</td>
 							</tr>
 							<tr>
 								<td class="token" style="color: rgb(31, 119, 180);">rodent#NN</td>
-								<td style="text-align:right">122</td>
+								<td style="text-align:right">1, 2</td>
 							</tr>
 							<tr>
 								<td class="token" style="color: rgb(31, 119, 180);">monkey#NN</td>
-								<td style="text-align:right">112</td>
+								<td style="text-align:right">1, 2</td>
 							</tr>
 							<tr>
 								<td class="token" style="color: rgb(31, 119, 180);">pig#NN</td>
-								<td style="text-align:right">103</td>
+								<td style="text-align:right">1, 3</td>
 							</tr>
 							</tbody>
 						</table>
 					</div>
 				</b-col>
+				
 				<b-col sm="4">
-					<div class="data-container" style="height: 328px;">
+					<div class="data-container">
 						<table class="table table-condensed table-hover">
 							<thead>
 							<tr>
 								<th data-toggle="sort" data-sort-dir="asc" data-type="string" class="sortable">
-									Related Paradigm [Node]
-								</th>
-								<th data-toggle="sort" data-sort-dir="desc" data-type="float" class="text-right sortable">
-									Sim to Para 1
-								</th>
-							</tr>
-							</thead>
-							<tbody>
-
-							<tr>
-								<td>
-									<div class="element-caption">wound#NN#-prep_in</div>
-								</td>
-								<td style="text-align:right">83.30</td>
-								<td style="text-align:right"></td>
-							</tr><tr>
-								<td>
-									<div class="element-caption">worm#NN#conj_and</div>
-								</td>
-								<td style="text-align:right">44.20</td>
-								<td style="text-align:right"></td>
-							</tr><tr>
-								<td>
-									<div class="element-caption">worm#NN#-conj_and</div>
-								</td>
-								<td style="text-align:right">54.62</td>
-								<td style="text-align:right"></td>
-							</tr><tr>
-								<td>
-									<div class="element-caption">works#VB#-prep_in</div>
-								</td>
-								<td style="text-align:right">40.19</td>
-								<td style="text-align:right"></td>
-							</tr><tr>
-								<td>
-									<div class="element-caption">works#VB#-nsubj</div>
-								</td>
-								<td style="text-align:right">53.72</td>
-								<td style="text-align:right"></td>
-							</tr>
-							</tbody>
-						</table>
-					</div>
-				</b-col>
-				<b-col sm="4">
-					<div class="data-container" style="height: 328px;">
-						<table class="table table-condensed table-hover">
-							<thead>
-							<tr>
-								<th data-toggle="sort" data-sort-dir="asc" data-type="string" class="sortable">
-									Sim-Context [Edge]
+									Edge [Max similarity over time]
 
 								<th class="text-right sortable" data-toggle="sort" data-sort-dir="asc" data-type="float">
-									Score
+									Max Score
 								</th>
 								<th class="text-right sortable sort-asc" data-toggle="sort" data-sort-dir="desc" data-type="float">
-									Count
+									in TimeID
 
 							</tr>
 							</thead>
@@ -672,13 +632,60 @@
 						</table>
 					</div>
 				</b-col>
+				<b-col sm="4">
+					<div class="data-container">
+						<table class="table table-condensed table-hover">
+							<thead>
+							<tr>
+								<th data-toggle="sort" data-sort-dir="asc" data-type="string" class="sortable">
+									Node2
+								</th>
+								<th data-toggle="sort" data-sort-dir="desc" data-type="float" class="text-right sortable">
+									Related to Main in TimeIDs
+								</th>
+							</tr>
+							</thead>
+							<tbody>
+
+							<tr>
+								<td>
+									<div class="element-caption">wound#NN</div>
+								</td>
+								<td style="text-align:right">6, 7</td>
+							</tr><tr>
+								<td>
+									<div class="element-caption">worm#NN</div>
+								</td>
+								<td style="text-align:right">6, 7</td>
+							</tr><tr>
+								<td>
+									<div class="element-caption">worm#NN</div>
+								</td>
+								<td style="text-align:right">4, 5</td>
+							</tr><tr>
+								<td>
+									<div class="element-caption">works#NN</div>
+								</td>
+								<td style="text-align:right">1, 2</td>
+							</tr><tr>
+								<td>
+									<div class="element-caption">works#NN</div>
+								</td>
+								<td style="text-align:right">1, 2</td>
+							</tr>
+							</tbody>
+						</table>
+					</div>
+				</b-col>
+				
 			</b-row>
 
 
 		</b-col>
 		<!-- edit column (right column) -->
 		<b-col class="edit_clusters col-auto" id="edit_clusters_popup" sm="2">
-
+			
+						
 			<!-- list with clusters -->
 			<div class="edit_cluster_textbox">
 				<b-list-group v-for="(cluster, index) in clusters" :key="index">
@@ -778,11 +785,11 @@
 				</b-collapse>
 			</div>
 				
-			<p style="display: block;float: left;">
+			<p style="float: left;">
 				<!-- Button to apply changes to graph -->
 				<b-button id="apply_settings_button" class="close_button" v-on:click="applyClusterSettings()" :disabled="time_diff == 1">Apply</b-button>
 				<!-- Button to "close" column -->
-				<b-button class="close_button" variant="danger" v-on:click="closeForm('edit_clusters_popup')">Close</b-button>
+				<!--<b-button class="close_button" variant="danger" v-on:click="closeForm('edit_clusters_popup')">Close</b-button>-->
 			</p>
 		</b-col>
 	</b-row>

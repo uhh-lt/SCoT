@@ -27,8 +27,8 @@ async function render_graph(graph_nodes, graph_links, target) {
 			.attr("height", app.viewport_height)
 			.attr("viewBox", "0 0 " + app.svg_height + " " + app.svg_width)
 			.attr("preserveAspectRatio", "xMinYMin slice")
-			.style("outline", "1px solid")
-			.style("margin", "3ex")
+			// .style("outline", "1px solid")
+			.style("margin", "1ex")
 		.call(d3.zoom().on("zoom", function () {
 			svg.attr("transform", d3.event.transform)
 			}))
@@ -61,8 +61,8 @@ async function render_graph(graph_nodes, graph_links, target) {
 
 	t.append("text")
 		.attr("class", "target")
-		.attr("x", (app.svg_width/2))
-		.attr("y", (app.svg_height/2))
+		.attr("x", (app.viewport_width/5))
+		.attr("y", (app.viewport_height/5))
 		.text(function(d) { return d.target_word; })
 
 	// create the force simulation

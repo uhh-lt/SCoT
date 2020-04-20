@@ -6,8 +6,8 @@ app = new Vue({
 		target_word : "happiness/NN",
 		start_year : 1520,
 		end_year : 2008,
-		senses : 1,
-		edges : 1,
+		senses : 100,
+		edges : 30,
 		time_diff : false,
 		collection_key : "en_books",
 		collection_name: "English Books",
@@ -49,13 +49,13 @@ app = new Vue({
 		// all the links in the updated graph
 		updated_links : null,
 		// for setting the view port size for the graph
-		viewport_height : 600,
-		viewport_width : 1200,
+		viewport_height : (screen.availHeight-60)*0.65,
+		viewport_width : (screen.availWidth/12)*8+screen.availWidth/20,
 		// for setting the svg size for the graph
-		svg_height : 600,
-		svg_width : 1200,
+		svg_height : ((screen.availHeight-60)*0.65)+100,
+		svg_width : ((screen.availWidth/12)*8+screen.availWidth/20)+100,
 		// link thickness parameters
-		link_thickness_scaled : "true",
+		link_thickness_scaled : "false",
 		link_thickness_value : 1,
 		link_thickness_factor : 100,
 		// file from which a graph is to be loaded
@@ -64,6 +64,7 @@ app = new Vue({
 		read_graph : null,
 		// true, if a graph is rendered. Used in the HTML to only show buttons if a graph is rendered
 		graph_rendered : false,
+		wait_rendering : false,
 		// list of objects to store all the information on the clusters in a rendered graph (see function get_clusters())
 		clusters : [],
 		// new clusters calculated by reclustering the graph
@@ -189,6 +190,10 @@ app = new Vue({
 		}
 	},
 	methods: {
+		toggle_time_diff: function(){
+			this.time_diff = !this.time_diff
+		},
+
 		// on change database in frontend - update function
 		onChangeDb: function(){
 			
@@ -1882,9 +1887,12 @@ app = new Vue({
 				return;
 		},
 		render_graph: async function() {
-			this.getData();
 			this.graph_rendered = false;
+			this.wait_rendering = true;
+			console.log(this.wait_rendering)
+			this.getData();
 			await this.$nextTick();
+			
 		},
 		/*
 		Get the data from the BE according to the parameters entered in the FE and render the graph
@@ -1921,6 +1929,8 @@ app = new Vue({
 					// Call D3 function to render graph
 					render_graph(nodes, links, target)
 					this.graph_rendered = true;
+					this.wait_rendering = false;
+					console.log(this.wait_rendering)
 					// Update cluster information
 					app.get_clusters();
 				})

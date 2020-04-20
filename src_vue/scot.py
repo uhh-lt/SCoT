@@ -32,6 +32,21 @@ def getDbFromRequest(collection):
 def index():
 	return render_template('index.html')
 
+@app.route('/api/reclustering', methods=['POST'])
+# recluster the existing graph by running Chinese Whispers on it again
+def recluster():
+	nodes = []
+	links = []
+	if request.method == 'POST':
+		data = json.loads(request.data)
+		nodes = data["nodes"]
+		links_list = data["links"]
+		for item in links_list:
+			links.append((item["source"], item["target"], {'weight': int(item["weight"])}))
+
+		reclustered_graph = chineseWhispers.reclustering(nodes, links)
+		return json.dumps(reclustered_graph)
+
 @app.route('/api/collections')
 def databases_info():
 	with open('config.json') as config_file:

@@ -108,12 +108,10 @@ text {
 }
 
 #reset_zoom_button {
-	display:block;
-	float: right;
-	text-align: center;
-	font-size: 10px;
+	margin-top: 10px;
+	margin-bottom: 10px;
 	/*word-spacing: -10px;*/
-	/*margin-right: 10px;*/
+	font-size: 10px;
 	margin-left: 5px;
 }
 
@@ -151,6 +149,7 @@ text {
 	/*word-spacing: -10px;*/
 	/*margin-right: 10px;*/
 	margin-left: 5px;
+	visibility: hidden;
 }
 
 #render_button {
@@ -258,7 +257,7 @@ text {
 
 .edit_cluster_textbox {
 	font-size: 10px;
-	max-height: 50vh;
+	max-height: 70vh;
 	overflow: auto;
 	color: black;
 }
@@ -402,4 +401,15 @@ text {
 	margin: -2px 0 0 0;
 	top: 100%;
 	left: 0;
+}
+.navbar{
+	height: 60;
+}
+.data-container{
+	height: (vw-60)*0.25; 
+	opacity: 1;
+}
+
+.image{
+	height: (vw-60)*0.75
 }

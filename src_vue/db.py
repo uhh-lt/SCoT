@@ -114,7 +114,8 @@ class Database:
 		edges = []
 		connections = []
 		node_list = []
-		possible_singletons = []
+		# ! CH: this variable is not used: I am commenting out
+		# possible_singletons = []
 		singletons = []
 
 		for node in nodes:
@@ -171,9 +172,10 @@ class Database:
 				if (c[0], c[1]) not in potential_edges:
 					potential_edges[(c[0], c[1])] = c[2]
 				# if there is, average the weight (edges are independet of the time slices)
-				else:
-					weight = c[2]
-					avg = (potential_edges[(c[0], c[1])] + weight) / 2
+				# !!! CH: the following three lines of code are NEVER used - I am commenting them out
+				# else:
+				# 	weight = c[2]
+				# 	avg = (potential_edges[(c[0], c[1])] + weight) / 2
 		
 		# filter out the singletons
 		for n in node_list:
