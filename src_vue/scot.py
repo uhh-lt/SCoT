@@ -44,7 +44,7 @@ def recluster():
 		for item in links_list:
 			links.append((item["source"], item["target"], {'weight': int(item["weight"])}))
 
-		reclustered_graph = chineseWhispers.reclustering(nodes, links)
+		reclustered_graph = chineseWhispers.chinese_whispers(nodes, links)
 		return json.dumps(reclustered_graph)
 
 @app.route('/api/collections')
@@ -103,7 +103,7 @@ def get_clustered_graph(
 		nodes = db.get_nodes(target_word, paradigms, time_ids)
 		edges, nodes, singletons = db.get_edges(nodes, density, time_ids)
 		
-		return singletons, chineseWhispers.chinese_whispers(nodes, edges, target_word)
+		return singletons, chineseWhispers.chinese_whispers(nodes, edges)
 	
 	singletons, clustered_graph = clusters(collection, target_word, start_year, end_year, paradigms, density)
 

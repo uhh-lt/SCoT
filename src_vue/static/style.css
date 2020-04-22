@@ -15,9 +15,7 @@ text {
 	stroke-width: 2.5px;
 }
 
-.header {
-	/*word-spacing: -10px;*/
-}
+
 
 .input_options {
 	font: sans-serif;
@@ -53,7 +51,7 @@ text {
 	float: right;
 	display: block;
 	text-align: center;
-	font-size: 10px;
+	font-size: 12px;
 	/*word-spacing: -10px;*/
 	margin-left: 5px;
 }
@@ -64,7 +62,7 @@ text {
 	/*position: absolute;
 	right: 0;*/
 	text-align: center;
-	font-size: 10px;
+	font-size: 12px;
 	/*word-spacing: -10px;*/
 	/*margin-right: 10px;*/
 	margin-left: 5px;
@@ -87,15 +85,6 @@ text {
 	font-size: 10px;
 }
 
-#time_diff_button {
-	display: block;
-	float: right;
-	text-align: center;
-	font-size: 10px;
-	/*word-spacing: -10px;*/
-	/*margin-right: 10px;*/
-	margin-left: 5px;
-}
 
 #restart_button {
 	display: block;
@@ -221,8 +210,9 @@ text {
 }
 
 #time_diff_card {
-	width: 60vw;
-	font-size: 10pt
+	width: 100%;
+	font-size: 10pt;
+	color: black;
 }
 
 
@@ -300,7 +290,6 @@ text {
 }
 
 .dot {
-	float: left;
 	height: 20px;
 	width: 20px;
 	border-radius: 50%;
@@ -309,9 +298,6 @@ text {
 }
 
 .dot-sm {
-	float: left;
-	height: 10px;
-	width: 10px;
 	border-radius: 50%;
 	text-align: bottom;
 	margin-right: 10px;
@@ -357,7 +343,7 @@ text {
 
 .dropdown-item {
 	font-size: 10px;
-	position: relative; !important;
+	position: relative;
 	z-index: 1000;
 }
 
@@ -369,18 +355,13 @@ text {
 	display: none;
 }
 
-.list-item {
-	/*max-height: 600px;
-	overflow: visible;*/
-}
-
 .d3-tip {
 	line-height: 1;
 	padding: 6px;
-	background: rgba(0, 0, 0, 0.8);
+	background: rgba(0, 0, 0, 0.6);
 	color: #fff;
 	border-radius: 4px;
-	font-size: 12px;
+	font-size: 14px;
 }
 
 /* Creates a small triangle extender for the tooltip */
@@ -388,7 +369,6 @@ text {
 	box-sizing: border-box;
 	display: inline;
 	font-size: 10px;
-	width: 100%;
 	line-height: 1;
 	color: rgba(0, 0, 0, 0.8);
 	content: "\25BC";
@@ -401,15 +381,4 @@ text {
 	margin: -2px 0 0 0;
 	top: 100%;
 	left: 0;
-}
-.navbar{
-	height: 60;
-}
-.data-container{
-	height: (vw-60)*0.25; 
-	opacity: 1;
-}
-
-.image{
-	height: (vw-60)*0.75
 }

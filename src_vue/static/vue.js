@@ -49,11 +49,11 @@ app = new Vue({
 		// all the links in the updated graph
 		updated_links : null,
 		// for setting the view port size for the graph
-		viewport_height : (screen.availHeight-60)*0.65,
-		viewport_width : (screen.availWidth/12)*8+screen.availWidth/20,
+		viewport_height : (screen.availHeight-100),
+		viewport_width : screen.availWidth*1.1,
 		// for setting the svg size for the graph
-		svg_height : ((screen.availHeight-60)*0.65)+100,
-		svg_width : ((screen.availWidth/12)*8+screen.availWidth/20)+100,
+		svg_height : screen.availHeight-100,
+		svg_width : screen.availWidth*1.1,
 		// link thickness parameters
 		link_thickness_scaled : "false",
 		link_thickness_value : 1,
@@ -83,6 +83,8 @@ app = new Vue({
 		time_diff_nodes : {},
 		// true if a node is selected, for showing node option menu
 		node_selected : false,
+		// true if a link is selected
+		link_selected : false,
 		// check if selected node is cluster node, for options in the node option menu
 		select_node_is_no_cluster_node : true,
 		// array that holds information about all selected nodes
@@ -270,6 +272,7 @@ app = new Vue({
 			app.node.style("stroke-opacity", 1);
 			app.node.style("fill-opacity", 1)
 			// don't show time diff tooltip
+			// TODO tooltip hier ausstellen
 			app.circles.on("mouseover", null);
 			app.circles.on("mouseout", null);
 			app.node.on("mouseover", app.mouseOver(0.2));
@@ -1301,21 +1304,41 @@ app = new Vue({
 		/*
 		Returns all the time ids of a node as a string of start year and end year to be displayed in the tooltip on a node in the time diff mode
 		*/
-		selectInterval: function(time_ids) {
-			var intervalString = "";
-			
+		toolTipLink: function(time_ids, weights, targetA, targetB ){
+			let stringRet = "Edge: " + targetA + " - " + targetB +"<br>" + "<br>"
+			stringRet += "Max. similarity:" + "<br>"
+			stringRet += this.selectInterval(time_ids, weights) + "<br>"
+			stringRet += "For further information CLICK ME!"
+			return stringRet;
+		},
+
+		toolTipNode: function(time_ids, target_text, weights){
+			let stringRet = "Node: " + target_text +"<br>"+"<br>"
+			stringRet += "Highest similarities with " + app.target_word + ":" + "<br>"
+			stringRet += this.selectInterval(time_ids, weights) + "<br>"
+			stringRet += "For further information CLICK ME!"
+			return stringRet;
+		},
+
+		selectInterval: function(time_ids, weights) {
+			let intervalString = "";
 			if ((time_ids !== null) && (typeof time_ids !== "undefined")) {
 				if (typeof time_ids === "string") {
 					time_ids = time_ids.split(",");
 				}
-				time_ids.sort();
-				for (time_id of time_ids) {
-					var start = app.start_years[time_id - 1].text;
-					var end = app.end_years[time_id - 1].text;
-					intervalString += start + " - " + end + "<br>"
-				}
-				return intervalString;
 			}
+			if ((weights !== null) && (typeof weights !== "undefined")) {
+				if (typeof weights === "string") {
+						weights = weights.split(",");
+				}
+			}
+			for (index = 0; index < time_ids.length; index++) {
+					let start = app.start_years[time_ids[index] - 1].text;
+					let end = app.end_years[time_ids[index] - 1].text ;
+					intervalString += start + " - " + end + " [" + weights[index] +"]" + "<br>";
+				}
+			return intervalString;
+			
 		},
 		/*
 		Color nodes depending on whether they started to occur in the selected small time interval, stopped to occur in said interval, or both.
