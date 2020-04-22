@@ -27,12 +27,12 @@
 	<script src="https://unpkg.com/bootstrap-vue@2.11.0/dist/bootstrap-vue.js"></script>
 </head>
 
-<body style="background-color: #D3D3D3;"> 
+<body style="background-color: white;"> 
 	<div id="vue-app">
 		<b-container id="body-container" class="body"   fluid>
 <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX NAVBAR XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
 		<!-- Navbar with option buttons -->
-		<b-navbar type="dark" variant="dark" toggleable="lg" >
+		<b-navbar type="dark" variant="secondary" toggleable="lg" >
 			<b-navbar-brand tag="h1" class="header" >
 				Sense Clustering over Time
 			</b-navbar-brand>
@@ -49,8 +49,10 @@
 
 					<!-- Edit button -->
 					<!-- <b-button id="edit_mask_button" v-on:click="showEditMask()">View Cluster Pane</b-button> -->
-					
+					<!-- Inbetweenness Centrality Button id="centralityDD"-->
+			
 					<!-- Search bar -->
+					
 					<!-- Select time diff or sense clustering mode -->
 				<b-form-checkbox id="select_time_diff" style="color: white" v-model="time_diff" name="check-button" switch>
 					Time-Mode
@@ -62,18 +64,30 @@
 							<b-button id="search_button" size="sm" variant="danger" @click="unsearch_nodes()"><i class="fas fa-times"></i></i></b-button>
 						</b-input-group-append>
 					</b-input-group>
+					<!-- Centrality Button -->
+					<b-dropdown size="sm">
+						<template v-slot:button-content>
+							Centrality
+						  </template>
+						<!-- Node options -->
+						<!-- only available for non cluster nodes -->
+						<b-dropdown-item v-on:click="highlightCentralNodes(centrality_threshold_s, centrality_threshold_m)"> <i class="fas fa-highlighter"></i> Highlight central nodes in graph </b-dropdown-item>
+						<b-dropdown-item v-on:click="calculateCentralityDistribution()" v-b-modal.modal-centrality-1> <i class="fas fa-cogs"></i> Customize highlighting thresholds </b-dropdown-item>
+						<b-dropdown-item v-on:click="resetCentralityHighlighting()"> <i class="fas fa-times"></i> Reset highlighting </b-dropdown-item>
+						<b-dropdown-item v-on:click="getCentralityScores()" v-b-modal.modal-centrality-2> <i class="fas fa-bars"></i> List centrality node scores </b-dropdown-item>
+					</b-dropdown>
 					<!-- Recluster button id="recluster_button"-->
-				<b-button :disabled="time_diff == 1" id="load_button" v-on:click="recluster()"> Recluster</b-button>
+				<b-button :disabled="time_diff == 1" size="sm" v-on:click="recluster()"> Recluster</b-button>
 				<!-- Options Drop Down for node options -->
 					<!-- Save and Load Graph buttons -->
-					<b-button :disabled="time_diff == 1" id="download_button" variant="success" v-on:click="saveGraph()" download="graph.json" href=""><i class="fas fa-download"></i> Save Graph</b-button>
+					<b-button :disabled="time_diff == 1" id="load_button" variant="success" v-on:click="saveGraph()" download="graph.json" href=""><i class="fas fa-download"></i> Save Graph</b-button>
 					<b-button id="load_button" variant="success" v-on:click="displayForm()"> <i class="fas fa-upload"></i> Load Graph</b-button>
 				</b-nav-form>
 			</b-navbar-nav>
 	</b-navbar>
-<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR-RIGHT XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
+<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR-LEFT XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
 	<!-- Column with input parameters (left column) -->
-	<b-sidebar id="sidebar-left" title="" bg-variant="dark" text-variant="light" style="opacity: 0.9;" width="13%" left shadow>
+	<b-sidebar id="sidebar-left" title="Settings" bg-variant="secondary" text-variant="light" style="opacity: 0.9;" width="13%" left shadow>
 		<br>
 		<h5 class="sidebar-section__title"> </h5>
 		<!--<hr>-->
@@ -108,7 +122,7 @@
 			<b-form-select v-model="end_year" :options="end_years" size="sm"></b-form-select>
 		</b-from-group>
 		<!-- Render button -->
-		<b-button id="render_button" variant="success" v-on:click="render_graph()">Render Graph (<-START HERE)</b-button>
+		<b-button id="render_button" variant="success" v-on:click="render_graph()">Render Graph (START HERE)</b-button>
 		<hr style="border: 1px solid gray;" />
 		<div>
 			<b-button-group>
@@ -163,9 +177,9 @@
 			</b-collapse>
 		</div>
 	</b-sidebar>
-<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR-RIGHT XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
+<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR-RIGHT ANALYSIS CLUSTERING XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
 <!-- edit column (right column) -->
-<b-sidebar v-if="!time_diff" id="sidebar-right" title="" bg-variant="dark" text-variant="light" style="opacity: 0.9;"  right shadow>
+<b-sidebar width="23%" v-if="!time_diff" id="sidebar-right" title="Cluster-Analysis" bg-variant="secondary" text-variant="light" style="opacity: 0.9;"  right shadow>
 		<!-- show this part if time-diff = fals-->
 <div >
 	<br>
@@ -278,16 +292,7 @@
 
 			
 
-			<!-- Inbetweenness Centrality Button id="centralityDD"-->
-			<b-dropdown type="dark" variant="dark" text="Betweeness Centrality" aria-expanded=true>
-				<!-- Node options -->
-				<!-- only available for non cluster nodes -->
-				<b-dropdown-item v-on:click="highlightCentralNodes(centrality_threshold_s, centrality_threshold_m)"> <i class="fas fa-highlighter"></i> Highlight central nodes in graph </b-dropdown-item>
-				<b-dropdown-item v-on:click="calculateCentralityDistribution()" v-b-modal.modal-centrality-1> <i class="fas fa-cogs"></i> Customize highlighting thresholds </b-dropdown-item>
-				<b-dropdown-item v-on:click="resetCentralityHighlighting()"> <i class="fas fa-times"></i> Reset highlighting </b-dropdown-item>
-				<b-dropdown-item v-on:click="getCentralityScores()" v-b-modal.modal-centrality-2> <i class="fas fa-bars"></i> List centrality node scores </b-dropdown-item>
-			</b-dropdown>
-
+			
 			<!-- Modal to Customize Thresholds-->
 			<b-modal id="modal-centrality-1" title="Customize Highlighting Thresholds" @ok="highlightCentralNodes(centrality_threshold_s, centrality_threshold_m)">
 				<div>
@@ -320,9 +325,10 @@
 			
 
 
+
 			<div>
 				<!--id="nodeOptionsDD"-->
-				<b-dropdown  type="dark" variant="dark" text="Node Editor" aria-expanded=true >
+				<b-dropdown  type="dark" variant="secondary" text="Edit clustering of nodes" aria-expanded=true >
 					<!-- Node options -->
 					<!-- only available for non cluster nodes -->
 					<b-dropdown-item v-show="select_node_is_no_cluster_node" v-on:click="findSelectedNodes()" v-b-modal.modal-1> <i class="fas fa-exchange-alt"></i> Assign to different cluster </b-dropdown-item>
@@ -331,7 +337,7 @@
 				</b-dropdown>
 			</div>
 			<!-- Nodes with balanced neighbourhood of clusters id="wobblyCandidatesCC" -->
-			<b-dropdown type="dark" variant="dark" text="Nodes between clusters" aria-expanded=true>
+			<b-dropdown type="dark" variant="secondary" text="Nodes linking multiple clusters" aria-expanded=true>
 				<b-dropdown-item v-on:click="highlightWobblyCandidates()"> <i class="fas fa-highlighter"></i> Highlight nodes between clusters </b-dropdown-item>
 				<b-dropdown-item v-on:click="resetCentralityHighlighting()"> <i class="fas fa-times"></i> Reset highlighting </b-dropdown-item>
 				<b-dropdown-item v-on:click="findWobblyCandidates()" v-b-modal.modal-wobbly-1> <i class="fas fa-bars"></i> List nodes </b-dropdown-item>
@@ -481,11 +487,11 @@
 </div>
 </b-sidebar>
 <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR RIGHT TIME-DIFF VIEW XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
-<b-sidebar v-if="time_diff" id="sidebar-right" title="" width="23%" bg-variant="dark" text-variant="light" style="opacity: 0.9;"  right shadow>
+<b-sidebar v-if="time_diff" id="sidebar-right" title="Time-Analysis" width="23%" bg-variant="secondary" text-variant="light" style="opacity: 0.9;"  right shadow>
 <div>
 	<!-- TIME DIFF -->
 	<!-- Card with time diff options -->
-	<b-card bg-variant="dark" text-variant="light" style="opacity: 0.9;">
+	<b-card bg-variant="secondary" text-variant="light" style="opacity: 0.9;">
 			<p>
 				<!-- Option compare time intervals -->
 				<b-button v-b-toggle.collapse-interval-1 id="show_diff_button" aria-expanded="false">
@@ -500,8 +506,7 @@
 
 			<!-- Collapse card for option compare time intervals -->
 			<b-collapse id="collapse-interval-1" accordion="time-diff-accordion">
-				<b-card style="color: black;">
-					<b-button v-on:click="show_time_diff" id="time_diff_button">Show Difference </b-button>
+				<b-card bg-variant="secondary">
 					<p>
 						Select an interval for time diff:
 					</p>
@@ -518,7 +523,9 @@
 									<option  v-for="e in reducedEndYears"> {{ e.text }} </option> 
 								</b-form-select>
 								- {{end_year}}
-								
+								<br>
+								<br>
+								<b-button variant="success" v-on:click="show_time_diff" >Show Difference </b-button>
 								<!-- Legend: Colour of node categories, show nodes belonging to a category -->
 								<!-- On mouseover over circle show nodes of the respective category in graph -->
 								<div style="font-size: 10px; border: solid 0.5px; margin-top: 10px">
@@ -526,7 +533,7 @@
 									<div>
 										<span class="dot-sm" style="background-color: red;"
 										v-on:mouseover="fade_in_nodes('red')"
-										v-on:mouseout="reset_opacity()">HoverHere</span> Nodes that cease to occur between {{ interval_start}} and {{ interval_end }} (deceased)
+										v-on:mouseout="reset_opacity()">__HOVER_HERE__</span> Nodes that cease to occur between {{ interval_start}} and {{ interval_end }} (deceased)
 									</div>
 									<!-- button collapse to show nodes belonging to category -->
 									<div>
@@ -535,15 +542,15 @@
 											<span class="when-closed"><i class="fa fa-chevron-up" aria-hidden="true"></i></span>
 										</b-button>
 										<b-collapse id="collapse-deceased-1">
-											<b-card>
-												<div v-for="node in time_diff_nodes.deceased"> {{ node }} </div>
+											<b-card >
+												<div style="color: black" v-for="node in time_diff_nodes.deceased"> {{ node }} </div>
 											</b-card>
 										</b-collapse>
 									</div>
 									<!-- shortlived nodes -->
 									<div>
 										<span class="dot-sm" style="background-color: yellow;" v-on:mouseover="fade_in_nodes('yellow')"
-										v-on:mouseout="reset_opacity()">HoverHere</span>Nodes that occur only between {{ interval_start }} and {{ interval_end }} (shortlived)
+										v-on:mouseout="reset_opacity()">__HOVER_HERE__</span>Nodes that occur only between {{ interval_start }} and {{ interval_end }} (shortlived)
 									</div>
 									<!-- button collapse to show nodes belonging to category -->
 									<div>
@@ -553,14 +560,14 @@
 										</b-button>
 										<b-collapse id="collapse-shortlived-1">
 											<b-card>
-													<div v-for="node in time_diff_nodes.shortlived"> {{ node }} </div>
+													<div style="color: black" v-for="node in time_diff_nodes.shortlived"> {{ node }} </div>
 											</b-card>
 										</b-collapse>
 									</div>
 									<!-- born nodes -->
 									<div>
 										<span class="dot-sm" style="background-color: green;" v-on:mouseover="fade_in_nodes('green')"
-										v-on:mouseout="reset_opacity()">HoverHere</span> Nodes that start to occur between {{ interval_start }} and {{interval_end }} (born)
+										v-on:mouseout="reset_opacity()">__HOVER_HERE__</span> Nodes that start to occur between {{ interval_start }} and {{interval_end }} (born)
 									</div>
 									<!-- button collapse to show nodes belonging to category -->
 									<div>
@@ -570,7 +577,7 @@
 										</b-button>
 										<b-collapse id="collapse-born-1">
 											<b-card>
-													<div v-for="node in time_diff_nodes.born"> {{ node }} </div>
+													<div style="color: black" v-for="node in time_diff_nodes.born"> {{ node }} </div>
 											</b-card>
 										</b-collapse>
 									</div>
@@ -578,7 +585,7 @@
 									<div>
 										<span class="dot-sm" style="background-color: grey;" 
 										v-on:mouseover="fade_in_nodes('grey')"
-										v-on:mouseout="reset_opacity()">HoverHere</span> Nodes that occur before and after {{ interval_start }} and {{interval_end}}
+										v-on:mouseout="reset_opacity()">__HOVER_HERE__</span> Nodes that occur before and after {{ interval_start }} and {{interval_end}}
 									</div>
 									<!-- button collapse to show nodes belonging to category -->
 									<div>
@@ -588,7 +595,7 @@
 										</b-button>
 										<b-collapse id="collapse-normal-1">
 											<b-card>
-													<div v-for="node in time_diff_nodes.normal"> {{ node }} </div>
+													<div style="color: black" v-for="node in time_diff_nodes.normal"> {{ node }} </div>
 											</b-card>
 										</b-collapse>
 									</div>
@@ -600,7 +607,7 @@
 
 		<!-- card collapse for skipping through time slice (range input) -->
 		<b-collapse id="collapse-skip-1" accordion="time-diff-accordion">
-			<b-card bg-variant="dark" text-variant="light" style="opacity: 0.9;">
+			<b-card bg-variant="secondary" text-variant="light" style="opacity: 0.9;">
 				<div>
 					<b-form-group> 
 						<!-- Show the current time slice while skipping through -->
@@ -613,6 +620,46 @@
 	</b-card>
 </div>
 </b-sidebar>
+<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR RIGHT 2 - EDGE CONTEXT ANALYSIS VIEW XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
+<b-sidebar v-show="context_mode" id="sidebar-right2" title="Context-Analysis" width="30%" bg-variant="secondary" text-variant="light" style="opacity: 0.9;"  right shadow>
+	<template>
+		<b-button id="load_button" variant="danger" @click="toggleSidebarContext" >Close</b-button>
+	  </template>					
+	<br>
+	<br>
+	<p style="margin-left: 12px;" ><b>{{active_edge.source_text}} and {{active_edge.target_text}} </b>
+	are most strongly related in the interval [max]: <b> {{ selectIntervalWithActive () }}</b>
+	The score is based on a shared context. Each word has a significance-value:</p>
+						
+	<div >
+		<table class="table table-striped table-hover table-sm" style="color: white;">
+			<thead>
+			<tr>
+				<th data-toggle="sort" data-sort-dir="asc" data-type="string" class="sortable">
+					Shared context
+
+				<th class="text-right sortable" data-toggle="sort" data-sort-dir="asc" data-type="float">
+					{{active_edge.source_text}}
+				</th>
+				<th class="text-right sortable" data-toggle="sort" data-sort-dir="asc" data-type="float">
+					{{active_edge.target_text}}
+				</th>
+								
+			</tr>
+			</thead>
+			<tbody>
+			<tr v-for=" item in simbim_object ">
+				<td >{{item.key}}</td>
+				<td >{{item.score}}</td>
+				<td >{{item.score2}}</td>
+				
+			</tbody>
+		</table>
+		
+	</div>
+
+</b-sidebar>
+
 <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX MAIN VIEW XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
 	<b-row id="rows">
 		<!-- Graph display column (middle) + Options button for ndoes + card for time diff options -->

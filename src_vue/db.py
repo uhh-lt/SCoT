@@ -61,7 +61,7 @@ class Database:
 				
 				if not exists:
 					nodes.append([row['word2'], {"time_ids": [row['time_id']], "weights": [row["score"]], "target_text": row['word2']}])
-		print(nodes)
+		#print(nodes)
 		return nodes
 
 	# retrieve all the edges between the nodes

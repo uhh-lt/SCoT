@@ -1,16 +1,27 @@
 app = new Vue({
    el: "#vue-app",
    data: {
-	   // special
-		// default values for init
+	    // default values for init
 		target_word : "happiness/NN",
 		start_year : 1520,
 		end_year : 2008,
 		senses : 100,
 		edges : 30,
-		time_diff : false,
 		collection_key : "en_books",
 		collection_name: "English Books",
+		// View Modes - SIDEBAR RIGHT ANALYSIS
+	   // logic - time_diff: false AND context false -> cluster-mode
+	   // time_diff: true and context_mode false -> time_diff mode
+	   // context true -> [edge] context_ mode
+	   // if context is set to false - previous panel returns
+	   time_diff : false,
+	   context_mode : false,
+	   showSidebarRight : false,
+	   showSidebarLeft: false,
+	   // sidebar right additional information
+	   active_edge: {"time_ids": [1], "weights": [1], "source_text": "happiness/NN", "target_text": "gladness/NN"},	
+	   simbim_object: {},
+	   simbim_updated : false,
 		// all possible collections queried from database
 		collections : {}, // collections keys and names
 		collections_names: [], // collections_names
@@ -128,6 +139,9 @@ app = new Vue({
 		wobblyCandidates : []
 	},
 	computed: {
+		
+		
+		
 		/*
 		Returns all the clusters as an array of objects of the form 
 			{"text": cluster_name}, "value": {"cluster_id": some_id, "cluster_name": some_cluster_name, "colour": some_cluster_colour}
@@ -192,6 +206,12 @@ app = new Vue({
 		}
 	},
 	methods: {
+
+		toggleSidebarContext: function(){
+			this.context_mode = !this.context_mode
+			console.log("in toggle", this.context_mode)
+		},
+
 		toggle_time_diff: function(){
 			this.time_diff = !this.time_diff
 		},
@@ -1308,7 +1328,7 @@ app = new Vue({
 			let stringRet = "Edge: " + targetA + " - " + targetB +"<br>" + "<br>"
 			stringRet += "Max. similarity:" + "<br>"
 			stringRet += this.selectInterval(time_ids, weights) + "<br>"
-			stringRet += "For further information CLICK ME!"
+			stringRet += "For context-information - click me!"
 			return stringRet;
 		},
 
@@ -1316,8 +1336,12 @@ app = new Vue({
 			let stringRet = "Node: " + target_text +"<br>"+"<br>"
 			stringRet += "Highest similarities with " + app.target_word + ":" + "<br>"
 			stringRet += this.selectInterval(time_ids, weights) + "<br>"
-			stringRet += "For further information CLICK ME!"
 			return stringRet;
+		},
+
+		selectIntervalWithActive: function(){
+			console.log("in selectIntervalwitactive" + this.active_edge.time_ids)
+			return this.selectInterval(this.active_edge.time_ids, this.active_edge.weights).slice(0,-4)
 		},
 
 		selectInterval: function(time_ids, weights) {
@@ -1335,7 +1359,7 @@ app = new Vue({
 			for (index = 0; index < time_ids.length; index++) {
 					let start = app.start_years[time_ids[index] - 1].text;
 					let end = app.end_years[time_ids[index] - 1].text ;
-					intervalString += start + " - " + end + " [" + weights[index] +"]" + "<br>";
+					intervalString += start + " - " + end + " [" + weights[index] +"]"+"<br>";
 				}
 			return intervalString;
 			
@@ -1748,6 +1772,28 @@ app = new Vue({
 			svg.select("g")
 				.attr("transform", "translate(0.0, 0.0) scale(1.0)");
 		},
+
+		getSimBims: async function(){
+			let retArray = []
+			let word1 = this.active_edge.source_text
+			let word2 = this.active_edge.target_text
+			let url = './api/collections/'+this.collection_key +'/simbim/'+word1+'/simbim/'+word2
+			console.log(url)
+			axios.get(url)
+				.then((res) => {
+					
+					this.simbim_object  = res.data;
+					this.simbim_updated = true
+				})
+				.catch((error) => {
+					console.error(error);
+				});
+
+				
+				console.log(this.simbim_object)
+			
+		},
+
 		getStartYears: function() {
 			axios.get('./api/collections/'+ this.collection_key + '/start_years')
 				.then((res) => {

@@ -5,6 +5,7 @@ from db import Database
 import chineseWhispers
 import urllib.parse
 import json
+import urllib.request
 
 DEBUG = True
 PARAMETERS = {}
@@ -106,11 +107,44 @@ def get_clustered_graph(
 		return singletons, chineseWhispers.chinese_whispers(nodes, edges)
 	
 	singletons, clustered_graph = clusters(collection, target_word, start_year, end_year, paradigms, density)
-
 	c_graph = json.dumps([clustered_graph, {'target_word': target_word}, {'singletons': singletons}], sort_keys=False, indent=4)
 	
 	return c_graph
+
+@app.route('/api/collections/<string:collection>/simbim/<path:word1>/simbim/<path:word2>')
+def getSimBims(collection="default", word1='liberty/NN', word2='independence/NN'):
+# method is in the backend as it may be swapped out for a database at some point
+	print(word1, " ",  word2)
+	word1part1  = word1.split("/")[0]
+	word1part2 = word1.split("/")[1]
+	word2part1 = word2.split("/")[0]
+	word2part2 = word2.split("/")[1]
+	url1 = "http://ltmaggie.informatik.uni-hamburg.de/jobimviz/ws/api/google/jo/bim/score/" + word1part1 + "%23" + word1part2 + "?format=json"
+	url2 = "http://ltmaggie.informatik.uni-hamburg.de/jobimviz/ws/api/google/jo/bim/score/"+ word2part1 + "%23" + word2part2 + "?format=json"
+	print(url1)
 	
+	with urllib.request.urlopen(url1) as url:
+		data1 = json.loads(url.read().decode())
+		#print(data)
+	with urllib.request.urlopen(url2) as url:
+		data2 = json.loads(url.read().decode())
+	
+	results1 = data1["results"]
+	results2 = data2["results"]
+	#print(results1)
+	# compare and find similar
+	sim_results = {}
+	index3 = 0
+	for index in range(len(results1)):
+		for index2 in range(index, len(results1)):
+			if results1[index]["key"] == results2[index2]["key"]:
+				results1[index]["score2"] = results2[index2]["score"]
+				inStr = str(index3)
+				sim_results[inStr] = results1[index]
+				index3 +=1
+	print("anzahl sims", len(sim_results))
+	return sim_results
+
 
 if __name__ == '__main__':
 	# use the config file to get host and database parameters

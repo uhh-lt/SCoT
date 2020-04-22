@@ -220,8 +220,14 @@ async function render_graph(graph_nodes, graph_links, target) {
 				}
 			})
 			.on("click", function(d) {
-				console.log("in link click " + d.time_ids +  d.weight + d.source_text + d.target_text)
-			});
+				app.active_edge = {"time_ids": d.time_ids, "weights": d.weights, "source_text": d.source_text, "target_text": d.target_text}
+				app.simbim_updated = false
+				app.getSimBims()
+				console.log("in link click " + d.time_ids +  d.weights + d.source_text + d.target_text)
+				app.context_mode = true
+			})
+			.on("mouseover", time_diff_tip_link.show)
+			.on("mouseout", time_diff_tip_link.hide);
 	
 		app.simulation.on("tick", ticked);
 
@@ -527,16 +533,14 @@ async function render_graph(graph_nodes, graph_links, target) {
 				app.circles.attr("fill", function(d) { return color(d.class); })
 				app.circles.on("mouseover", null);
 				app.circles.on("mouseout", null);
-				app.link.on("mouseover", null);
-				app.link.on("mouseout", null);
+				
 			}
 			if (app.time_diff === true) {
 				circle.on("mouseover", time_diff_tip.show);
 				circle.on("mouseout", time_diff_tip.hide);
 				app.circles.on("mouseover", time_diff_tip.show);
 				app.circles.on("mouseout", time_diff_tip.hide);
-				app.link.on("mouseover", time_diff_tip_link.show);
-				app.link.on("mouseout", time_diff_tip_link.hide);
+				
 			}
 		});
 
@@ -615,15 +619,13 @@ async function render_graph(graph_nodes, graph_links, target) {
 		if (app.time_diff === false) {
 			
 			app.reset_time_diff_colours();
-			app.link.on("mouseover", null);
-			app.link.on("mouseout", null);
+			
 		}
 		if (app.time_diff === true) {
 			// show time diff tooltip
 			app.circles.on("mouseover", time_diff_tip.show);
 			app.circles.on("mouseout", time_diff_tip.hide);
-			app.link.on("mouseover", time_diff_tip_link.show);
-			app.link.on("mouseout", time_diff_tip_link.hide);
+			
 
 			d3.select("#skip_through_button").on("click", function(d) {
 				if (this.getAttribute("aria-expanded") === "true") {
