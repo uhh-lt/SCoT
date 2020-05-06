@@ -113,7 +113,9 @@ def get_clustered_graph(
 
 @app.route('/api/collections/<string:collection>/simbim/<path:word1>/simbim/<path:word2>')
 def getSimBims(collection="default", word1='liberty/NN', word2='independence/NN'):
+# template method for new data-pipeline
 # method is in the backend as it may be swapped out for a database at some point
+# current provisional data-provider jo-bim-api-google-books
 	print(word1, " ",  word2)
 	word1part1  = word1.split("/")[0]
 	word1part2 = word1.split("/")[1]
@@ -135,14 +137,28 @@ def getSimBims(collection="default", word1='liberty/NN', word2='independence/NN'
 	# compare and find similar
 	sim_results = {}
 	index3 = 0
+	max_1 = 0.0
+	max_2 = 0.0
 	for index in range(len(results1)):
-		for index2 in range(index, len(results1)):
+		for index2 in range(len(results2)):
 			if results1[index]["key"] == results2[index2]["key"]:
 				results1[index]["score2"] = results2[index2]["score"]
+				if float(results1[index]["score"]) > max_1:
+					max_1 = float(results1[index]["score"])
+				if float(results2[index2]["score"]) > max_2:
+					max_2 = float(results2[index2]["score"])
 				inStr = str(index3)
 				sim_results[inStr] = results1[index]
 				index3 +=1
-	print("anzahl sims", len(sim_results))
+				break
+	if max_1 > max_2:
+		maxi = max_1
+	else:
+		maxi = max_2
+	for index in range(len(sim_results)):
+		sim_results[str(index)]["score2"] = str(float(sim_results[str(index)]["score2"])/maxi)
+		sim_results[str(index)]["score"] = str(float(sim_results[str(index)]["score"])/maxi)
+	print("anzahl same words", len(sim_results))
 	return sim_results
 
 

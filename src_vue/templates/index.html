@@ -28,11 +28,14 @@
 </head>
 
 <body style="background-color: white;"> 
+	
 	<div id="vue-app">
-		<b-container id="body-container" class="body"   fluid>
+		
+		<b-container id="body-container" fluid>
+			
 <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX NAVBAR XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
 		<!-- Navbar with option buttons -->
-		<b-navbar type="dark" variant="secondary" toggleable="lg" >
+		<b-navbar type="dark" variant="secondary" toggleable="lg" fixed="top">
 			<b-navbar-brand tag="h1" class="header" >
 				Sense Clustering over Time
 			</b-navbar-brand>
@@ -44,15 +47,7 @@
 				<b-nav-form>
 					<!-- SIDEBAR BUTTON LEFT -->
 		
-					<!-- This version does not trigger change in select_time_diff for d3 graph -->
-					<!--<b-button id="select_time_diff" @click='toggle_time_diff()'>Time Diff</b-button>-->
-
-					<!-- Edit button -->
-					<!-- <b-button id="edit_mask_button" v-on:click="showEditMask()">View Cluster Pane</b-button> -->
-					<!-- Inbetweenness Centrality Button id="centralityDD"-->
-			
-					<!-- Search bar -->
-					
+									
 					<!-- Select time diff or sense clustering mode -->
 				<b-form-checkbox id="select_time_diff" style="color: white" v-model="time_diff" name="check-button" switch>
 					Time-Mode
@@ -627,46 +622,23 @@
 	  </template>					
 	<br>
 	<br>
-	<p style="margin-left: 12px;" ><b>{{active_edge.source_text}} and {{active_edge.target_text}} </b>
-	are most strongly related in the interval [max]: <b> {{ selectIntervalWithActive () }}</b>
-	The score is based on a shared context. Each word has a significance-value:</p>
-						
-	<div >
-		<table class="table table-striped table-hover table-sm" style="color: white;">
-			<thead>
-			<tr>
-				<th data-toggle="sort" data-sort-dir="asc" data-type="string" class="sortable">
-					Shared context
-
-				<th class="text-right sortable" data-toggle="sort" data-sort-dir="asc" data-type="float">
-					{{active_edge.source_text}}
-				</th>
-				<th class="text-right sortable" data-toggle="sort" data-sort-dir="asc" data-type="float">
-					{{active_edge.target_text}}
-				</th>
-								
-			</tr>
-			</thead>
-			<tbody>
-			<tr v-for=" item in simbim_object ">
-				<td >{{item.key}}</td>
-				<td >{{item.score}}</td>
-				<td >{{item.score2}}</td>
-				
-			</tbody>
-		</table>
-		
+	<p style="margin-left: 12px;" ><b> Edges </b> represent a strong similarity between two paradigms. 
+		The [max] similarity between<b>  {{active_edge.source_text}} (Node1) </b>and <b> {{active_edge.target_text}} (Node2) </b>
+		occured in the interval: {{ selectIntervalWithActive () }}. 
+		Similarity is measured by significant shared context words.</p>
+	<div>
+		<b-table striped-hover :fields="fields_edges" :items="simbim_object" :sort-desc="True" style="color: white;">
+		</b-table>
 	</div>
-
 </b-sidebar>
 
 <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX MAIN VIEW XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
 	<b-row id="rows">
-		<!-- Graph display column (middle) + Options button for ndoes + card for time diff options -->
-		<b-col sm="10">
+		
+		<b-col sm="12">
 			<!-- div to render the svg with the graph in (see render_sense_graph.js) -->
 			<!-- for some weird reason it did not work with id="graph", but with id="graph2"... don't ask me why -->
-			<div id="graph2"></div>
+			<div id="graph2" class="svg-container"></div>
 		</b-col>
 	</b-row>
 	

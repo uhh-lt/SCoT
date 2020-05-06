@@ -20,7 +20,7 @@ app = new Vue({
 	   showSidebarLeft: false,
 	   // sidebar right additional information
 	   active_edge: {"time_ids": [1], "weights": [1], "source_text": "happiness/NN", "target_text": "gladness/NN"},	
-	   simbim_object: {},
+	   simbim_object: [],
 	   simbim_updated : false,
 		// all possible collections queried from database
 		collections : {}, // collections keys and names
@@ -60,11 +60,11 @@ app = new Vue({
 		// all the links in the updated graph
 		updated_links : null,
 		// for setting the view port size for the graph
-		viewport_height : (screen.availHeight-100),
-		viewport_width : screen.availWidth*1.1,
+		//viewport_height : (screen.availHeight-100),
+		//viewport_width : screen.availWidth*1.1,
 		// for setting the svg size for the graph
 		svg_height : screen.availHeight-100,
-		svg_width : screen.availWidth*1.1,
+		svg_width : screen.availWidth*0.9,
 		// link thickness parameters
 		link_thickness_scaled : "false",
 		link_thickness_value : 1,
@@ -136,7 +136,13 @@ app = new Vue({
 			{key: "show_details", label: "Show Details"}
 			],
 		// array containing information about the neighbourhood of each node
-		wobblyCandidates : []
+		wobblyCandidates : [],
+		// table information
+		fields_edges : [
+			{key: "node1", sortable: true},
+			{key: "edge", sortable: true},
+			{key: "node2", sortable: true}
+		]
 	},
 	computed: {
 		
@@ -1773,6 +1779,14 @@ app = new Vue({
 				.attr("transform", "translate(0.0, 0.0) scale(1.0)");
 		},
 
+		getSimBimsTest: function (context){
+			let items = [
+				{score: 32, name: "getSimBimsTestMethod", score2: 64},
+				{score: 22, name: "getSimBimsTestMethod", score2: 17}
+			]
+			return items
+		},
+
 		getSimBims: async function(){
 			let retArray = []
 			let word1 = this.active_edge.source_text
@@ -1781,8 +1795,19 @@ app = new Vue({
 			console.log(url)
 			axios.get(url)
 				.then((res) => {
+					let ret = []
+					for (var key in res.data){
+						var dati = res.data[key]
+						retObj = {}
+						retObj.node1 = parseFloat(dati["score"]).toFixed(4)
+						retObj.edge = dati["key"]
+						retObj.node2 = parseFloat(dati["score2"]).toFixed(4)
+						ret.push(retObj)
+						}
 					
-					this.simbim_object  = res.data;
+					console.log(ret)
+					this.simbim_object = ret
+					//this.simbim_object  = res.data;
 					this.simbim_updated = true
 				})
 				.catch((error) => {

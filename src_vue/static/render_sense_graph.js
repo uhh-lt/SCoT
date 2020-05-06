@@ -23,10 +23,9 @@ async function render_graph(graph_nodes, graph_links, target) {
 		.each(function() { this.focus(); })
 		.append("svg")
 			.attr("id", "svg")
-			.attr("width", app.viewport_width)
-			.attr("height", app.viewport_height)
 			.attr("viewBox", "0 0 " + app.svg_height + " " + app.svg_width)
-			.attr("preserveAspectRatio", "xMinYMin slice")
+			.attr("preserveAspectRatio", "xMinYMin meet")
+			.classed("svg-content", true)
 			// .style("outline", "1px solid")
 			//.style("margin", "1ex")
 		.call(d3.zoom().on("zoom", function () {
