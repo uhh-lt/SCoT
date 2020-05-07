@@ -20,9 +20,9 @@ app = new Vue({
 	   showSidebarLeft: false,
 	   // sidebar right additional information
 	   active_edge: {"time_ids": [1], "weights": [1], "source_text": "happiness/NN", "target_text": "gladness/NN"},	
+	   // sigebar right: holds edge context information (score, key, score2)
 	   simbim_object: [],
-	   simbim_updated : false,
-		// all possible collections queried from database
+	   	// all possible collections queried from database
 		collections : {}, // collections keys and names
 		collections_names: [], // collections_names
 		// all possible start years queried from the database
@@ -142,6 +142,7 @@ app = new Vue({
 			{key: "node1", sortable: true},
 			{key: "edge", sortable: true},
 			{key: "node2", sortable: true}
+			//{key: "combi", sortable: true}
 		]
 	},
 	computed: {
@@ -459,8 +460,8 @@ app = new Vue({
 			svg.attr("viewBox", "0 0 " + app.svg_height + " " + app.svg_width);
 			
 			// set view port
-			svg.attr("width", app.viewport_width);
-			svg.attr("height", app.viewport_height);
+			//svg.attr("width", app.viewport_width);
+			//svg.attr("height", app.viewport_height);
 
 			// set link thickness
 			var links = d3.selectAll(".link");
@@ -1575,6 +1576,7 @@ app = new Vue({
 			})
 
 		},
+		
 		/*
 		Set the opacity of nodes and links of a specific cluster.
 		@param Object cluster: the entry for a specific cluster in the data variable clusters.
@@ -1778,15 +1780,38 @@ app = new Vue({
 			svg.select("g")
 				.attr("transform", "translate(0.0, 0.0) scale(1.0)");
 		},
+		/*
+		Choose cluster for context analysis and display context information
+		Experimental feature for cluster information (not fully implemented yet)
+		*/
+		get_cluster_information: function(cluster){
+			console.log(this.links)
+			let links = this.links
+			let jsonReq = {"edges": [], "collection":this.collection_key}
+			let nodes = []
+			for (let key in cluster["labels"]){
+				let dati = cluster["labels"][key]
+				nodes.push(dati["text"])
+			}
+			console.log(nodes)
+			for (let key in links){
+				let t1 = links[key]["source_text"]
+				let t2 = links[key]["target_text"]
+				let timeId = links[key]["time_ids"][0]
+				let true1 = nodes.includes(t1) 
+				let true2 = nodes.includes(t2)
+				if (true1 && true2){
+					jsonReq["edges"].push({"source":t1, "target": t2, "time_id": timeId})
+					//console.log("includes ", t1 + t2)
+				}
+			}
+			//console.log(jsonReq)
+			//let url = './api/cluster_information'
+			//axios.post(url, jsonReq)
 
-		getSimBimsTest: function (context){
-			let items = [
-				{score: 32, name: "getSimBimsTestMethod", score2: 64},
-				{score: 22, name: "getSimBimsTestMethod", score2: 17}
-			]
-			return items
 		},
 
+		
 		getSimBims: async function(){
 			let retArray = []
 			let word1 = this.active_edge.source_text
@@ -1799,23 +1824,21 @@ app = new Vue({
 					for (var key in res.data){
 						var dati = res.data[key]
 						retObj = {}
-						retObj.node1 = parseFloat(dati["score"]).toFixed(4)
+						retObj.node1 = parseFloat(dati["score"]).toFixed(5)
 						retObj.edge = dati["key"]
-						retObj.node2 = parseFloat(dati["score2"]).toFixed(4)
+						retObj.node2 = parseFloat(dati["score2"]).toFixed(5)
+						// retObj.combi = (parseFloat(dati["score"]) + parseFloat(dati["score2"])).toFixed(2)
 						ret.push(retObj)
 						}
 					
-					console.log(ret)
 					this.simbim_object = ret
-					//this.simbim_object  = res.data;
-					this.simbim_updated = true
+				
 				})
 				.catch((error) => {
 					console.error(error);
 				});
 
 				
-				console.log(this.simbim_object)
 			
 		},
 

@@ -60,8 +60,8 @@ async function render_graph(graph_nodes, graph_links, target) {
 
 	t.append("text")
 		.attr("class", "target")
-		.attr("x", (app.viewport_width/5))
-		.attr("y", (app.viewport_height/5))
+		//.attr("x", (app.viewport_width/5))
+		//.attr("y", (app.viewport_height/5))
 		.text(function(d) { return d.target_word; })
 
 	// create the force simulation
@@ -220,7 +220,7 @@ async function render_graph(graph_nodes, graph_links, target) {
 			})
 			.on("click", function(d) {
 				app.active_edge = {"time_ids": d.time_ids, "weights": d.weights, "source_text": d.source_text, "target_text": d.target_text}
-				app.simbim_updated = false
+				//app.simbim_updated = false
 				app.getSimBims()
 				console.log("in link click " + d.time_ids +  d.weights + d.source_text + d.target_text)
 				app.context_mode = true

@@ -192,7 +192,7 @@
 			</div>
 		</div>
 		<hr>
-		<div>
+		<!-- <div>
 			<div style="font-size: 20px; font-weight:bold; margin-top:2ex;">
 				Select view port size
 			</div>
@@ -202,7 +202,7 @@
 			<b-form-group class="input" label="Select viewport width in pixels">
 				<b-form-input size="sm" type="number" v-model="viewport_width"></b-form-input>
 			</b-form-group>
-		</div>
+		</div> -->
 		<hr>
 		<div>
 			<div style="font-size: 20px; font-weight:bold; margin-top:2ex;">
@@ -381,11 +381,12 @@
 				<div class="overflow">
 					<!-- Display coloured circle, cluster name and number of nodes in cluster @click="select_cluster(cluster)" -->
 					<div class="clustername">
-						<span class="dot"
+						<span class="dot-sm"
 						v-bind:style="{ 'background-color': cluster.colour }"
 						@mouseover="!cluster_selected ? set_cluster_opacity(cluster, 0.2, 0.2) : null"
 						@mouseout="!cluster_selected ? set_cluster_opacity(cluster, 1.0, 1.0) : null"
-						></span>
+						@click="!cluster_selected ? get_cluster_information(cluster) : null"
+						>Hover here</span>
 						Cluster: <span class="bigger_font">{{ cluster.cluster_name }} </span>
 						<p> Number of nodes: {{cluster.labels.length}} </p>
 					</div>
@@ -505,7 +506,7 @@
 					<p>
 						Select an interval for time diff:
 					</p>
-						<div>
+						<div style="font-size: 10px;">
 							<!-- Button to show difference in graph -->
 							{{start_year}} - 
 								<!-- Select start year for small interval -->
@@ -625,9 +626,9 @@
 	<p style="margin-left: 12px;" ><b> Edges </b> represent a strong similarity between two paradigms. 
 		The [max] similarity between<b>  {{active_edge.source_text}} (Node1) </b>and <b> {{active_edge.target_text}} (Node2) </b>
 		occured in the interval: {{ selectIntervalWithActive () }}. 
-		Similarity is measured by significant shared context words.</p>
+		Similarity is measured by shared significant context words.</p>
 	<div>
-		<b-table striped-hover :fields="fields_edges" :items="simbim_object" :sort-desc="True" style="color: white;">
+		<b-table striped-hover :fields="fields_edges" :items="simbim_object" :sort-desc="true" style="color: white;">
 		</b-table>
 	</div>
 </b-sidebar>

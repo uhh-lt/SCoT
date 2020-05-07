@@ -111,55 +111,99 @@ def get_clustered_graph(
 	
 	return c_graph
 
-@app.route('/api/collections/<string:collection>/simbim/<path:word1>/simbim/<path:word2>')
-def getSimBims(collection="default", word1='liberty/NN', word2='independence/NN'):
-# template method for new data-pipeline
-# method is in the backend as it may be swapped out for a database at some point
-# current provisional data-provider jo-bim-api-google-books
-	print(word1, " ",  word2)
+def get_edge_info(collection, word1, word2, time_id=0):
 	word1part1  = word1.split("/")[0]
 	word1part2 = word1.split("/")[1]
 	word2part1 = word2.split("/")[0]
 	word2part2 = word2.split("/")[1]
 	url1 = "http://ltmaggie.informatik.uni-hamburg.de/jobimviz/ws/api/google/jo/bim/score/" + word1part1 + "%23" + word1part2 + "?format=json"
 	url2 = "http://ltmaggie.informatik.uni-hamburg.de/jobimviz/ws/api/google/jo/bim/score/"+ word2part1 + "%23" + word2part2 + "?format=json"
-	print(url1)
+	#print(url1)
 	
 	with urllib.request.urlopen(url1) as url:
 		data1 = json.loads(url.read().decode())
-		#print(data)
+		#print(data1)
 	with urllib.request.urlopen(url2) as url:
 		data2 = json.loads(url.read().decode())
-	
 	results1 = data1["results"]
 	results2 = data2["results"]
-	#print(results1)
-	# compare and find similar
-	sim_results = {}
-	index3 = 0
-	max_1 = 0.0
-	max_2 = 0.0
-	for index in range(len(results1)):
-		for index2 in range(len(results2)):
-			if results1[index]["key"] == results2[index2]["key"]:
-				results1[index]["score2"] = results2[index2]["score"]
-				if float(results1[index]["score"]) > max_1:
-					max_1 = float(results1[index]["score"])
-				if float(results2[index2]["score"]) > max_2:
-					max_2 = float(results2[index2]["score"])
-				inStr = str(index3)
-				sim_results[inStr] = results1[index]
-				index3 +=1
-				break
-	if max_1 > max_2:
-		maxi = max_1
-	else:
-		maxi = max_2
-	for index in range(len(sim_results)):
-		sim_results[str(index)]["score2"] = str(float(sim_results[str(index)]["score2"])/maxi)
-		sim_results[str(index)]["score"] = str(float(sim_results[str(index)]["score"])/maxi)
-	print("anzahl same words", len(sim_results))
-	return sim_results
+	# put results into dictionaries and set
+	res1_dic = {}
+	res2_dic = {}
+	res_set = set()
+	for result in results1:
+		res1_dic[result["key"]] = result["score"]
+	keys1 = res1_dic.keys()
+	for result in results2:
+		res2_dic[result["key"]] = result["score"]
+		if result["key"] in keys1:
+			res_set.add(result["key"])
+	
+	#print(res_set)
+	# determine maxima
+	res1_dic = {k: v for k, v in sorted(res1_dic.items(), reverse = True, key=lambda item: item[1])}
+	res2_dic = {k: v for k, v in sorted(res2_dic.items(), reverse = True, key=lambda item: item[1])}
+	max1 = list(res1_dic.values())[0]
+	max2 = list(res2_dic.values())[0]
+	return res1_dic, res2_dic, res_set, max1, max2
+
+
+@app.route('/api/collections/<string:collection>/simbim/<path:word1>/simbim/<path:word2>')
+def getSimBims(collection="default", word1='liberty/NN', word2='independence/NN'):
+# template method for new data-pipeline
+# method is in the backend as it may be swapped out for a database at some point
+# current provisional data-provider jo-bim-api-google-books
+	print(word1, " ",  word2)
+	res1_dic, res2_dic, res_set, max1, max2 = get_edge_info(collection, word1, word2, 0)
+	
+	# calc return dictionary and normalize values
+	# form dic = {"1": {"score": 34, "key": "wort", "score2": 34}, "2": ...}
+	return_dic = {}
+	index_count = 0
+	for key in res_set:
+		return_dic[str(index_count)] = {"score": res1_dic[key]/max1, "key" : key, "score2": res2_dic[key]/max2 }
+		index_count += 1
+	
+
+	print("anzahl same words", len(return_dic))
+	return return_dic
+
+@app.route('/api/cluster_information', methods=['POST'])
+# get_cluster_information on shared contexts of all nodes
+# needs two edges
+# experimental - not yet implemented
+def cluster_information():
+	
+	edges = []
+	if request.method == 'POST':
+		data = json.loads(request.data)
+		for edge in data["edges"]:
+			edges.append(edge)
+	
+	edge_arr = []
+	setList = []
+	for edge in edges:
+		res1_dic, res2_dic, res_set, max1, max2 = get_edge_info(data["collection"], edge["source"], edge["target"], edge["time_id"])
+		edge_arr.append({"res1": res1_dic, "res2": res2_dic, "res_set": res_set, "max1": max1, "max2": max2})
+		setList.append(res_set)
+	
+	superset = edge_arr[0]["res_set"]
+	print("anzal sets", len(setList))
+	index = 0
+	for seti in setList:
+		supersetTmp = set()
+		supersetTmp = superset.intersection(seti)
+		if len(supersetTmp) > 10:
+			superset = supersetTmp
+			print("good mit overlap", edges[index])
+		else:
+			print("killer ohne overlap", edges[index] )
+		index+=1
+	print("laenge intersection", len(superset))
+	print(superset)
+	
+
+	return {}
 
 
 if __name__ == '__main__':
