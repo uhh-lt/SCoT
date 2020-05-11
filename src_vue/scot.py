@@ -111,7 +111,10 @@ def get_clustered_graph(
 	
 	return c_graph
 
-def get_edge_info(collection, word1, word2, time_id=0):
+def get_edge_info_online(collection, word1, word2, time_id):
+	# this function is for development purposes only
+	# it gets the feature vectors (ie bims with sig values)
+	# from the jobim-api
 	word1part1  = word1.split("/")[0]
 	word1part2 = word1.split("/")[1]
 	word2part1 = word2.split("/")[0]
@@ -130,14 +133,11 @@ def get_edge_info(collection, word1, word2, time_id=0):
 	# put results into dictionaries and set
 	res1_dic = {}
 	res2_dic = {}
-	res_set = set()
 	for result in results1:
 		res1_dic[result["key"]] = result["score"]
-	keys1 = res1_dic.keys()
 	for result in results2:
 		res2_dic[result["key"]] = result["score"]
-		if result["key"] in keys1:
-			res_set.add(result["key"])
+	res_set = set(res1_dic.keys()).intersection(set(res1_dic.keys()))
 	
 	#print(res_set)
 	# determine maxima
@@ -147,31 +147,57 @@ def get_edge_info(collection, word1, word2, time_id=0):
 	max2 = list(res2_dic.values())[0]
 	return res1_dic, res2_dic, res_set, max1, max2
 
+def get_edge_info(collection, word1, word2, time_id):
+	# get feature info from database
+	# db returns dictionary {"feature": score}
+	db = Database(getDbFromRequest(collection))
+	res1_dic = db.get_features(word1, time_id)
+	res2_dic = db.get_features(word2, time_id)
+	
+	if len(res1_dic) > 0 and len(res2_dic) > 0:
+		
+		# put results into intersection-set of res1 and res2
+		res_set = set(res1_dic.keys()).intersection(set(res1_dic.keys()))
+		
+		#print(res_set)
+		# determine maxima (sets are ordered by db in desc - thus first is the maximum)
+		max1 = list(res1_dic.values())[0]
+		max2 = list(res2_dic.values())[0]
+		return res1_dic, res2_dic, res_set, max1, max2
+	
+	else:
+		return {},{}, set(),0,0
 
-@app.route('/api/collections/<string:collection>/simbim/<path:word1>/simbim/<path:word2>')
-def getSimBims(collection="default", word1='liberty/NN', word2='independence/NN'):
+
+@app.route('/api/collections/<string:collection>/<int:time_id>/<path:word1>/simbim/<path:word2>')
+def getSimBims(collection="default", word1='liberty/NN', word2='independence/NN', time_id=0):
 # template method for new data-pipeline
-# method is in the backend as it may be swapped out for a database at some point
-# current provisional data-provider jo-bim-api-google-books
+	# setting for test-database - comment out for deployment
+	# word1 = "test/NN"
+	# word2= "test/NN"
+	# time_id = 1
 	print(word1, " ",  word2)
-	res1_dic, res2_dic, res_set, max1, max2 = get_edge_info(collection, word1, word2, 0)
+	res1_dic, res2_dic, res_set, max1, max2 = get_edge_info(collection, word1, word2, time_id)
 	
-	# calc return dictionary and normalize values
-	# form dic = {"1": {"score": 34, "key": "wort", "score2": 34}, "2": ...}
-	return_dic = {}
-	index_count = 0
-	for key in res_set:
-		return_dic[str(index_count)] = {"score": res1_dic[key]/max1, "key" : key, "score2": res2_dic[key]/max2 }
-		index_count += 1
+	if res1_dic == {} or res2_dic == {}:
+		return {"error":"zero values"}
+	else:
+		# calc return dictionary and normalize values
+		# form dic = {"1": {"score": 34, "key": "wort", "score2": 34}, "2": ...}
+		return_dic = {}
+		index_count = 0
+		for key in res_set:
+			return_dic[str(index_count)] = {"score": res1_dic[key]/max1, "key" : key, "score2": res2_dic[key]/max2 }
+			index_count += 1
 	
-
-	print("anzahl same words", len(return_dic))
-	return return_dic
+		return_dic["error"] = "none"
+		#print("anzahl same words", len(return_dic)-1)
+		return return_dic
 
 @app.route('/api/cluster_information', methods=['POST'])
 # get_cluster_information on shared contexts of all nodes
-# needs two edges
 # experimental - not yet implemented
+# aktuelles problem geringer overlap bei einigen clustern - wirkliches ergebnis oder datenfehler?
 def cluster_information():
 	
 	edges = []

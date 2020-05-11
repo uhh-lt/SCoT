@@ -623,10 +623,12 @@
 	  </template>					
 	<br>
 	<br>
-	<p style="margin-left: 12px;" ><b> Edges </b> represent a strong similarity between two paradigms. 
-		The [max] similarity between<b>  {{active_edge.source_text}} (Node1) </b>and <b> {{active_edge.target_text}} (Node2) </b>
-		occured in the interval: {{ selectIntervalWithActive () }}. 
-		Similarity is measured by shared significant context words.</p>
+	<p style="margin-left: 12px;" > Edges represent a strong similarity between two paradigms. 
+		The [max] similarity between<b> (Node1) {{active_edge.source_text}} </b> and <b> (Node2) {{active_edge.target_text}}  </b>
+		occured in the interval: {{ selectIntervalWithActive () }} based on the following intersection of their syntagmatic contexts: 
+		(The scores represent the significance of the context-word for each paradigm.)
+		
+		</p>
 	<div>
 		<b-table striped-hover :fields="fields_edges" :items="simbim_object" :sort-desc="true" style="color: white;">
 		</b-table>

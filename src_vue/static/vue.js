@@ -1789,11 +1789,13 @@ app = new Vue({
 			let links = this.links
 			let jsonReq = {"edges": [], "collection":this.collection_key}
 			let nodes = []
+			// get all nodes that are assigned to cluster
 			for (let key in cluster["labels"]){
 				let dati = cluster["labels"][key]
 				nodes.push(dati["text"])
 			}
 			console.log(nodes)
+			// find edges that are inside the cluster (ie both nodes are cluster nodes)
 			for (let key in links){
 				let t1 = links[key]["source_text"]
 				let t2 = links[key]["target_text"]
@@ -1816,20 +1818,32 @@ app = new Vue({
 			let retArray = []
 			let word1 = this.active_edge.source_text
 			let word2 = this.active_edge.target_text
-			let url = './api/collections/'+this.collection_key +'/simbim/'+word1+'/simbim/'+word2
+			let time_id = this.active_edge.time_ids[0]
+			// test-settings
+			// let word1 = "test/NN"
+			// let word2 = "test/NN"
+			// let time_ids = [1]
+			// let time_id = time_ids[0]
+			let url = './api/collections/'+this.collection_key +'/' + time_id +'/'+word1+'/simbim/'+word2
 			console.log(url)
 			axios.get(url)
 				.then((res) => {
 					let ret = []
+					if (res.data["error"]=="none"){
 					for (var key in res.data){
+						if (key != "error") {
 						var dati = res.data[key]
 						retObj = {}
 						retObj.node1 = parseFloat(dati["score"]).toFixed(5)
 						retObj.edge = dati["key"]
 						retObj.node2 = parseFloat(dati["score2"]).toFixed(5)
-						// retObj.combi = (parseFloat(dati["score"]) + parseFloat(dati["score2"])).toFixed(2)
 						ret.push(retObj)
 						}
+						// retObj.combi = (parseFloat(dati["score"]) + parseFloat(dati["score2"])).toFixed(2)
+					
+					}
+				}
+					
 					
 					this.simbim_object = ret
 				

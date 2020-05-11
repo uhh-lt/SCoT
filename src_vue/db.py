@@ -9,6 +9,24 @@ class Database:
 			self.db = records.Database(config["collections"][collection])
 		else:
 			self.db = records.Database(config["collections"]['default'])
+	
+	def get_features(self, word1, time_id):
+		# get feature scores for a word ie its syntagmatic context
+		#print("db get features in value", word1, time_id)
+		features = {}
+		f = self.db.query(
+			'SELECT feature, score FROM similar_features '
+			'WHERE word1=:tw and time_id=:td '
+			'ORDER BY score DESC',
+			tw=str(word1),
+			td=int(time_id)
+			)
+		
+		for row in f:
+			features[row['feature']] = int(row['score'])
+		#print("db get features out value", features)
+
+		return features
 
 	def get_all_years(self, position):
 		# get all the information on a certain column in the time_slices table, e.g. position='start_year'
