@@ -1,13 +1,30 @@
 app = new Vue({
    el: "#vue-app",
    data: {
-		// user parameters
+	    // default values for init
 		target_word : "happiness/NN",
 		start_year : 1520,
 		end_year : 2008,
 		senses : 100,
 		edges : 30,
-		time_diff : false,
+		collection_key : "en_books",
+		collection_name: "English Books",
+		// View Modes - SIDEBAR RIGHT ANALYSIS
+	   // logic - time_diff: false AND context false -> cluster-mode
+	   // time_diff: true and context_mode false -> time_diff mode
+	   // context true -> [edge] context_ mode
+	   // if context is set to false - previous panel returns
+	   time_diff : false,
+	   context_mode : false,
+	   showSidebarRight : false,
+	   showSidebarLeft: false,
+	   // sidebar right additional information
+	   active_edge: {"time_ids": [1], "weights": [1], "source_text": "happiness/NN", "target_text": "gladness/NN"},	
+	   // sigebar right: holds edge context information (score, key, score2)
+	   simbim_object: [],
+	   	// all possible collections queried from database
+		collections : {}, // collections keys and names
+		collections_names: [], // collections_names
 		// all possible start years queried from the database
 		start_years : [],
 		// all possible end years queried from the database
@@ -43,13 +60,13 @@ app = new Vue({
 		// all the links in the updated graph
 		updated_links : null,
 		// for setting the view port size for the graph
-		viewport_height : 800,
-		viewport_width : 1250,
+		//viewport_height : (screen.availHeight-100),
+		//viewport_width : screen.availWidth*1.1,
 		// for setting the svg size for the graph
-		svg_height : 1500,
-		svg_width : 1500,
+		svg_height : screen.availHeight-100,
+		svg_width : screen.availWidth*0.9,
 		// link thickness parameters
-		link_thickness_scaled : "true",
+		link_thickness_scaled : "false",
 		link_thickness_value : 1,
 		link_thickness_factor : 100,
 		// file from which a graph is to be loaded
@@ -58,6 +75,7 @@ app = new Vue({
 		read_graph : null,
 		// true, if a graph is rendered. Used in the HTML to only show buttons if a graph is rendered
 		graph_rendered : false,
+		wait_rendering : false,
 		// list of objects to store all the information on the clusters in a rendered graph (see function get_clusters())
 		clusters : [],
 		// new clusters calculated by reclustering the graph
@@ -76,6 +94,8 @@ app = new Vue({
 		time_diff_nodes : {},
 		// true if a node is selected, for showing node option menu
 		node_selected : false,
+		// true if a link is selected
+		link_selected : false,
 		// check if selected node is cluster node, for options in the node option menu
 		select_node_is_no_cluster_node : true,
 		// array that holds information about all selected nodes
@@ -116,9 +136,19 @@ app = new Vue({
 			{key: "show_details", label: "Show Details"}
 			],
 		// array containing information about the neighbourhood of each node
-		wobblyCandidates : []
+		wobblyCandidates : [],
+		// table information
+		fields_edges : [
+			{key: "node1", sortable: true},
+			{key: "edge", sortable: true},
+			{key: "node2", sortable: true}
+			//{key: "combi", sortable: true}
+		]
 	},
 	computed: {
+		
+		
+		
 		/*
 		Returns all the clusters as an array of objects of the form 
 			{"text": cluster_name}, "value": {"cluster_id": some_id, "cluster_name": some_cluster_name, "colour": some_cluster_colour}
@@ -183,6 +213,40 @@ app = new Vue({
 		}
 	},
 	methods: {
+
+		toggleSidebarContext: function(){
+			this.context_mode = !this.context_mode
+			console.log("in toggle", this.context_mode)
+		},
+
+		toggle_time_diff: function(){
+			this.time_diff = !this.time_diff
+		},
+
+		// on change database in frontend - update function
+		onChangeDb: function(){
+			
+			this.collection_key = this.collections[this.collection_name]
+			console.log("in onchange " + this.collection_key)
+			console.log("in onchange " + this.collection_name)
+			this.getStartYears()
+			this.getEndYears()
+			
+		},
+				
+		// init collections from axios
+		getCollections: function(){
+			
+			axios.get('./api/collections')
+				.then((res) => {
+					this.collections = res.data;
+					this.collections_names = Object.keys(this.collections);
+				})
+				.catch((error) => {
+					console.error(error);
+				});
+			},
+
 		// fade nodes on hover
 		mouseOver: function(opacity) {
 			return function(d) {
@@ -235,6 +299,7 @@ app = new Vue({
 			app.node.style("stroke-opacity", 1);
 			app.node.style("fill-opacity", 1)
 			// don't show time diff tooltip
+			// TODO tooltip hier ausstellen
 			app.circles.on("mouseover", null);
 			app.circles.on("mouseout", null);
 			app.node.on("mouseover", app.mouseOver(0.2));
@@ -395,8 +460,8 @@ app = new Vue({
 			svg.attr("viewBox", "0 0 " + app.svg_height + " " + app.svg_width);
 			
 			// set view port
-			svg.attr("width", app.viewport_width);
-			svg.attr("height", app.viewport_height);
+			//svg.attr("width", app.viewport_width);
+			//svg.attr("height", app.viewport_height);
 
 			// set link thickness
 			var links = d3.selectAll(".link");
@@ -1266,21 +1331,45 @@ app = new Vue({
 		/*
 		Returns all the time ids of a node as a string of start year and end year to be displayed in the tooltip on a node in the time diff mode
 		*/
-		selectInterval: function(time_ids) {
-			var intervalString = "";
-			
+		toolTipLink: function(time_ids, weights, targetA, targetB ){
+			let stringRet = "Edge: " + targetA + " - " + targetB +"<br>" + "<br>"
+			stringRet += "Max. similarity:" + "<br>"
+			stringRet += this.selectInterval(time_ids, weights) + "<br>"
+			stringRet += "For context-information - click me!"
+			return stringRet;
+		},
+
+		toolTipNode: function(time_ids, target_text, weights){
+			let stringRet = "Node: " + target_text +"<br>"+"<br>"
+			stringRet += "Highest similarities with " + app.target_word + ":" + "<br>"
+			stringRet += this.selectInterval(time_ids, weights) + "<br>"
+			return stringRet;
+		},
+
+		selectIntervalWithActive: function(){
+			console.log("in selectIntervalwitactive" + this.active_edge.time_ids)
+			return this.selectInterval(this.active_edge.time_ids, this.active_edge.weights).slice(0,-4)
+		},
+
+		selectInterval: function(time_ids, weights) {
+			let intervalString = "";
 			if ((time_ids !== null) && (typeof time_ids !== "undefined")) {
 				if (typeof time_ids === "string") {
 					time_ids = time_ids.split(",");
 				}
-				time_ids.sort();
-				for (time_id of time_ids) {
-					var start = app.start_years[time_id - 1].text;
-					var end = app.end_years[time_id - 1].text;
-					intervalString += start + " - " + end + "<br>"
-				}
-				return intervalString;
 			}
+			if ((weights !== null) && (typeof weights !== "undefined")) {
+				if (typeof weights === "string") {
+						weights = weights.split(",");
+				}
+			}
+			for (index = 0; index < time_ids.length; index++) {
+					let start = app.start_years[time_ids[index] - 1].text;
+					let end = app.end_years[time_ids[index] - 1].text ;
+					intervalString += start + " - " + end + " [" + weights[index] +"]"+"<br>";
+				}
+			return intervalString;
+			
 		},
 		/*
 		Color nodes depending on whether they started to occur in the selected small time interval, stopped to occur in said interval, or both.
@@ -1289,7 +1378,7 @@ app = new Vue({
 		show_time_diff: async function() {
 			
 			var big_time_interval = [];
-			await axios.get("./interval/" + app.start_year + "/" + app.end_year)
+			await axios.get("./api/collections/"+ this.collection_key + "/interval/" + app.start_year + "/" + app.end_year)
 				.then((res) => {
 					big_time_interval = res.data;
 				})
@@ -1298,7 +1387,7 @@ app = new Vue({
 				});
 
 			var small_time_interval = [];
-			await axios.get("./interval/" + app.interval_start + "/" + app.interval_end)
+			await axios.get("./api/collections/"+ this.collection_key + "/interval/" + app.interval_start + "/" + app.interval_end)
 				.then((res) => {
 					small_time_interval = res.data;
 				})
@@ -1399,7 +1488,7 @@ app = new Vue({
 			var time_diff = this.time_diff;
 
 			app.time_diff = false;
-			var url = './sense_graph' + '/' + target_word + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges;
+			var url = './api/collections/'+ this.collection_key + '/sense_graph' + '/' + target_word + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges;
 			
 			return axios.get(url)
 				.then((res) => {
@@ -1487,6 +1576,7 @@ app = new Vue({
 			})
 
 		},
+		
 		/*
 		Set the opacity of nodes and links of a specific cluster.
 		@param Object cluster: the entry for a specific cluster in the data variable clusters.
@@ -1603,7 +1693,7 @@ app = new Vue({
 			data["nodes"] = nodes_array;
 			data["links"] = link_array;
 
-			axios.post('./reclustering', data)
+			axios.post('./api/reclustering', data)
 				.then(async function (response) {
 					this.newclusters = response.data;
 
@@ -1690,8 +1780,84 @@ app = new Vue({
 			svg.select("g")
 				.attr("transform", "translate(0.0, 0.0) scale(1.0)");
 		},
+		/*
+		Choose cluster for context analysis and display context information
+		Experimental feature for cluster information (not fully implemented yet)
+		*/
+		get_cluster_information: function(cluster){
+			console.log(this.links)
+			let links = this.links
+			let jsonReq = {"edges": [], "collection":this.collection_key}
+			let nodes = []
+			// get all nodes that are assigned to cluster
+			for (let key in cluster["labels"]){
+				let dati = cluster["labels"][key]
+				nodes.push(dati["text"])
+			}
+			console.log(nodes)
+			// find edges that are inside the cluster (ie both nodes are cluster nodes)
+			for (let key in links){
+				let t1 = links[key]["source_text"]
+				let t2 = links[key]["target_text"]
+				let timeId = links[key]["time_ids"][0]
+				let true1 = nodes.includes(t1) 
+				let true2 = nodes.includes(t2)
+				if (true1 && true2){
+					jsonReq["edges"].push({"source":t1, "target": t2, "time_id": timeId})
+					//console.log("includes ", t1 + t2)
+				}
+			}
+			//console.log(jsonReq)
+			//let url = './api/cluster_information'
+			//axios.post(url, jsonReq)
+
+		},
+
+		
+		getSimBims: async function(){
+			let retArray = []
+			let word1 = this.active_edge.source_text
+			let word2 = this.active_edge.target_text
+			let time_id = this.active_edge.time_ids[0]
+			// test-settings
+			// let word1 = "test/NN"
+			// let word2 = "test/NN"
+			// let time_ids = [1]
+			// let time_id = time_ids[0]
+			let url = './api/collections/'+this.collection_key +'/' + time_id +'/'+word1+'/simbim/'+word2
+			console.log(url)
+			axios.get(url)
+				.then((res) => {
+					let ret = []
+					if (res.data["error"]=="none"){
+					for (var key in res.data){
+						if (key != "error") {
+						var dati = res.data[key]
+						retObj = {}
+						retObj.node1 = parseFloat(dati["score"]).toFixed(5)
+						retObj.edge = dati["key"]
+						retObj.node2 = parseFloat(dati["score2"]).toFixed(5)
+						ret.push(retObj)
+						}
+						// retObj.combi = (parseFloat(dati["score"]) + parseFloat(dati["score2"])).toFixed(2)
+					
+					}
+				}
+					
+					
+					this.simbim_object = ret
+				
+				})
+				.catch((error) => {
+					console.error(error);
+				});
+
+				
+			
+		},
+
 		getStartYears: function() {
-			axios.get('./start_years')
+			axios.get('./api/collections/'+ this.collection_key + '/start_years')
 				.then((res) => {
 					this.start_years = res.data;
 				})
@@ -1700,7 +1866,7 @@ app = new Vue({
 				});
 		},
 		getEndYears: function() {
-			axios.get('./end_years')
+			axios.get('./api/collections/'+ this.collection_key + '/end_years')
 				.then((res) => {
 					this.end_years = res.data;
 				})
@@ -1852,9 +2018,12 @@ app = new Vue({
 				return;
 		},
 		render_graph: async function() {
-			this.getData();
 			this.graph_rendered = false;
+			this.wait_rendering = true;
+			console.log(this.wait_rendering)
+			this.getData();
 			await this.$nextTick();
+			
 		},
 		/*
 		Get the data from the BE according to the parameters entered in the FE and render the graph
@@ -1879,7 +2048,7 @@ app = new Vue({
 				}
 			});
 
-			var url = './sense_graph' + '/' + target_word + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges;
+			var url = './api/collections/'+ this.collection_key + '/sense_graph' + '/' + target_word + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges;
 			
 			axios.get(url)
 				.then((res) => {
@@ -1891,6 +2060,8 @@ app = new Vue({
 					// Call D3 function to render graph
 					render_graph(nodes, links, target)
 					this.graph_rendered = true;
+					this.wait_rendering = false;
+					console.log(this.wait_rendering)
 					// Update cluster information
 					app.get_clusters();
 				})
@@ -2076,6 +2247,7 @@ app = new Vue({
 	created() {
 		this.getStartYears();
 		this.getEndYears();
+		this.getCollections();
 	}
 
 });

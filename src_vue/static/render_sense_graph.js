@@ -23,12 +23,11 @@ async function render_graph(graph_nodes, graph_links, target) {
 		.each(function() { this.focus(); })
 		.append("svg")
 			.attr("id", "svg")
-			.attr("width", app.viewport_width)
-			.attr("height", app.viewport_height)
 			.attr("viewBox", "0 0 " + app.svg_height + " " + app.svg_width)
-			.attr("preserveAspectRatio", "xMinYMin slice")
-			.style("outline", "1px solid")
-			.style("margin", "3ex")
+			.attr("preserveAspectRatio", "xMinYMin meet")
+			.classed("svg-content", true)
+			// .style("outline", "1px solid")
+			//.style("margin", "1ex")
 		.call(d3.zoom().on("zoom", function () {
 			svg.attr("transform", d3.event.transform)
 			}))
@@ -61,8 +60,8 @@ async function render_graph(graph_nodes, graph_links, target) {
 
 	t.append("text")
 		.attr("class", "target")
-		.attr("x", (app.svg_width/2))
-		.attr("y", (app.svg_height/2))
+		//.attr("x", (app.viewport_width/5))
+		//.attr("y", (app.viewport_height/5))
 		.text(function(d) { return d.target_word; })
 
 	// create the force simulation
@@ -70,7 +69,7 @@ async function render_graph(graph_nodes, graph_links, target) {
 		.force("link", d3.forceLink(app.links).id(function(d) { return d.id; }).distance(function(d) { return app.linkdistance } ))
 		.force("charge", d3.forceManyBody().strength(app.charge).distanceMin(1).distanceMax(2000))
 		.force("collide", d3.forceCollide().radius(10))
-		.force("center", d3.forceCenter(app.svg_width/2, app.svg_height/2))
+		.force("center", d3.forceCenter(app.svg_width/4, app.svg_height/4))
 		.on('tick', ticked);
 
 	var forceLinkDistance = app.simulation.force("link");
@@ -90,44 +89,19 @@ async function render_graph(graph_nodes, graph_links, target) {
 		app.simulation.alpha(1).restart()
 	})
 	
-	// create the graph links
-	app.link = svg.append("g")
-			//.attr("stroke", "#999")
-			//.attr("stroke-opacity", 0.8)
-			.attr("class", "link")
-		.selectAll("line")
-		.data(app.links)
-		.enter().append("line")
-			.attr("source", function(d) { return d.source.id })
-			.attr("target", function(d) { return d.target.id })
-			.attr("weight", function(d) { return d.weight })
-			// set the stroke with in dependence to the weight attribute of the link
-			// TODO: sort the weights into three categories and only use three different thicknesses for links according to the category
-			.attr("stroke-width", function(d) { 
-				if (app.link_thickness_scaled === "true") {
-					return Math.sqrt(d.weight / app.link_thickness_factor);
-				} else {
-					return Math.sqrt(app.link_thickness_value);
-				}
-			})
-			.attr("stroke", function(d) {
-				if (d.colour !== undefined) {
-					return d.colour
-				} else if (d.source.class === d.target.class) {
-					return color(d.source.class);
-				} else {
-					return "#999";
-				}
-			});
-
 	// initialize drag behaviour
 	var drag_node = d3.drag()
 
 	// initialize the tooltip for the time diff mode
 	var time_diff_tip = d3.tip()
 		.attr("class", "d3-tip")
-		.html(function(d) { return app.selectInterval(d.time_ids); })
+		.html(function(d) { return app.toolTipNode(d.time_ids, d.target_text, d.weights); })
 
+	var time_diff_tip_link = d3.tip()
+		.attr("class", "d3-tip")
+		.html(function(d) { return app.toolTipLink(d.time_ids, d.weights, d.target_text, d.source_text); })
+
+		
 	// create the nodes
 	app.node = svg.append("g")
 			.attr("stroke", "#fff")
@@ -154,7 +128,7 @@ async function render_graph(graph_nodes, graph_links, target) {
 	
 	// call the time diff tooltip from the svg
 	svg.call(time_diff_tip);
-	
+	svg.call(time_diff_tip_link);
 	// append circles to the node
 	// this is the way the nodes are displayed in the graph
 	app.circles = app.node.append("circle")
@@ -190,6 +164,7 @@ async function render_graph(graph_nodes, graph_links, target) {
 			}
 		})
 		.attr("time_ids", function(d) {return d.time_ids})
+		.attr("target_text", function(d) {return d.target_text})
 		.attr("fill", function(d) { 
 			if (d.colour) {
 				// if the nodes has an explicit colour use that
@@ -199,6 +174,7 @@ async function render_graph(graph_nodes, graph_links, target) {
 				return color(d.class);
 			}
 		});
+		
 
 	// append a label to the node which displays its id
 	var labels = app.node.append("text")
@@ -209,7 +185,50 @@ async function render_graph(graph_nodes, graph_links, target) {
 		.attr('y', 3)
 		.attr("text", function(d) { return d.id; });
 
-	app.simulation.on("tick", ticked);
+	// create the graph links
+	app.link = svg.append("g")
+			//.attr("stroke", "#999")
+			//.attr("stroke-opacity", 0.8)
+			.attr("class", "link")
+		.selectAll("line")
+		.data(app.links)
+		.enter().append("line")
+			.attr("source", function(d) { return d.source.id })
+			.attr("target", function(d) { return d.target.id })
+			.attr("source_text", function(d) {return d.source_text})
+			.attr("target_text", function(d) {return d.target_text})
+			.attr("weight", function(d) { return d.weight })
+			.attr("weights", function(d) { return d.weight })
+			.attr("time_ids", function(d) {return d.time_ids })
+			// set the stroke with in dependence to the weight attribute of the link
+			// TODO: sort the weights into three categories and only use three different thicknesses for links according to the category
+			.attr("stroke-width", function(d) { 
+				if (app.link_thickness_scaled === "true") {
+					return Math.sqrt(d.weight / app.link_thickness_factor);
+				} else {
+					return Math.sqrt(app.link_thickness_value);
+				}
+			})
+			.attr("stroke", function(d) {
+				if (d.colour !== undefined) {
+					return d.colour
+				} else if (d.source.class === d.target.class) {
+					return color(d.source.class);
+				} else {
+					return "#999";
+				}
+			})
+			.on("click", function(d) {
+				app.active_edge = {"time_ids": d.time_ids, "weights": d.weights, "source_text": d.source_text, "target_text": d.target_text}
+				//app.simbim_updated = false
+				app.getSimBims()
+				console.log("in link click " + d.time_ids +  d.weights + d.source_text + d.target_text)
+				app.context_mode = true
+			})
+			.on("mouseover", time_diff_tip_link.show)
+			.on("mouseout", time_diff_tip_link.hide);
+	
+		app.simulation.on("tick", ticked);
 
 	// update the cluster information in the Vue data variable after initializing the graph
 	app.get_clusters();
@@ -501,7 +520,9 @@ async function render_graph(graph_nodes, graph_links, target) {
 				.attr("cluster_id", function(d) { return d.class; })
 				.attr("cluster_node", false)
 				.attr("time_ids", function(d) { return d.time_ids})
-				.attr("cluster", function(d) { return d.class; });
+				.attr("cluster", function(d) { return d.class; })
+				.on("mouseover", time_diff_tip.show)
+				.on("mouseout", time_diff_tip.hide);
 
 		d3.select("#select_time_diff").on("change", function(d) {
 			if (app.time_diff === false) {
@@ -511,14 +532,17 @@ async function render_graph(graph_nodes, graph_links, target) {
 				app.circles.attr("fill", function(d) { return color(d.class); })
 				app.circles.on("mouseover", null);
 				app.circles.on("mouseout", null);
+				
 			}
 			if (app.time_diff === true) {
 				circle.on("mouseover", time_diff_tip.show);
 				circle.on("mouseout", time_diff_tip.hide);
 				app.circles.on("mouseover", time_diff_tip.show);
 				app.circles.on("mouseout", time_diff_tip.hide);
+				
 			}
 		});
+
 
 		var text = g.append("text")
 			.text(function(d) { return d.id; })
@@ -594,11 +618,13 @@ async function render_graph(graph_nodes, graph_links, target) {
 		if (app.time_diff === false) {
 			
 			app.reset_time_diff_colours();
+			
 		}
 		if (app.time_diff === true) {
 			// show time diff tooltip
 			app.circles.on("mouseover", time_diff_tip.show);
 			app.circles.on("mouseout", time_diff_tip.hide);
+			
 
 			d3.select("#skip_through_button").on("click", function(d) {
 				if (this.getAttribute("aria-expanded") === "true") {

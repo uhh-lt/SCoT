@@ -1,0 +1,12 @@
+{
+	"host" : "0.0.0.0",
+	"collections" : {
+		"default" : "mysql://user:password@db/scot",
+		"en_books" : "mysql://user:password@db/scot",
+		"fi_news" : "mysql://user:password@db/scot"
+	},
+	"collections_info":{
+		"English Books": "en_books",
+		"Finnish News" : "fi_news" 
+	}
+}

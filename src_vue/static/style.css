@@ -1,10 +1,3 @@
-.target {
-	font-family: sans-serif;
-	font-size: 15px;
-	fill: lightgrey;
-	stroke: black;
-	stroke-width: 0px;
-}
 text {
 	font-family: sans-serif;
 	font-size: 10px;
@@ -15,10 +8,6 @@ text {
 	stroke-width: 2.5px;
 }
 
-.header {
-	/*word-spacing: -10px;*/
-}
-
 .input_options {
 	font: sans-serif;
 	font-size: 12px;
@@ -26,8 +15,6 @@ text {
 	/*word-spacing: -10px;*/
 	background: #343a40;
 	color: white;
-	padding-left: 2px
-	padding-right: 2px;
 	width: 80%;
 }
 
@@ -49,27 +36,18 @@ text {
 	margin-left: 5ex;
 }
 
-#download_button {
-	/*position: absolute;
-	right: 5%;*/
-	float: right;
-	display: block;
-	text-align: center;
-	font-size: 10px;
-	/*word-spacing: -10px;*/
-	margin-left: 5px;
-}
 
 #load_button {
-	float: right;
+	/*float: right;
 	display: block;
-	/*position: absolute;
+	position: absolute;
 	right: 0;*/
 	text-align: center;
-	font-size: 10px;
+	font-size: 12px;
 	/*word-spacing: -10px;*/
 	/*margin-right: 10px;*/
 	margin-left: 5px;
+	
 }
 
 #recluster_button {
@@ -86,18 +64,9 @@ text {
 	display: block;
 	float: right;
 	text-align: center;
-	font-size: 10px;	
+	font-size: 10px;
 }
 
-#time_diff_button {
-	display: block;
-	float: right;
-	text-align: center;
-	font-size: 10px;
-	/*word-spacing: -10px;*/
-	/*margin-right: 10px;*/
-	margin-left: 5px;
-}
 
 #restart_button {
 	display: block;
@@ -110,12 +79,10 @@ text {
 }
 
 #reset_zoom_button {
-	display:block;
-	float: right;
-	text-align: center;
-	font-size: 10px;
+	margin-top: 10px;
+	margin-bottom: 10px;
 	/*word-spacing: -10px;*/
-	/*margin-right: 10px;*/
+	font-size: 10px;
 	margin-left: 5px;
 }
 
@@ -153,6 +120,7 @@ text {
 	/*word-spacing: -10px;*/
 	/*margin-right: 10px;*/
 	margin-left: 5px;
+	visibility: hidden;
 }
 
 #render_button {
@@ -224,8 +192,9 @@ text {
 }
 
 #time_diff_card {
-	width: 60vw;
-	font-size: 10pt
+	width: 100%;
+	font-size: 10pt;
+	color: black;
 }
 
 
@@ -251,16 +220,16 @@ text {
 	right: 10px;
 	border: 1px solid #343a40;
 	max-width: 300px;
-  	padding: 10px;
-  	background-color: lightgrey;
-  	/*word-spacing: -10px;*/
-  	font-size: 12px;
+	padding: 10px;
+	background-color: lightgrey;
+	/*word-spacing: -10px;*/
+	font-size: 12px;
 }
 
 
 .edit_cluster_textbox {
 	font-size: 10px;
-	max-height: 50vh;
+	max-height: 70vh;
 	overflow: auto;
 	color: black;
 }
@@ -271,10 +240,11 @@ text {
 	text-align: left;
 	/*word-spacing: -10px;*/
 	background: #343a40;
+	/*background: #6c757d;*/
+	/*background: #d9d9d9;*/
 	color: white;
-	padding-right: : 2px;
 	width: 80%;
-	display: none;
+	display: block;
 }
 
 .close_button{
@@ -302,7 +272,6 @@ text {
 }
 
 .dot {
-	float: left;
 	height: 20px;
 	width: 20px;
 	border-radius: 50%;
@@ -311,9 +280,6 @@ text {
 }
 
 .dot-sm {
-	float: left;
-	height: 10px;
-	width: 10px;
 	border-radius: 50%;
 	text-align: bottom;
 	margin-right: 10px;
@@ -346,7 +312,7 @@ text {
 
 .collapsed > .when-opened,
 :not(.collapsed) > .when-closed {
-  display: none;
+	display: none;
 }
 
 .input_cluster {
@@ -359,7 +325,7 @@ text {
 
 .dropdown-item {
 	font-size: 10px;
-	position: relative; !important;
+	position: relative;
 	z-index: 1000;
 }
 
@@ -371,36 +337,47 @@ text {
 	display: none;
 }
 
-.list-item {
-	/*max-height: 600px;
-	overflow: visible;*/
+.d3-tip {
+	line-height: 1;
+	padding: 6px;
+	background: rgba(0, 0, 0, 0.6);
+	color: #fff;
+	border-radius: 4px;
+	font-size: 14px;
 }
 
-.d3-tip {
-      line-height: 1;
-      padding: 6px;
-      background: rgba(0, 0, 0, 0.8);
-      color: #fff;
-      border-radius: 4px;
-      font-size: 12px;
-    }
- 
 /* Creates a small triangle extender for the tooltip */
 .d3-tip:after {
-  box-sizing: border-box;
-  display: inline;
-  font-size: 10px;
-  width: 100%;
-  line-height: 1;
-  color: rgba(0, 0, 0, 0.8);
-  content: "\25BC";
-  position: absolute;
-  text-align: center;
+	box-sizing: border-box;
+	display: inline;
+	font-size: 10px;
+	line-height: 1;
+	color: rgba(0, 0, 0, 0.8);
+	content: "\25BC";
+	position: absolute;
+	text-align: center;
 }
 
 /* Style northward tooltips specifically */
 .d3-tip.n:after {
-  margin: -2px 0 0 0;
-  top: 100%;
-  left: 0;
+	margin: -2px 0 0 0;
+	top: 100%;
+	left: 0;
+}
+.svg-container {
+    display: inline-block;
+    position: relative;
+    width: 100%;
+    padding-bottom: 100%;
+    vertical-align: top;
+    overflow: hidden;
+}
+.svg-content {
+    display: inline-block;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+:root{
+	overflow: hidden;
 }

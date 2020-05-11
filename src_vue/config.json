@@ -1,4 +1,13 @@
 {
-	"host" : "0.0.0.0",
-	"database" : "mysql://user:password@db/scot"
+	"host" : "127.0.0.1",
+	"collections" : {
+		"default" : "mysql://user:password@localhost/scot",
+		"en_books" : "mysql://user:password@localhost/scot"
+	},
+	"collections_info":{
+		"English Books": "en_books"
+		
+	}
+	
+	
 }
