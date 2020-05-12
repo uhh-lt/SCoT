@@ -137,7 +137,7 @@ def get_edge_info_online(collection, word1, word2, time_id):
 		res1_dic[result["key"]] = result["score"]
 	for result in results2:
 		res2_dic[result["key"]] = result["score"]
-	res_set = set(res1_dic.keys()).intersection(set(res1_dic.keys()))
+	res_set = set(res1_dic.keys()).intersection(set(res2_dic.keys()))
 	
 	#print(res_set)
 	# determine maxima
@@ -173,13 +173,13 @@ def get_edge_info(collection, word1, word2, time_id):
 def getSimBims(collection="default", word1='liberty/NN', word2='independence/NN', time_id=0):
 # template method for new data-pipeline
 	# setting for test-database - comment out for deployment
-	word1 = "test/NN"
-	word2= "test/NN"
-	time_id = 1
-	print(word1, " ",  word2)
+	# word1 = "test/NN"
+	# word2= "test/NN"
+	# time_id = 1
+	print("debug getSimBim words received", word1, " ",  word2)
 	res1_dic, res2_dic, res_set, max1, max2 = get_edge_info(collection, word1, word2, time_id)
-	
-	if res1_dic == {} or res2_dic == {}:
+	print("debug getSimbim len(contextWord2) len(contextWord2) len(intersection)", len(res1_dic), len(res2_dic), len(res_set))
+	if len(res1_dic) == 0 or len(res2_dic) == 0 or len(res_set) == 0:
 		return {"error":"zero values"}
 	else:
 		# calc return dictionary and normalize values
