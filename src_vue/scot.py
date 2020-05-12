@@ -157,7 +157,7 @@ def get_edge_info(collection, word1, word2, time_id):
 	if len(res1_dic) > 0 and len(res2_dic) > 0:
 		
 		# put results into intersection-set of res1 and res2
-		res_set = set(res1_dic.keys()).intersection(set(res1_dic.keys()))
+		res_set = set(res1_dic.keys()).intersection(set(res2_dic.keys()))
 		
 		#print(res_set)
 		# determine maxima (sets are ordered by db in desc - thus first is the maximum)
@@ -173,9 +173,9 @@ def get_edge_info(collection, word1, word2, time_id):
 def getSimBims(collection="default", word1='liberty/NN', word2='independence/NN', time_id=0):
 # template method for new data-pipeline
 	# setting for test-database - comment out for deployment
-	# word1 = "test/NN"
-	# word2= "test/NN"
-	# time_id = 1
+	word1 = "test/NN"
+	word2= "test/NN"
+	time_id = 1
 	print(word1, " ",  word2)
 	res1_dic, res2_dic, res_set, max1, max2 = get_edge_info(collection, word1, word2, time_id)
 	

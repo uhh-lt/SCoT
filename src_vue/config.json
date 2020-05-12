@@ -2,11 +2,12 @@
 	"host" : "127.0.0.1",
 	"collections" : {
 		"default" : "mysql://user:password@localhost/scot",
-		"en_books" : "mysql://user:password@localhost/scot"
+		"en_books" : "mysql://user:password@localhost/scot",
+		"fi_news" : "mysql://user:password@localhost/scot2"
 	},
 	"collections_info":{
-		"English Books": "en_books"
-		
+		"English Books": "en_books",
+		"Finnish News" : "fi_news" 
 	}
 	
 	
