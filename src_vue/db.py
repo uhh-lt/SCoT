@@ -5,10 +5,10 @@ class Database:
 	def __init__(self, collection, configfile = 'config.json'):
 		with open(configfile) as config_file:
 			config = json.load(config_file)
-		if (collection in [*config["collections"]]):
-			self.db = records.Database(config["collections"][collection])
+		if (collection in [*config["collections_info_backend"]]):
+			self.db = records.Database(config["collections_info_backend"][collection])
 		else:
-			self.db = records.Database(config["collections"]['default'])
+			self.db = records.Database(config["collections_info_backend"]['default'])
 	
 	def get_features(self, word1, time_id):
 		# get feature scores for a word ie its syntagmatic context

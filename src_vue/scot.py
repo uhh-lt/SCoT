@@ -52,7 +52,7 @@ def recluster():
 def databases_info():
 	with open('config.json') as config_file:
 			config = json.load(config_file)
-	return json.dumps(config["collections_info"])
+	return json.dumps(config["collections_info_frontend"])
 
 
 @app.route('/api/collections/<string:collection>/interval/<int:start>/<int:end>')
@@ -79,18 +79,18 @@ def get_end_years(collection):
 	return json.dumps(end_years)
 
 
-@app.route('/api/collections/<string:collection>/sense_graph/<path:target_word>/<int:start_year>/<int:end_year>/<int:direct_neighbours>/<int:density>')
+@app.route('/api/collections/<string:collection>/sense_graph', methods=['POST'])
 # retrieve the clustered graph data according to the input parameters of the user and return it as json
 def get_clustered_graph(
-		collection,
-		target_word,
-		start_year,
-		end_year,
-		direct_neighbours,
-		density):
-	#target_word = str(urllib.parse.unquote(target_word))
-	target_word = str(target_word)
-	paradigms = direct_neighbours
+		collection):
+	if request.method == 'POST':
+		data = json.loads(request.data)
+		target_word = str(data["target_word"])
+		start_year = data["start_year"]
+		end_year = data["end_year"]
+		paradigms = data["senses"]
+		density = data["edges"]
+			
 
 	def clusters(
 		collection, 
@@ -111,41 +111,6 @@ def get_clustered_graph(
 	
 	return c_graph
 
-def get_edge_info_online(collection, word1, word2, time_id):
-	# this function is for development purposes only
-	# it gets the feature vectors (ie bims with sig values)
-	# from the jobim-api
-	word1part1  = word1.split("/")[0]
-	word1part2 = word1.split("/")[1]
-	word2part1 = word2.split("/")[0]
-	word2part2 = word2.split("/")[1]
-	url1 = "http://ltmaggie.informatik.uni-hamburg.de/jobimviz/ws/api/google/jo/bim/score/" + word1part1 + "%23" + word1part2 + "?format=json"
-	url2 = "http://ltmaggie.informatik.uni-hamburg.de/jobimviz/ws/api/google/jo/bim/score/"+ word2part1 + "%23" + word2part2 + "?format=json"
-	#print(url1)
-	
-	with urllib.request.urlopen(url1) as url:
-		data1 = json.loads(url.read().decode())
-		#print(data1)
-	with urllib.request.urlopen(url2) as url:
-		data2 = json.loads(url.read().decode())
-	results1 = data1["results"]
-	results2 = data2["results"]
-	# put results into dictionaries and set
-	res1_dic = {}
-	res2_dic = {}
-	for result in results1:
-		res1_dic[result["key"]] = result["score"]
-	for result in results2:
-		res2_dic[result["key"]] = result["score"]
-	res_set = set(res1_dic.keys()).intersection(set(res2_dic.keys()))
-	
-	#print(res_set)
-	# determine maxima
-	res1_dic = {k: v for k, v in sorted(res1_dic.items(), reverse = True, key=lambda item: item[1])}
-	res2_dic = {k: v for k, v in sorted(res2_dic.items(), reverse = True, key=lambda item: item[1])}
-	max1 = list(res1_dic.values())[0]
-	max2 = list(res2_dic.values())[0]
-	return res1_dic, res2_dic, res_set, max1, max2
 
 def get_edge_info(collection, word1, word2, time_id):
 	# get feature info from database
@@ -169,13 +134,13 @@ def get_edge_info(collection, word1, word2, time_id):
 		return {},{}, set(),0,0
 
 
-@app.route('/api/collections/<string:collection>/<int:time_id>/<path:word1>/simbim/<path:word2>')
-def getSimBims(collection="default", word1='liberty/NN', word2='independence/NN', time_id=0):
-# template method for new data-pipeline
-	# setting for test-database - comment out for deployment
-	# word1 = "test/NN"
-	# word2= "test/NN"
-	# time_id = 1
+@app.route('/api/collections/<string:collection>/simbim', methods=['POST'])
+def simbim(collection="default"):
+	if request.method == 'POST':
+		data = json.loads(request.data)
+		word1 = data["word1"]
+		word2 = data["word2"]
+		time_id = data["time_id"]
 	print("debug getSimBim words received", word1, " ",  word2)
 	res1_dic, res2_dic, res_set, max1, max2 = get_edge_info(collection, word1, word2, time_id)
 	print("debug getSimbim len(contextWord2) len(contextWord2) len(intersection)", len(res1_dic), len(res2_dic), len(res_set))

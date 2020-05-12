@@ -225,13 +225,15 @@ app = new Vue({
 
 		// on change database in frontend - update function
 		onChangeDb: function(){
-			
-			this.collection_key = this.collections[this.collection_name]
-			console.log("in onchange " + this.collection_key)
-			console.log("in onchange " + this.collection_name)
+			this.collection_key = this.collections[this.collection_name]["key"]
+			this.target_word = this.collections[this.collection_name]["target"]
+			console.log("in onchange db" + this.collection_key)
+			console.log("in onchange db" + this.collection_name)
+
+			// async
 			this.getStartYears()
 			this.getEndYears()
-			
+						
 		},
 				
 		// init collections from axios
@@ -1816,17 +1818,18 @@ app = new Vue({
 		
 		getSimBims: async function(){
 			let retArray = []
-			let word1 = this.active_edge.source_text
-			let word2 = this.active_edge.target_text
-			let time_id = this.active_edge.time_ids[0]
+			let data = {}
+			data["word1"] = this.active_edge.source_text
+			data["word2"] = this.active_edge.target_text
+			data["time_id"] = this.active_edge.time_ids[0]
 			// test-settings
 			// let word1 = "test/NN"
 			// let word2 = "test/NN"
 			// let time_ids = [1]
 			// let time_id = time_ids[0]
-			let url = './api/collections/'+this.collection_key +'/' + time_id +'/'+word1+'/simbim/'+word2
+			let url = './api/collections/'+this.collection_key +'/simbim'
 			console.log(url)
-			axios.get(url)
+			axios.post(url, data)
 				.then((res) => {
 					let ret = []
 					if (res.data["error"]=="none"){
@@ -1860,6 +1863,7 @@ app = new Vue({
 			axios.get('./api/collections/'+ this.collection_key + '/start_years')
 				.then((res) => {
 					this.start_years = res.data;
+					this.start_year = this.start_years[0]["value"]
 				})
 				.catch((error) => {
 					console.error(error);
@@ -1869,6 +1873,7 @@ app = new Vue({
 			axios.get('./api/collections/'+ this.collection_key + '/end_years')
 				.then((res) => {
 					this.end_years = res.data;
+					this.end_year = this.end_years[this.end_years.length-1]["value"]
 				})
 				.catch((error) => {
 					console.error(error);
@@ -2029,12 +2034,13 @@ app = new Vue({
 		Get the data from the BE according to the parameters entered in the FE and render the graph
 		*/
 		getData: function() {
-			var target_word = this.target_word;
-			var start_year = this.start_year;
-			var end_year = this.end_year;
-			var senses = this.senses;
-			var edges = this.edges;
-			var time_diff = this.time_diff;
+			let data = {}
+			data["target_word"] = this.target_word;
+			data["start_year"] = this.start_year;
+			data["end_year"] = this.end_year;
+			data["senses"] = this.senses;
+			data["edges"] = this.edges;
+			data["time_diff"] = this.time_diff;
 
 			app.start_years.forEach(function(d,i) {
 				if (d.value === app.start_year) {
@@ -2048,9 +2054,9 @@ app = new Vue({
 				}
 			});
 
-			var url = './api/collections/'+ this.collection_key + '/sense_graph' + '/' + target_word + '/' + start_year + '/' + end_year + '/' + senses + '/' + edges;
+			var url = './api/collections/'+ this.collection_key + '/sense_graph';
 			
-			axios.get(url)
+			axios.post(url, data)
 				.then((res) => {
 					this.data_from_db = res.data;
 					var nodes = this.data_from_db[0].nodes;
@@ -2244,7 +2250,7 @@ app = new Vue({
 			document.getElementById("loadpopup").style.display = "block";
 		}
 	},
-	created() {
+	mounted() {
 		this.getStartYears();
 		this.getEndYears();
 		this.getCollections();

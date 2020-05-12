@@ -1,12 +1,14 @@
 {
-	"host" : "0.0.0.0",
-	"collections" : {
-		"default" : "mysql://user:password@db/scot",
-		"en_books" : "mysql://user:password@db/scot",
-		"fi_news" : "mysql://user:password@db/scot"
+	"host" : "127.0.0.1",
+	"collections_info_backend" : {
+			"default" : "mysql://user:password@db/scot",
+			"en_books" : "mysql://user:password@db/scot",
+			"fi_news" : "mysql://scot:scot@ltdatabase1/dt_finNews_trigram"
 	},
-	"collections_info":{
-		"English Books": "en_books",
-		"Finnish News" : "fi_news" 
+	"collections_info_frontend":{
+		"English Books": {"key":"en_books", "target": "happiness/NN"},
+		"Finnish News": {"key": "fi_news", "target": "Yksi"}
 	}
+	
+	
 }
