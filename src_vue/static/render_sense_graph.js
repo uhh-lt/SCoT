@@ -24,7 +24,7 @@ async function render_graph(graph_nodes, graph_links, target) {
 		.append("svg")
 			.attr("id", "svg")
 			.attr("viewBox", "-200 -100 " + app.viewport_width + " " + app.viewport_height)
-			.attr("preserveAspectRatio", "xMidYMid meet")
+			.attr("preserveAspectRatio", "xMinYMin slice")
 			.classed("svg-content", true)
 			// .style("outline", "1px solid")
 			//.style("margin", "1ex")

@@ -60,10 +60,10 @@ app = new Vue({
 		// all the links in the updated graph
 		updated_links : null,
 		// for setting the view port size for the graph
-		viewport_height : (screen.availHeight-100),
+		viewport_height : screen.availHeight*0.9,
 		viewport_width : screen.availWidth*0.9,
 		// for setting the svg size for the graph
-		svg_height : screen.availHeight-100,
+		svg_height : screen.availHeight*0.9,
 		svg_width : screen.availWidth*0.9,
 		// link thickness parameters
 		link_thickness_scaled : "false",
@@ -84,7 +84,7 @@ app = new Vue({
 		sticky_mode : "true",
 		// simulation parameters
 		charge : -50,
-		linkdistance : 50,
+		linkdistance : 30,
 		// time ids for the time diff mode
 		interval_start : 0,
 		interval_end : 0,

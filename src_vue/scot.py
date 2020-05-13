@@ -86,10 +86,10 @@ def get_clustered_graph(
 	if request.method == 'POST':
 		data = json.loads(request.data)
 		target_word = str(data["target_word"])
-		start_year = data["start_year"]
-		end_year = data["end_year"]
-		paradigms = data["senses"]
-		density = data["edges"]
+		start_year = int(data["start_year"])
+		end_year = int(data["end_year"])
+		paradigms = int(data["senses"])
+		density = int(data["edges"])
 			
 
 	def clusters(

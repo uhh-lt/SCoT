@@ -48,7 +48,7 @@ class Database:
 			start=start_year, end=end_year)
 
 		for r in t:
-			time_ids.append(r['id'])
+			time_ids.append(int(r['id']))
 		return time_ids
 
 
@@ -65,11 +65,11 @@ class Database:
 			'SELECT word2, time_id, score FROM similar_words '
 			'WHERE word1=:tw AND word1!=word2 '
 			'ORDER BY score DESC',
-			tw=target_word 
+			tw=str(target_word) 
 			)
 		for row in target_word_senses:
 			exists = False
-			if row['time_id'] in time_ids and len(nodes) < paradigm_size:
+			if row['time_id'] in time_ids and len(nodes) < int(paradigm_size):
 				for node in nodes:
 					if node[0] == row['word2']:
 						exists = True
@@ -103,7 +103,7 @@ class Database:
 
 		for row in con:
 			if not row['word1']==row['word2'] and row['time_id'] in time_ids \
-				and len(connections)<=density*len(node_list):
+				and len(connections)<=int(density)*len(node_list):
 				connections.append([row['word1'], row['word2'], row['score'], row['time_id']])
 				#print(row['word1'], row['word2'], row['score'], row['time_id'])
 		
