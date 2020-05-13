@@ -15,7 +15,7 @@ async function render_graph(graph_nodes, graph_links, target) {
 
 	// Always remove the svg element. Otherwise a new one is appended every time you click the render button
 	d3.select("#graph2").select("svg").remove();
-
+	console.log(app.viewport_width, app.viewport_height)
 	// Create the svg element on which you want to render the graph
 	var svg = d3.select("#graph2")
 		.on("keydown.brush", keydowned)
@@ -23,8 +23,8 @@ async function render_graph(graph_nodes, graph_links, target) {
 		.each(function() { this.focus(); })
 		.append("svg")
 			.attr("id", "svg")
-			.attr("viewBox", "0 0 " + app.svg_height + " " + app.svg_width)
-			.attr("preserveAspectRatio", "xMinYMin meet")
+			.attr("viewBox", "-200 -100 " + app.viewport_width + " " + app.viewport_height)
+			.attr("preserveAspectRatio", "xMidYMid meet")
 			.classed("svg-content", true)
 			// .style("outline", "1px solid")
 			//.style("margin", "1ex")
@@ -55,14 +55,14 @@ async function render_graph(graph_nodes, graph_links, target) {
 	});
 
 	// append the target word to the center of the svg
-	var t = svg.append("g")
-		.data(target)
+	// var t = svg.append("g")
+	// 	.data(target)
 
-	t.append("text")
-		.attr("class", "target")
-		//.attr("x", (app.viewport_width/5))
-		//.attr("y", (app.viewport_height/5))
-		.text(function(d) { return d.target_word; })
+	// t.append("text")
+	// 	.attr("class", "target")
+	// 	.attr("x", (app.viewport_width/2))
+	// 	.attr("y", (app.viewport_height/2))
+	// 	.text(function(d) { return d.target_word; })
 
 	// create the force simulation
 	app.simulation = d3.forceSimulation(app.nodes)

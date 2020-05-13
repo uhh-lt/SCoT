@@ -60,8 +60,8 @@ app = new Vue({
 		// all the links in the updated graph
 		updated_links : null,
 		// for setting the view port size for the graph
-		//viewport_height : (screen.availHeight-100),
-		//viewport_width : screen.availWidth*1.1,
+		viewport_height : (screen.availHeight-100),
+		viewport_width : screen.availWidth*0.9,
 		// for setting the svg size for the graph
 		svg_height : screen.availHeight-100,
 		svg_width : screen.availWidth*0.9,
