@@ -5,7 +5,7 @@ The functionalities and usage are described in the [user guide](userGuide.md). I
 SCoT is developed since 2019. The project is maintained by the [Language Technology Group at Universität Hamburg](https://www.inf.uni-hamburg.de/en/inst/ab/lt/home.html).
 
 **Developers:**
-* [Christian Haase] (https://www2.informatik.uni-hamburg.de/fiona/pers.php?lang=de#haase) [Version 2]
+* [Christian Haase](https://www2.informatik.uni-hamburg.de/fiona/pers.php?lang=de#haase) [Version 2]
 * [Inga Kempfert](https://github.com/IngaKe) [Version 1]
 * [Saba Anwar](https://www.inf.uni-hamburg.de/en/inst/ab/lt/people/saba-anwar.html)
 
