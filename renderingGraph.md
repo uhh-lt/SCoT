@@ -25,7 +25,11 @@ The image shows a new session.
 
 If the user wants to render a new graph from the database, he or she needs to specify some parameters.
 
-![Enter Parameters](./images/enter_parameters.png "Enter parameters"){:height="35%" width="35%"}
+(1) The user needs to pick a database. This brings up several presets for the other settings-options which can be modified by the user. /n
+
+(2) The user needs to choose a target word. 
+
+(3) The user needs to 
 
 First, the user needs to enter a target word.
 
