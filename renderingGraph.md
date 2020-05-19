@@ -16,7 +16,7 @@ When the user first opens SCoT, they may either render a new graph by entering t
 
 The image shows a new session.
 
-![Clean new session](./images/new_session.png "New Session")
+![Clean new session](./images/02_settings.jpb "New Session")
 
 [To the top](#parameter-input-and-general-settings)
 
