@@ -16,17 +16,17 @@ The picture above shows the general structure of the web page after a graph was 
 
 At the top, the user finds different ACTION BUTTONS. 
 (1) START - slides out the settings menu on the left which enables the rendering of the graph and further graph-display settings
-[More info on the settings sidebar](renderingGraph.md)
+[More info on the settings sidebar](renderingGraph.md)  
 (2) ANALYSIS - slides out the analysis menu on the right which provides analytical information about clusters and nodes
-[More info on the analysis options](clusters.md)
-(3) TIME-MODE - switches the analysis mode to Time-Diff-Mode which enables diachronic comparisons
-(4) Search, Centrality and Recluster - Functions
-(5) LOAD and SAVE Buttons that enable loading and saving of the Graph in JSON-Format
+[More info on the analysis options](clusters.md)  
+(3) TIME-MODE - switches the analysis mode to Time-Diff-Mode which enables diachronic comparisons  
+(4) Search, Centrality and Recluster - Functions  
+(5) LOAD and SAVE Buttons that enable loading and saving of the Graph in JSON-Format  
 
-In the center of the page, the word sense graph is displayed. The user can interact with the graph in different ways.
-(5) EDGE-FEATURE - hovering over an edge brings up information about the edge. CLICKING on it brings out the context analysis slider!
-(6) NODE-FEATURE - hovering over the node in Time-Diff-Mode brings up information. CLICKING on it enables node-specific options, such as deleting or re-assigning to different cluster, that are available in the standard CLUSTER-ANALYSIS mode.
+In the center of the page, the word sense graph is displayed. The user can interact with the graph in different ways.  
+(5) EDGE-FEATURE - hovering over an edge brings up information about the edge. CLICKING on it brings out the context analysis slider!  
+(6) NODE-FEATURE - hovering over the node in Time-Diff-Mode brings up information. CLICKING on it enables node-specific options, such as deleting or re-assigning to different cluster, that are available in the standard CLUSTER-ANALYSIS mode.  
 
-In (4) and (2) the user can also view different centrality measures for the graph - one using betweenness centrality, the other highlighting nodes that are connected to more than one cluster in a balanced fashion ("hubs"). In (4) , the graph can be reclustered via a navbar function. Should the user have zoomed into the graph, the zoom can be reset via the settings menu (1) which also enables the setting of other graph-display options. 
+In (4) and (2) the user can also view different centrality measures for the graph - one using betweenness centrality, the other highlighting nodes that are connected to more than one cluster in a balanced fashion ("hubs"). In (4) , the graph can be reclustered via a navbar function. Should the user have zoomed into the graph, the zoom can be reset via the settings menu (1) which also enables the setting of other graph-display options.   
 
 **Note:** Many of the graph manipulation functionalities are only available in the sense clustering mode. The buttons to edit the graph are only faded in, if a graph is rendered.
