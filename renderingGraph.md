@@ -8,8 +8,6 @@ A sidebar to change the general settings of SCoT and enter the parameters for re
 
 * [Rendering a Graph from the Database](#rendering-a-new-graph-from-the-database)
 * [Rendering a Graph from a File](#rendering-a-graph-from-a-file)
-* [Update a Graph](#updating-a-graph)
-
 
 ## Parameter Input for Rendering a Graph
 When the user first opens SCoT, they may either render a new graph by entering the required parameters in the left column or they can load a previously stored graph again from a file.
