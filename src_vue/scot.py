@@ -50,7 +50,7 @@ def recluster():
 
 @app.route('/api/collections')
 def databases_info():
-	with open('config.json') as config_file:
+	with open('p:\\Dropbox\\WorkspaceCH\\vueProjects\\SCoT\\src_vue\\config.json') as config_file:
 			config = json.load(config_file)
 	return json.dumps(config["collections_info_frontend"])
 
@@ -199,6 +199,6 @@ def cluster_information():
 
 if __name__ == '__main__':
 	# use the config file to get host and database parameters
-	with open('config.json') as config_file:
+	with open('p:\\Dropbox\\WorkspaceCH\\vueProjects\\SCoT\\src_vue\\config.json') as config_file:
 		config = json.load(config_file)
 	app.run(host=config['host'])
