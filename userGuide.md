@@ -3,8 +3,7 @@
 [Back](index.md)
 
 1. [Introduction](intro.md)
-2. [The Functions in the Navbar](navbar.md)
-3. [Rendering a Graph](renderingGraph.md)
-4. [Interacting With a Graph](interacting.md)
-5. [Editing of Clusters](clusters.md)
-6. [View Difference Over Time (Time Diff)](timeDiff.md)
+2. [Rendering a Graph](renderingGraph.md)
+3. [Interacting With a Graph](interacting.md)
+4. [Editing of Clusters](clusters.md)
+5. [View Difference Over Time (Time Diff)](timeDiff.md)
