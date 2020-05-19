@@ -6,22 +6,9 @@ A sidebar to change the general settings of SCoT and enter the parameters for re
 
 ## Content
 
-* [General Settings](#general-settings)
 * [Rendering a Graph from the Database](#rendering-a-new-graph-from-the-database)
 * [Rendering a Graph from a File](#rendering-a-graph-from-a-file)
 * [Update a Graph](#updating-a-graph)
-
-
-## General Settings
-
-![General Settings](./images/general_settings.png){:height="75%" width="75%"}
-
-Via the general settings, the user can change the size of the viewport as well as the size of the SVG of the graph. The latter should be done before the graph is rendered, otherwise it will only act as a zoom function, without allowing the graph more room on the SVG. The default viewport is 550 x 950 pixels. The default SVG size is 1500 x 1500 pixels.
-
-The user can also decide how the link thickness should be calculated. It can either be scaled depending on the similarity score between nodes or it can be set as an absolute pixel value.
-If the user wishes to scale the link thickness with respect to the similarity the nodes it connects, the thickness is calculated as **sqrt(similarity_score / factor)**. The user can set the variable *factor*.
-
-[To the top](#parameter-input-and-general-settings)
 
 
 ## Parameter Input for Rendering a Graph
