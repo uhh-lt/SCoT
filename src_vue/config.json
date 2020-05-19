@@ -1,9 +1,9 @@
 {
 	"host" : "127.0.0.1",
 	"collections_info_backend" : {
-		"default" : "mysql://user:password@localhost/scot",
-		"en_books" : "mysql://user:password@localhost/scot",
-		"fi_news" : "mysql://user:password@localhost/scot2"
+			"default" : "mysql://user:password@db/scot",
+			"en_books" : "mysql://user:password@db/scot",
+			"fi_news" : "mysql://scot:scot@ltdatabase1/dt_finNews_trigram"
 	},
 	"collections_info_frontend":{
 		"English Books": {"key":"en_books", "target": "happiness/NN"},
