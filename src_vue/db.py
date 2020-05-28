@@ -31,7 +31,7 @@ class Database:
 	def get_all_years(self, position):
 		# get all the information on a certain column in the time_slices table, e.g. position='start_year'
 		years = []
-		t = self.db.query('SELECT * FROM time_slices')
+		t = self.db.query('SELECT * FROM time_slices ORDER BY id ASC')
 		for row in t:
 			year = {}
 			year["value"] = int(row[position])
@@ -44,7 +44,7 @@ class Database:
 		# get the corresponding ids for the start and end_year parameters
 		time_ids = []
 		t = self.db.query(
-			'SELECT id FROM time_slices WHERE start_year>=:start AND end_year<=:end',
+			'SELECT id FROM time_slices WHERE start_year>=:start AND end_year<=:end ORDER BY id ASC',
 			start=start_year, end=end_year)
 
 		for r in t:
@@ -79,6 +79,32 @@ class Database:
 				
 				if not exists:
 					nodes.append([row['word2'], {"time_ids": [row['time_id']], "weights": [row["score"]], "target_text": row['word2']}])
+		#print(nodes)
+		return nodes
+
+		# get the nodes for all words target word from the database
+	def get_all_nodes(
+		self,
+		time_ids
+		):
+		
+		nodes = []
+		nodeset = set()
+		target_word_senses = self.db.query(
+			'SELECT * FROM similar_words'
+			)
+		for row in target_word_senses:
+			if row['time_id'] in time_ids:
+				word1 = str(row["word1"])
+				word2 = str(row["word2"])
+											
+				if word2 not in nodeset:
+					nodes.append([row['word2'], {"time_ids": [row['time_id']], "weights": [row["score"]], "target_text": row['word2']}])
+					nodeset.add(word2)
+				if word1 not in nodeset:
+					nodes.append([row['word1'], {"time_ids": [row['time_id']], "weights": [row["score"]], "target_text": row['word1']}])
+					nodeset.add(word1)
+				
 		#print(nodes)
 		return nodes
 

@@ -2,12 +2,22 @@
 	"host" : "127.0.0.1",
 	"collections_info_backend" : {
 		"default" : "mysql://root:root@localhost/scot",
-		"en_books" : "mysql://root:root@localhost/scot",
-		"fi_news" : "mysql://user:password@localhost/scot2"
+		"corona_cooc" : "mysql://root:root@localhost/scot",
+		"corona_coll" : "mysql://root:root@localhost/scot2",
+		"brexit_coll" : "mysql://root:root@localhost/scot5",
+		"auspol_cooc" : "mysql://root:root@localhost/scot3",
+		"auspol_coll" : "mysql://root:root@localhost/scot4",
+		"auspol_w2v" : "mysql://root:root@localhost/scot6"
+		
 	},
 	"collections_info_frontend":{
-		"English Books": {"key":"en_books", "target": "happiness/NN"},
-		"Finnish News": {"key": "fi_news", "target": "Yksi"}
+		"corona_cooc_all": {"key":"corona_cooc", "target": "#covid19deutschland"},
+		"corona_coll": {"key": "corona_coll", "target": "#covid19deutschland"},
+		"brexit_coll": {"key":"brexit_coll", "target": "Xall"},
+		"auspol_cooc_llgt6": {"key":"auspol_cooc", "target": "Xall"},
+		"auspol_coll": {"key":"auspol_coll", "target": "#auspol"},
+		"auspol_w2v": {"key":"auspol_w2v", "target": "#auspol"}
+		
 	}
 	
 	

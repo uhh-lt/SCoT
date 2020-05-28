@@ -2,13 +2,13 @@ app = new Vue({
    el: "#vue-app",
    data: {
 	    // default values for init
-		target_word : "happiness/NN",
-		start_year : 1520,
-		end_year : 2008,
-		senses : 100,
-		edges : 30,
-		collection_key : "en_books",
-		collection_name: "English Books",
+		target_word : "#covid19deutschland",
+		start_year : 20200328,
+		end_year : 20200519,
+		senses : 50,
+		edges : 3,
+		collection_key : "corona_cooc",
+		collection_name: "corona_cooc_all",
 		// View Modes - SIDEBAR RIGHT ANALYSIS
 	   // logic - time_diff: false AND context false -> cluster-mode
 	   // time_diff: true and context_mode false -> time_diff mode
@@ -60,8 +60,8 @@ app = new Vue({
 		// all the links in the updated graph
 		updated_links : null,
 		// for setting the view port size for the graph
-		viewport_height : screen.availHeight,
-		viewport_width : screen.availWidth,
+		viewport_height : screen.availHeight*0.9,
+		viewport_width : screen.availWidth*0.9,
 		// for setting the svg size for the graph
 		svg_height : screen.availHeight*1.5,
 		svg_width : screen.availWidth*1.5,

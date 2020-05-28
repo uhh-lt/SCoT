@@ -6,6 +6,7 @@ import chineseWhispers
 import urllib.parse
 import json
 import urllib.request
+from word2vecloader import Word2VecLoader
 
 DEBUG = True
 PARAMETERS = {}
@@ -43,7 +44,7 @@ def recluster():
 		nodes = data["nodes"]
 		links_list = data["links"]
 		for item in links_list:
-			links.append((item["source"], item["target"], {'weight': int(item["weight"])}))
+			links.append((item["source"], item["target"], {'weight': item["weight"]}))
 
 		reclustered_graph = chineseWhispers.chinese_whispers(nodes, links)
 		return json.dumps(reclustered_graph)
@@ -101,9 +102,19 @@ def get_clustered_graph(
 		density):
 		db = Database(getDbFromRequest(collection))
 		time_ids = db.get_time_ids(start_year, end_year)
-		nodes = db.get_nodes(target_word, paradigms, time_ids)
-		edges, nodes, singletons = db.get_edges(nodes, density, time_ids)
+		if target_word == "Xall":
+			nodes = db.get_all_nodes(time_ids)
+		elif target_word[:2] == "WV":
+			print(" in word target")
+			target_word = target_word[3:]
+			w2v = Word2VecLoader()
+			nodes, edges, singletons = w2v.egoGraph(target_word, paradigms, density)
+		else:
+			nodes = db.get_nodes(target_word, paradigms, time_ids)
+		if target_word[:2] != "WV":
+			edges, nodes, singletons = db.get_edges(nodes, density, time_ids)
 		
+		#print("in scot.py singletons ", singletons)
 		return singletons, chineseWhispers.chinese_whispers(nodes, edges)
 	
 	singletons, clustered_graph = clusters(collection, target_word, start_year, end_year, paradigms, density)

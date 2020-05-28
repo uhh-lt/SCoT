@@ -43,11 +43,11 @@ def chinese_whispers(nodes, edges, iterations=15):
 				else:
 					classes[graph.node[neighbour]['class']] = graph[node][neighbour]['weight']	
 
-			max = 0
+			maxi = 0
 			maxclass = 0
 			for c in classes:
-				if classes[c] > max:
-					max = classes[c]
+				if classes[c] > maxi:
+					maxi = classes[c]
 					maxclass = c
 			graph.node[node]['class'] = maxclass
 
