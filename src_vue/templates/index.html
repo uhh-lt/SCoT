@@ -35,9 +35,9 @@
 			
 <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX NAVBAR XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
 		<!-- Navbar with option buttons -->
-		<b-navbar type="dark" variant="secondary" toggleable="lg" fixed="top">
+		<b-navbar type="light" variant="light" toggleable="lg" fixed="top">
 			<b-navbar-brand tag="h1" class="header" >
-				Sense Clustering over Time
+				Semantic Clustering of Twitter-Data over Time
 			</b-navbar-brand>
 			<b-nav-form >
 				<b-button id="load_button" v-b-toggle.sidebar-left variant="success">Start</b-button>
@@ -49,7 +49,7 @@
 		
 									
 					<!-- Select time diff or sense clustering mode -->
-				<b-form-checkbox id="select_time_diff" style="color: white" v-model="time_diff" name="check-button" switch>
+				<b-form-checkbox id="select_time_diff" style="color: black" v-model="time_diff" name="check-button" switch>
 					Time-Mode
 			  </b-form-checkbox>
 					<b-input-group >
@@ -82,38 +82,38 @@
 	</b-navbar>
 <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR-LEFT XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
 	<!-- Column with input parameters (left column) -->
-	<b-sidebar id="sidebar-left" title="Settings" bg-variant="secondary" text-variant="light" style="opacity: 0.9;" width="13%" left shadow>
+	<b-sidebar id="sidebar-left" title="Settings" bg-variant="light" text-variant="dark" style="opacity: 0.9;" width="13%" left shadow>
 		<br>
 		<h5 class="sidebar-section__title"> </h5>
 		<!--<hr>-->
 		<p >
-			<a href="https://uhh-lt.github.io/SCoT/" style="color:white;font-size:140%">User guide</a>
+			<a href="https://chrishaase.github.io/SCoT/" style="color:black;font-size:140%">User guide</a>
 			<br>
-			<a href="https://github.com/uhh-lt/SCoT" style="color:white;font-size:140%">Source code</a>
+			<a href="https://github.com/chrishaase/SCoT" style="color:black;font-size:140%">Source code</a>
 		</p>
-		<hr style="border: 1px solid gray;" />
+		<hr style="border: 1px solid black;" />
 		<!-- Enter database -->
-		<b-form-group class="input" label="Select collection">  
+		<b-form-group class="input" label="Corpus und Verfahren">  
 			<b-form-select v-on:change="onChangeDb" v-model="collection_name" :options="collections_names" size="sm"></b-form-select>
 		</b-form-group>
 		<!-- Enter target word -->
-		<b-form-group class="input" label="Enter target word">  
+		<b-form-group class="input" label="Zentraler Hashtag">  
 			<b-form-input v-model="target_word" placeholder="target word" size="sm"></b-form-input>
 		</b-form-group>
 		<!-- Enter number of neighbouring nodes -->
-		<b-form-group class="input" label="Max. paradigms">
+		<b-form-group class="input" label="Max. Ähnliche">
 			<b-form-input type="number" v-model="senses" min="0" placeholder="number of neighbours" size="sm"></b-form-input>
 		</b-form-group>
 		<!-- Enter maximum number of edges per node -->
-		<b-form-group class="input" label="Max. depth">
+		<b-form-group class="input" label="Max. Querverb.">
 			<b-form-input type="number" v-model="edges" min="0" placeholder="number of edges" size="sm"></b-form-input>
 		</b-form-group>
 		<!-- Enter an start year -->
-		<b-form-group class="input" label="Select a start year">
+		<b-form-group class="input" label="Zeit: Start-Datum ">
 			<b-form-select v-model="start_year" :options="start_years" size="sm"></b-form-select>
 		</b-from-group>
 		<!-- Enter an end year -->
-		<b-form-group class="input" label="Select an end year">
+		<b-form-group class="input" label="Zeit: End-Datum">
 			<b-form-select v-model="end_year" :options="end_years" size="sm"></b-form-select>
 		</b-from-group>
 		<!-- Render button -->
@@ -174,7 +174,7 @@
 	</b-sidebar>
 <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR-RIGHT ANALYSIS CLUSTERING XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
 <!-- edit column (right column) -->
-<b-sidebar width="23%" v-if="!time_diff" id="sidebar-right" title="Cluster-Analysis" bg-variant="secondary" text-variant="light" style="opacity: 0.9;"  right shadow>
+<b-sidebar width="23%" v-if="!time_diff" id="sidebar-right" title="Cluster-Analysis" bg-variant="light" text-variant="dark" style="opacity: 0.9;"  right shadow>
 		<!-- show this part if time-diff = fals-->
 <div >
 	<br>
@@ -185,10 +185,10 @@
 				Useful links
 			</div>
 			<div style="margin-top: 2ex;">
-				<b-link href="https://github.com/IngaKe/SCoT"><i class="fab fa-github"></i> View on GitHub </b-link>
+				<b-link href="https://github.com/chrishaase/SCoT"><i class="fab fa-github"></i> View on GitHub </b-link>
 			</div>
 			<div>
-				<b-link href="https://ingake.github.io/SCoT/index.html"> <i class="fas fa-question-circle"></i> View User Guide </b-link>
+				<b-link href="https://chrishaase.github.io/SCoT/index.html"> <i class="fas fa-question-circle"></i> View User Guide </b-link>
 			</div>
 		</div>
 		<hr>
@@ -483,7 +483,7 @@
 </div>
 </b-sidebar>
 <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR RIGHT TIME-DIFF VIEW XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
-<b-sidebar v-if="time_diff" id="sidebar-right" title="Time-Analysis" width="23%" bg-variant="secondary" text-variant="light" style="opacity: 0.9;"  right shadow>
+<b-sidebar v-if="time_diff" id="sidebar-right" title="Time-Analysis" width="23%" bg-variant="light" text-variant="dark" style="opacity: 0.9;"  right shadow>
 <div>
 	<!-- TIME DIFF -->
 	<!-- Card with time diff options -->

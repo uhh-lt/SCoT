@@ -108,7 +108,7 @@ def get_clustered_graph(
 			print(" in word target")
 			target_word = target_word[3:]
 			w2v = Word2VecLoader()
-			nodes, edges, singletons = w2v.egoGraph(target_word, paradigms, density)
+			nodes, edges, singletons = w2v.egoGraph(target_word, paradigms, density, time_ids)
 		else:
 			nodes = db.get_nodes(target_word, paradigms, time_ids)
 		if target_word[:2] != "WV":
