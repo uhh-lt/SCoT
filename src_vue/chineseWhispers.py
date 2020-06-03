@@ -8,6 +8,7 @@ import json
 #  https://www.aclweb.org/anthology/W06-3812.pdf
 # 
 # Construct a networkx graph from the nodes and edges
+# precondition: nodes_set typed, edges types - all scores in float
 def construct_graph(nodes_set, edges):
 	nodes = list(nodes_set)
 	graph = nx.Graph()

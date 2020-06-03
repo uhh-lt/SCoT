@@ -36,6 +36,8 @@ def index():
 
 @app.route('/api/reclustering', methods=['POST'])
 # recluster the existing graph by running Chinese Whispers on it again
+# precondition: source - target str - weight float not guaranteed
+# thus ensure type-safety for backend by casting
 def recluster():
 	nodes = []
 	links = []
@@ -44,7 +46,7 @@ def recluster():
 		nodes = data["nodes"]
 		links_list = data["links"]
 		for item in links_list:
-			links.append((item["source"], item["target"], {'weight': item["weight"]}))
+			links.append((str(item["source"]), str(item["target"]), {'weight': float(item["weight"])}))
 
 		reclustered_graph = chineseWhispers.chinese_whispers(nodes, links)
 		return json.dumps(reclustered_graph)
@@ -149,9 +151,9 @@ def get_edge_info(collection, word1, word2, time_id):
 def simbim(collection="default"):
 	if request.method == 'POST':
 		data = json.loads(request.data)
-		word1 = data["word1"]
-		word2 = data["word2"]
-		time_id = data["time_id"]
+		word1 = str(data["word1"])
+		word2 = str(data["word2"])
+		time_id = int(data["time_id"])
 	print("debug getSimBim words received", word1, " ",  word2)
 	res1_dic, res2_dic, res_set, max1, max2 = get_edge_info(collection, word1, word2, time_id)
 	print("debug getSimbim len(contextWord2) len(contextWord2) len(intersection)", len(res1_dic), len(res2_dic), len(res_set))
@@ -163,7 +165,7 @@ def simbim(collection="default"):
 		return_dic = {}
 		index_count = 0
 		for key in res_set:
-			return_dic[str(index_count)] = {"score": res1_dic[key]/max1, "key" : key, "score2": res2_dic[key]/max2 }
+			return_dic[str(index_count)] = {"score": float(res1_dic[key]/max1), "key" : str(key), "score2": float(res2_dic[key]/max2) }
 			index_count += 1
 	
 		return_dic["error"] = "none"
