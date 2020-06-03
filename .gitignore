@@ -1,4 +1,4 @@
-# Created by https://www.gitignore.io/api/python
+﻿# Created by https://www.gitignore.io/api/python
 # Edit at https://www.gitignore.io/?templates=python
 
 ### Data ###
@@ -135,3 +135,5 @@ dmypy.json
 package-lock.json
 
 # End of https://www.gitignore.io/api/python
+/.idea
+/.vscode
