@@ -22,8 +22,8 @@ app = new Vue({
 
 		// ##### VIEW SETTINGS APP AND SVG-GRAPH
 		// base color scheme bootstrap vue (not implemented via var yet)
-		bv_variant : "secondary",
-		bv_type : "dark",
+		bv_variant : "black",
+		bv_type : "white",
 		// for setting the view port size for the graph
 		viewport_height : screen.availHeight*1,
 		viewport_width : screen.availWidth*1,
