@@ -37,34 +37,17 @@ text {
 }
 
 
-#load_button {
-	/*float: right;
-	display: block;
-	position: absolute;
-	right: 0;*/
-	text-align: center;
-	font-size: 12px;
-	/*word-spacing: -10px;*/
+.lrmargin_button {
 	margin-right: 5px;
 	margin-left: 5px;
 	
 }
 
-#recluster_button {
+.search_button {
 	display: block;
 	float: right;
 	text-align: center;
-	font-size: 10px;
-	/*word-spacing: -10px;*/
-	/*margin-right: 10px;*/
-	margin-left: 5px;
-}
-
-#search_button {
-	display: block;
-	float: right;
-	text-align: center;
-	font-size: 10px;
+	/*font-size: 10px;*/
 }
 
 
@@ -72,7 +55,7 @@ text {
 	display: block;
 	/*float: right;*/
 	text-align: center;
-	font-size: 10px;
+	/*font-size: 10px;*/
 	/*word-spacing: -10px;*/
 	/*margin-right: 10px;*/
 	margin-left: 5px;
@@ -82,7 +65,7 @@ text {
 	margin-top: 10px;
 	margin-bottom: 10px;
 	/*word-spacing: -10px;*/
-	font-size: 10px;
+	/*font-size: 10px;*/
 	margin-left: 5px;
 }
 
@@ -127,7 +110,7 @@ text {
 	margin-top: 10px;
 	text-align: center;
 	/*word-spacing: -10px;*/
-	font-size: 10px;
+	/*font-size: 10px;*/
 }
 
 
@@ -135,26 +118,26 @@ text {
 	margin-top: 10px;
 	text-align: center;
 	/*word-spacing: -10px;*/
-	font-size: 10px;
+	/*font-size: 10px;*/
 }
 
 #update_button {
 	margin-top: 10px;
 	text-align: center;
 	/*word-spacing: -10px;*/
-	font-size: 10px;
+	/*font-size: 10px;*/
 }
 
 #singleton_button {
 	margin-top: 10px;
-	font-size: 10px;
+	/*font-size: 12px;*/
 }
 
 #render_file_button {
 	margin-top: 10px;
 	margin-bottom: 10px;
 	/*word-spacing: -10px;*/
-	font-size: 10px;
+	/*font-size: 10px;*/
 }
 
 #general_settings_button {
@@ -169,7 +152,7 @@ text {
 	margin-top: 10px;
 	margin-bottom: 10px;
 	/*word-spacing: -10px;*/
-	font-size: 10px;
+	/*font-size: 10px;*/
 }
 
 #skip_through_button {
@@ -248,7 +231,7 @@ text {
 }
 
 .close_button{
-	font-size: 10px;
+	/*font-size: 10px;*/
 	display: block;
 	float: right;
 }
