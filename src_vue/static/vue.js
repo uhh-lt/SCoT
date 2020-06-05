@@ -1,7 +1,10 @@
 app = new Vue({
    el: "#vue-app",
    data: {
-	    // default values for init
+	   // #### BASIC APP, COLLECTION AND GRAPH DATA (PRESETS AND QUERY-VARS)
+		// title
+		title : "Semantic Clustering of Twitter-Data over Time",	
+		// default values for init
 		target_word : "#covid19deutschland",
 		start_year : 20200328,
 		end_year : 20200519,
@@ -9,30 +12,34 @@ app = new Vue({
 		edges : 3,
 		collection_key : "corona_cooc",
 		collection_name: "corona_cooc_all",
-		// View Modes - SIDEBAR RIGHT ANALYSIS
-	   // logic - time_diff: false AND context false -> cluster-mode
-	   // time_diff: true and context_mode false -> time_diff mode
-	   // context true -> [edge] context_ mode
-	   // if context is set to false - previous panel returns
-	   time_diff : false,
-	   context_mode : false,
-	   showSidebarRight : false,
-	   showSidebarLeft: false,
-	   // sidebar right additional information
-	   active_edge: {"time_ids": [1], "weights": [1], "source_text": "happiness/NN", "target_text": "gladness/NN"},	
-	   // sigebar right: holds edge context information (score, key, score2)
-	   simbim_object: [],
-	   	// all possible collections queried from database
+		// all possible collections queried from database
 		collections : {}, // collections keys and names
 		collections_names: [], // collections_names
 		// all possible start years queried from the database
 		start_years : [],
 		// all possible end years queried from the database
 		end_years : [],
-		// the time id of the graph start year, user input for skipping through time slices
-		min_time_id : 1,
-		// the time_id of the graph end year, user input for skipping through time slices
-		max_time_id: 10,
+
+		// ##### VIEW SETTINGS APP AND SVG-GRAPH
+		// base color scheme bootstrap vue (not implemented via var yet)
+		bv_variant : "secondary",
+		bv_type : "dark",
+		// for setting the view port size for the graph
+		viewport_height : screen.availHeight*1,
+		viewport_width : screen.availWidth*1,
+		// for setting the svg size for the graph
+		svg_height : screen.availHeight*1.5,
+		svg_width : screen.availWidth*1.5,
+		// the force simulation
+		simulation : null,
+		// link thickness parameters
+		link_thickness_scaled : "false",
+		link_thickness_value : 1,
+		link_thickness_factor : 0.1,
+		base_link_opacity : 0.3,
+		reduced_link_opacity: 0.1,
+		//overlays central
+		overlay_main : false,
 		// represents the DOM element for a node (see render_sense_graph.js)
 		node : "",
 		// represents the DOM element for a link (see render_sense_graph.js)
@@ -50,8 +57,6 @@ app = new Vue({
 		// clipboard for data from db in update() and getData()
 		// TODO: can probably be deleted
 		data_from_db : {},
-		// the force simulation
-		simulation : null,
 		// parameters for updating the graph
 		update_senses : 150,
 		update_edges : 50,
@@ -59,32 +64,92 @@ app = new Vue({
 		updated_nodes : null,
 		// all the links in the updated graph
 		updated_links : null,
-		// for setting the view port size for the graph
-		viewport_height : screen.availHeight*0.9,
-		viewport_width : screen.availWidth*0.9,
-		// for setting the svg size for the graph
-		svg_height : screen.availHeight*1.5,
-		svg_width : screen.availWidth*1.5,
-		// link thickness parameters
-		link_thickness_scaled : "false",
-		link_thickness_value : 1,
-		link_thickness_factor : 100,
-		// file from which a graph is to be loaded
-		file : null,
-		// graph loaded from file
-		read_graph : null,
 		// true, if a graph is rendered. Used in the HTML to only show buttons if a graph is rendered
 		graph_rendered : false,
-		wait_rendering : false,
-		// list of objects to store all the information on the clusters in a rendered graph (see function get_clusters())
-		clusters : [],
-		// new clusters calculated by reclustering the graph
-		newclusters : {},
+		wait_rendering : false,		
 		// dragging behaviour sticky_mode === "true" -> force, sticky_mode === "false" -> brush
 		sticky_mode : "true",
 		// simulation parameters
 		charge : -50,
 		linkdistance : 50,
+				
+		// #### VIEW MODES SIDEBARS AND NAVBARS
+		// ## SIDEBAR LEFT GRAPH
+		left_selected: 'graph_data',
+        left_options: [
+          { text: 'Data', value: 'graph_data' },
+          { text: 'View', value: 'graph_view' },
+          { text: 'Help', value: 'graph_help' }
+          
+        ],
+		// ## SIDEBAR right Cluster
+		right_selected: 'cluster_basic',
+		right_selected_previous: 'cluster_basic',
+        right_options: [
+          { text: 'Cluster', value: 'cluster_basic' },
+          { text: 'Time-Diff', value: 'cluster_time' },
+          { text: 'Functions', value: 'cluster_functions' }
+          
+        ],
+		// controls node colors cluster or time-diff
+	   time_diff : false,
+	   // edge context sidebar
+	   context_mode : false,
+	   showSidebarRight1 : false,
+	   busy_right1 : false,
+	    // cluster context sidebar
+		context_mode2 : false,
+		showSidebarRight2: false,
+		busy_right2: true,
+	    // node context sidebar
+	   context_mode3 : false,
+	   showSidebarRight3: false,
+	   busy_right3 : false,
+	   // table information for edge -context view sidebar
+		fields_edges : [
+			{key: "node1", sortable: true},
+			{key: "edge", sortable: true},
+			{key: "node2", sortable: true}
+			
+		],
+		// table information for node -context view sidebar
+		fields_nodes : [
+			{key: "node1", sortable: true},
+			{key: "edge", sortable: true},
+			{key: "node2", sortable: true}
+			
+		],
+		// table information for cluster -context view sidebar
+		fields_cluster : [
+			{key: "wort", sortable: true},
+			{key: "freq", sortable: true}
+			
+		],
+
+		// ### DATA SETTINGS SIDEBARS
+	   // edge-click information for data-query for sidebar
+	   active_edge: {"time_ids": [1], "weights": [1], "source_text": "happiness/NN", "target_text": "gladness/NN"},	
+	   // sigebar right: holds edge context information (score, key, score2)
+	   simbim_object: [],
+	   // node-click information for data-query for sidebar
+	   active_node: {"time_ids": [1], "weights": [1], "source_text": "happiness/NN", "target_text": "gladness/NN"},	
+	   // sigebar right: holds node context information (score, key, score2)
+	   simbim_node_object: [],
+	   // sigebar right: holds cluster context information (score, key, score2)
+	   cluster_shared_object: [],
+	   	// the time id of the graph start year, user input for skipping through time slices
+		min_time_id : 1,
+		// the time_id of the graph end year, user input for skipping through time slices
+		max_time_id: 10,
+		// file from which a graph is to be loaded
+		file : null,
+		// graph loaded from file
+		read_graph : null,
+		// list of objects to store all the information on the clusters in a rendered graph (see function get_clusters())
+		clusters : [],
+		// new clusters calculated by reclustering the graph
+		newclusters : {},
+		
 		// time ids for the time diff mode
 		interval_start : 0,
 		interval_end : 0,
@@ -136,14 +201,8 @@ app = new Vue({
 			{key: "show_details", label: "Show Details"}
 			],
 		// array containing information about the neighbourhood of each node
-		wobblyCandidates : [],
-		// table information
-		fields_edges : [
-			{key: "node1", sortable: true},
-			{key: "edge", sortable: true},
-			{key: "node2", sortable: true}
-			//{key: "combi", sortable: true}
-		]
+		wobblyCandidates : []
+		
 	},
 	computed: {
 		
@@ -214,13 +273,42 @@ app = new Vue({
 	},
 	methods: {
 
+		nonevent(e){
+			//do nothing
+		},
+
 		toggleSidebarContext: function(){
+			this.context_mode3 = false
 			this.context_mode = !this.context_mode
 			console.log("in toggle", this.context_mode)
 		},
 
+		toggleSidebarContext2: function(){
+			
+			this.context_mode2 = !this.context_mode2
+			console.log("in toggle2", this.context_mode2)
+		},
+
+		toggleSidebarContext3: function(){
+			this.context_mode = false
+			this.context_mode3 = !this.context_mode3
+			console.log("in toggle3", this.context_mode3)
+		},
+
 		toggle_time_diff: function(){
-			this.time_diff = !this.time_diff
+			//  lazy change - ie state changes only after this function
+			console.log("inside toggle time diff START", this.time_diff)
+			// wenn time-diff on -- dann gehen wir weg von time-diff daher
+			if (this.time_diff && this.graph_rendered){
+				this.reset_time_diff_colours()
+				
+			}
+			if (this.right_selected === "cluster_time"){
+				this.time_diff = false
+			}
+			console.log("inside toggle time diff END", this.time_diff)
+
+			
 		},
 
 		// on change database in frontend - update function
@@ -253,7 +341,7 @@ app = new Vue({
 		mouseOver: function(opacity) {
 			return function(d) {
 				// check all other nodes to see if they're connected
-				// to this one. if so, keep the opacity at 1, otherwise
+				// to this one. if so, keep the opacity, otherwise
 				// fade
 				app.node.style("stroke-opacity", function(o) {
 					thisOpacity = app.isConnected(d, o) ? 1 : opacity;
@@ -265,7 +353,7 @@ app = new Vue({
 				});
 				// also style link accordingly
 				app.link.style("stroke-opacity", function(o) {
-					return o.source === d || o.target === d ? 1 : opacity;
+					return o.source === d || o.target === d ? this.base_link_opacity : this.reduced_link_opacity;
 				});
 				//link.style("stroke", function(o){
 					// TODO: how to get o.source.colour for graph rendered from db?
@@ -279,18 +367,19 @@ app = new Vue({
 		mouseOut: function() {
 			app.node.style("stroke-opacity", 1);
 			app.node.style("fill-opacity", 1);
-			app.link.style("stroke-opacity", 1);
+			app.link.style("stroke-opacity", this.base_link_opacity);
 			//link.style("stroke", "#ddd");
 		},
 		// reset the colour of the nodes to cluster colours
 		reset_time_diff_colours: function() {
-			//circles.style("stroke-opacity", 1);
-			app.link.style("stroke-opacity", 1);
+			app.circles.style("stroke-opacity", 1);
+			app.link.style("stroke-opacity", this.base_link_opacity);
 			
 			var circleChilds = d3.selectAll(".node").selectAll("g").selectAll("circle");
 
 			circleChilds.each(function(d) {
 				var node_cluster_id = this.getAttribute("cluster_id");
+				console.log("in reset color vue.js ", app.clusters)
 				for (var i=0; i < app.clusters.length; i++) {
 					// set the colour of the nodes back to the cluster colours
 					if (node_cluster_id === app.clusters[i].cluster_id) {
@@ -908,7 +997,7 @@ app = new Vue({
 			links.each(function(d) {
 				var children = this.childNodes;
 				children.forEach(function(p) {
-					p.style.strokeOpacity = 1.0;
+					p.style.strokeOpacity = this.base_link_opacity;
 				})
 			})
 		},
@@ -985,7 +1074,7 @@ app = new Vue({
 						links.each(function(d) {
 							var children = this.childNodes;
 							children.forEach(function(p) {
-								p.style.strokeOpacity = 0.2;
+								p.style.strokeOpacity = this.reduced_link_opacity;
 							})
 						})
 					});
@@ -1293,8 +1382,8 @@ app = new Vue({
 			var links = d3.selectAll(".link").selectAll("line");
 
 			links.each(function(d,i) {
-				// Set the opacity of all links to 1.0 initially
-				this.style.strokeOpacity = 1.0;
+				// Set the opacity of all links to base_link_opacity initially
+				this.style.strokeOpacity = this.base_link_opacity;
 
 				// select the time ids of the source and the target
 				var source_time_ids = d.source.time_ids;
@@ -1326,7 +1415,7 @@ app = new Vue({
 				
 				// the link only has opacity 1.0 if both source and target are in the selected time slice
 				if (in_source_interval === false || in_target_interval === false) {
-					this.style.strokeOpacity = 0.2;
+					this.style.strokeOpacity = this.reduced_link_opacity;
 				}
 			});
 		},
@@ -1346,6 +1435,18 @@ app = new Vue({
 			stringRet += "Highest similarities with " + app.target_word + ":" + "<br>"
 			stringRet += this.selectInterval(time_ids, weights) + "<br>"
 			return stringRet;
+		},
+
+		time_diff_true(){
+			this.time_diff = true
+			console.log("time diff true")
+
+		},
+
+		time_diff_true_and_reset(){
+			this.time_diff = true
+			console.log("time diff true")
+			this.reset_time_diff_colours()
 		},
 
 		selectIntervalWithActive: function(){
@@ -1521,7 +1622,7 @@ app = new Vue({
 				var childnodes = this.childNodes;
 				childnodes.forEach(function(d) {
 					d.setAttribute("style", "stroke: #999;");
-					d.setAttribute("style", "stroke-opacity:" + 0.6);
+					d.setAttribute("style", "stroke-opacity:" + this.base_link_opacity);
 
 				});
 			});
@@ -1572,7 +1673,7 @@ app = new Vue({
 						// if the link is faded in, set the colour to the same as all the nodes
 						d.setAttribute("style", "stroke:" + colour);
 					} else {
-						d.setAttribute("style", "stroke-opacity:" + 0.2);
+						d.setAttribute("style", "stroke-opacity:" + this.reduced_link_opacity);
 					}
 				})
 			})
@@ -1784,9 +1885,9 @@ app = new Vue({
 		},
 		/*
 		Choose cluster for context analysis and display context information
-		Experimental feature for cluster information (not fully implemented yet)
 		*/
 		get_cluster_information: function(cluster){
+			this.busy_right2 = true
 			console.log(this.links)
 			let links = this.links
 			let jsonReq = {"edges": [], "collection":this.collection_key}
@@ -1797,6 +1898,7 @@ app = new Vue({
 				nodes.push(dati["text"])
 			}
 			console.log(nodes)
+			this.context_mode2 = true
 			// find edges that are inside the cluster (ie both nodes are cluster nodes)
 			for (let key in links){
 				let t1 = links[key]["source_text"]
@@ -1810,23 +1912,44 @@ app = new Vue({
 				}
 			}
 			//console.log(jsonReq)
-			//let url = './api/cluster_information'
-			//axios.post(url, jsonReq)
+			let url = './api/cluster_information'
+			axios.post(url, jsonReq)
+				.then((res)=> {
+					console.log(res.data)
+
+					let ret = []
+					for (var key in res.data){
+						retObj = {}
+						retObj.wort = key
+						retObj.freq = parseFloat(res.data[key]).toFixed(5)
+						ret.push(retObj)
+						}
+								
+					
+					this.cluster_shared_object = ret
+					console.log(this.cluster_shared_object)
+					this.busy_right2 = false
+
+
+				})
+				.catch((error) => {
+					console.error(error);
+				});
 
 		},
 
-		
+		/*
+		Get edge information, i.e. the feature-contexts words that are shared by paradigms
+		Since we are using similarity - bims (ie contexts) - the function is called simbim
+		*/
 		getSimBims: async function(){
+			this.busy_right1 = true
 			let retArray = []
 			let data = {}
 			data["word1"] = this.active_edge.source_text
 			data["word2"] = this.active_edge.target_text
 			data["time_id"] = this.active_edge.time_ids[0]
-			// test-settings
-			// let word1 = "test/NN"
-			// let word2 = "test/NN"
-			// let time_ids = [1]
-			// let time_id = time_ids[0]
+			
 			let url = './api/collections/'+this.collection_key +'/simbim'
 			console.log(url)
 			axios.post(url, data)
@@ -1842,13 +1965,59 @@ app = new Vue({
 						retObj.node2 = parseFloat(dati["score2"]).toFixed(5)
 						ret.push(retObj)
 						}
-						// retObj.combi = (parseFloat(dati["score"]) + parseFloat(dati["score2"])).toFixed(2)
+						
 					
 					}
 				}
 					
 					
 					this.simbim_object = ret
+					this.busy_right1 = false
+				
+				})
+				.catch((error) => {
+					console.error(error);
+				});
+
+				
+			
+		},
+
+		/*
+		Get node-target word (invisible edge) information, i.e. the feature-contexts words that are shared by paradigms
+		Since we are using similarity - bims (ie contexts) - the function is called simbim
+		*/
+		getSimBimsNodes: async function(){
+			this.busy_right3 = true
+			let retArray = []
+			let data = {}
+			data["word1"] = this.target_word
+			data["word2"] = this.active_node.target_text
+			data["time_id"] = this.active_node.time_ids[0]
+			
+			let url = './api/collections/'+this.collection_key +'/simbim'
+			console.log(url)
+			axios.post(url, data)
+				.then((res) => {
+					let ret = []
+					if (res.data["error"]=="none"){
+					for (var key in res.data){
+						if (key != "error") {
+						var dati = res.data[key]
+						retObj = {}
+						retObj.node1 = parseFloat(dati["score"]).toFixed(5)
+						retObj.edge = dati["key"]
+						retObj.node2 = parseFloat(dati["score2"]).toFixed(5)
+						ret.push(retObj)
+						}
+						
+					
+					}
+				}
+					
+					
+					this.simbim_node_object = ret
+					this.busy_right3 = false
 				
 				})
 				.catch((error) => {
@@ -2023,11 +2192,12 @@ app = new Vue({
 				return;
 		},
 		render_graph: async function() {
-			this.graph_rendered = false;
-			this.wait_rendering = true;
+			this.overlay_main = true
+			this.graph_rendered = false
+			this.wait_rendering = true
 			console.log(this.wait_rendering)
-			this.getData();
-			await this.$nextTick();
+			this.getData()
+			await this.$nextTick()
 			
 		},
 		/*
@@ -2066,6 +2236,7 @@ app = new Vue({
 					// Call D3 function to render graph
 					render_graph(nodes, links, target)
 					this.graph_rendered = true;
+					this.overlay_main = false;
 					this.wait_rendering = false;
 					console.log(this.wait_rendering)
 					// Update cluster information
@@ -2242,6 +2413,7 @@ app = new Vue({
 			reader.readAsText(file);
 			
 			app.graph_rendered = true;
+			app.overlay_main = false;
 		},
 		closeForm: function(id) {
 			document.getElementById(id).style.display = "none";
