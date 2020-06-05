@@ -37,7 +37,7 @@
 		<!-- Navbar with option buttons -->
 		<b-navbar type="dark" variant="secondary" toggleable="lg" fixed="top">
 			<b-navbar-brand tag="h1" class="header" >
-				{{title}}
+			{{title}}
 			</b-navbar-brand>
 			<b-nav-form >
 				<b-button id="load_button" v-b-toggle.sidebar-left variant="success">Start</b-button>
@@ -75,35 +75,32 @@
 		
 		<hr style="border: 1px solid gray;" />
 		<!-- Enter database -->
-		<b-form-group class="input" label="Select collection">  
+		<b-form-group class="input" label="Corpus und Verfahren">  
 			<b-form-select v-on:change="onChangeDb" v-model="collection_name" :options="collections_names" size="sm"></b-form-select>
 		</b-form-group>
 		<!-- Enter target word -->
-		<b-form-group class="input" label="Enter target word">  
+		<b-form-group class="input" label="Zentraler Hashtag">  
 			<b-form-input v-model="target_word" placeholder="target word" size="sm"></b-form-input>
 		</b-form-group>
 		<!-- Enter number of neighbouring nodes -->
-		<b-form-group class="input" label="Max. paradigms">
+		<b-form-group class="input" label="Max. Ähnliche">
 			<b-form-input type="number" v-model="senses" min="0" placeholder="number of neighbours" size="sm"></b-form-input>
 		</b-form-group>
 		<!-- Enter maximum number of edges per node -->
-		<b-form-group class="input" label="Max. depth">
+		<b-form-group class="input" label="Max. Querverb.">
 			<b-form-input type="number" v-model="edges" min="0" placeholder="number of edges" size="sm"></b-form-input>
 		</b-form-group>
 		<!-- Enter an start year -->
-		<b-form-group class="input" label="Select a start year">
+		<b-form-group class="input" label="Zeit: Start-Datum ">
 			<b-form-select v-model="start_year" :options="start_years" size="sm"></b-form-select>
 		</b-from-group>
 		<!-- Enter an end year -->
-		<b-form-group class="input" label="Select an end year">
+		<b-form-group class="input" label="Zeit: End-Datum">
 			<b-form-select v-model="end_year" :options="end_years" size="sm"></b-form-select>
 		</b-from-group>
 		<!-- Render button -->
 		<b-button id="render_button" variant="success" v-on:click="render_graph()">Render Graph (START HERE)</b-button>
-		<hr style="border: 1px solid gray;" />
-			<!-- Recluster button id="recluster_button"-->
-			<b-button :disabled="time_diff == 1" size="sm" v-on:click="recluster()"> Recluster</b-button>
-			<!-- Options Drop Down for node options -->
+		
 			<hr style="border: 1px solid gray;" />
 		<!-- Save and Load Graph buttons -->
 		<b-button :disabled="time_diff == 1" id="load_button" variant="success" v-on:click="saveGraph()" download="graph.json" href=""><i class="fas fa-download"></i> Save Graph</b-button>
@@ -134,8 +131,10 @@
 		</b-form-group>
 		<!-- Set link distance for simulation -->
 		<b-form-group> Link distance: {{linkdistance}}
-			<b-form-input id="range_linkdistance" v-model="linkdistance" type="range" min="-10" max="200"></b-form-input>
+			<b-form-input id="range_linkdistance" v-model="linkdistance" @change="linkdistance_change()" type="range" min="-10" max="200"></b-form-input>
 		</b-form-group>
+		<!-- Render button -->
+		<b-button id="render_button" variant="success" v-on:click="render_graph()">Re-Render Graph</b-button>
 		</div>
 		<div v-if="left_selected === 'graph_help'">
 		<!--<hr>-->
@@ -147,7 +146,6 @@
 	</div>
 	</b-sidebar>
 <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR-RIGHT ANALYSIS CLUSTERING XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
-<!-- edit column (right column) -->
 <b-sidebar width="23%" id="sidebar-right" title="Cluster-Analysis" bg-variant="secondary" text-variant="light" style="opacity: 0.9;"  right shadow>
 	<br>
 		<h5 class="sidebar-section__title"> </h5>	
@@ -172,10 +170,10 @@
 				Useful links
 			</div>
 			<div style="margin-top: 2ex;">
-				<b-link href="https://github.com/IngaKe/SCoT"><i class="fab fa-github"></i> View on GitHub </b-link>
+				<b-link href="https://github.com/chrishaase/SCoT"><i class="fab fa-github"></i> View on GitHub </b-link>
 			</div>
 			<div>
-				<b-link href="https://ingake.github.io/SCoT/index.html"> <i class="fas fa-question-circle"></i> View User Guide </b-link>
+				<b-link href="https://chrishaase.github.io/SCoT/index.html"> <i class="fas fa-question-circle"></i> View User Guide </b-link>
 			</div>
 		</div>
 		<hr>
@@ -296,6 +294,10 @@
 					</div>
 				</div>
 			</b-modal>
+			<hr style="border: 1px solid gray;" />
+			<!-- Recluster button id="recluster_button"-->
+			<b-button :disabled="time_diff == 1" size="sm" v-on:click="recluster()"> Recluster</b-button>
+			<!-- Options Drop Down for node options -->
 <!-- Centrality Button -->
 <b-dropdown size="sm">
 	<template v-slot:button-content>
@@ -507,8 +509,8 @@
 </div>
 
 <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR RIGHT TIME-DIFF VIEW XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
-
 <div v-if="right_selected === 'cluster_time'"  >
+
 	<!-- TIME DIFF -->
 	<!-- Card with time diff options -->
 	<b-card bg-variant="secondary" text-variant="light" style="opacity: 0.9;">
@@ -694,7 +696,7 @@
 	<br>
 	<br>
 	<p style="margin-left: 10px;font-size:12px" > Clusters exhibit similarity between multiple paradigms. 
-		The following list shows the top 100 shared context-words in the cluster. The score is the ratio of occurences in the edge-intersection-sets.
+		The following list shows the top 100 shared context-words in the cluster. The score is the ratio of occurences over all edges.
 		
 				
 		</p>
