@@ -76,21 +76,7 @@ async function render_graph(graph_nodes, graph_links, target) {
 
 	var forceLinkDistance = app.simulation.force("link");
 
-	// update the charge strength if the user moves the range input with the value from the Vue data variable charge and restart the simulation with the new value
-	d3.select("#range_charge").on("change", function() {
-		app.simulation.force("charge", d3.forceManyBody()
-			.strength(app.charge)
-			.distanceMin(1)
-			.distanceMax(2000));
-		app.simulation.alpha(1).restart();
-	})
 
-	// update the link distance if the user moves the range input with the value from the Vue data variable linkdistance and restart the simulation with the new value
-	d3.select("#range_linkdistance").on("change", function() {
-		forceLinkDistance.distance(app.linkdistance)
-		app.simulation.alpha(1).restart()
-	})
-	
 	// initialize drag behaviour
 	var drag_node = d3.drag()
 

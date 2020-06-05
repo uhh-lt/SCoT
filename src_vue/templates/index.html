@@ -40,16 +40,16 @@
 			{{title}}
 			</b-navbar-brand>
 			<b-nav-form >
-				<b-button id="load_button" v-b-toggle.sidebar-left variant="success">Start</b-button>
-				<b-button id="load_button" v-b-toggle.sidebar-right variant="success" >Analysis</b-button>
+				<b-button size="sm" class="lrmargin_button" v-b-toggle.sidebar-left variant="success">Start</b-button>
+				<b-button size="sm" class="lrmargin_button" v-b-toggle.sidebar-right variant="success" >Analysis</b-button>
 			</b-nav-form>
 			<b-navbar-nav class="ml-auto">
 				<b-nav-form v-on:submit.prevent>
 					<b-input-group >
 						<b-form-input  size="sm" v-model="searchterm" @change="search_node()" type="text" placeholder="Search node in graph" style="margin-left: 5px"> </b-form-input>
 						<b-input-group-append>
-							<b-button id="search_button" size="sm" @click="search_node()"><i class="fas fa-search"></i></b-button>
-							<b-button id="search_button" size="sm" variant="danger" @click="unsearch_nodes()"><i class="fas fa-times"></i></i></b-button>
+							<b-button size="sm" @click="search_node()"><i class="fas fa-search"></i></b-button>
+							<b-button size="sm" variant="danger" @click="unsearch_nodes()"><i class="fas fa-times"></i></i></b-button>
 						</b-input-group-append>
 					</b-input-group>
 				</b-nav-form>
@@ -68,6 +68,7 @@
 			  buttons
 			  button-variant="success"
 			  name="radios-btn-default"
+			
 			></b-form-radio-group>
 		  </b-form-group>
 		
@@ -98,20 +99,22 @@
 		<b-form-group class="input" label="Zeit: End-Datum">
 			<b-form-select v-model="end_year" :options="end_years" size="sm"></b-form-select>
 		</b-from-group>
+		<br>
+		<br>
 		<!-- Render button -->
-		<b-button id="render_button" variant="success" v-on:click="render_graph()">Render Graph (START HERE)</b-button>
+		<b-button class="lmmargin_button" size="sm" variant="success" v-on:click="render_graph()">Render Graph (START HERE)</b-button>
 		
 			<hr style="border: 1px solid gray;" />
 		<!-- Save and Load Graph buttons -->
-		<b-button :disabled="time_diff == 1" id="load_button" variant="success" v-on:click="saveGraph()" download="graph.json" href=""><i class="fas fa-download"></i> Save Graph</b-button>
-		<b-button id="load_button" variant="success" v-on:click="displayForm()"> <i class="fas fa-upload"></i> Load Graph</b-button>
+		<b-button :disabled="time_diff == 1" class="lmmargin_button" size="sm" variant="success" v-on:click="saveGraph()" download="graph.json" href=""><i class="fas fa-download"></i> Save Graph</b-button>
+		<b-button size="sm" class="lmmargin_button" variant="success" v-on:click="displayForm()"> <i class="fas fa-upload"></i> Load Graph</b-button>
 	
 	</div>
 	<div v-if="left_selected === 'graph_view'">
 		<div>
 			<b-button-group>
 				<!-- Resetz Zoom button -->
-				<b-button id="reset_zoom_button" v-on:click="resetZoom()">Graph: Reset Zoom</b-button>
+				<b-button variant="success" size="sm" class="lrmargin_button" v-on:click="resetZoom()">Graph: Reset Zoom</b-button>
 				<!--<b-button v-b-modal.modal-settings-1 id="general_settings_button"> Graph: settings</b-button>-->
 			</b-button-group>
 		</div>
@@ -123,18 +126,18 @@
 		</b-form-group>
 		<!-- Button to restart simulation with all the nodes -->
 		<p>
-			<b-button id="restart_button"> Restart Simulation </b-button>
+			<b-button variant="success" size="sm" class="lrmargin_button" v-on:click="restart_change()"> Restart Simulation </b-button>
 		</p>
 		<!-- Set charge strength for simulation -->
 		<b-form-group> Charge strength: {{charge}}
-			<b-form-input id="range_charge" v-model="charge" type="range" min="-200" max="100"></b-form-input>
+			<b-form-input id="range_charge" v-model="charge" v-on:change="charge_change()" type="range" min="-200" max="100"></b-form-input>
 		</b-form-group>
 		<!-- Set link distance for simulation -->
 		<b-form-group> Link distance: {{linkdistance}}
-			<b-form-input id="range_linkdistance" v-model="linkdistance" @change="linkdistance_change()" type="range" min="-10" max="200"></b-form-input>
+			<b-form-input id="range_linkdistance" v-model="linkdistance" v-on:change="linkdistance_change()" type="range" min="-10" max="200"></b-form-input>
 		</b-form-group>
 		<!-- Render button -->
-		<b-button id="render_button" variant="success" v-on:click="render_graph()">Re-Render Graph</b-button>
+		<b-button size="sm" class="lrmargin_button" variant="success" v-on:click="render_graph()">Re-Render Graph</b-button>
 		</div>
 		<div v-if="left_selected === 'graph_help'">
 		<!--<hr>-->
@@ -296,13 +299,14 @@
 			</b-modal>
 			<hr style="border: 1px solid gray;" />
 			<!-- Recluster button id="recluster_button"-->
-			<b-button :disabled="time_diff == 1" size="sm" v-on:click="recluster()"> Recluster</b-button>
+			<b-button size="sm" class="lrmargin_button" variant="success" v-on:click="recluster()"> Recluster</b-button>
 			<!-- Options Drop Down for node options -->
-<!-- Centrality Button -->
-<b-dropdown size="sm">
-	<template v-slot:button-content>
-		Centrality
-	  </template>
+			<hr style="border: 1px solid gray;" />
+			<!-- Centrality Button -->
+			<b-dropdown>
+			<template v-slot:button-content>
+				Centrality
+	  		</template>
 	<!-- Node options -->
 	<!-- only available for non cluster nodes -->
 	<b-dropdown-item v-on:click="highlightCentralNodes(centrality_threshold_s, centrality_threshold_m)"> <i class="fas fa-highlighter"></i> Highlight central nodes in graph </b-dropdown-item>
@@ -502,7 +506,7 @@
 		
 	<p style="float: left;">
 		<!-- Button to apply changes to graph -->
-		<b-button id="apply_settings_button" class="close_button" v-on:click="applyClusterSettings()" :disabled="time_diff == 1">Apply</b-button>
+		<b-button id="apply_settings_button" class="close_button" v-on:click="applyClusterSettings()" >Apply</b-button>
 		<!-- Button to "close" column -->
 		<!--<b-button class="close_button" variant="danger" v-on:click="closeForm('edit_clusters_popup')">Close</b-button>-->
 	</p>
@@ -516,12 +520,12 @@
 	<b-card bg-variant="secondary" text-variant="light" style="opacity: 0.9;">
 			<p>
 				<!-- Option compare time intervals -->
-				<b-button v-b-toggle.collapse-interval-1 id="show_diff_button" aria-expanded="false" @click="time_diff_true()">
+				<b-button v-b-toggle.collapse-interval-1 aria-expanded="false" @click="time_diff_true()">
 						Select Interval
 				</b-button>
 
 				<!-- Option skip through time slices -->
-				<b-button v-b-toggle.collapse-skip-1 id="skip_through_button" aria-expanded="false" v-on:click="time_diff_true_and_reset()">
+				<b-button v-b-toggle.collapse-skip-1  aria-expanded="false" v-on:click="time_diff_true_and_reset()">
 						Skip Through Time Slices
 				</b-button>
 			</p>

@@ -272,6 +272,37 @@ app = new Vue({
 		}
 	},
 	methods: {
+		// restart
+		restart_change(){
+			app.node.each(function(d) {
+				//console.log(d)
+				d.fx = null;
+				d.fy = null;
+			});
+			app.simulation.alphaTarget(0);
+		},
+		
+		
+		// update the charge strength if the user moves the range input with the value from the Vue data variable charge and restart the simulation with the new value
+		charge_change(){
+			console.log("charge change")
+			app.simulation.force("charge", d3.forceManyBody()
+			.strength(app.charge)
+			.distanceMin(1)
+			.distanceMax(2000));
+			app.simulation.alpha(1).restart();
+			
+
+		},
+		// update the link distance if the user moves the range input with the value from the Vue data variable linkdistance and restart the simulation with the new value
+		linkdistance_change(){
+			console.log("linkdist change")
+			let forceLinkDistance = app.simulation.force("link");
+			forceLinkDistance.distance(app.linkdistance)
+			app.simulation.alpha(1).restart()
+			
+
+		},
 
 		nonevent(e){
 			//do nothing
@@ -2372,10 +2403,10 @@ app = new Vue({
 		*/
 		loadGraph: function() {
 			document.getElementById("loadpopup").style.display = "none";
-			document.getElementById("edit_clusters_popup").style.display = "none";
+			app.overlay_main = true;
 			const file = this.file;
 			const reader = new FileReader()
-
+			console.log("in load graph")
 			reader.onload = function(e) {
 			  this.read_graph = JSON.parse(reader.result);
 			  if (this.read_graph.singletons) {
