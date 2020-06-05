@@ -100,10 +100,7 @@
 		</b-from-group>
 		<!-- Render button -->
 		<b-button id="render_button" variant="success" v-on:click="render_graph()">Render Graph (START HERE)</b-button>
-		<hr style="border: 1px solid gray;" />
-			<!-- Recluster button id="recluster_button"-->
-			<b-button :disabled="time_diff == 1" size="sm" v-on:click="recluster()"> Recluster</b-button>
-			<!-- Options Drop Down for node options -->
+		
 			<hr style="border: 1px solid gray;" />
 		<!-- Save and Load Graph buttons -->
 		<b-button :disabled="time_diff == 1" id="load_button" variant="success" v-on:click="saveGraph()" download="graph.json" href=""><i class="fas fa-download"></i> Save Graph</b-button>
@@ -134,8 +131,10 @@
 		</b-form-group>
 		<!-- Set link distance for simulation -->
 		<b-form-group> Link distance: {{linkdistance}}
-			<b-form-input id="range_linkdistance" v-model="linkdistance" type="range" min="-10" max="200"></b-form-input>
+			<b-form-input id="range_linkdistance" v-model="linkdistance" @change="linkdistance_change()" type="range" min="-10" max="200"></b-form-input>
 		</b-form-group>
+		<!-- Render button -->
+		<b-button id="render_button" variant="success" v-on:click="render_graph()">Re-Render Graph</b-button>
 		</div>
 		<div v-if="left_selected === 'graph_help'">
 		<!--<hr>-->
@@ -295,6 +294,10 @@
 					</div>
 				</div>
 			</b-modal>
+			<hr style="border: 1px solid gray;" />
+			<!-- Recluster button id="recluster_button"-->
+			<b-button :disabled="time_diff == 1" size="sm" v-on:click="recluster()"> Recluster</b-button>
+			<!-- Options Drop Down for node options -->
 <!-- Centrality Button -->
 <b-dropdown size="sm">
 	<template v-slot:button-content>
@@ -693,7 +696,7 @@
 	<br>
 	<br>
 	<p style="margin-left: 10px;font-size:12px" > Clusters exhibit similarity between multiple paradigms. 
-		The following list shows the top 100 shared context-words in the cluster. The score is the ratio of occurences in the edge-intersection-sets.
+		The following list shows the top 100 shared context-words in the cluster. The score is the ratio of occurences over all edges.
 		
 				
 		</p>

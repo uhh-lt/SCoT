@@ -81,8 +81,8 @@ async function render_graph(graph_nodes, graph_links, target) {
 		app.simulation.force("charge", d3.forceManyBody()
 			.strength(app.charge)
 			.distanceMin(1)
-			.distanceMax(2000));
-		app.simulation.alpha(1).restart();
+			.distanceMax(2000))
+		app.simulation.alpha(1).restart()
 	})
 
 	// update the link distance if the user moves the range input with the value from the Vue data variable linkdistance and restart the simulation with the new value
