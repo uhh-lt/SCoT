@@ -16,6 +16,7 @@ async function render_graph(graph_nodes, graph_links, target) {
 	// Always remove the svg element. Otherwise a new one is appended every time you click the render button
 	d3.select("#graph2").select("svg").remove();
 	console.log(app.viewport_width, app.viewport_height)
+
 	// Create the svg element on which you want to render the graph
 	var svg = d3.select("#graph2")
 		.on("keydown.brush", keydowned)
@@ -28,8 +29,7 @@ async function render_graph(graph_nodes, graph_links, target) {
 			.attr("viewBox", " 0 0 " + app.viewport_width + " " + app.viewport_height)
 			.attr("preserveAspectRatio", "xMidYMid meet")
 			.classed("svg-content", true)
-			// .style("outline", "1px solid")
-			//.style("margin", "1ex")
+			
 		.call(d3.zoom().on("zoom", function () {
 			svg.attr("transform", d3.event.transform)
 			}))
@@ -94,16 +94,21 @@ async function render_graph(graph_nodes, graph_links, target) {
 	// initialize drag behaviour
 	var drag_node = d3.drag()
 
-	// initialize the tooltip for the time diff mode
+	// initialize the tooltip for nodes
 	var time_diff_tip = d3.tip()
 		.attr("class", "d3-tip")
 		.html(function(d) { return app.toolTipNode(d.time_ids, d.target_text, d.weights); })
 
+	// initialize the tooltip for edges
 	var time_diff_tip_link = d3.tip()
 		.attr("class", "d3-tip")
 		.html(function(d) { return app.toolTipLink(d.time_ids, d.weights, d.target_text, d.source_text); })
 
-		
+	
+	// call the time diff tooltip from the svg
+	svg.call(time_diff_tip);
+	svg.call(time_diff_tip_link);
+
 	// create the nodes
 	app.node = svg.append("g")
 			.attr("stroke", "#fff")
@@ -123,14 +128,18 @@ async function render_graph(graph_nodes, graph_links, target) {
 				} else {
 					app.node_selected = false;
 				}
-				
+				console.log(d.target_text)
+				console.log(d.time_ids)
+				app.active_node = {"time_ids": d.time_ids, "weights": d.weights, "source_text": app.target_word, "target_text": d.target_text}
+				app.getSimBimsNodes()
+				console.log("in nodeclick ", app.active_node)
+				app.context_mode3 = true
+				app.context_mode = false
 				app.select_node_is_no_cluster_node = app.is_normal_node();
 				showContextMenu(this);
 			})
-	
-	// call the time diff tooltip from the svg
-	svg.call(time_diff_tip);
-	svg.call(time_diff_tip_link);
+
+			
 	// append circles to the node
 	// this is the way the nodes are displayed in the graph
 	app.circles = app.node.append("circle")
@@ -175,7 +184,9 @@ async function render_graph(graph_nodes, graph_links, target) {
 				// otherwise look the colour up for the class of the node
 				return color(d.class);
 			}
-		});
+		})
+		.on("mouseover", time_diff_tip.show)
+		.on("mouseout", time_diff_tip.hide);
 		
 
 	// append a label to the node which displays its id
@@ -189,8 +200,8 @@ async function render_graph(graph_nodes, graph_links, target) {
 
 	// create the graph links
 	app.link = svg.append("g")
-			//.attr("stroke", "#999")
-			//.attr("stroke-opacity", 0.8)
+		.attr("stroke", "#999")
+			.attr("stroke-opacity", app.base_link_opacity)
 			.attr("class", "link")
 		.selectAll("line")
 		.data(app.links)
@@ -222,10 +233,10 @@ async function render_graph(graph_nodes, graph_links, target) {
 			})
 			.on("click", function(d) {
 				app.active_edge = {"time_ids": d.time_ids, "weights": d.weights, "source_text": d.source_text, "target_text": d.target_text}
-				//app.simbim_updated = false
 				app.getSimBims()
-				console.log("in link click " + d.time_ids +  d.weights + d.source_text + d.target_text)
+				// switch on context mode edges, switch off context mode
 				app.context_mode = true
+				app.context_mode3 = false
 			})
 			.on("mouseover", time_diff_tip_link.show)
 			.on("mouseout", time_diff_tip_link.hide);
@@ -382,7 +393,7 @@ async function render_graph(graph_nodes, graph_links, target) {
 				.append("g")
 				.attr("stroke", "#fff")
 				.attr("stroke-width", 1.5)
-				//.attr("class", "node")
+				.attr("class", "node")
 				.on("mousedown", mousedowned)
 					.call(drag_node)
 				.on("mouseover", app.mouseOver(0.2))
@@ -498,7 +509,7 @@ async function render_graph(graph_nodes, graph_links, target) {
 				.append("g")
 				.attr("stroke", "#fff")
 				.attr("stroke-width", 1.5)
-				//.attr("class", "node")
+				.attr("class", "node")
 				.on("mousedown", mousedowned)
 					.call(drag_node)
 				.on("mouseover", app.mouseOver(0.2))
@@ -614,18 +625,17 @@ async function render_graph(graph_nodes, graph_links, target) {
 		// });
 	}
 
+
 	// Switch between time diff and sense clustering mode
 	d3.select("#select_time_diff").on("change", function(d) {
 		// sense clustering
 		if (app.time_diff === false) {
 			
 			app.reset_time_diff_colours();
+			console.log("time diff change triggered render sense graph")
 			
 		}
 		if (app.time_diff === true) {
-			// show time diff tooltip
-			app.circles.on("mouseover", time_diff_tip.show);
-			app.circles.on("mouseout", time_diff_tip.hide);
 			
 
 			d3.select("#skip_through_button").on("click", function(d) {
