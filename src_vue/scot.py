@@ -201,7 +201,7 @@ def cluster_information():
 	
 	# limit response dictionary
 	dic_res = {}
-	keys = list(res_dic_all.keys())[:100]
+	keys = list(res_dic_all.keys())[:200]
 	for index in range(len(keys)):
 		dic_res[keys[index]] = res_dic_all[keys[index]]
 
