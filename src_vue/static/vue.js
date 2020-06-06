@@ -1918,7 +1918,7 @@ app = new Vue({
 		Choose cluster for context analysis and display context information
 		*/
 		get_cluster_information: function(cluster){
-			this.busy_right2 = true
+			
 			console.log(this.links)
 			let links = this.links
 			let jsonReq = {"edges": [], "collection":this.collection_key}
@@ -1928,45 +1928,52 @@ app = new Vue({
 				let dati = cluster["labels"][key]
 				nodes.push(dati["text"])
 			}
-			console.log(nodes)
-			this.context_mode2 = true
-			// find edges that are inside the cluster (ie both nodes are cluster nodes)
-			for (let key in links){
-				let t1 = links[key]["source_text"]
-				let t2 = links[key]["target_text"]
-				let timeId = links[key]["time_ids"][0]
-				let true1 = nodes.includes(t1) 
-				let true2 = nodes.includes(t2)
-				if (true1 && true2){
-					jsonReq["edges"].push({"source":t1, "target": t2, "time_id": timeId})
-					//console.log("includes ", t1 + t2)
-				}
+			console.log(nodes.length)
+			let lessthansix = true
+			if (nodes.length > 5){
+				alert("You clicked on cluster-context information." 
+				+ "We are sorry, but currently you can only query clusters with 5 or less nodes."
+				+ "The reason: larger cluster-queries take too long."
+				
+				);
+				lessthansix = false
 			}
-			//console.log(jsonReq)
-			let url = './api/cluster_information'
-			axios.post(url, jsonReq)
-				.then((res)=> {
-					console.log(res.data)
-
-					let ret = []
-					for (var key in res.data){
-						retObj = {}
-						retObj.wort = key
-						retObj.freq = parseFloat(res.data[key]).toFixed(5)
-						ret.push(retObj)
+			if (lessthansix){
+				console.log("cluster info continue with less than six")
+				this.busy_right2 = true
+				this.context_mode2 = true
+				// find edges that are inside the cluster (ie both nodes are cluster nodes)
+				for (let key in links){
+					let t1 = links[key]["source_text"]
+					let t2 = links[key]["target_text"]
+					let timeId = links[key]["time_ids"][0]
+					let true1 = nodes.includes(t1) 
+					let true2 = nodes.includes(t2)
+					if (true1 && true2){
+						jsonReq["edges"].push({"source":t1, "target": t2, "time_id": timeId})
+						//console.log("includes ", t1 + t2)
+					}
+				}
+				//console.log(jsonReq)
+				let url = './api/cluster_information'
+				axios.post(url, jsonReq)
+					.then((res)=> {
+						console.log(res.data)
+						let ret = []
+						for (var key in res.data){
+							retObj = {}
+							retObj.wort = key
+							retObj.freq = parseFloat(res.data[key]).toFixed(5)
+							ret.push(retObj)
 						}
-								
-					
-					this.cluster_shared_object = ret
-					console.log(this.cluster_shared_object)
-					this.busy_right2 = false
-
-
+						this.cluster_shared_object = ret
+						console.log(this.cluster_shared_object)
+						this.busy_right2 = false
 				})
 				.catch((error) => {
 					console.error(error);
 				});
-
+			}
 		},
 
 		/*
