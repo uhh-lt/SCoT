@@ -138,16 +138,20 @@ def get_edge_info(collection, word1, word2, time_id):
 
 @app.route('/api/collections/<string:collection>/simbim', methods=['POST'])
 # retrieve edge information
+# pre-condition: collection, word1, word2, time_id not empty
+# post-condition: returns dictionary with error-code (in case result set is empty)
 def simbim(collection="default"):
 	if request.method == 'POST':
 		data = json.loads(request.data)
 		word1 = str(data["word1"])
 		word2 = str(data["word2"])
 		time_id = int(data["time_id"])
-	#print("debug getSimBim words received", word1, " ",  word2)
+	
+	# get intersection of node-contexts (res_set), context-dics and max values
 	res1_dic, res2_dic, res_set, max1, max2 = get_edge_info(collection, word1, word2, time_id)
-	#print("debug getSimbim len(contextWord2) len(contextWord2) len(intersection)", len(res1_dic), len(res2_dic), len(res_set))
+	
 	if len(res1_dic) == 0 or len(res2_dic) == 0 or len(res_set) == 0:
+		# check if error in results
 		return {"error":"zero values"}
 	else:
 		# calc return dictionary and normalize values
@@ -159,24 +163,35 @@ def simbim(collection="default"):
 			index_count += 1
 	
 		return_dic["error"] = "none"
-		#print("anzahl same words", len(return_dic)-1)
 		return return_dic
 
 @app.route('/api/cluster_information', methods=['POST'])
-# get_cluster_information on shared contexts of all nodes
+# get_cluster_information based on occurences of words in edges, ie. intersections of node contexts
 # precondition: post data with edges and collection
 # postcondition: returns dictionary of words shared pairwise with score = number of occurences in cluster edges / total of cluster edges
 def cluster_information():
 	from collections import defaultdict
 	edges = []
+	nodes = set()
 	if request.method == 'POST':
 		data = json.loads(request.data)
 		for edge in data["edges"]:
 			edges.append(edge)
-		
+			nodes.add((edge["source"], edge["time_id"]))
+			nodes.add((edge["target"], edge["time_id"]))
+	print("in cluster info anzahl unique nodes und alle einzel nodes", len(nodes), len(edges)*2)
+
+	# get features for all unique nodes
+	db = Database(getDbFromRequest(data["collection"]))
+	feature_dic = {}
+	for node in nodes:
+		feature_dic[node] = db.get_features(node[0], node[1])
+	
 	res_dic_all = defaultdict(int)
 	for edge in edges:
-		res1_dic, res2_dic, res_set, max1, max2 = get_edge_info(data["collection"], edge["source"], edge["target"], edge["time_id"])
+		node1_features = set(feature_dic[(edge["source"], edge["time_id"])].keys())
+		node2_features = set(feature_dic[(edge["target"], edge["time_id"])].keys())
+		res_set = node1_features.intersection(node2_features)
 		for word in res_set:
 			res_dic_all[word] += 1	
 	
