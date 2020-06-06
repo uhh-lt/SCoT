@@ -9,7 +9,7 @@ app = new Vue({
 		start_year : 1520,
 		end_year : 2008,
 		senses : 100,
-		edges : 3,
+		edges : 30,
 		collection_key : "en_books",
 		collection_name: "English Books",
 		// all possible collections queried from database

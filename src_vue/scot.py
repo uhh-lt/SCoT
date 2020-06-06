@@ -170,6 +170,8 @@ def simbim(collection="default"):
 # precondition: post data with edges and collection
 # postcondition: returns dictionary of words shared pairwise with score = number of occurences in cluster edges / total of cluster edges
 def cluster_information():
+	import time
+	start_time = time.time()
 	from collections import defaultdict
 	edges = []
 	nodes = set()
@@ -187,6 +189,8 @@ def cluster_information():
 	for node in nodes:
 		feature_dic[node] = db.get_features(node[0], node[1])
 	
+	print(" after all nodes before  edges --- %s seconds ---" % (time.time() - start_time))
+
 	res_dic_all = defaultdict(int)
 	for edge in edges:
 		node1_features = set(feature_dic[(edge["source"], edge["time_id"])].keys())
@@ -205,7 +209,7 @@ def cluster_information():
 	for index in range(len(keys)):
 		dic_res[keys[index]] = res_dic_all[keys[index]]
 
-	
+	print(" cluster info finished in --- %s seconds ---" % (time.time() - start_time))
 	#print("dictionary cluster ", dic_res)
 	
 	return dic_res
