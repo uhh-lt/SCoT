@@ -19,7 +19,10 @@ app = new Vue({
 		start_years : [],
 		// all possible end years queried from the database
 		end_years : [],
-
+		// limits the size of clusters for context-information-search
+		cluster_search_limit: 5,
+		// node-year for context-information
+		node_time_id: 1,
 		// ##### VIEW SETTINGS APP AND SVG-GRAPH
 		// base color scheme bootstrap vue (not implemented via var yet)
 		bv_variant : "black",
@@ -101,6 +104,7 @@ app = new Vue({
 		context_mode2 : false,
 		showSidebarRight2: false,
 		busy_right2: true,
+		
 	    // node context sidebar
 	   context_mode3 : false,
 	   showSidebarRight3: false,
@@ -1770,6 +1774,7 @@ app = new Vue({
 		Send all the nodes and edges to the backend, recluster them and change the nodes in the graph accordingly (cluster id, cluster name, colour)
 		*/
 		recluster: function() {
+			this.overlay_main = true
 			if (app.highlightWobblies === true) {
 				app.resetCentralityHighlighting();
 				app.highlightWobblies = false;
@@ -1899,6 +1904,8 @@ app = new Vue({
 				  .catch(function (error) {
 					console.log(error);
 				  });
+				  console.log("in recluster ende")
+				  this.overlay_main = false
 		},
 		includes: function(array, obj) {
 			found = false
@@ -1918,7 +1925,7 @@ app = new Vue({
 		Choose cluster for context analysis and display context information
 		*/
 		get_cluster_information: function(cluster){
-			this.busy_right2 = true
+			
 			console.log(this.links)
 			let links = this.links
 			let jsonReq = {"edges": [], "collection":this.collection_key}
@@ -1928,45 +1935,53 @@ app = new Vue({
 				let dati = cluster["labels"][key]
 				nodes.push(dati["text"])
 			}
-			console.log(nodes)
-			this.context_mode2 = true
-			// find edges that are inside the cluster (ie both nodes are cluster nodes)
-			for (let key in links){
-				let t1 = links[key]["source_text"]
-				let t2 = links[key]["target_text"]
-				let timeId = links[key]["time_ids"][0]
-				let true1 = nodes.includes(t1) 
-				let true2 = nodes.includes(t2)
-				if (true1 && true2){
-					jsonReq["edges"].push({"source":t1, "target": t2, "time_id": timeId})
-					//console.log("includes ", t1 + t2)
-				}
+			console.log(nodes.length)
+			let lessthansix = true
+			if (nodes.length > this.cluster_search_limit){
+				alert("You clicked on cluster-context information. " 
+				+ "Currently, you can only query clusters with 5 or less nodes. "
+				+ "Reason: cluster information is extracted from over 1 billion features which takes long for mysql."
+
+											
+				);
+				lessthansix = false
 			}
-			//console.log(jsonReq)
-			let url = './api/cluster_information'
-			axios.post(url, jsonReq)
-				.then((res)=> {
-					console.log(res.data)
-
-					let ret = []
-					for (var key in res.data){
-						retObj = {}
-						retObj.wort = key
-						retObj.freq = parseFloat(res.data[key]).toFixed(5)
-						ret.push(retObj)
+			if (lessthansix){
+				console.log("cluster info continue with less than six")
+				this.busy_right2 = true
+				this.context_mode2 = true
+				// find edges that are inside the cluster (ie both nodes are cluster nodes)
+				for (let key in links){
+					let t1 = links[key]["source_text"]
+					let t2 = links[key]["target_text"]
+					let timeId = links[key]["time_ids"][0]
+					let true1 = nodes.includes(t1) 
+					let true2 = nodes.includes(t2)
+					if (true1 && true2){
+						jsonReq["edges"].push({"source":t1, "target": t2, "time_id": timeId})
+						//console.log("includes ", t1 + t2)
+					}
+				}
+				//console.log(jsonReq)
+				let url = './api/cluster_information'
+				axios.post(url, jsonReq)
+					.then((res)=> {
+						console.log(res.data)
+						let ret = []
+						for (var key in res.data){
+							retObj = {}
+							retObj.wort = key
+							retObj.freq = parseFloat(res.data[key]).toFixed(5)
+							ret.push(retObj)
 						}
-								
-					
-					this.cluster_shared_object = ret
-					console.log(this.cluster_shared_object)
-					this.busy_right2 = false
-
-
+						this.cluster_shared_object = ret
+						console.log(this.cluster_shared_object)
+						this.busy_right2 = false
 				})
 				.catch((error) => {
 					console.error(error);
 				});
-
+			}
 		},
 
 		/*
@@ -2025,6 +2040,8 @@ app = new Vue({
 			data["word1"] = this.target_word
 			data["word2"] = this.active_node.target_text
 			data["time_id"] = this.active_node.time_ids[0]
+			this.node_time_id = this.active_node.time_ids[0]
+			
 			
 			let url = './api/collections/'+this.collection_key +'/simbim'
 			console.log(url)
