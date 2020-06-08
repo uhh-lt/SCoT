@@ -19,7 +19,10 @@ app = new Vue({
 		start_years : [],
 		// all possible end years queried from the database
 		end_years : [],
-
+		// limits the size of clusters for context-information-search
+		cluster_search_limit: 5,
+		// node-year for context-information
+		node_time_id: 1,
 		// ##### VIEW SETTINGS APP AND SVG-GRAPH
 		// base color scheme bootstrap vue (not implemented via var yet)
 		bv_variant : "secondary",
@@ -101,6 +104,7 @@ app = new Vue({
 		context_mode2 : false,
 		showSidebarRight2: false,
 		busy_right2: true,
+		
 	    // node context sidebar
 	   context_mode3 : false,
 	   showSidebarRight3: false,
@@ -1770,6 +1774,7 @@ app = new Vue({
 		Send all the nodes and edges to the backend, recluster them and change the nodes in the graph accordingly (cluster id, cluster name, colour)
 		*/
 		recluster: function() {
+			this.overlay_main = true
 			if (app.highlightWobblies === true) {
 				app.resetCentralityHighlighting();
 				app.highlightWobblies = false;
@@ -1899,6 +1904,8 @@ app = new Vue({
 				  .catch(function (error) {
 					console.log(error);
 				  });
+				  console.log("in recluster ende")
+				  this.overlay_main = false
 		},
 		includes: function(array, obj) {
 			found = false
@@ -1930,11 +1937,12 @@ app = new Vue({
 			}
 			console.log(nodes.length)
 			let lessthansix = true
-			if (nodes.length > 5){
-				alert("You clicked on cluster-context information." 
-				+ "We are sorry, but currently you can only query clusters with 5 or less nodes."
-				+ "The reason: larger cluster-queries take too long."
-				
+			if (nodes.length > this.cluster_search_limit){
+				alert("You clicked on cluster-context information. " 
+				+ "Currently, you can only query clusters with 5 or less nodes. "
+				+ "Reason: cluster information is extracted from over 1 billion features which takes long for mysql."
+
+											
 				);
 				lessthansix = false
 			}
@@ -2032,6 +2040,8 @@ app = new Vue({
 			data["word1"] = this.target_word
 			data["word2"] = this.active_node.target_text
 			data["time_id"] = this.active_node.time_ids[0]
+			this.node_time_id = this.active_node.time_ids[0]
+			
 			
 			let url = './api/collections/'+this.collection_key +'/simbim'
 			console.log(url)

@@ -140,6 +140,7 @@ def get_edge_info(collection, word1, word2, time_id):
 # retrieve edge information
 # pre-condition: collection, word1, word2, time_id not empty
 # post-condition: returns dictionary with error-code (in case result set is empty)
+# the response is limited to max 200
 def simbim(collection="default"):
 	if request.method == 'POST':
 		data = json.loads(request.data)
@@ -161,14 +162,30 @@ def simbim(collection="default"):
 		for key in res_set:
 			return_dic[str(index_count)] = {"score": float(res1_dic[key]/max1), "key" : str(key), "score2": float(res2_dic[key]/max2) }
 			index_count += 1
-	
+		# limit response dictionary by top 100 values for each score (ie max 200)
+		res_dic_topn = {}
+		topn = 100
+		if (len(return_dic)>2*topn):
+			# select topN for score1
+			return_dic = {k:v for k,v in sorted(return_dic.items(), key=lambda item: item[1]["score"], reverse = True)}
+			score1key = list(return_dic.keys())[:topn]
+			for key in score1key:
+				res_dic_topn[key] = return_dic[key]
+			# now for score2
+			return_dic = {k:v for k,v in sorted(return_dic.items(), key=lambda item: item[1]["score2"], reverse = True)}
+			score2key = list(return_dic.keys())[:topn]
+			for key in score2key:
+				res_dic_topn[key] = return_dic[key]
+			return_dic = res_dic_topn
+
 		return_dic["error"] = "none"
 		return return_dic
 
 @app.route('/api/cluster_information', methods=['POST'])
-# get_cluster_information based on occurences of words in edges, ie. intersections of node contexts
+# get_cluster_information based on occurences of words in edges (pairwise comparison -> occurence frequencies -> normalized freq)
 # precondition: post data with edges and collection
-# postcondition: returns dictionary of words shared pairwise with score = number of occurences in cluster edges / total of cluster edges
+# postcondition: returns dictionary of words shared pairwise, score = number of occurences in cluster edges / total of cluster edges
+# the response is limited to max 200
 def cluster_information():
 	import time
 	start_time = time.time()
@@ -181,7 +198,7 @@ def cluster_information():
 			edges.append(edge)
 			nodes.add((edge["source"], edge["time_id"]))
 			nodes.add((edge["target"], edge["time_id"]))
-	print("in cluster info anzahl unique nodes und alle einzel nodes", len(nodes), len(edges)*2)
+	print("in cluster info (1) anzahl unique nodes - alle nodes ", len(nodes), len(edges)*2)
 
 	# get features for all unique nodes
 	db = Database(getDbFromRequest(data["collection"]))
@@ -189,7 +206,7 @@ def cluster_information():
 	for node in nodes:
 		feature_dic[node] = db.get_features(node[0], node[1])
 	
-	print(" after all nodes before  edges --- %s seconds ---" % (time.time() - start_time))
+	print(" in cluster info (2) after db query --- %s seconds ---" % (time.time() - start_time))
 
 	res_dic_all = defaultdict(int)
 	for edge in edges:
@@ -203,13 +220,14 @@ def cluster_information():
 		res_dic_all[k] = float(v/len(edges))
 	res_dic_all = {k:v for k,v in sorted(res_dic_all.items(), key = lambda x: x[1], reverse = True)}
 	
-	# limit response dictionary
+	# limit response dictionary to topn
+	topn = 200
 	dic_res = {}
-	keys = list(res_dic_all.keys())[:200]
+	keys = list(res_dic_all.keys())[:topn]
 	for index in range(len(keys)):
 		dic_res[keys[index]] = res_dic_all[keys[index]]
 
-	print(" cluster info finished in --- %s seconds ---" % (time.time() - start_time))
+	print(" cluster info (3) after algo --- %s seconds ---" % (time.time() - start_time))
 	#print("dictionary cluster ", dic_res)
 	
 	return dic_res
