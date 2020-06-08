@@ -34,9 +34,13 @@ def index():
 	return render_template('index.html')
 
 @app.route('/api/reclustering', methods=['POST'])
-# recluster the existing graph by running Chinese Whispers on it again
-# precondition: source - target str - weight float not guaranteed
-# thus ensure type-safety for backend by casting
+# recluster the existing cumulated graph by running Chinese Whispers on it
+# Param: nodes [names my be string or any other type]
+# Param: edges with weights [weights may be int or float]
+# No time-ids needed here: cumulated graph is clustered irrespective of time
+# Note: Condition: for calling Chinese Whispers: type-safe FLOAT, type-safe STRING
+# Note: Method guarantees type-safety by casting to float and string
+
 def recluster():
 	nodes = []
 	links = []
@@ -58,7 +62,11 @@ def databases_info():
 
 
 @app.route('/api/collections/<string:collection>/interval/<int:start>/<int:end>')
-# retrieve the time id(s) of a certain interval between a specified start and end year
+# Retrieve the time id(s) of a certain interval between a specified start and end year
+# Param selected start from all start (must be valid - precondition to be ensured by frontend)
+# Param selected end from all ends (must be valid - precondition to be ensured by frontend)
+# Returns interval as json
+
 def interval(start, end, collection):
 	db = Database(getDbFromRequest(collection))
 	interval = db.get_time_ids(start, end)
@@ -82,41 +90,61 @@ def get_end_years(collection):
 
 
 @app.route('/api/collections/<string:collection>/sense_graph', methods=['POST'])
-# retrieve the clustered graph data according to the input parameters of the user and return it as json
+# Retrieves the clustered graph data according to the input parameters of the user and return it as json
+# Param: target word: user selected target word out of all possible target words
+# Param: selected_start_year: user selected start year out of all possible start years
+# Param: selected_end_year: user selected end year out of all possible end years
+# Param: max number of cumulated paradigms over time - the global graph will have paradigms up to this number
+# Param: max_ed
+# Param: collection
+# Precondition: selected_start_year < selected_end_year
+# Precondition: All Params not null
+# Precondition: All Params valid (target word validity cannot be guaranteed by frontend?)
+# Postcondition: valid graph in valid json-format
+
 def get_clustered_graph(
 		collection):
 	if request.method == 'POST':
 		data = json.loads(request.data)
 		target_word = str(data["target_word"])
-		start_year = int(data["start_year"])
-		end_year = int(data["end_year"])
-		paradigms = int(data["senses"])
-		density = int(data["edges"])
+		selected_start_year = int(data["start_year"])
+		selected_end_year = int(data["end_year"])
+		max_paradigms = int(data["senses"])
+		max_edges = int(data["edges"])
 			
 
 	def clusters(
 		collection, 
 		target_word,
-		start_year,
-		end_year,
-		paradigms,
-		density):
+		selected_start_year,
+		selected_end_year,
+		max_paradigms,
+		max_edges
+		):
+		
 		db = Database(getDbFromRequest(collection))
-		time_ids = db.get_time_ids(start_year, end_year)
-		nodes = db.get_nodes(target_word, paradigms, time_ids)
-		edges, nodes, singletons = db.get_edges(nodes, density, time_ids)
+		time_ids = db.get_time_ids(selected_start_year, selected_end_year)
+		nodes = db.get_nodes(target_word, max_paradigms, time_ids)
+		# print(nodes)
+		edges, nodes, singletons = db.get_edges(nodes, max_edges, time_ids)
 		
 		return singletons, chineseWhispers.chinese_whispers(nodes, edges)
 	
-	singletons, clustered_graph = clusters(collection, target_word, start_year, end_year, paradigms, density)
+	singletons, clustered_graph = clusters(collection, target_word, selected_start_year, selected_end_year, max_paradigms, max_edges)
 	c_graph = json.dumps([clustered_graph, {'target_word': target_word}, {'singletons': singletons}], sort_keys=False, indent=4)
 	
 	return c_graph
 
 
 def get_edge_info(collection, word1, word2, time_id):
-	# get feature info from database
-	# db returns dictionary {"feature": score}
+	# get edge, ie. intersection of two word features in one time-id, from database
+	# Param word1 (not null, valid)
+	# Param word2 (not null, valid)
+	# Param collection (not null, valid)
+	# Param time_id(not null, valid)
+	# Preconditions (see conditions after params)
+	# db returns dictionary {"feature": score} with maxima and intersection set
+
 	db = Database(getDbFromRequest(collection))
 	res1_dic = db.get_features(word1, time_id)
 	res2_dic = db.get_features(word2, time_id)
@@ -137,10 +165,13 @@ def get_edge_info(collection, word1, word2, time_id):
 
 
 @app.route('/api/collections/<string:collection>/simbim', methods=['POST'])
-# retrieve edge information
-# pre-condition: collection, word1, word2, time_id not empty
-# post-condition: returns dictionary with error-code (in case result set is empty)
-# the response is limited to max 200
+# retrieve edge information, ie intersection between two words in one collection and one time-id
+# Param: collection
+# Param: word1, word2
+# Param: time-id
+# Returns_ dictionary with result-set error or Zero-code (in case result set is empty)
+# the response_dictionary is limited to max 200
+
 def simbim(collection="default"):
 	if request.method == 'POST':
 		data = json.loads(request.data)
@@ -152,7 +183,7 @@ def simbim(collection="default"):
 	res1_dic, res2_dic, res_set, max1, max2 = get_edge_info(collection, word1, word2, time_id)
 	
 	if len(res1_dic) == 0 or len(res2_dic) == 0 or len(res_set) == 0:
-		# check if error in results
+		# check if zero-error
 		return {"error":"zero values"}
 	else:
 		# calc return dictionary and normalize values
@@ -183,12 +214,16 @@ def simbim(collection="default"):
 
 @app.route('/api/cluster_information', methods=['POST'])
 # get_cluster_information based on occurences of words in edges (pairwise comparison -> occurence frequencies -> normalized freq)
-# precondition: post data with edges and collection
-# postcondition: returns dictionary of words shared pairwise, score = number of occurences in cluster edges / total of cluster edges
-# the response is limited to max 200
+# Params: edges - ie. nodes with time-ids and their links
+# Returns dictionary of words with Score: number of occurences in cluster edges / total of cluster edges
+# Precondition: data not null and valid
+# Postcondition: the response is limited to max 200
+# TODO: CHANGE TO NODE-BASED (Linear), add significance score, change frequency score
 def cluster_information():
+	# measure execution time of db-queries
 	import time
 	start_time = time.time()
+	# algo
 	from collections import defaultdict
 	edges = []
 	nodes = set()
