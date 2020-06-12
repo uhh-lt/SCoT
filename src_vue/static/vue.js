@@ -11,7 +11,7 @@ app = new Vue({
 		senses : 50,
 		edges : 3,
 		collection_key : "corona_cooc",
-		collection_name: "corona_cooc_all",
+		collection_name: "corona_cooc",
 		// all possible collections queried from database
 		collections : {}, // collections keys and names
 		collections_names: [], // collections_names
@@ -20,7 +20,7 @@ app = new Vue({
 		// all possible end years queried from the database
 		end_years : [],
 		// limits the size of clusters for context-information-search
-		cluster_search_limit: 5,
+		cluster_search_limit: 50,
 		// node-year for context-information
 		node_time_id: 1,
 		// ##### VIEW SETTINGS APP AND SVG-GRAPH
@@ -125,8 +125,9 @@ app = new Vue({
 		],
 		// table information for cluster -context view sidebar
 		fields_cluster : [
-			{key: "wort", sortable: true},
-			{key: "freq", sortable: true}
+			{key: "freq", sortable: true},
+			{key: "wort", sortable: true}
+			
 			
 		],
 
@@ -431,6 +432,29 @@ app = new Vue({
 			app.node.on("mouseover", app.mouseOver(0.2));
 			app.node.on("mouseout", app.mouseOut);
 		},
+		// /*
+		// EXPERIMENTAL Deletes a complete time-group
+		// */
+		// delete_multiple_nodes: async function(labels) {
+		// 	// get all the text labels
+		// 	console.log(labels)
+		// 	text_labels = []
+		// 	for (var i = 0; i < labels.length; i++) {
+		// 		text_labels.push(labels[i].text)
+		// 		app.nodes
+		// 	}
+
+			
+		// 	// remove nodes from DOM with D3 and update the simulation
+		// 	app.node.data(app.nodes, function(d) { return d.id }).exit().remove();
+		// 	app.link.data(app.links, function(d) { return d.source.id + "-" + d.target.id; }).exit().remove();
+
+		// 	app.simulation.nodes(app.nodes);
+		// 	app.simulation.force("link").links(app.links);
+		// 	app.simulation.alpha(1).restart();
+
+			
+		// },
 		/*
 		Deletes a complete cluster
 		*/
@@ -1512,6 +1536,7 @@ app = new Vue({
 		/*
 		Color nodes depending on whether they started to occur in the selected small time interval, stopped to occur in said interval, or both.
 		Basically comparing the graph time interval and the small time interval selected by the user.
+		# INTERVAL COUNTING ALWAYS START FIRST ID IN DATABASE WITH 1
 		*/
 		show_time_diff: async function() {
 			
@@ -1538,6 +1563,10 @@ app = new Vue({
 
 			var small_interval_start_time_id = Math.min(...small_time_interval);
 			var small_interval_end_time_id = Math.max(...small_time_interval);
+			console.log(small_interval_start_time_id)
+			console.log(small_interval_end_time_id)
+			console.log(big_time_interval[i])
+			
 
 			for (var i=0; i<big_time_interval.length; i++) {
 				if (big_time_interval[i] < small_interval_start_time_id) {
@@ -1545,9 +1574,13 @@ app = new Vue({
 				} else if (big_time_interval[i] > small_interval_end_time_id) {
 					period_after.push(big_time_interval[i]);
 				}
+				console.log(big_time_interval[i])
+				console.log(period_before)
+				console.log(period_after)
 			}
 
-			var time_diff_nodes = {born: [], deceased: [], shortlived: [], normal: []};
+			var time_diff_nodes = {born_in_interval: [], deceases_in_interval: [], exists_only_in_interval: [], 
+				exists_only_before: [], exists_throughout: [], exists_only_after:[], exists_before_and_after:[]};
 			
 			var nodes = d3.selectAll(".node").selectAll("g");
 
@@ -1570,37 +1603,52 @@ app = new Vue({
 							if ((time_ids !== null) && (typeof time_ids !== "undefined")) {
 								time_ids = time_ids.split(",");
 								time_ids = time_ids.map(x => parseInt(x));
+								console.log("in time ids", time_ids, node_text)
 
-								var born = true;
-								var deceased = true;
 								var in_interval = false;
+								var before_interval = false;
+								var after_interval = false;
+								
 								
 								for (var i = 0; i < time_ids.length; i++) {
 									var t = time_ids[i];
 									
-									if(small_time_interval.includes(t)) {
+									if (period_before.includes(t)) {
+										before_interval = true
+									}
+									if (small_time_interval.includes(t)) {
 										in_interval = true;
 									}
-									if (!small_time_interval.includes(t) && period_after.includes(t) && ! period_before.includes(t)) {
-										deceased = false;
+									if(period_after.includes(t)) {
+										after_interval = true;
 									}
-									if (!small_time_interval.includes(t) && period_before.includes(t) && !period_after.includes(t)) {
-										born = false;
-									}
+									
+
+
 								}
 
-								if (born===true && deceased===true && in_interval===true) {
+								if (!before_interval && in_interval && !after_interval) {
 									d.setAttribute("fill", "yellow");
-									time_diff_nodes.shortlived.push(node_text);
-								} else if (born===true && in_interval===true) {
+									time_diff_nodes.exists_only_in_interval.push(node_text);
+								} else if (!before_interval && in_interval && after_interval) {
 									d.setAttribute("fill", "green");
-									time_diff_nodes.born.push(node_text);
-								} else if (deceased===true && in_interval===true) {
+									time_diff_nodes.born_in_interval.push(node_text);
+								} else if (before_interval && in_interval && !after_interval) {
 									d.setAttribute("fill", "red");
-									time_diff_nodes.deceased.push(node_text);
-								} else {
+									time_diff_nodes.deceases_in_interval.push(node_text);
+								} else if (before_interval && in_interval && after_interval) {
 									d.setAttribute("fill", "grey");
-									time_diff_nodes.normal.push(node_text);
+									time_diff_nodes.exists_throughout.push(node_text);
+									console.log("pushed throughout")
+								} else if (before_interval && !in_interval && !after_interval ){
+									d.setAttribute("fill", "red");
+									time_diff_nodes.exists_only_before.push(node_text);
+								} else if (!before_interval && !in_interval && after_interval ){
+									d.setAttribute("fill", "green");
+									time_diff_nodes.exists_only_after.push(node_text);
+								} else if (before_interval && !in_interval && after_interval ){
+									d.setAttribute("fill", "grey");
+									time_diff_nodes.exists_before_and_after.push(node_text);
 								}
 
 							}
@@ -1612,6 +1660,7 @@ app = new Vue({
 			});
 
 			app.time_diff_nodes = time_diff_nodes;
+			console.log(time_diff_nodes)
 		},
 		/*
 		Fetch the updated amount of nodes and edges as well as the singletons from the BE.
@@ -2278,9 +2327,11 @@ app = new Vue({
 				.then((res) => {
 					this.data_from_db = res.data;
 					var nodes = this.data_from_db[0].nodes;
+					console.log("in data get nodes", nodes)
 					var links = this.data_from_db[0].links;
 					var target = [this.data_from_db[1]];
 					app.singletons = this.data_from_db[2].singletons;
+					console.log("in data get singletons", app.singletons)
 					// Call D3 function to render graph
 					render_graph(nodes, links, target)
 					this.graph_rendered = true;

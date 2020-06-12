@@ -5,9 +5,9 @@ from pymagnitude import Magnitude
 class Word2VecLoader:
 
     def __init__(self):
-        self.model_gensim = Magnitude("c:\\linux\\test.magnitude")
-        self.model_gensimi = Magnitude("c:\\linux\\auspolI.magnitude")
-        self.model_gensimo = Magnitude("c:\\linux\\covidI.magnitude")
+        self.model_gensima = Magnitude("c:\\linux\\test.magnitude")
+        self.model_gensimi = Magnitude("c:\\linux\\auspolI2.magnitude")
+        self.model_gensim = Magnitude("c:\\linux\\covidI.magnitude")
     
     def similarity (self, tag1, tag2):
         return self.model_gensim.similarity(tag1, tag2)

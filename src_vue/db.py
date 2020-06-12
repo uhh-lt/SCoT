@@ -89,12 +89,65 @@ class Database:
 					nodes.append([str(row['word2']), {"time_ids": [int(row['time_id'])], "weights": [float(row["score"])], "target_text": str(row['word2'])}])
 		#print(nodes)
 		return nodes
+	
+	def get_stable_nodes(
+		self,
+		target_word,
+		max_paradigms,
+		selected_time_ids
+		):
+		# gets Stable Graph - ie only nodes that occur at least in factor * time_ids (ie 66%)
+		# PARAM target_word is str
+		# PARAM max_paradigms
+		# PARAM selected_time_ids is int-array
+		# RETURNS 
+		# factor returns portion of time-ids that must be fulfilled
+		# 1: only nodes that occure in all selected-time-slots
+		# .66 : only nodes that occur in 2/3 of all selected_time-slots
+		factor = 1
+
+		print("in get stable nodes")
+		nodes = []
+		target_word_senses = self.db.query(
+			'SELECT word2, time_id, score FROM similar_words '
+			'WHERE word1=:tw AND word1!=word2 '
+			'ORDER BY score DESC',
+			tw=target_word
+			)
+		
+		# put all into node_list 
+		for row in target_word_senses:
+			exists = False
+			if int(row['time_id']) in selected_time_ids:
+				for node in nodes:
+					if node[0] == str(row['word2']):
+						exists = True
+						if not int(row["time_id"]) in node[1]["time_ids"]:
+							node[1]["time_ids"].append(int(row['time_id']))
+							node[1]["weights"].append(float(row['score']))
+				
+				if not exists:
+					nodes.append([str(row['word2']), {"time_ids": [int(row['time_id'])], "weights": [float(row["score"])], "target_text": str(row['word2'])}])
+		
+		#filter by those that exist in more than factor selected time_ids until max threshold reached
+		print("nodes erste runde")
+		
+		nodes_stable = []
+		for node in nodes:
+			#print("node time_ids", node[1]["time_ids"])
+			if float(len(set(node[1]["time_ids"]).intersection(set(selected_time_ids)))) >= factor*len(set(selected_time_ids)) and len(nodes_stable) < max_paradigms:
+				nodes_stable.append(node)
+			
+
+		
+		print("nodes_stable", nodes_stable)
+		return nodes_stable
 		
 	def get_all_nodes(
 		self,
 		time_ids
 		):
-		
+		# experimental for function Xall - get all nodes
 		# get the nodes for all words target word from the database
 		# precondition_ time_ids not null, is integer
 		# postcondition: nodes array words - str-type, time-id int, score -float, target-text str
@@ -119,14 +172,24 @@ class Database:
 		return nodes
 
 	def get_edges(self, nodes, max_edges, time_ids):
+		# standard edge function - allocates edges to nodes
+		# Attention: edges can be set independent of time_ids (old algo)
+		# this can result in node1 from time2, node 2 from time4, and edge from time5
+		# this results in "invisible nodes" (ie node from time5)
+		# new algo below avoids that
+		# Param: nodes
+		# Para: max_edges
+		# Param: time_ids
+		#
 		edges = []
 		connections = []
 		node_list = []
 		singletons = []
-	
+		
+			
 		for node in nodes:
 			node_list.append(node[0])
-
+			
 		con = self.db.query(
 			'SELECT word1, word2, score, time_id '
 			'FROM similar_words '
@@ -149,6 +212,7 @@ class Database:
 		for c in connections:
 			if c[0] in node_list and c[1] in node_list:
 				# if there is no edge yet, append it -- RESULTS IN MAX ONLY EDGE WHICH MAY HAVE A TIME_ID DIFFERENT TO NODES
+				# print(node_dic[c[0]])
 				if (c[0], c[1]) not in potential_edges:
 					potential_edges[(c[0], c[1])] = (c[2], c[3]) 
 		#print("filtered set of potential_edges", potential_edges)
@@ -163,10 +227,10 @@ class Database:
 
 			if not exists:
 				singletons.append(n)
-
-				for node in nodes:
-					if n == node[0]:
-						nodes.remove(node)
+				# removes singletons from graph - switched out
+				# for node in nodes:
+				# 	if n == node[0]:
+				# 		nodes.remove(node)
 
 		singletons = list(singletons)
 		
@@ -206,7 +270,9 @@ class Database:
 		singletons = []
 		for c in connections:
 			if c[0] in node_dic and c[1] in node_dic and c[3] in node_dic[c[0]]["time_ids"] and c[3] in node_dic[c[1]]["time_ids"]:
+				# new and c[3] in node_dic[c[0]]["time_ids"] and c[3] in node_dic[c[1]]["time_ids"]
 				# if there is no edge yet, append it -- RESULTS IN MAX ONLY EDGE in EXISTING TIME-SLOT IN WHICH BOTH NODES OCCUR
+
 				if (c[0], c[1]) not in potential_edges:
 					potential_edges[(c[0], c[1])] = (c[2], c[3]) 
 		#print("filtered set of potential_edges", potential_edges)

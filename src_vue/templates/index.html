@@ -443,7 +443,9 @@
 						<b-button v-b-modal="'modal-delete-' + index" class="edit_button" style="margin-left: 2px" :disabled="time_diff == 1"> <i class="fas fa-trash"></i> </b-button>
 					</p>
 
-					<b-modal :id="'modal-delete-' + index" title="Confirm Deletion" @ok="delete_cluster(cluster.cluster_name, cluster.cluster_id, cluster.labels)"> Are you sure you want to delete the cluster "{{ cluster.cluster_name }}"?
+					<b-modal :id="'modal-delete-' + index" title="Confirm Deletion" 
+					@ok="delete_cluster(cluster.cluster_name, cluster.cluster_id, cluster.labels)"> 
+					Are you sure you want to delete the cluster "{{ cluster.cluster_name }}"?
 					</b-modal>
 
 					<p>
@@ -561,51 +563,78 @@
 									<div>
 										<span class="dot-sm" style="background-color: red;"
 										v-on:mouseover="fade_in_nodes('red')"
-										v-on:mouseout="reset_opacity()">__HOVER_HERE__</span> Nodes that cease to occur between {{ interval_start}} and {{ interval_end }} (deceased)
+										v-on:mouseout="reset_opacity()">__HOVER_HERE__</span> Dead or dying nodes
 									</div>
 									<!-- button collapse to show nodes belonging to category -->
 									<div>
-										<b-button variant="light" class="show-nodes-button" v-b-toggle.collapse-deceased-1>Deceased Nodes 
+										<b-button variant="light" class="show-nodes-button" v-b-toggle.collapse-deceased-2>Died before interval 
+											<span class="when-opened"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
+											<span class="when-closed"><i class="fa fa-chevron-up" aria-hidden="true"></i></span>
+										</b-button>
+										<!-- experimental delete of time-nodes 
+											<b-button @click="delete_multiple_nodes(time_diff_nodes.exists_only_before)"> <i class="fas fa-trash"></i> </b-button>
+										 -->
+										<b-collapse id="collapse-deceased-2">
+											<b-card >
+												<div style="color: black" v-for="node in time_diff_nodes.exists_only_before"> {{ node }} </div>
+											</b-card>
+										</b-collapse>
+									</div>
+									<div>
+										<b-button variant="light" class="show-nodes-button" v-b-toggle.collapse-deceased-1>Dies in interval 
 											<span class="when-opened"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
 											<span class="when-closed"><i class="fa fa-chevron-up" aria-hidden="true"></i></span>
 										</b-button>
 										<b-collapse id="collapse-deceased-1">
 											<b-card >
-												<div style="color: black" v-for="node in time_diff_nodes.deceased"> {{ node }} </div>
+												<div style="color: black" v-for="node in time_diff_nodes.deceases_in_interval"> {{ node }} </div>
 											</b-card>
 										</b-collapse>
 									</div>
+
 									<!-- shortlived nodes -->
 									<div>
 										<span class="dot-sm" style="background-color: yellow;" v-on:mouseover="fade_in_nodes('yellow')"
-										v-on:mouseout="reset_opacity()">__HOVER_HERE__</span>Nodes that occur only between {{ interval_start }} and {{ interval_end }} (shortlived)
+										v-on:mouseout="reset_opacity()">__HOVER_HERE__</span>Shortlived nodes
 									</div>
 									<!-- button collapse to show nodes belonging to category -->
 									<div>
-										<b-button variant="light" class="show-nodes-button" v-b-toggle.collapse-shortlived-1>Shortlived Nodes
+										<b-button variant="light" class="show-nodes-button" v-b-toggle.collapse-shortlived-1>Occurs only during interval
 											<span class="when-opened"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
 											<span class="when-closed"><i class="fa fa-chevron-up" aria-hidden="true"></i></span>
 										</b-button>
 										<b-collapse id="collapse-shortlived-1">
 											<b-card>
-													<div style="color: black" v-for="node in time_diff_nodes.shortlived"> {{ node }} </div>
+													<div style="color: black" v-for="node in time_diff_nodes.exists_only_in_interval"> {{ node }} </div>
 											</b-card>
 										</b-collapse>
 									</div>
 									<!-- born nodes -->
 									<div>
 										<span class="dot-sm" style="background-color: green;" v-on:mouseover="fade_in_nodes('green')"
-										v-on:mouseout="reset_opacity()">__HOVER_HERE__</span> Nodes that start to occur between {{ interval_start }} and {{interval_end }} (born)
+										v-on:mouseout="reset_opacity()">__HOVER_HERE__</span> New born nodes
 									</div>
 									<!-- button collapse to show nodes belonging to category -->
 									<div>
-										<b-button variant="light" class="show-nodes-button" v-b-toggle.collapse-born-1>Born Nodes
+										<b-button variant="light" class="show-nodes-button" v-b-toggle.collapse-born-1>Born in interval
 											<span class="when-opened"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
 											<span class="when-closed"><i class="fa fa-chevron-up" aria-hidden="true"></i></span>
 										</b-button>
 										<b-collapse id="collapse-born-1">
 											<b-card>
-													<div style="color: black" v-for="node in time_diff_nodes.born"> {{ node }} </div>
+													<div style="color: black" v-for="node in time_diff_nodes.born_in_interval"> {{ node }} </div>
+											</b-card>
+										</b-collapse>
+									</div>
+									<!-- button collapse to show nodes belonging to category -->
+									<div>
+										<b-button variant="light" class="show-nodes-button" v-b-toggle.collapse-born-2>Born after interval
+											<span class="when-opened"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
+											<span class="when-closed"><i class="fa fa-chevron-up" aria-hidden="true"></i></span>
+										</b-button>
+										<b-collapse id="collapse-born-2">
+											<b-card>
+													<div style="color: black" v-for="node in time_diff_nodes.exists_after_interval"> {{ node }} </div>
 											</b-card>
 										</b-collapse>
 									</div>
@@ -613,17 +642,28 @@
 									<div>
 										<span class="dot-sm" style="background-color: grey;" 
 										v-on:mouseover="fade_in_nodes('grey')"
-										v-on:mouseout="reset_opacity()">__HOVER_HERE__</span> Nodes that occur before and after {{ interval_start }} and {{interval_end}}
+										v-on:mouseout="reset_opacity()">__HOVER_HERE__</span> Stable nodes
 									</div>
 									<!-- button collapse to show nodes belonging to category -->
 									<div>
-										<b-button variant="light" class="show-nodes-button" v-b-toggle.collapse-normal-1>Consistent Nodes
+										<b-button variant="light" class="show-nodes-button" v-b-toggle.collapse-normal-1>Occurs throughout
 											<span class="when-opened"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
 											<span class="when-closed"><i class="fa fa-chevron-up" aria-hidden="true"></i></span>
 										</b-button>
 										<b-collapse id="collapse-normal-1">
 											<b-card>
-													<div style="color: black" v-for="node in time_diff_nodes.normal"> {{ node }} </div>
+													<div style="color: black" v-for="node in time_diff_nodes.exists_throughout"> {{ node }} </div>
+											</b-card>
+										</b-collapse>
+									</div>
+									<div>
+										<b-button variant="light" class="show-nodes-button" v-b-toggle.collapse-normal-2>Occurs before and after
+											<span class="when-opened"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
+											<span class="when-closed"><i class="fa fa-chevron-up" aria-hidden="true"></i></span>
+										</b-button>
+										<b-collapse id="collapse-normal-2">
+											<b-card>
+													<div style="color: black" v-for="node in time_diff_nodes.exists_before_and_after"> {{ node }} </div>
 											</b-card>
 										</b-collapse>
 									</div>

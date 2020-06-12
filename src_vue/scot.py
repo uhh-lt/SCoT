@@ -49,6 +49,7 @@ def recluster():
 		data = json.loads(request.data)
 		nodes = data["nodes"]
 		links_list = data["links"]
+		print(data)
 		for item in links_list:
 			links.append((str(item["source"]), str(item["target"]), {'weight': float(item["weight"])}))
 
@@ -125,13 +126,19 @@ def get_clustered_graph(
 		
 		db = Database(getDbFromRequest(collection))
 		time_ids = db.get_time_ids(start_year, end_year)
+		## ------------------- experimental start
 		if target_word == "Xall":
 			nodes = db.get_all_nodes(time_ids)
 		elif target_word[:2] == "WV":
-			print(" in word target")
-			target_word = target_word[3:]
+			print(" in word target WV", target_word[2:])
+			target_word = target_word[2:]
 			w2v = Word2VecLoader()
 			nodes, edges, singletons = w2v.egoGraph(target_word, paradigms, density, time_ids)
+		elif target_word[:2]=="SG":
+			print(" in word target SG", target_word[2:])
+			target_word = target_word[2:]
+			nodes = db.get_stable_nodes(target_word, paradigms, time_ids)
+		## ------------------- experimental end
 		else:
 			nodes = db.get_nodes(target_word, paradigms, time_ids)
 		if target_word[:2] != "WV":

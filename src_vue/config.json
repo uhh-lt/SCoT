@@ -14,15 +14,15 @@
 		
 	},
 	"collections_info_frontend":{
-		"corona_cooc_all": {"key":"corona_cooc", "target": "#covid19deutschland"},
+		"corona_cooc": {"key":"corona_cooc", "target": "#covid19deutschland"},
 		"corona_coll": {"key": "corona_coll", "target": "#covid19deutschland"},
-		"corona_w2v": {"key": "corona_w2v", "target": "#covid19deutschland"},
-		"brexit_cooc_llgt6": {"key":"brexit_cooc", "target": "Xall"},
-		"brexit_coll": {"key":"brexit_coll", "target": "Xall"},
-		"brexit_w2v": {"key":"brexit_w2v", "target": "Xall"},
-		"auspol_cooc_llgt6": {"key":"auspol_cooc", "target": "Xall"},
-		"auspol_coll": {"key":"auspol_coll", "target": "#nbn"},
-		"auspol_w2v": {"key":"auspol_w2v", "target": "#nbn"}
+		"corona_w2v_w2": {"key": "corona_w2v", "target": "#covid19deutschland"},
+		"brexit_cooc": {"key":"brexit_cooc", "target": "#brexit"},
+		"brexit_coll": {"key":"brexit_coll", "target": "#brexit"},
+		"brexit_w2v_w2": {"key":"brexit_w2v", "target": "#brexit"},
+		"auspol_cooc": {"key":"auspol_cooc", "target": "#auspol"},
+		"auspol_coll": {"key":"auspol_coll", "target": "#auspol"},
+		"auspol_w2v_w2": {"key":"auspol_w2v", "target": "#auspol"}
 		
 	}
 
