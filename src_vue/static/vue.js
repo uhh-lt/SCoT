@@ -26,7 +26,7 @@ app = new Vue({
 		// all possible end years queried from the database
 		end_years : [],
 		// all possible graph types
-		graph_types :["max_across_slices", "max_in_slices", "max_of_stable_nodes"], 
+		graph_types :["max_across_slices", "max_per_slice", "stable_nodes"], 
 		
 		// ##### VIEW SETTINGS APP AND SVG-GRAPH
 		// base color scheme bootstrap vue (not implemented via var yet)
@@ -2377,6 +2377,14 @@ app = new Vue({
 			data["senses"] = this.senses;
 			data["edges"] = this.edges;
 			data["time_diff"] = this.time_diff;
+
+			if (this.graph_type === "max_per_slice"){
+				data["target_word"] = "AD" + this.target_word
+			}
+			if (this.graph_type === "stable_nodes"){
+				data["target_word"] = "SG" + this.target_word
+			}
+
 
 			app.start_years.forEach(function(d,i) {
 				if (d.value === app.start_year) {
