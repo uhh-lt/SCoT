@@ -94,19 +94,16 @@ class Database:
 		self,
 		target_word,
 		max_paradigms,
-		selected_time_ids
+		selected_time_ids,
+		factor
 		):
-		# gets Stable Graph - ie only nodes that occur at least in factor * time_ids (ie 66%)
+		# gets Stable Graph - ie only nodes that occur at least in factor*len(time_ids) time_ids
+		# PARAM factor
 		# PARAM target_word is str
 		# PARAM max_paradigms
 		# PARAM selected_time_ids is int-array
 		# RETURNS 
-		# factor returns portion of time-ids that must be fulfilled
-		# 1: only nodes that occure in all selected-time-slots
-		# .66 : only nodes that occur in 2/3 of all selected_time-slots
-		factor = 1
-
-		print("in get stable nodes")
+		
 		nodes = []
 		target_word_senses = self.db.query(
 			'SELECT word2, time_id, score FROM similar_words '
@@ -130,7 +127,7 @@ class Database:
 					nodes.append([str(row['word2']), {"time_ids": [int(row['time_id'])], "weights": [float(row["score"])], "target_text": str(row['word2'])}])
 		
 		#filter by those that exist in more than factor selected time_ids until max threshold reached
-		print("nodes erste runde")
+		#print("nodes erste runde")
 		
 		nodes_stable = []
 		for node in nodes:
@@ -140,7 +137,7 @@ class Database:
 			
 
 		
-		print("nodes_stable", nodes_stable)
+		#print("nodes_stable", nodes_stable)
 		return nodes_stable
 		
 	def get_all_nodes(
@@ -173,9 +170,9 @@ class Database:
 
 	def get_edges(self, nodes, max_edges, time_ids):
 		# standard edge function - allocates edges to nodes
-		# Attention: edges can be set independent of time_ids (old algo)
+		# Attention: edges can be set independent of time_ids 
 		# this can result in node1 from time2, node 2 from time4, and edge from time5
-		# this results in "invisible nodes" (ie node from time5)
+		# this results in "invisible nodes" (ie node from time5 is implicitly present due to edge from that id)
 		# new algo below avoids that
 		# Param: nodes
 		# Para: max_edges
@@ -204,8 +201,6 @@ class Database:
 				and len(connections)<=int(max_edges)*len(node_list):
 				connections.append([str(row['word1']), str(row['word2']), float(row['score']), int(row['time_id'])])
 				
-		# print("max global edges", connections)
-
 		# filter global max-set of edges by those MAX-TIME-IDS CONNECTIONS that connect two nodes in graph globally (regardless of time-ids of nodes..)
 		potential_edges = {}
 		singletons = []
@@ -224,19 +219,19 @@ class Database:
 				if n == k[0] or n == k[1]:
 					exists = True
 					edges.append((k[0], k[1], {'weight': v[0], 'weights': [v[0]], 'time_ids': [v[1]], 'source_text': k[0], 'target_text': k[1]}))
-
 			if not exists:
 				singletons.append(n)
-				# removes singletons from graph - switched out
-				# for node in nodes:
-				# 	if n == node[0]:
-				# 		nodes.remove(node)
-
+				#removes singletons from graph
+				for node in nodes:
+					if n == node[0]:
+						nodes.remove(node)
 		singletons = list(singletons)
-		
 		return edges, nodes, singletons
-
+		
 	def get_edges_in_time(self, nodes, max_edges, time_ids):
+		# selects top edges based on global max = nodes*max_edges
+		# then filters edges set and only connects nodes in SAME TIME-iD
+		# this is the difference to algo above
 		edges = []
 		connections = []
 		node_list = []
@@ -287,11 +282,94 @@ class Database:
 
 			if not exists:
 				singletons.append(n)
-
+				#filter out singletons
 				for node in nodes:
 					if n == node[0]:
 						nodes.remove(node)
 
 		singletons = list(singletons)
+		
+		return edges, nodes, singletons
+
+	def get_edges_per_time(self, nodes, max_paradigms, max_edges, time_ids):
+		# algorithm allocates max_edges PER time_slice
+		# the max per time-slice = max_paradigms * max edge
+		# PARAM: Nodes is of form [['a', {'time_ids': [2, 1], 'weights': [0.474804, 0.289683], 'target_text': 'a'}]]
+		# PARAM: MAX PARADIGMS PER TIME SLICE // MAX_EDGES -> Max_paradigms * max_edges
+		# PARAM: TIME IDs
+		# RETURNS Edges, nodes_filtered, and singleton
+		
+		# VARS -----------------------------
+		# RETURN-VARS
+		edges = []
+		singletons = []
+		nodes_filtered = []
+		# HILFSVARIABLEN
+		# Edges from DB (all possible ones)
+		connections = []
+		# Filteres Edges in different form than final edges
+		potential_edges = {}
+		# various forms of nodes for easier handling
+		node_dic = {}
+		node_list = []
+		for node in nodes:
+			node_list.append(node[0])
+			node_dic[node[0]] = node[1]
+		#print(nodes)
+		# 1. --------- get maximum possible edges (ie all that all nodes in list in all time ids)
+
+		con = self.db.query(
+			'SELECT word1, word2, score, time_id '
+			'FROM similar_words '
+			'WHERE word1 IN :nodes AND word2 IN :nodes '
+			'ORDER BY score DESC',
+			nodes=node_list
+			)
+
+		# prepare var for allocating edges up until local max reached (ie per slice)
+		con_dic = {}
+		for time_id in time_ids:
+			con_dic[time_id] = []
+		
+		# allocate edge to dic (in descending order until thresholds reached)
+		for row in con:
+			if not str(row['word1'])==str(row['word2']) and int(row['time_id']) in time_ids \
+				and len(con_dic[int(row['time_id'])]) <= max_paradigms * max_edges:
+				con_dic[int(row['time_id'])].append([str(row['word1']), str(row['word2']), float(row['score']), int(row['time_id'])])
+		#print(con_dic)
+		# convert dic to connections - array
+		for k in con_dic.keys():
+			for el in con_dic[k]:
+				connections.append(el)
+				
+		# filter global max-set of edges by those MAX-TIME-IDS CONNECTIONS that connect two nodes in graph IN TIME ID
+		for c in connections:
+			if c[0] in node_dic and c[1] in node_dic and \
+			c[3] in node_dic[c[0]]["time_ids"] and c[3] in node_dic[c[1]]["time_ids"]:
+				if (c[0], c[1]) not in potential_edges:
+					potential_edges[(c[0], c[1])] = (c[2], c[3])
+				#else:
+					#print("in else connections inner - rejected connection is", c)
+			#else:
+				#print("in else connections - rejected connection is", c)
+				
+		# create edge-node list
+		edge_node_set = {k[0] for k in potential_edges.keys()}.union({k[1] for k in potential_edges.keys()})
+		# filter out the singletons (ie those nodes that have no connecting edge)
+		singleton_set = set(node_list) - edge_node_set
+						
+		# transform potential edges to correct edge-format 
+		for k,v in potential_edges.items():
+			edges.append((k[0], k[1], {'weight': v[0], 'weights': [v[0]], 'time_ids': [v[1]], 'source_text': k[0], 'target_text': k[1]}))
+		
+		# remove singletons from nodes
+		for node in nodes:
+			if node[0] in edge_node_set:
+				nodes_filtered.append(node)
+		
+		# return singletons als liste
+		singletons = list(singleton_set)
+
+		print("anzahl edges additive graph", len(edges))
 		
 		return edges, nodes, singletons

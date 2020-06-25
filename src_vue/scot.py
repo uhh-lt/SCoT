@@ -126,25 +126,57 @@ def get_clustered_graph(
 		
 		db = Database(getDbFromRequest(collection))
 		time_ids = db.get_time_ids(start_year, end_year)
-		## ------------------- experimental start
+		## ------------------- experimental features ---- start
+		## the following algorithm project the data differently onto a graph
+		# get all nodes from a collection (Ignore target-word and number of paradigms)
 		if target_word == "Xall":
 			nodes = db.get_all_nodes(time_ids)
+			edges, nodes, singletons = db.get_edges_in_time(nodes, density, time_ids)
+		# gets negativ-edge graph from embedding WordVec
+		# mulitple time-ids not fully implemented
 		elif target_word[:2] == "WV":
-			print(" in word target WV", target_word[2:])
+			#print(" in word target WV", target_word[2:])
 			target_word = target_word[2:]
 			w2v = Word2VecLoader()
+			# all in one function
 			nodes, edges, singletons = w2v.egoGraph(target_word, paradigms, density, time_ids)
+		# gets Stable Graph - ie only nodes that occur at least in factor * time_ids (ie 66%)
 		elif target_word[:2]=="SG":
-			print(" in word target SG", target_word[2:])
+			#print(" in word target SG", target_word[2:])
 			target_word = target_word[2:]
-			nodes = db.get_stable_nodes(target_word, paradigms, time_ids)
-		## ------------------- experimental end
+			# factor determines minimum number of time-slices
+			factor = 1
+			nodes = db.get_stable_nodes(target_word, paradigms, time_ids, factor)
+			edges, nodes, singletons = db.get_edges_in_time(nodes, density, time_ids)
+		# get additive nodes - ie the top paradigms from each selected time id
+		# problem size of graph may vary between paradigm and time-id*paradigm
+		elif target_word[:2]=="AD":
+			node_dic = {}
+			for time_id in time_ids:
+				time = []
+				time.append(time_id)
+				result = db.get_nodes(target_word[2:], paradigms, time)
+				print("nodes pro time-id", len(result))
+				#print(result)
+				for res in result:
+					if res[0] not in node_dic:
+						node_dic[res[0]] = res[1]
+					else:
+						# add time res[1]["time_ids"] zu node_dic[res[0]]["time_ids"]
+						node_dic[res[0]]["time_ids"].append(res[1]["time_ids"][0])
+						node_dic[res[0]]["weights"].append(res[1]["weights"][0])
+			nodes = []
+			for k,v in node_dic.items():
+				nodes.append([k, v])
+			print("total additiver graph nodes", len(nodes))
+			print(nodes)
+			edges, nodes, singletons = db.get_edges_per_time(nodes, paradigms, density, time_ids)
+		# ---- standard from here - but can change to db.get_edges_in_time to avoid implicit nodes
 		else:
 			nodes = db.get_nodes(target_word, paradigms, time_ids)
-		if target_word[:2] != "WV":
 			edges, nodes, singletons = db.get_edges(nodes, density, time_ids)
+		## ------------------- experimental features ----- end
 		
-		#print("in scot.py singletons ", singletons)
 		return singletons, chineseWhispers.chinese_whispers(nodes, edges)
 	
 	singletons, clustered_graph = clusters(collection, target_word, start_year, end_year, paradigms, density)
@@ -229,49 +261,51 @@ def simbim(collection="default"):
 		return_dic["error"] = "none"
 		return return_dic
 
+
+
 @app.route('/api/cluster_information', methods=['POST'])
-# get_cluster_information based on occurences of words in edges (pairwise comparison -> occurence frequencies -> normalized freq)
-# Params: edges - ie. nodes with time-ids and their links
-# Returns dictionary of words with Score: number of occurences in cluster edges / total of cluster edges
+
+# get_cluster_information based on occurences of words in nodes - normalize freq
+# Params: nodes with time-ids
+# Returns dictionary of words with Score: averaged normalized over all nodes based on max-time-id
 # Precondition: data not null and valid
 # Postcondition: the response is limited to max 200
-# TODO: CHANGE TO NODE-BASED (Linear), add significance score, change frequency score
 def cluster_information():
 	# measure execution time of db-queries
 	import time
 	start_time = time.time()
 	# algo
 	from collections import defaultdict
-	edges = []
 	nodes = set()
 	if request.method == 'POST':
 		data = json.loads(request.data)
-		for edge in data["edges"]:
-			edges.append(edge)
-			nodes.add((edge["source"], edge["time_id"]))
-			nodes.add((edge["target"], edge["time_id"]))
-	print("in cluster info (1) anzahl unique nodes - alle nodes ", len(nodes), len(edges)*2)
-
-	# get features for all unique nodes
+		for node in data["nodes"]:
+			nodes.add((node["label"], node["time_id"]))
+	print("nodes", nodes)
+	print("-------------------------------------------------------")
+	print("in cluster info (1) anzahl unique nodes - alle nodes ", len(nodes))
+	# get features (ie context word2 and score) for all unique nodes
+	# word1 = node
+	# feature_dic[word1]={word2:score}
+	print("collection", data["collection"])
 	db = Database(getDbFromRequest(data["collection"]))
 	feature_dic = {}
 	for node in nodes:
 		feature_dic[node] = db.get_features(node[0], node[1])
-	
+	print("-------------------------------------------------------")
 	print(" in cluster info (2) after db query --- %s seconds ---" % (time.time() - start_time))
-
+	print("feature_dic", feature_dic)
 	res_dic_all = defaultdict(int)
-	for edge in edges:
-		node1_features = set(feature_dic[(edge["source"], edge["time_id"])].keys())
-		node2_features = set(feature_dic[(edge["target"], edge["time_id"])].keys())
-		res_set = node1_features.intersection(node2_features)
-		for word in res_set:
-			res_dic_all[word] += 1	
-	
-	for k,v in res_dic_all.items():
-		res_dic_all[k] = float(v/len(edges))
+	for k, v in feature_dic.items():
+		for k, v2 in v.items():
+			res_dic_all[k] += v2
+	print("-------------------------------------------------------")
+	print("res_dic_all", res_dic_all)	
+	# normalize and sort significance values
 	res_dic_all = {k:v for k,v in sorted(res_dic_all.items(), key = lambda x: x[1], reverse = True)}
-	
+	maxi = list(res_dic_all.values())[0]
+	for k,v in res_dic_all.items():
+		res_dic_all[k] = float(v/maxi)
 	# limit response dictionary to topn
 	topn = 200
 	dic_res = {}

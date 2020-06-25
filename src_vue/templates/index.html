@@ -99,6 +99,10 @@
 		<b-form-group class="input" label="Zeit: End-Datum">
 			<b-form-select v-model="end_year" :options="end_years" size="sm"></b-form-select>
 		</b-from-group>
+		<!-- Enter a graph type
+		<b-form-group class="input" label="Graph-Typ">
+			<b-form-select v-model="graph_type" :options="graph_types" size="sm"></b-form-select>
+		</b-from-group> -->
 		<br>
 		<br>
 		<!-- Render button -->
@@ -150,11 +154,36 @@
 	   </p>
 	</div>
 	</b-sidebar>
+	<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR Left 2 - Cluster CONTEXT ANALYSIS VIEW XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
+<b-sidebar v-show="context_mode2" id="sidebar-right2" title="Cluster Shared Words" width="20%" bg-variant="secondary" text-variant="light" style="opacity: 0.9;"  left shadow>
+	<template>
+		<b-button id="load_button" variant="danger" @click="toggleSidebarContext2" >Close</b-button>
+	  </template>					
+	<br>
+	<br>
+	<p style="margin-left: 10px;font-size:12px" > Clusters exhibit similarity between multiple paradigms. 
+		The following list shows the top 200 context-words among all nodes. The score is the normalized cumulated significance of the word for the cluster.
+		
+				
+		</p>
+		
+	<div>
+		<b-table striped-hover :busy="busy_right2" :fields="fields_cluster" :items="cluster_shared_object" :sort-by="'score'" :sort-desc="true" style="color: white;font-size:12px">
+			<template v-slot:table-busy>
+				<div class="text-center text-danger my-2">
+				  <b-spinner class="align-middle"></b-spinner>
+				  <strong>Loading...</strong>
+				</div>
+			  </template>
+		</b-table>
+	</div>
+
+</b-sidebar>
 <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR-RIGHT ANALYSIS CLUSTERING XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
 <b-sidebar width="23%" id="sidebar-right" title="Cluster-Analysis" bg-variant="secondary" text-variant="light" style="opacity: 0.9;"  right shadow>
 	<br>
 		<h5 class="sidebar-section__title"> </h5>	
-	<!-- show this part if time-diff = fals-->
+	<!-- options buttons-->
 		<b-form-group>
 			<b-form-radio-group
 			  id="load_button"
@@ -169,66 +198,7 @@
 	<div v-if="right_selected === 'cluster_functions'"  >
 	<br>
 	<!-- Options Drop Down for node options TODO Update Options-->
-	<b-modal id="modal-settings-1" scrollable size="xl" title="General Settings" @ok="update_general_settings">
-		<div>
-			<div style="font-size: 20px; font-weight:bold;">
-				Useful links
-			</div>
-			<div style="margin-top: 2ex;">
-				<b-link href="https://github.com/chrishaase/SCoT"><i class="fab fa-github"></i> View on GitHub </b-link>
-			</div>
-			<div>
-				<b-link href="https://chrishaase.github.io/SCoT/index.html"> <i class="fas fa-question-circle"></i> View User Guide </b-link>
-			</div>
-		</div>
-		<hr>
-		<!-- <div>
-			<div style="font-size: 20px; font-weight:bold; margin-top:2ex;">
-				Select view port size
-			</div>
-			<b-form-group class="input" label="Select view port height in pixels">
-				<b-form-input size="sm" type="number" v-model="viewport_height"></b-form-input>
-			</b-form-group>
-			<b-form-group class="input" label="Select viewport width in pixels">
-				<b-form-input size="sm" type="number" v-model="viewport_width"></b-form-input>
-			</b-form-group>
-		</div> -->
-		<hr>
-		<div>
-			<div style="font-size: 20px; font-weight:bold; margin-top:2ex;">
-				Select SVG size
-			</div>
-			<div style="margin-top: 1ex;">
-				<span style="border-left: 5px solid red; background-color: moccasin; padding: 5pt;"> WARNING: Please set before rendering a graph. Changes to the size of the svg after rendering a graph will act like a zoom function.</span>
-			</div>
-			<b-form-group class="input" label="Select SVG height in pixels">
-				<b-form-input size="sm" type="number" v-model="svg_height"></b-form-input>
-			</b-form-group>
-			<b-form-group class="input" label="Select SVG width in pixels">
-				<b-form-input size="sm" type="number" v-model="svg_width"></b-form-input>
-			</b-form-group>
-		</div>
-		<hr>
-		<div>
-			<div style="font-size: 20px; font-weight:bold; margin-top:2ex;">
-				Link Thickness Calculation
-			</div>
-			<b-form-group class="input">
-				<b-form-radio v-model="link_thickness_scaled" value="true">
-					Calculate edge thinkness with respect to the similarity score between neighbours
-				</b-form-radio>
-				<div style="margin-left: 25px; margin-bottom: 2ex;">
-					<span style="font-size: 10pt;">Scale the similarity score using sqrt(similatity score / x), x being:</span>
-					<b-form-input size="sm" v-model="link_thickness_factor" type="number"></b-form-input>
-				</div>
-				<b-form-radio v-model="link_thickness_scaled" value="false">Use same thickness for every link</b-form-radio>
-				<div style="margin-left: 25px;">
-					<span style="font-size: 10pt">Thickness in pixels:</span>
-					<b-form-input size="sm" v-model="link_thickness_value" type="number"></b-form-input>
-				</div>
-			</b-form-group>
-		</div>
-	</b-modal>
+	
 	<!-- Modal to change cluster assignment of a node -->
 	<b-modal id="modal-1" title="Change Cluster Assignment" @ok="assignNewCluster()">
 		<div v-for="node in clicked_nodes">
@@ -571,9 +541,9 @@
 											<span class="when-opened"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
 											<span class="when-closed"><i class="fa fa-chevron-up" aria-hidden="true"></i></span>
 										</b-button>
-										<!-- experimental delete of time-nodes 
+										<!-- experimental delete of time-nodes  -->
 											<b-button @click="delete_multiple_nodes(time_diff_nodes.exists_only_before)"> <i class="fas fa-trash"></i> </b-button>
-										 -->
+										
 										<b-collapse id="collapse-deceased-2">
 											<b-card >
 												<div style="color: black" v-for="node in time_diff_nodes.exists_only_before"> {{ node }} </div>
@@ -585,6 +555,7 @@
 											<span class="when-opened"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
 											<span class="when-closed"><i class="fa fa-chevron-up" aria-hidden="true"></i></span>
 										</b-button>
+										<b-button @click="delete_multiple_nodes(time_diff_nodes.deceases_in_interval)"> <i class="fas fa-trash"></i> </b-button>
 										<b-collapse id="collapse-deceased-1">
 											<b-card >
 												<div style="color: black" v-for="node in time_diff_nodes.deceases_in_interval"> {{ node }} </div>
@@ -603,6 +574,7 @@
 											<span class="when-opened"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
 											<span class="when-closed"><i class="fa fa-chevron-up" aria-hidden="true"></i></span>
 										</b-button>
+										<b-button @click="delete_multiple_nodes(time_diff_nodes.exists_only_in_interval)"> <i class="fas fa-trash"></i> </b-button>
 										<b-collapse id="collapse-shortlived-1">
 											<b-card>
 													<div style="color: black" v-for="node in time_diff_nodes.exists_only_in_interval"> {{ node }} </div>
@@ -620,6 +592,7 @@
 											<span class="when-opened"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
 											<span class="when-closed"><i class="fa fa-chevron-up" aria-hidden="true"></i></span>
 										</b-button>
+										<b-button @click="delete_multiple_nodes(time_diff_nodes.born_in_interval)"> <i class="fas fa-trash"></i> </b-button>
 										<b-collapse id="collapse-born-1">
 											<b-card>
 													<div style="color: black" v-for="node in time_diff_nodes.born_in_interval"> {{ node }} </div>
@@ -632,9 +605,10 @@
 											<span class="when-opened"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
 											<span class="when-closed"><i class="fa fa-chevron-up" aria-hidden="true"></i></span>
 										</b-button>
+										<b-button @click="delete_multiple_nodes(time_diff_nodes.exists_only_after)"> <i class="fas fa-trash"></i> </b-button>
 										<b-collapse id="collapse-born-2">
 											<b-card>
-													<div style="color: black" v-for="node in time_diff_nodes.exists_after_interval"> {{ node }} </div>
+													<div style="color: black" v-for="node in time_diff_nodes.exists_only_after"> {{ node }} </div>
 											</b-card>
 										</b-collapse>
 									</div>
@@ -650,6 +624,7 @@
 											<span class="when-opened"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
 											<span class="when-closed"><i class="fa fa-chevron-up" aria-hidden="true"></i></span>
 										</b-button>
+										<b-button @click="delete_multiple_nodes(time_diff_nodes.exists_throughout)"> <i class="fas fa-trash"></i> </b-button>
 										<b-collapse id="collapse-normal-1">
 											<b-card>
 													<div style="color: black" v-for="node in time_diff_nodes.exists_throughout"> {{ node }} </div>
@@ -661,6 +636,7 @@
 											<span class="when-opened"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
 											<span class="when-closed"><i class="fa fa-chevron-up" aria-hidden="true"></i></span>
 										</b-button>
+										<b-button @click="delete_multiple_nodes(time_diff_nodes.exists_before_and_after)"> <i class="fas fa-trash"></i> </b-button>
 										<b-collapse id="collapse-normal-2">
 											<b-card>
 													<div style="color: black" v-for="node in time_diff_nodes.exists_before_and_after"> {{ node }} </div>
@@ -715,6 +691,7 @@
 <b-sidebar v-show="context_mode3" id="sidebar-right3" title="Nodes Shared Words" width="23%" bg-variant="secondary" text-variant="light" style="opacity: 0.9;"  right shadow>
 	<template>
 		<b-button id="load_button" variant="danger" @click="toggleSidebarContext3" >Close</b-button>
+		<!-- <b-button id="load_button" variant="success" @click="nodeContextSearchNodeOne" >Search N1/Edge</b-button> -->
 	  </template>					
 	<br>
 	<br>
@@ -723,7 +700,7 @@
 				
 		</p>
 	<div>
-		<b-table striped-hover :busy="busy_right3" :fields="fields_nodes" :items="simbim_node_object" :sort-by="'node1'" :sort-desc="true" style="color: white;font-size:12px">
+		<b-table selectable :select-mode="'single'" @row-selected="onRowSelected" striped-hover :busy="busy_right3" :fields="fields_nodes" :items="simbim_node_object" :sort-by="'node1'" :sort-desc="true" style="color: white;font-size:12px">
 			<template v-slot:table-busy>
 				<div class="text-center text-danger my-2">
 				  <b-spinner class="align-middle"></b-spinner>
@@ -734,31 +711,7 @@
 	</div>
 </b-sidebar>
 
-<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR Right 2 - CLUSTER CONTEXT ANALYSIS VIEW XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
-<b-sidebar v-show="context_mode2" id="sidebar-right2" title="Cluster Shared Words" width="20%" bg-variant="secondary" text-variant="light" style="opacity: 0.9;"  left shadow>
-	<template>
-		<b-button id="load_button" variant="danger" @click="toggleSidebarContext2" >Close</b-button>
-	  </template>					
-	<br>
-	<br>
-	<p style="margin-left: 10px;font-size:12px" > Clusters exhibit similarity between multiple paradigms. 
-		The following list shows the top 100 shared context-words in the cluster. The score is the ratio of occurences over all edges.
-		
-				
-		</p>
-		
-	<div>
-		<b-table striped-hover :busy="busy_right2" :fields="fields_cluster" :items="cluster_shared_object" :sort-by="'freq'" :sort-desc="true" style="color: white;font-size:12px">
-			<template v-slot:table-busy>
-				<div class="text-center text-danger my-2">
-				  <b-spinner class="align-middle"></b-spinner>
-				  <strong>Loading...</strong>
-				</div>
-			  </template>
-		</b-table>
-	</div>
 
-</b-sidebar>
 
 
 <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX MAIN VIEW XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
@@ -788,6 +741,67 @@
 </b-container> 
 
 </div>
+<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX DEPRECATED SETTINGS (MAY BE REACTIVATED) NXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
+<b-modal id="modal-settings-1" scrollable size="xl" title="General Settings" @ok="update_general_settings">
+	<div>
+		<div style="font-size: 20px; font-weight:bold;">
+			Useful links
+		</div>
+		<div style="margin-top: 2ex;">
+			<b-link href="https://github.com/chrishaase/SCoT"><i class="fab fa-github"></i> View on GitHub </b-link>
+		</div>
+		<div>
+			<b-link href="https://chrishaase.github.io/SCoT/index.html"> <i class="fas fa-question-circle"></i> View User Guide </b-link>
+		</div>
+	</div>
+	<hr>
+	<!-- <div>
+		<div style="font-size: 20px; font-weight:bold; margin-top:2ex;">
+			Select view port size
+		</div>
+		<b-form-group class="input" label="Select view port height in pixels">
+			<b-form-input size="sm" type="number" v-model="viewport_height"></b-form-input>
+		</b-form-group>
+		<b-form-group class="input" label="Select viewport width in pixels">
+			<b-form-input size="sm" type="number" v-model="viewport_width"></b-form-input>
+		</b-form-group>
+	</div> -->
+	<hr>
+	<div>
+		<div style="font-size: 20px; font-weight:bold; margin-top:2ex;">
+			Select SVG size
+		</div>
+		<div style="margin-top: 1ex;">
+			<span style="border-left: 5px solid red; background-color: moccasin; padding: 5pt;"> WARNING: Please set before rendering a graph. Changes to the size of the svg after rendering a graph will act like a zoom function.</span>
+		</div>
+		<b-form-group class="input" label="Select SVG height in pixels">
+			<b-form-input size="sm" type="number" v-model="svg_height"></b-form-input>
+		</b-form-group>
+		<b-form-group class="input" label="Select SVG width in pixels">
+			<b-form-input size="sm" type="number" v-model="svg_width"></b-form-input>
+		</b-form-group>
+	</div>
+	<hr>
+	<div>
+		<div style="font-size: 20px; font-weight:bold; margin-top:2ex;">
+			Link Thickness Calculation
+		</div>
+		<b-form-group class="input">
+			<b-form-radio v-model="link_thickness_scaled" value="true">
+				Calculate edge thinkness with respect to the similarity score between neighbours
+			</b-form-radio>
+			<div style="margin-left: 25px; margin-bottom: 2ex;">
+				<span style="font-size: 10pt;">Scale the similarity score using sqrt(similatity score / x), x being:</span>
+				<b-form-input size="sm" v-model="link_thickness_factor" type="number"></b-form-input>
+			</div>
+			<b-form-radio v-model="link_thickness_scaled" value="false">Use same thickness for every link</b-form-radio>
+			<div style="margin-left: 25px;">
+				<span style="font-size: 10pt">Thickness in pixels:</span>
+				<b-form-input size="sm" v-model="link_thickness_value" type="number"></b-form-input>
+			</div>
+		</b-form-group>
+	</div>
+</b-modal>
 
 <!-- include script vue.js -->
 <script type="text/javascript" src=".%% url_for('static', filename='vue.js') %%"></script>

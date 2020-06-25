@@ -1,17 +1,23 @@
 app = new Vue({
    el: "#vue-app",
    data: {
-	   // #### BASIC APP, COLLECTION AND GRAPH DATA (PRESETS AND QUERY-VARS)
-		// title
+	   // #### BASIC APP AND COLLECTION DATA (PRESETS AND QUERY-VARS)
+		// PRESET title top-left
 		title : "Semantic Clustering of Twitter-Data over Time",	
-		// default values for init
+		
+		// PRESET default values for init
 		target_word : "#covid19deutschland",
-		start_year : 20200328,
-		end_year : 20200519,
-		senses : 50,
+		senses : 20,
 		edges : 3,
+		start_year : 2020032801,
+		end_year : 2020060202,
 		collection_key : "corona_cooc",
 		collection_name: "corona_cooc",
+		graph_type: "max_across_slices",
+		// limits the size of clusters for context-information-search
+		cluster_search_limit: 100,
+
+		// QUERIED DATA from backend-database
 		// all possible collections queried from database
 		collections : {}, // collections keys and names
 		collections_names: [], // collections_names
@@ -19,10 +25,9 @@ app = new Vue({
 		start_years : [],
 		// all possible end years queried from the database
 		end_years : [],
-		// limits the size of clusters for context-information-search
-		cluster_search_limit: 50,
-		// node-year for context-information
-		node_time_id: 1,
+		// all possible graph types
+		graph_types :["max_across_slices", "max_in_slices", "max_of_stable_nodes"], 
+		
 		// ##### VIEW SETTINGS APP AND SVG-GRAPH
 		// base color scheme bootstrap vue (not implemented via var yet)
 		bv_variant : "black",
@@ -39,42 +44,25 @@ app = new Vue({
 		link_thickness_scaled : "false",
 		link_thickness_value : 1,
 		link_thickness_factor : 0.1,
+		// opacity of links base and reduced (for many functions)
 		base_link_opacity : 0.3,
 		reduced_link_opacity: 0.1,
 		//overlays central
 		overlay_main : false,
-		// represents the DOM element for a node (see render_sense_graph.js)
-		node : "",
-		// represents the DOM element for a link (see render_sense_graph.js)
-		link : "",
-		// node data
-		nodes : [],
-		// the circles of updated nodes
-		circles : [],
-		// link data
-		links : [],
-		// An object for remembering which nodes are connected. The key is of the form "source, target"
-		linkedByIndex : {},
-		// array with node ids that are not connected to any other nodes
-		singletons : [],
-		// clipboard for data from db in update() and getData()
-		// TODO: can probably be deleted
-		data_from_db : {},
-		// parameters for updating the graph
-		update_senses : 150,
-		update_edges : 50,
-		// all the nodes in the updated graph
-		updated_nodes : null,
-		// all the links in the updated graph
-		updated_links : null,
-		// true, if a graph is rendered. Used in the HTML to only show buttons if a graph is rendered
-		graph_rendered : false,
-		wait_rendering : false,		
 		// dragging behaviour sticky_mode === "true" -> force, sticky_mode === "false" -> brush
 		sticky_mode : "true",
 		// simulation parameters
 		charge : -50,
 		linkdistance : 50,
+		// represents the DOM element for a node (see render_sense_graph.js)
+		node : "",
+		// represents the DOM element for a link (see render_sense_graph.js)
+		link : "",
+
+		// true, if a graph is rendered. Used in the HTML to only show buttons if a graph is rendered
+		graph_rendered : false,
+		wait_rendering : false,		
+		
 				
 		// #### VIEW MODES SIDEBARS AND NAVBARS
 		// ## SIDEBAR LEFT GRAPH
@@ -96,9 +84,10 @@ app = new Vue({
         ],
 		// controls node colors cluster or time-diff
 	   time_diff : false,
-	   // edge context sidebar
+	   // edge context sidebar is programmatically controlled
 	   context_mode : false,
 	   showSidebarRight1 : false,
+	   // spinner while loading table data
 	   busy_right1 : false,
 	    // cluster context sidebar
 		context_mode2 : false,
@@ -125,11 +114,31 @@ app = new Vue({
 		],
 		// table information for cluster -context view sidebar
 		fields_cluster : [
-			{key: "freq", sortable: true},
+			{key: "score", sortable: true},
 			{key: "wort", sortable: true}
 			
-			
 		],
+
+		// #### BASIC GRAPH DATA ##########################
+		// node data
+		nodes : [],
+		// the circles of updated nodes
+		circles : [],
+		// link data
+		links : [],
+		// list of objects to store all the information on the clusters in a rendered graph (see function get_clusters())
+		clusters : [],
+		// array with node ids that are not connected to any other nodes
+		singletons : [],
+		// new clusters calculated by reclustering the graph
+		newclusters : {},
+		// An object for remembering which nodes are connected. The key is of the form "source, target"
+		linkedByIndex : {},
+		// file from which a graph is to be loaded
+		file : null,
+		// graph loaded from file
+		read_graph : null,
+		
 
 		// ### DATA SETTINGS SIDEBARS
 	   // edge-click information for data-query for sidebar
@@ -142,19 +151,10 @@ app = new Vue({
 	   simbim_node_object: [],
 	   // sigebar right: holds cluster context information (score, key, score2)
 	   cluster_shared_object: [],
-	   	// the time id of the graph start year, user input for skipping through time slices
+	   // the time id of the graph start year, user input for skipping through time slices
 		min_time_id : 1,
 		// the time_id of the graph end year, user input for skipping through time slices
 		max_time_id: 10,
-		// file from which a graph is to be loaded
-		file : null,
-		// graph loaded from file
-		read_graph : null,
-		// list of objects to store all the information on the clusters in a rendered graph (see function get_clusters())
-		clusters : [],
-		// new clusters calculated by reclustering the graph
-		newclusters : {},
-		
 		// time ids for the time diff mode
 		interval_start : 0,
 		interval_end : 0,
@@ -206,7 +206,23 @@ app = new Vue({
 			{key: "show_details", label: "Show Details"}
 			],
 		// array containing information about the neighbourhood of each node
-		wobblyCandidates : []
+		wobblyCandidates : [],
+		// node-year for context-information
+		node_time_id: 1,
+		// row_selected in Node-context
+		row_selected: [],
+
+		// ############# DEPRECATED #########################
+		// Deprecated
+		data_from_db : {},
+		// Deprecated: parameters for updating the graph
+		update_senses : 150,
+		update_edges : 50,
+		// clipboard for data from db in update() and getData()
+		// all the nodes in the updated graph
+		updated_nodes : null,
+		// all the links in the updated graph
+		updated_links : null
 		
 	},
 	computed: {
@@ -277,6 +293,34 @@ app = new Vue({
 		}
 	},
 	methods: {
+		onRowSelected(items) {
+			//this.selected = items
+			console.log(items)
+			this.row_selected = items
+		  },
+		nodeContextSearchNodeOne(){
+			// experimental feature that can be used to request original data (ie sentences)
+			// that contain node1 and the selected row -word [to do]
+
+
+			let data = {}
+			data["word1"] = this.active_edge.source_text
+			data["word2"] = this.active_edge.target_text
+			data["time_id"] = this.active_edge.time_ids[0]
+			console.log("in node context", data)
+			if (this.row_selected == null || this.row_selected["length"] == 0) {
+				console.log("items is null")
+				alert("Please select a row in the table to select a search term.")
+			} else {
+				console.log("in node context s button", this.row_selected)
+			}
+			// to do - parse this.row_selected data
+			// to do - query possibly via backend - which queries elasticsearch
+			// to slide out table on left side
+			// display sentences
+
+
+		},
 		// restart
 		restart_change(){
 			app.node.each(function(d) {
@@ -435,26 +479,44 @@ app = new Vue({
 		// /*
 		// EXPERIMENTAL Deletes a complete time-group
 		// */
-		// delete_multiple_nodes: async function(labels) {
-		// 	// get all the text labels
-		// 	console.log(labels)
-		// 	text_labels = []
-		// 	for (var i = 0; i < labels.length; i++) {
-		// 		text_labels.push(labels[i].text)
-		// 		app.nodes
-		// 	}
+		delete_multiple_nodes: async function(labels) {
+			// get all the text labels
+			console.log(labels)
+			
+			// find the correct nodes and delete them and the links connecting to them
+			var nodes = d3.selectAll(".node").selectAll("g");
+			nodes.each(function(d) {
+				childnodes = this.childNodes;
+				var node_id;
+				
+				childnodes.forEach(function(d,i) {
+					if (d.tagName === "text") {
+						node_id = d.getAttribute("text")
+					}
+				})
+				
+				// if they belong to the list, that is to be deleted, ...
+				if (labels.includes(node_id)){
+					console.log("in node del", node_id)
+					app.deletenode(node_id)
+					app.deletelinks(node_id)
+				}
+
+				
+			});
+
+			// remove nodes from DOM with D3 and update the simulation
+			app.node.data(app.nodes, function(d) { return d.id }).exit().remove();
+			app.link.data(app.links, function(d) { return d.source.id + "-" + d.target.id; }).exit().remove();
+
+			app.simulation.nodes(app.nodes);
+			app.simulation.force("link").links(app.links);
+			app.simulation.alpha(1).restart();
 
 			
-		// 	// remove nodes from DOM with D3 and update the simulation
-		// 	app.node.data(app.nodes, function(d) { return d.id }).exit().remove();
-		// 	app.link.data(app.links, function(d) { return d.source.id + "-" + d.target.id; }).exit().remove();
-
-		// 	app.simulation.nodes(app.nodes);
-		// 	app.simulation.force("link").links(app.links);
-		// 	app.simulation.alpha(1).restart();
 
 			
-		// },
+		},
 		/*
 		Deletes a complete cluster
 		*/
@@ -1540,7 +1602,7 @@ app = new Vue({
 		*/
 		show_time_diff: async function() {
 			
-			var big_time_interval = [];
+			let big_time_interval = [];
 			await axios.get("./api/collections/"+ this.collection_key + "/interval/" + app.start_year + "/" + app.end_year)
 				.then((res) => {
 					big_time_interval = res.data;
@@ -1549,7 +1611,7 @@ app = new Vue({
 					console.error(error);
 				});
 
-			var small_time_interval = [];
+			let small_time_interval = [];
 			await axios.get("./api/collections/"+ this.collection_key + "/interval/" + app.interval_start + "/" + app.interval_end)
 				.then((res) => {
 					small_time_interval = res.data;
@@ -1558,14 +1620,14 @@ app = new Vue({
 					console.error(error);
 				});
 
-			var period_before = [];
-			var period_after = [];
+			let period_before = [];
+			let period_after = [];
 
-			var small_interval_start_time_id = Math.min(...small_time_interval);
-			var small_interval_end_time_id = Math.max(...small_time_interval);
-			console.log(small_interval_start_time_id)
-			console.log(small_interval_end_time_id)
-			console.log(big_time_interval[i])
+			let small_interval_start_time_id = Math.min(...small_time_interval);
+			let small_interval_end_time_id = Math.max(...small_time_interval);
+			console.log("nall intervall start time id", small_interval_start_time_id)
+			console.log("small end time", small_interval_end_time_id)
+			console.log("big time intervall", big_time_interval)
 			
 
 			for (var i=0; i<big_time_interval.length; i++) {
@@ -1574,15 +1636,15 @@ app = new Vue({
 				} else if (big_time_interval[i] > small_interval_end_time_id) {
 					period_after.push(big_time_interval[i]);
 				}
-				console.log(big_time_interval[i])
-				console.log(period_before)
-				console.log(period_after)
+				console.log("big", big_time_interval)
+				console.log("before", period_before)
+				console.log("after", period_after)
 			}
 
-			var time_diff_nodes = {born_in_interval: [], deceases_in_interval: [], exists_only_in_interval: [], 
+			let time_diff_nodes = {born_in_interval: [], deceases_in_interval: [], exists_only_in_interval: [], 
 				exists_only_before: [], exists_throughout: [], exists_only_after:[], exists_before_and_after:[]};
 			
-			var nodes = d3.selectAll(".node").selectAll("g");
+			let nodes = d3.selectAll(".node").selectAll("g");
 
 			nodes.each(function(d) {
 				var childnodes = this.childNodes;
@@ -1975,27 +2037,32 @@ app = new Vue({
 		*/
 		get_cluster_information: function(cluster){
 			
-			console.log(this.links)
 			let links = this.links
-			let jsonReq = {"edges": [], "collection":this.collection_key}
-			let nodes = []
+			let nodes_graph = this.nodes
+			let jsonReq = {"edges": [], "nodes":[], "collection":this.collection_key}
+			let nodes_tmp = []
 			// get all nodes that are assigned to cluster
 			for (let key in cluster["labels"]){
 				let dati = cluster["labels"][key]
-				nodes.push(dati["text"])
+				nodes_tmp.push(dati["text"])
 			}
-			console.log(nodes.length)
-			let lessthansix = true
-			if (nodes.length > this.cluster_search_limit){
+			
+			// get max time-id for nodes from global
+			nodes_tmp.forEach(function(item1, index){
+				nodes_graph.forEach(function(item2,index){
+					if(item1 === item2["target_text"]){
+						jsonReq["nodes"].push({label: item2["target_text"], time_id: item2["time_ids"][0]})
+					}
+				})
+			})
+						
+			if (jsonReq["nodes"].length > this.cluster_search_limit){
 				alert("You clicked on cluster-context information. " 
 				+ "Currently, you can only query clusters with 5 or less nodes. "
 				+ "Reason: cluster information is extracted from over 1 billion features which takes long for mysql."
-
-											
+								
 				);
-				lessthansix = false
-			}
-			if (lessthansix){
+			} else {
 				console.log("cluster info continue with less than six")
 				this.busy_right2 = true
 				this.context_mode2 = true
@@ -2004,14 +2071,14 @@ app = new Vue({
 					let t1 = links[key]["source_text"]
 					let t2 = links[key]["target_text"]
 					let timeId = links[key]["time_ids"][0]
-					let true1 = nodes.includes(t1) 
-					let true2 = nodes.includes(t2)
+					let true1 = nodes_tmp.includes(t1) 
+					let true2 = nodes_tmp.includes(t2)
 					if (true1 && true2){
 						jsonReq["edges"].push({"source":t1, "target": t2, "time_id": timeId})
-						//console.log("includes ", t1 + t2)
+						console.log("includes ", t1 + t2, timeId)
 					}
 				}
-				//console.log(jsonReq)
+				console.log(jsonReq)
 				let url = './api/cluster_information'
 				axios.post(url, jsonReq)
 					.then((res)=> {
@@ -2020,7 +2087,7 @@ app = new Vue({
 						for (var key in res.data){
 							retObj = {}
 							retObj.wort = key
-							retObj.freq = parseFloat(res.data[key]).toFixed(5)
+							retObj.score = parseFloat(res.data[key]).toFixed(5)
 							ret.push(retObj)
 						}
 						this.cluster_shared_object = ret
@@ -2276,6 +2343,8 @@ app = new Vue({
 						cluster.labels = [];
 						if (cluster_node === "false") {
 							cluster["labels"].push({"text": text, "cluster_node": cluster_node});
+							//console.log("in cluster labels", text, cluster_node )
+							
 						}
 						if (cluster.labels.length > 0) {
 							clusters.push(cluster);
