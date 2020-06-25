@@ -7,8 +7,8 @@ app = new Vue({
 		
 		// PRESET default values for init
 		target_word : "happiness/NN",
-		senses : 50,
-		edges : 3,
+		senses : 100,
+		edges : 30,
 		start_year : 1520,
 		end_year : 2008,
 		collection_key : "en_books",
