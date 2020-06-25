@@ -3,16 +3,17 @@ app = new Vue({
    data: {
 	   // #### BASIC APP AND COLLECTION DATA (PRESETS AND QUERY-VARS)
 		// PRESET title top-left
-		title : "Semantic Clustering of Twitter-Data over Time",	
+		title : "Sense Clustering over Time",	
 		
 		// PRESET default values for init
-		target_word : "#covid19deutschland",
-		senses : 20,
+		target_word : "happiness/NN",
+		senses : 50,
 		edges : 3,
-		start_year : 2020032801,
-		end_year : 2020060202,
-		collection_key : "corona_cooc",
-		collection_name: "corona_cooc",
+		start_year : 1520,
+		end_year : 2008,
+		collection_key : "en_books",
+		collection_name: "English Books",
+		// experimental not implemented yet
 		graph_type: "max_across_slices",
 		// limits the size of clusters for context-information-search
 		cluster_search_limit: 100,
@@ -25,7 +26,7 @@ app = new Vue({
 		start_years : [],
 		// all possible end years queried from the database
 		end_years : [],
-		// all possible graph types
+		// all possible graph types - experimental not implemented yet
 		graph_types :["max_across_slices", "max_in_slices", "max_of_stable_nodes"], 
 		
 		// ##### VIEW SETTINGS APP AND SVG-GRAPH
