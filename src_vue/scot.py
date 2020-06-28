@@ -7,6 +7,7 @@ import urllib.parse
 import json
 import urllib.request
 from word2vecloader import Word2VecLoader
+from documentdb import Documentdb
 
 DEBUG = True
 PARAMETERS = {}
@@ -49,7 +50,7 @@ def recluster():
 		data = json.loads(request.data)
 		nodes = data["nodes"]
 		links_list = data["links"]
-		print(data)
+		#print(data)
 		for item in links_list:
 			links.append((str(item["source"]), str(item["target"]), {'weight': float(item["weight"])}))
 
@@ -169,7 +170,7 @@ def get_clustered_graph(
 			for k,v in node_dic.items():
 				nodes.append([k, v])
 			print("total additiver graph nodes", len(nodes))
-			print(nodes)
+			#print(nodes)
 			edges, nodes, singletons = db.get_edges_per_time(nodes, paradigms, density, time_ids)
 		# ---- standard from here - but can change to db.get_edges_in_time to avoid implicit nodes
 		else:
@@ -265,7 +266,9 @@ def simbim(collection="default"):
 
 @app.route('/api/cluster_information', methods=['POST'])
 
-# get_cluster_information based on occurences of words in nodes - normalize freq
+# get_cluster_information based on nodes [ie significance of context word for node] - 
+# use all occurrences of node in selected time-id [max strength time id]
+# calculate score by adding all significances + dividing by number of nodes
 # Params: nodes with time-ids
 # Returns dictionary of words with Score: averaged normalized over all nodes based on max-time-id
 # Precondition: data not null and valid
@@ -281,26 +284,24 @@ def cluster_information():
 		data = json.loads(request.data)
 		for node in data["nodes"]:
 			nodes.add((node["label"], node["time_id"]))
-	print("nodes", nodes)
+	#print("nodes", nodes)
 	print("-------------------------------------------------------")
 	print("in cluster info (1) anzahl unique nodes - alle nodes ", len(nodes))
-	# get features (ie context word2 and score) for all unique nodes
-	# word1 = node
-	# feature_dic[word1]={word2:score}
-	print("collection", data["collection"])
+	# get features (ie context word2 and score) for all unique nodes in all time-ids
+	#print("collection", data["collection"])
 	db = Database(getDbFromRequest(data["collection"]))
 	feature_dic = {}
 	for node in nodes:
 		feature_dic[node] = db.get_features(node[0], node[1])
 	print("-------------------------------------------------------")
 	print(" in cluster info (2) after db query --- %s seconds ---" % (time.time() - start_time))
-	print("feature_dic", feature_dic)
+	#print("feature_dic", feature_dic)
 	res_dic_all = defaultdict(int)
 	for k, v in feature_dic.items():
 		for k, v2 in v.items():
 			res_dic_all[k] += v2
 	print("-------------------------------------------------------")
-	print("res_dic_all", res_dic_all)	
+	#print("res_dic_all", res_dic_all)	
 	# normalize and sort significance values
 	res_dic_all = {k:v for k,v in sorted(res_dic_all.items(), key = lambda x: x[1], reverse = True)}
 	maxi = list(res_dic_all.values())[0]
@@ -318,6 +319,33 @@ def cluster_information():
 	
 	return dic_res
 
+@app.route('/api/collections/<string:collection>/documents', methods=['POST'])
+# retrieves documents (ie sentences) which contain two words (not related to time-id yet)
+# Param: collection
+# Param: word1, word2
+# [Param: time-id - not implemented yet]
+# Returns_ elasticsearch response
+# the response_dictionary is limited to max 200
+
+def documents(collection="default"):
+	if request.method == 'POST':
+		data = json.loads(request.data)
+		word1 = str(data["word1"])
+		word2 = str(data["word2"])
+		#time_id = int(data["time_id"])
+	collection = "corona_news"
+	documentdb = Documentdb()
+	ret = []
+	res = documentdb.search(word1, word2, collection)
+	ret_set = set()
+	for hit in res["hits"]["hits"]:
+		text = hit["_source"]["date"][:10]+ " [" + str(hit["_source"]["time_id"])+"] : "+ hit["_source"]["text"]
+		ret_set.add(text)
+	for text in ret_set:
+		ret.append({"doc": text })
+	#print(ret)
+
+	return {"docs": ret}
 
 if __name__ == '__main__':
 	# use the config file to get host and database parameters

@@ -13,9 +13,11 @@
 		"auspol_cooc" : "mysql://root:root@localhost/scot3",
 		"auspol_coll" : "mysql://root:root@localhost/scot4",
 		"auspol_w2v" : "mysql://root:root@localhost/scot7",
-		"german_news" : "mysql://root:root@localhost/scot11"
+		"corona_news" : "mysql://root:root@localhost/scot11"
 		
 	},
+
+	
 	"collections_info_frontend":{
 		"corona_cooc": {"key":"corona_cooc", "target": "#covid19deutschland"},
 		"corona_coll": {"key": "corona_coll", "target": "#covid19deutschland"},
@@ -28,7 +30,7 @@
 		"auspol_cooc": {"key":"auspol_cooc", "target": "#auspol"},
 		"auspol_coll": {"key":"auspol_coll", "target": "#auspol"},
 		"auspol_w2v_w2": {"key":"auspol_w2v", "target": "#auspol"},
-		"german_news": {"key":"german_news", "target": "Aufsichtsrat"}
+		"corona_news": {"key":"corona_news", "target": "covid-19"}
 		
 	}
 

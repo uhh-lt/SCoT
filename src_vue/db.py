@@ -372,4 +372,4 @@ class Database:
 
 		print("anzahl edges additive graph", len(edges))
 		
-		return edges, nodes, singletons
+		return edges, nodes_filtered, singletons

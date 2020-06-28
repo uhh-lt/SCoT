@@ -89,22 +89,31 @@ app = new Vue({
 	   showSidebarRight1 : false,
 	   // spinner while loading table data
 	   busy_right1 : false,
-	    // cluster context sidebar
-		context_mode2 : false,
-		showSidebarRight2: false,
-		busy_right2: true,
-		
-	    // node context sidebar
-	   context_mode3 : false,
-	   showSidebarRight3: false,
-	   busy_right3 : false,
-	   // table information for edge -context view sidebar
+	    // table information for edge -context view sidebar
 		fields_edges : [
 			{key: "node1", sortable: true},
 			{key: "edge", sortable: true},
 			{key: "node2", sortable: true}
 			
 		],
+	    // cluster context sidebar
+		context_mode2 : false,
+		showSidebarRight2: false,
+		busy_right2: true,
+		// table information for cluster -context view sidebar
+		fields_cluster : [
+			{key: "score", sortable: true},
+			{key: "wort", sortable: true}
+			
+		],
+
+
+		// node context sidebar
+		
+	   context_mode3 : false,
+	   showSidebarRight3: false,
+	   busy_right3 : false,
+	  
 		// table information for node -context view sidebar
 		fields_nodes : [
 			{key: "node1", sortable: true},
@@ -112,11 +121,17 @@ app = new Vue({
 			{key: "node2", sortable: true}
 			
 		],
+		// doc context sidebar
+		   context_mode4 : false,
+		// show sidebar
+		   showSidebarRight4: false,
+		// spinner
+		   busy_right4 : false,
 		// table information for cluster -context view sidebar
-		fields_cluster : [
-			{key: "score", sortable: true},
-			{key: "wort", sortable: true}
-			
+		documents:[],
+		fields_documents : [
+			{key: "doc", sortable: true}
+						
 		],
 
 		// #### BASIC GRAPH DATA ##########################
@@ -211,7 +226,8 @@ app = new Vue({
 		node_time_id: 1,
 		// row_selected in Node-context
 		row_selected: [],
-
+		// row_selected in edge Context
+		row_selected_edge: [],
 		// ############# DEPRECATED #########################
 		// Deprecated
 		data_from_db : {},
@@ -298,28 +314,81 @@ app = new Vue({
 			console.log(items)
 			this.row_selected = items
 		  },
-		nodeContextSearchNodeOne(){
-			// experimental feature that can be used to request original data (ie sentences)
-			// that contain node1 and the selected row -word [to do]
+		  onRowSelectedEdge(items) {
+			//this.selected = items
+			console.log(items)
+			this.row_selected_edge = items
+		  },
+		edgeContextSearchEdgeOne(){
 
-
-			let data = {}
-			data["word1"] = this.active_edge.source_text
-			data["word2"] = this.active_edge.target_text
-			data["time_id"] = this.active_edge.time_ids[0]
-			console.log("in node context", data)
-			if (this.row_selected == null || this.row_selected["length"] == 0) {
-				console.log("items is null")
+			let wort1 = this.active_edge.source_text
+			if (this.row_selected_edge == null || this.row_selected_edge["length"] == 0) {
+				//console.log("items is null")
 				alert("Please select a row in the table to select a search term.")
 			} else {
-				console.log("in node context s button", this.row_selected)
+		  let wort2 = this.row_selected_edge[0]["edge"]
+		  app.docSearch(wort1, wort2)
 			}
-			// to do - parse this.row_selected data
-			// to do - query possibly via backend - which queries elasticsearch
-			// to slide out table on left side
-			// display sentences
-
-
+		  },
+		edgeContextSearchEdgeTwo(){
+			let wort1 = this.active_edge.target_text
+			if (this.row_selected_edge == null || this.row_selected_edge["length"] == 0) {
+				//console.log("items is null")
+				alert("Please select a row in the table to select a search term.")
+			} else {
+			let wort2 = this.row_selected_edge[0]["edge"]
+			app.docSearch(wort1, wort2)
+			}
+		  },
+		
+		nodeContextSearchNodeOne(){
+		  let wort1 = this.active_node.source_text
+		  if (this.row_selected == null || this.row_selected["length"] == 0) {
+			//console.log("items is null")
+			alert("Please select a row in the table to select a search term.")
+		} else {
+		  let wort2 = this.row_selected[0]["edge"]
+		  app.docSearch(wort1, wort2)
+		}
+		},
+		nodeContextSearchNodeTwo(){
+			let wort1 = this.active_node.target_text
+			if (this.row_selected == null || this.row_selected["length"] == 0) {
+				//console.log("items is null")
+				alert("Please select a row in the table to select a search term.")
+			} else {
+			let wort2 = this.row_selected[0]["edge"]
+			app.docSearch(wort1, wort2)
+			}
+		},
+		docSearch(wort1, wort2){
+			
+			// experimental feature that can be used to request original data (ie sentences)
+			// that contain node1 and the selected row -word [to do]
+			// data is gathered from these fields (see above methods)
+			// data["word1"] = this.active_edge.source_text
+			// data["word2"] = this.active_edge.target_text
+			// data["time_id"] = this.active_edge.time_ids[0]
+			// data["word1"] = this.active_node.source_text
+			//data["word2"] = this.active_node.target_text
+			this.context_mode4 = true
+			this.busy_right4 = true
+			let data = {}
+			data["word1"] = wort1
+			data["word2"] = wort2
+				
+			console.log("selected", data["word1"], data["word2"])
+			let url = './api/collections/'+this.collection_key +'/documents'
+			console.log(url)
+			axios.post(url, data)
+				.then((res) => {
+					let ret = []
+					console.log(res)
+					this.documents = res.data["docs"]
+					console.log(this.documents)
+					this.busy_right4 = false
+				}) // end then
+			
 		},
 		// restart
 		restart_change(){
@@ -373,6 +442,12 @@ app = new Vue({
 			this.context_mode = false
 			this.context_mode3 = !this.context_mode3
 			console.log("in toggle3", this.context_mode3)
+		},
+
+		toggleSidebarContext4: function(){
+			
+			this.context_mode4 = !this.context_mode4
+			console.log("in toggle4", this.context_mode4)
 		},
 
 		toggle_time_diff: function(){
@@ -2041,20 +2116,21 @@ app = new Vue({
 			let nodes_graph = this.nodes
 			let jsonReq = {"edges": [], "nodes":[], "collection":this.collection_key}
 			let nodes_tmp = []
-			// get all nodes that are assigned to cluster
+			// get all nodes that are assigned to cluster - irrespective of time-ids
 			for (let key in cluster["labels"]){
 				let dati = cluster["labels"][key]
 				nodes_tmp.push(dati["text"])
 			}
 			
-			// get max time-id for nodes from global
-			nodes_tmp.forEach(function(item1, index){
-				nodes_graph.forEach(function(item2,index){
+			// get time-ids for nodes from global
+			nodes_tmp.forEach(function(item1, index){ // all texts
+				nodes_graph.forEach(function(item2,index){ // all
 					if(item1 === item2["target_text"]){
 						jsonReq["nodes"].push({label: item2["target_text"], time_id: item2["time_ids"][0]})
 					}
 				})
 			})
+			//console.log(jsonReq)
 						
 			if (jsonReq["nodes"].length > this.cluster_search_limit){
 				alert("You clicked on cluster-context information. " 
@@ -2078,7 +2154,7 @@ app = new Vue({
 						console.log("includes ", t1 + t2, timeId)
 					}
 				}
-				console.log(jsonReq)
+				//console.log(jsonReq)
 				let url = './api/cluster_information'
 				axios.post(url, jsonReq)
 					.then((res)=> {
@@ -2091,7 +2167,7 @@ app = new Vue({
 							ret.push(retObj)
 						}
 						this.cluster_shared_object = ret
-						console.log(this.cluster_shared_object)
+						//console.log(this.cluster_shared_object)
 						this.busy_right2 = false
 				})
 				.catch((error) => {

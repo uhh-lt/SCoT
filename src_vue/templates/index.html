@@ -179,6 +179,30 @@
 	</div>
 
 </b-sidebar>
+<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR Left 3 - document CONTEXT ANALYSIS VIEW XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
+<b-sidebar v-show="context_mode4" id="sidebar-right4" title="Example Sentences" width="20%" bg-variant="secondary" text-variant="light" style="opacity: 0.9;"  left shadow>
+	<template>
+		<b-button id="load_button" variant="danger" @click="toggleSidebarContext4" >Close</b-button>
+	  </template>					
+	<br>
+	<br>
+	<!-- <p style="margin-left: 10px;font-size:12px" > Example Sentences
+		
+				
+		</p> -->
+		
+	<div>
+		<b-table striped-hover :busy="busy_right4" :fields="fields_documents" :items="documents" :sort-by="'docs'" :sort-desc="true" style="color: white;font-size:12px">
+			<template v-slot:table-busy>
+				<div class="text-center text-danger my-2">
+				  <b-spinner class="align-middle"></b-spinner>
+				  <strong>Loading...</strong>
+				</div>
+			  </template>
+		</b-table>
+	</div>
+
+</b-sidebar>
 <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR-RIGHT ANALYSIS CLUSTERING XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
 <b-sidebar width="23%" id="sidebar-right" title="Cluster-Analysis" bg-variant="secondary" text-variant="light" style="opacity: 0.9;"  right shadow>
 	<br>
@@ -668,6 +692,8 @@
 <b-sidebar v-show="context_mode" id="sidebar-right1" title="Edges Shared Words" width="23%" bg-variant="secondary" text-variant="light" style="opacity: 0.9;"  right shadow>
 	<template>
 		<b-button id="load_button" variant="danger" @click="toggleSidebarContext" >Close</b-button>
+		<b-button id="load_button" variant="success" @click="edgeContextSearchEdgeOne" >Search N1/Edge</b-button>
+		<b-button id="load_button" variant="success" @click="edgeContextSearchEdgeTwo" >Search N2/Edge</b-button>
 	  </template>					
 	<br>
 	<br>
@@ -677,7 +703,7 @@
 				
 		</p>
 	<div>
-		<b-table striped-hover :busy="busy_right1" :fields="fields_edges" :items="simbim_object" :sort-by="'node1'" :sort-desc="true" style="color: white;font-size:12px">
+		<b-table selectable :select-mode="'single'" @row-selected="onRowSelectedEdge" striped-hover :busy="busy_right1" :fields="fields_edges" :items="simbim_object" :sort-by="'node1'" :sort-desc="true" style="color: white;font-size:12px">
 			<template v-slot:table-busy>
 				<div class="text-center text-danger my-2">
 				  <b-spinner class="align-middle"></b-spinner>
@@ -691,7 +717,8 @@
 <b-sidebar v-show="context_mode3" id="sidebar-right3" title="Nodes Shared Words" width="23%" bg-variant="secondary" text-variant="light" style="opacity: 0.9;"  right shadow>
 	<template>
 		<b-button id="load_button" variant="danger" @click="toggleSidebarContext3" >Close</b-button>
-		<!-- <b-button id="load_button" variant="success" @click="nodeContextSearchNodeOne" >Search N1/Edge</b-button> -->
+		<b-button id="load_button" variant="success" @click="nodeContextSearchNodeOne" >Search N1/Edge</b-button>
+		<b-button id="load_button" variant="success" @click="nodeContextSearchNodeTwo" >Search N2/Edge</b-button>
 	  </template>					
 	<br>
 	<br>
