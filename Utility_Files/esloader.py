@@ -6,7 +6,7 @@ import json
 
 def main():
     # settings
-    es = Elasticsearch()
+    es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
     indexname = "corona_news"
     importfile = "./news.csv"
     
@@ -34,7 +34,7 @@ def main():
                 'date': dok[0],
                 'time_id': k
             }
-        res = es.index(index=indexname, body=doc)
+            es.index(index=indexname, body=doc)
     es.indices.refresh(index=indexname)
 
 

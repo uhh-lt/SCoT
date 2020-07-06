@@ -3,3 +3,4 @@ records
 networkx==2.3
 mysqlclient
 flask_cors
+elasticsearch

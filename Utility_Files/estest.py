@@ -5,7 +5,7 @@ import json
 
 def main():
     # settings
-    es = Elasticsearch()
+    es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
     indexname = "corona_news"
     es.indices.refresh(index=indexname)
     word1 = "covid-19"
