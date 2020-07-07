@@ -7,7 +7,7 @@ class Documentdb:
 
     def __init__(self):
         try:
-            self.es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+            self.es = Elasticsearch([{'host': 'elasticsearch', 'port': 9200}])
         except:
             print("exceptino occured in es")
 
