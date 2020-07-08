@@ -341,8 +341,8 @@ def documents(collection="default"):
 	res = documentdb.search(word1, word2, collection)
 	ret_set = set()
 	for hit in res["hits"]["hits"]:
-		text = hit["_source"]["date"][:10]+ " [" + str(hit["_source"]["time_id"])+"] : " \
-		+ hit["_source"]["text"] + " " + hit["_source"]["source"]
+		text = hit["_source"]["date"][:10]+ " [" + str(hit["_source"]["time_id"])+ "] : " \
+		+ hit["_source"]["text"] + " [" + hit["_source"]["source"] + "] "
 		ret_set.add(text)
 	ret_list = list(ret_set)
 	ret_list.sort()
