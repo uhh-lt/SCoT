@@ -5,16 +5,15 @@ app = new Vue({
 		// PRESET title top-left
 		title : "Sense Clustering over Time",	
 		
-		// PRESET default values for init
-		target_word : "happiness/NN",
-		senses : 20, // 100 standard
-		edges : 2, // 30 standard
-		start_year : 1520,
-		end_year : 2008,
-		collection_key : "en_books",
-		collection_name: "English Books",
-		
 		// QUERIED DATA from backend-database
+		// User Values - suggestions will be loaded from config at startup (first collection will be chosen)
+		target_word : "",
+		senses : 0,
+		edges : 0,
+		start_year : 0,
+		end_year : 0,
+		collection_key : "",
+		collection_name: "",
 		// all possible collections queried from database
 		collections : {}, // collections keys and names
 		collections_names: [], // collections_names
@@ -415,6 +414,8 @@ app = new Vue({
 		onChangeDb: function(){
 			this.collection_key = this.collections[this.collection_name]["key"]
 			this.target_word = this.collections[this.collection_name]["target"]
+			this.senses = this.collections[this.collection_name]["p"]
+			this.edges = this.collections[this.collection_name]["d"]
 			console.log("in onchange db" + this.collection_key)
 			console.log("in onchange db" + this.collection_name)
 
@@ -431,6 +432,8 @@ app = new Vue({
 				.then((res) => {
 					this.collections = res.data;
 					this.collections_names = Object.keys(this.collections);
+					this.collection_name = this.collections_names[0]
+					this.onChangeDb()
 				})
 				.catch((error) => {
 					console.error(error);

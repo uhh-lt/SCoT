@@ -10,7 +10,7 @@
 
 		},
 		"collections_info_frontend":{
-			"Corona News": {"key":"corona_news", "target": "covid-19"}
+			"Corona News": {"key":"corona_news", "target": "covid-19", "p": 20, "d": 2}
 
 		}
 		
