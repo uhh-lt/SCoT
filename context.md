@@ -1,5 +1,7 @@
 # NEW Context-Mining
 
+[Back to user guide contents list](userGuide.md)
+
 SCoT Version 2 offers several new context-mining functions that enable a user to dig deeper into the underlying data. In order to understand these functions, one needs to briefly recapitulate the data-pipeline that feeds into SCoT.  
 1. Text Data from Google Books and other sources is analysed with in the JoBim-Framework with a specific holing operation such as Dependency Parsing that operates (most often) on sentence level. JoBim thus determines a number of context words [ie. features] for each word. These context words are ranked according to significance.
 2. Based on these syntagmatic feature-vectors, the semantic similarity between paradigms is calculated. The max similarity score is 1000. The lowest score is 0. 
@@ -26,3 +28,5 @@ The same function can be used for edges. The user can click on an edge and a sim
 The user can also garner context-information for each cluster by clicking on the context-button in the cluster-analysis view. Clusters exhibit similarity between multiple paradigms. The resulting list shows the top 200 context-words among all nodes of the selected cluster. The displayed score is the normalized cumulated significance of the word for the cluster. 
 
 ![Context-Mining: Sentences ](./images/06_context_cluster.jpg)
+
+[Back to user guide contents list](userGuide.md)
