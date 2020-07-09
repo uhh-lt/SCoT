@@ -3,7 +3,7 @@
 [Back to user guide contents list](userGuide.md)
 
 SCoT Version 2 offers several new context-mining functions that enable a user to dig deeper into the underlying data. In order to understand these functions, one needs to briefly recapitulate the data-pipeline that feeds into SCoT.  
-1. Text Data from Google Books and other sources is analysed with in the JoBim-Framework with a specific holing operation such as Dependency Parsing that operates (most often) on sentence level. JoBim thus determines a number of context words [ie. features] for each word. These context words are ranked according to significance.
+1. Text Data from Google Books and other sources is analysed with the JoBim-Framework with a specific holing operation. JoBim thus determines a number of context words [ie. features] for each word. These context words are ranked according to significance.
 2. Based on these syntagmatic feature-vectors, the semantic similarity between paradigms is calculated. The max similarity score is 1000. The lowest score is 0. 
 3. The semantic metrics per time-slice are used to construct the graph.
 
