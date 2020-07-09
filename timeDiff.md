@@ -2,26 +2,21 @@
 
 [Back to user guide contents list](userGuide.md)
 
-When selecting "time diff" mode in the parameter input column, two options are faded in: "Select interval" and "Skip through time slices".
+When selecting "time diff" mode in the cluster-analysis sidebar on the right-hand side, two options are presented: "Interval" and "Time-Slices".
 
 ![Time Diff](./images/time_diff.png)
 
-When in this mode, several functionalities are disabled, such as updating the graph, reclustering, saving the graph, and editing the name and colour of clusters.
-
-When hovering over nodes in time diff in addition to fading in the neighbouring nodes, also a tooltip appears stating the time slices the node occurred in. In the example below, the particular node *optimism/NN* only appeared in the time slice from 1996 till 2001.
-
-![Tooltip](./images/tooltip_time_diff.png)
-
+When in this mode, some functionalities are disabled, such as saving the graph [it requires saving with the original cluster colors].
 
 ## Select Interval
 
 With the option "Select Interval" the user can select a specific time interval within the time period selected for the graph and compare the smaller interval to the larger one.
 
-In the example from Foogle Books data below, the interval from 1954 to 2001 is selected. Nodes that do not occur before 1520 and 1954 are categorized as *born* (green nodes), since they start to occur somewhere within the selected period. Nodes that do not occur between 2001 and 2008 are classified as *deceased* (red nodes), since they stop occurring within the the selected time period. Words that start and stop occurring within the selected time period are categorized as *shortlived* (yellow nodes). All other nodes occur consistently (grey nodes).
+In the example from Google Books data below, the interval from 1954 to 1974 is selected. Nodes that do not occur before 1520 and 1954 are categorized as *born* (green nodes), since they start to occur somewhere within the selected period. Nodes that do not occur between 2001 and 2008 are classified as *deceased* (red nodes), since they stop occurring within the the selected time period. Words that start and stop occurring within the selected time period are categorized as *shortlived* (yellow nodes). All other nodes occur consistently (grey nodes). Hovering over the button shows the nodes in the graph.
 
 ![Select Interval](./images/select_interval.png)
 
-All the nodes of a category are listed when the user clicks on the "Nodes" button. When the user hovers over the coloured circle of a category with the cursor, the nodes belonging to this category are faded in in the graph.
+All the nodes of a category are listed when the user clicks on the button. When the user hovers over the main time-category button such as "Died before interval"  the nodes belonging to this category are faded in in the graph.
 
 In the graph, the nodes are coloured accordingly. The previous cluster colours are still visible in the edit graph column. 
 
