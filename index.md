@@ -2,7 +2,7 @@ SCoT (Sense Clustering over Time) [Verison2] is a web application to view the se
 
 The functionalities and usage are described in the [user guide](userGuide.md). If you would like to deploy SCoT yourself or keep working on it see the [installation guide](installationGuide.md) for developers for more information.
 
-The project is maintained by the [Language Technology Group at Universität Hamburg](https://www.inf.uni-hamburg.de/en/inst/ab/lt/home.html). The second version [Vue-Frontend, Flask-Backend + ElasticSearch + Docker] was developed by Christian Haase, the first one by Inga Kempfert. Scot uses data that are calculated with JoBim. It is thus the end-part of a larger NLP-pipeline. Calcuations with JoBim for the SCoT-data of Version 2 were done by Seid Yimam and Saba Anwar. The underlying concepts and algorithms for SCoT are based on the publications by Biemann, Friedrich, Riedel et. al.. The time-slicing of Google books was pioneered by Goldberg and Orwant.
+The project is maintained by the [Language Technology Group at Universität Hamburg](https://www.inf.uni-hamburg.de/en/inst/ab/lt/home.html). Version 2 of SCoT is a major update which was developed by Christian Haase. Inga Kempfert was the lead dev of Version 1. Scot uses data that are calculated with JoBim. It is thus part of a larger NLP-pipeline. Calcuations with JoBim for the SCoT-data of Version 2 were done by Seid Yimam and Saba Anwar. The underlying concepts and algorithms for SCoT are based on the publications by Biemann, Friedrich, Riedel et. al.. (see below) The time-slicing of Google books was pioneered by Goldberg and Orwant.
 
 **Developers:**
 * [Christian Haase](https://www2.informatik.uni-hamburg.de/fiona/pers.php?lang=de#haase) [Version 2]

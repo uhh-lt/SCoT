@@ -1,4 +1,4 @@
-# Parameter Input and General Settings
+# Graph-Menu: Parameter Input and View Settings
 
 [Back to user guide contents list](userGuide.md)
 
@@ -10,29 +10,63 @@ A sidebar to change the general settings of SCoT and enter the parameters for re
 * [Rendering a Graph from a File](#rendering-a-graph-from-a-file)
 
 ## Parameter Input for Rendering a Graph
-When the user first opens SCoT, they may either render a new graph by entering the required parameters in the left column or they can load a previously stored graph again from a file.
+When the user first opens SCoT, it is recommended to click the START-button which brings up the graph-menu. The graph menu allows either to shape a new graph (as explained on the last page) OR to load and save a calculated graph. 
 
-The image shows a new session.
+![Clean new session](./images/00appwithgraph.jpg "New Session")
+
+Secondly, the user can set display settings, including  
+- resetting to the preset-display settings
+- Enabling interaction with the full graph or parts of it
+- Further, the graph is displayes using a force-directed algorithm. 
+
+The user can decide between two different dragging behaviours, as well as influence parameters of the force simulation, which is used to calculate the position of the nodes in the graph. For more information on how to manipulate the graph directly, see [the section on interacting with the graph](interacting.md).
+
 
 ![Clean new session](./images/02_settings.jpg "New Session")
+
+
+## Choosing the Dragging Behaviour
+
+![Dragging Behaviour Setting](./images/dragging_restart_sim.png)
+
+The user can select between two different kinds of dragging behaviour.
+
+1. **Enable brush (no force).** This enables to user to select multiple nodes at the same time using a brush movement and dragging all of them at the same time to a different position. The force is not acitve, so that the other nodes to not reposition themselves.
+2. **Use force (no brush available).** This is the default dragging behaviour. Only one node can be dragged at a time and the other nodes reposition themselves according to the force simulation. The dragged node is then fixed to its new position, which means that its position does not change if the force parameters are updated or other nodes dragged somewhere.
+
+All the nodes that are fixed to their position can be released by clicking on the button "Restart Simulation".
+
+For how to drag nodes in the graph, see [the section on interacting with the graph](interacting.md).
+
+[To the top](#editing-the-graph-via-the-functions-of-the-editing-sidebar)
+
+
+## Manipulate the Simulation
+
+![Default Simulation Settings](./images/default_simulation_settings.png)
+
+SCoT lets you edit two simulation parameters: the charge strength between the nodes and the link distance.
+The default value for the charge strength is -50, the default value for the link distance is 50.
+A graph with 100 nodes, 30 edges and these simulation parameter values looks like this:
+
+![Default Graph](./images/graph_for_intro.png){:height="75%" width="75%"}
+
+The use can change the value of the charge strength from values in the range of -200 to 100. Changing the charge strength influences the repelling forces between the nodes. The same graph with a charge strength of -100 and the default link distance looks as follows:
+
+![Graph Charge -100](./images/graph_charge-100.png)
+
+As a rule of thumb, a negative charge strength pushes the nodes further apart, simulating repulsion, and a positive charge strength pushes nodes together, simulating gravity or attraction.
+
+
+The link distance influences the distance between nodes and therefore the length of the edges between them. A high link distance means a long distance between nodes, a low link distance means a small distance between nodes. The following example shows and graph with a link distance of 150 and the default charge.
+
+![Graph Link Distance 360](./images/graph_linkdistance150.png) 
 
 [To the top](#parameter-input-and-general-settings)
 
 
-### Rendering a New Graph from the Database
 
-If the user wants to render a new graph from the database, he or she needs to specify some parameters.  
-  
-Firstly, there are parameters that affect the data-basis, content, time-context and structure of the graph
-(1) The user needs to pick a database. This brings up several presets for the other settings-options which can be modified by the user.   
-(2) The user needs to choose a target word. 
-(3) The user needs to be specify how many nodes the graph should contain (a.k.a. "Number of neighbours"), as well as the maximum number of edges on a node. default, the number of neighbours is set to 100 (regulating the number of visible paradigms) and the maximum number of edges per paradigm is set to 30 (regulating the density of the graph, smaller numbers result usually in more clusters).  
-(4) The user needs to set the start and end years for the time-slice-interval analysis. Per default, this is set to encompass all the time slices (1520 - 2008 for Google Books).   
-  
-Secondly, the user can set display settings, including  
-(5) resetting to the preset-display settings
-(6) Enabling interaction with the full graph or parts of it
-(7) Further, the graph is displayes using a force-directed algorithm. The strength of the force can be altered and the distance between nodes.  
+
 
 <!-- Leave note -->
 **Note:** For the Google Books data, the respective part-of-speech tag needs to be appended to the query word. The correct query word for “crisis” would therefore be “crisis/NN” or “crisis/NNP”. The data uses the [Penn Treebank POS tags](https://www.ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html). Other data might have different tags, or none.
