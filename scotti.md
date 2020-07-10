@@ -2,15 +2,15 @@ SCoTTi (Semantic Clustering of Tags over Time) is a web application to analyse t
 SCoTTi is a fork of the open-source software SCoT (Sense Clustering over Time). It is developed by Christian Haase for his Master Thesis at the FernUniversität Hagen. Christian Haase is also the lead developer of version 2 of SCoT. In which respects is SCoTTi different to SCoT?
 
 1. SCoT is based on distributional semantics calculated with the JoBim-text-framework. SCoTTi, on the contrary, is based on a new custom semantic system developed by Christian Haase that analyses Hashtags in the context of "text-embedded metadata".
-2. SCoT uses at its core a graph-optimized algorithm "over time" by Biemann, while SCoTTi uses a different core algorithm by Haase "in time". The SCoTTi-algorithm is optimized to distinguish more sharply between long-lived and short-lived hashtag-clusters.
+2. SCoT uses at its core a graph-optimized algorithm "over time" by Biemann, while SCoTTi uses a different algorithm by Haase "in time". The SCoTTi-algorithm is optimized to distinguish more sharply between long-lived and short-lived hashtag-clusters.
 3. SCoTTi offers additional functionality, in particular a choice of graph-shaping-algorithms that feed into a Machine Learning - Component that can utilize the semantic time-series of SCoTTi for transductive learning.
 
-SCoTTi does not need a new user guide. It is recommended to follow the user guide for SCoT. Further information on SCoTTi will be published in Haase's master thesis.
+There is no seperate user guide for SCoTTi. It is recommended to follow the user guide for SCoT. Further information on SCoTTi will be published in Haase's master thesis.
 
-The functionalities and usage of SCoT (and SCotti) are described in the [user guide](userGuide.md).   
+The functionalities and usage of SCoT are described in the [user guide](userGuide.md).   
 If you would like to deploy or develop SCoT or SCoTTi yourself, see [installation guide](installationGuide.md).  
  The project SCoT is maintained by the [Language Technology Group at Universität Hamburg](https://www.inf.uni-hamburg.de/en/inst/ab/lt/home.html). 
- The project SCoTTi is maintained by Christian Haase.
+ The project SCoTTi is maintained by Christian Haase. The author would like to thank the developer of version 1 of SCoT, Inga Kempfert, who holds part of the MIT-Open Source license for SCoT.
 
 *** SCOT-Developers:**
 * [Christian Haase](https://www2.informatik.uni-hamburg.de/fiona/pers.php?lang=de#haase) [Version 2] - also developer of the fork SCoTTi
