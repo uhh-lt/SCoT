@@ -5,15 +5,13 @@ app = new Vue({
 		// PRESET title top-left
 		title : "Sense Clustering over Time",	
 		
-		// QUERIED DATA from backend-database
+		// Interval Data - Time-Series Base of Graph #############################
 		// User Values - suggestions will be loaded from config at startup (first collection will be chosen)
-		target_word : "",
-		senses : 0,
-		edges : 0,
 		start_year : 0,
 		end_year : 0,
 		collection_key : "",
 		collection_name: "",
+		collection_info: "",
 		// all possible collections queried from database
 		collections : {}, // collections keys and names
 		collections_names: [], // collections_names
@@ -21,13 +19,56 @@ app = new Vue({
 		start_years : [],
 		// all possible end years queried from the database
 		end_years : [],
+		
+		// Different Graph-Algos ##########################################################
+		// The Graph-algos use the two key parameters sensed and the edge factor differently
+		// the main scot algo uses them globally
 		// experimental not implemented yet
 		graph_type: "max_across_slices",
 		// all possible graph types not implemented yet
 		graph_types :["max_across_slices", "max_per_slice", "stable_nodes"], 
-		// limits the size of clusters for context-information-search
-		cluster_search_limit: 1000,
+		
 
+		// #### BASIC NETWORK-GRAPH DATA ##########################
+		// "A complex network is a graph in which a set of elements is associated with a set of entities, and in which the relation 
+		// between the elements represents a relationship between the corresponding entities".
+		// Links = edges , nodes = vertices
+		// ATTENTION: throughout vue.js the naming of the core vars is NOT consistent since v1 (ik) - ie local copies of node[frontend] are called nodes etc.
+		// User Values - Input
+		target_word : "",
+		// this means number of nodes
+		senses : 0,
+		// this does not mean number of edges, but edge factor (the number of overlayed directed edges is [senses*edges] -> AB[time1], BA[time1] and AB[time2] -> 1 edge)
+		edges : 0,
+
+		// MAIN-NETWORK-GRAPH-DATA FROM BACKEND
+		nodes : [],
+		// link data
+		links : [],
+		// array with node ids that are not connected to any other nodes
+		// ToDO the relationship between nodes and singletons is not well done (ie singletons do not have time information)
+		singletons : [],
+		
+		// D3-FRONTEND-GRAPH
+		// represents the DOM element for a node (see render_sense_graph.js)
+		node : "",
+		// the circles of updated nodes
+		circles : [],
+		// represents the DOM element for a link (see render_sense_graph.js)
+		link : "",
+		// list of objects to store all the information on the clusters in a rendered graph (see function get_clusters())
+		clusters : [],
+		// new clusters calculated by reclustering the graph
+		newclusters : {},
+		// An object for remembering which nodes are connected. The key is of the form "source, target"
+		linkedByIndex : {},
+
+
+		// SAVED AND LOADED GRAPH-FILE
+		// file from which a graph is to be loaded
+		file : null,
+		// graph loaded from file
+		read_graph : null,
 
 		
 		// ##### VIEW SETTINGS APP AND SVG-GRAPH
@@ -44,11 +85,15 @@ app = new Vue({
 		simulation : null,
 		// link thickness parameters
 		link_thickness_scaled : "false",
-		link_thickness_value : 1,
+		// scaled = "false" -> thickness = sqrt(value)
+		link_thickness_value : 3,
+		// scaled = "true" -> thickness = sqrt(weight * factor)
 		link_thickness_factor : 0.1,
 		// opacity of links base and reduced (for many functions)
-		base_link_opacity : 0.3,
-		reduced_link_opacity: 0.1,
+		base_link_opacity : 0.5,
+		reduced_link_opacity: 0.0,
+		// radius of nodes
+		radius : 5,
 		//overlays central
 		overlay_main : false,
 		// dragging behaviour sticky_mode === "true" -> force, sticky_mode === "false" -> brush
@@ -56,108 +101,16 @@ app = new Vue({
 		// simulation parameters
 		charge : -50,
 		linkdistance : 50,
-		// represents the DOM element for a node (see render_sense_graph.js)
-		node : "",
-		// represents the DOM element for a link (see render_sense_graph.js)
-		link : "",
-
 		// true, if a graph is rendered. Used in the HTML to only show buttons if a graph is rendered
 		graph_rendered : false,
+		// wait rendering - show blur over graph
 		wait_rendering : false,		
 		
 				
-		// #### VIEW MODES SIDEBARS AND NAVBARS
-		// ## SIDEBAR LEFT GRAPH
-		left_selected: 'graph_data',
-        left_options: [
-          { text: 'Data', value: 'graph_data' },
-          { text: 'View', value: 'graph_view' },
-          { text: 'Help', value: 'graph_help' }
-          
-        ],
-		// ## SIDEBAR right Cluster
-		right_selected: 'cluster_basic',
-		right_selected_previous: 'cluster_basic',
-        right_options: [
-          { text: 'Cluster', value: 'cluster_basic' },
-          { text: 'Time-Diff', value: 'cluster_time' },
-          { text: 'Functions', value: 'cluster_functions' }
-          
-        ],
-		// controls node colors cluster or time-diff
-	   time_diff : false,
-	   // edge context sidebar is programmatically controlled
-	   context_mode : false,
-	   showSidebarRight1 : false,
-	   // spinner while loading table data
-	   busy_right1 : false,
-	    // table information for edge -context view sidebar
-		fields_edges : [
-			{key: "node1", label:"node1", sortable: true},
-			{key: "edge", label:"context-word", sortable: true},
-			{key: "node2", label: "node2", sortable: true}
-			
-		],
-	    // cluster context sidebar
-		context_mode2 : false,
-		showSidebarRight2: false,
-		busy_right2: true,
-		// table information for cluster -context view sidebar
-		fields_cluster : [
-			{key: "score", sortable: true},
-			{key: "wort", sortable: true}
-			
-		],
-
-
-		// node context sidebar
 		
-	   context_mode3 : false,
-	   showSidebarRight3: false,
-	   busy_right3 : false,
-	  
-		// table information for node -context view sidebar
-		fields_nodes : [
-			{key: "node1", label: "node1", sortable: true},
-			{key: "edge", label: "context-word", sortable: true},
-			{key: "node2", label: "node2", sortable: true}
-			
-		],
-		// doc context sidebar
-		   context_mode4 : false,
-		// show sidebar
-		   showSidebarRight4: false,
-		// spinner
-		   busy_right4 : false,
-		// table information for cluster -context view sidebar
-		documents:[],
-		fields_documents : [
-			{key: "doc", sortable: true}
-						
-		],
-
-		// #### BASIC GRAPH DATA ##########################
-		// node data
-		nodes : [],
-		// the circles of updated nodes
-		circles : [],
-		// link data
-		links : [],
-		// list of objects to store all the information on the clusters in a rendered graph (see function get_clusters())
-		clusters : [],
-		// array with node ids that are not connected to any other nodes
-		singletons : [],
-		// new clusters calculated by reclustering the graph
-		newclusters : {},
-		// An object for remembering which nodes are connected. The key is of the form "source, target"
-		linkedByIndex : {},
-		// file from which a graph is to be loaded
-		file : null,
-		// graph loaded from file
-		read_graph : null,
-		
-
 		// ### DATA SETTINGS SIDEBARS
+		// limits the size of clusters for context-information-search
+		cluster_search_limit: 1000,
 	   // edge-click information for data-query for sidebar
 	   active_edge: {"time_ids": [1], "weights": [1], "source_text": "happiness/NN", "target_text": "gladness/NN"},	
 	   // sigebar right: holds edge context information (score, key, score2)
@@ -232,6 +185,73 @@ app = new Vue({
 		row_selected: [],
 		// row_selected in edge Context
 		row_selected_edge: [],
+		
+		// #### VIEW MODES SIDEBARS AND NAVBARS
+		// ## SIDEBAR LEFT GRAPH
+		left_selected: 'graph_data',
+        left_options: [
+		  { text: 'Graph', value: 'graph_data' },
+		  { text: 'View', value: 'graph_view' },
+          { text: 'Info', value: 'graph_help' }
+          
+        ],
+		// ## SIDEBAR right Cluster
+		right_selected: 'cluster_basic',
+		right_selected_previous: 'cluster_basic',
+        right_options: [
+          { text: 'Cluster', value: 'cluster_basic' },
+          { text: 'Time-Diff', value: 'cluster_time' },
+          { text: 'Functions', value: 'cluster_functions' }
+          
+        ],
+		// controls node colors cluster or time-diff
+	   time_diff : false,
+	   // edge context sidebar is programmatically controlled
+	   context_mode : false,
+	   showSidebarRight1 : false,
+	   // spinner while loading table data
+	   busy_right1 : false,
+	    // table information for edge -context view sidebar
+		fields_edges : [
+			{key: "node1", label:"node1", sortable: true},
+			{key: "edge", label:"context-word", sortable: true},
+			{key: "node2", label: "node2", sortable: true}
+			
+		],
+	    // cluster context sidebar
+		context_mode2 : false,
+		showSidebarRight2: false,
+		busy_right2: true,
+		// table information for cluster -context view sidebar
+		fields_cluster : [
+			{key: "score", sortable: true},
+			{key: "wort", sortable: true}
+			
+		],
+		// node context sidebar
+	   context_mode3 : false,
+	   showSidebarRight3: false,
+	   busy_right3 : false,
+		// table information for node -context view sidebar
+		fields_nodes : [
+			{key: "node1", label: "node1", sortable: true},
+			{key: "edge", label: "context-word", sortable: true},
+			{key: "node2", label: "node2", sortable: true}
+			
+		],
+		// doc context sidebar
+		   context_mode4 : false,
+		// show sidebar
+		   showSidebarRight4: false,
+		// spinner
+		   busy_right4 : false,
+		// table information for cluster -context view sidebar
+		documents:[],
+		fields_documents : [
+			{key: "doc", sortable: true}
+						
+		],
+		
 		// ############# DEPRECATED #########################
 		// Deprecated
 		data_from_db : {},
@@ -243,6 +263,9 @@ app = new Vue({
 		updated_nodes : null,
 		// all the links in the updated graph
 		updated_links : null
+
+	
+
 		
 	},
 	computed: {
@@ -416,6 +439,7 @@ app = new Vue({
 			this.target_word = this.collections[this.collection_name]["target"]
 			this.senses = this.collections[this.collection_name]["p"]
 			this.edges = this.collections[this.collection_name]["d"]
+			this.collection_info = this.collections[this.collection_name]["info"]
 			console.log("in onchange db" + this.collection_key)
 			console.log("in onchange db" + this.collection_name)
 
@@ -442,6 +466,16 @@ app = new Vue({
 		/*
 		/ ############ Graph-Menu - VIEW Functions ###########################
 		*/
+		// these functions mainly act as VUE event handlers (instaed of the d3 ones)
+		resetZoom: function() {
+			reset_zoom()
+		},
+		stickyChange(booleanStr){
+			console.log("vue test change")
+			sticky_change(booleanStr)
+			
+		},
+		
 		// restart
 		restart_change(){
 			app.node.each(function(d) {
@@ -2139,11 +2173,7 @@ app = new Vue({
 			});
 			return found;
 		},
-		resetZoom: function() {
-			var svg = d3.select("#svg");
-			svg.select("g")
-				.attr("transform", "translate(0.0, 0.0) scale(1.0)");
-		},
+		
 		/*
 		Choose cluster for context analysis and display context information
 		*/
@@ -2327,28 +2357,41 @@ app = new Vue({
 		},
 		/*
 		Apply changes in cluster name and colour to all the nodes in the graph (when pressing the "Apply" button in the edit column)
+		Data Changes---
 		*/
 		applyClusterSettings: function() {
-			var svg = d3.select("#svg");
-			var nodes = svg.selectAll(".node");
-			var links = svg.selectAll(".link");
+			let svg = d3.select("#svg");
+			let nodes = svg.selectAll(".node");
+			let links = svg.selectAll(".link");
+			console.log("applyClusterSettings, point 1: all clusters", this.clusters)
 
-			for (var i = 0; i < this.clusters.length; i++) {
-				var cluster_id = this.clusters[i].cluster_id;
-				var cluster_name = this.clusters[i].cluster_name;
-				var colour = this.clusters[i].colour;
-				var add_cluster_node__ = this.clusters[i].add_cluster_node;
-				var labels = this.clusters[i].labels;
-				var text_labels = [];
+			for (let i = 0; i < this.clusters.length; i++) {
+				let cluster_id = this.clusters[i].cluster_id;
+				let cluster_name = this.clusters[i].cluster_name;
+				let colour = this.clusters[i].colour;
+				//let add_cluster_node = this.clusters[i].add_cluster_node;
+				let labels = this.clusters[i].labels;
+				let text_labels = [];
 
-				for (var j = 0; j < labels.length; j++) {
+				for (let j = 0; j < labels.length; j++) {
 					text_labels.push(labels[j].text);
 				}
+				console.log("applyClusterSettings, point 2: one cluster", text_labels)
+
+				// ######### EXPERIMENTAL PUSH CLUSTER NAME START
+				
+				// wenn cluster_node hinzugefügt werden soll, aber nicht vorhanden ist
+				// if (add_cluster_node && !text_labels.includes(cluster_name)){
+				// 	text_labels.push(cluster_name)
+				
+				// }
+				// ######### EXPERIMENTAL PUSH CLUSTER NAME END
+
 
 				nodes.selectAll("g").each(function(d,i) {
-					var node_cluster;
-					var node_fill;
-					var node_label;
+					let node_cluster;
+					let node_fill;
+					let node_label;
 
 					childnodes = this.childNodes;
 
@@ -2365,6 +2408,7 @@ app = new Vue({
 					if (text_labels.includes(node_label)) {
 						childnodes.forEach(function(d,i) {
 							if (d.tagName === "circle") {
+								console.log("applyClusterSettings, point 3: one node", node_label)
 								d.setAttribute('cluster', cluster_name);
 								d.setAttribute('fill', colour);
 							}
@@ -2407,7 +2451,7 @@ app = new Vue({
 		/*
 		Collect the information on the clusters from the graph and store it in the data variable clusters.
 		@return Array of objects with cluster information
-		// This looks circular - data is pushed on the graph, modified there and then re-read from the graph
+		// commment by CH: This looks circular - data is pushed on the graph, modified there and then re-read from the graph
 		// Better: data is changed on the datastructure - and only displayed on the graph
 		*/
 		get_clusters: async function() {
@@ -2440,6 +2484,7 @@ app = new Vue({
 					childnodes = this.childNodes;
 					childnodes.forEach(function(d,i) {
 						
+						
 						if (d.tagName === "circle") {
 							cluster_name = d.getAttribute("cluster");
 							cluster_id = d.getAttribute("cluster_id");
@@ -2455,6 +2500,7 @@ app = new Vue({
 					// TODO - I do not know what exactly this part of the function from IK is doing
 					// why does it only push None cluster nodes
 					clusters.forEach(function(c,i) {
+						console.log(c)
 						if (c.cluster_name === cluster_name) {
 							exists = true;
 							if (cluster_node === "false") {
@@ -2492,7 +2538,7 @@ app = new Vue({
 			this.overlay_main = true
 			this.graph_rendered = false
 			this.wait_rendering = true
-			console.log(this.wait_rendering)
+			console.log("wait rendering", this.wait_rendering)
 			this.getData()
 			await this.$nextTick()
 			
@@ -2508,14 +2554,9 @@ app = new Vue({
 			data["senses"] = this.senses;
 			data["edges"] = this.edges;
 			data["time_diff"] = this.time_diff;
+			data["graph_type"] = this.graph_type
 
-			if (this.graph_type === "max_per_slice"){
-				data["target_word"] = "AD" + this.target_word
-			}
-			if (this.graph_type === "stable_nodes"){
-				data["target_word"] = "SG" + this.target_word
-			}
-
+			
 
 			app.start_years.forEach(function(d,i) {
 				if (d.value === app.start_year) {
@@ -2533,19 +2574,22 @@ app = new Vue({
 			
 			axios.post(url, data)
 				.then((res) => {
-					this.data_from_db = res.data;
-					var nodes = this.data_from_db[0].nodes;
+					// local vars needed here because of async callbacks
+					var data_from_db = res.data;
+					var nodes = data_from_db[0].nodes;
 					console.log("in data get nodes", nodes)
-					var links = this.data_from_db[0].links;
-					var target = [this.data_from_db[1]];
-					app.singletons = this.data_from_db[2].singletons;
-					console.log("in data get singletons", app.singletons)
+					var links = data_from_db[0].links;
+					var target = [data_from_db[1]];
+					console.log(target, this.target_word)
+					var singletons = data_from_db[2].singletons;
+					console.log("in data get singletons", singletons)
 					// Call D3 function to render graph
 					render_graph(nodes, links, target)
+					// no local vars needed from here on
 					this.graph_rendered = true;
 					this.overlay_main = false;
 					this.wait_rendering = false;
-					console.log(this.wait_rendering)
+					console.log("in get data:var wait rendering ", this.wait_rendering)
 					// Update cluster information
 					app.get_clusters();
 				})
