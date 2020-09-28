@@ -9,6 +9,7 @@
 					"fi_news_tri" : "mysql://scot:scot@ltdatabase1/DT_finnews_trigram",
 					"fi_news_bi" : "mysql://scot:scot@ltdatabase1/DT_finnews_bigram",
 					"fi_news_dep" : "mysql://scot:scot@ltdatabase1/DT_finnews_dependency",
+					"de_70mlcc": "mysql://scot:scot@ltdatabase1/DT_de70mlcc",
 					"corona_news" : "mysql://scot:scot@ltdatabase1/scot_test"
 	},
 	"collections_info_frontend":{
@@ -16,6 +17,7 @@
 			"Finnish News Tri": {"key": "fi_news_tri", "target": "Yksi", "p": 100, "d": 30, "info": "Please insert Corpus Info in config.json"},
 			"Finnish News Bi": {"key": "fi_news_bi", "target": "Yksi", "p": 100, "d": 30, "info": "Please insert Corpus Info in config.json"},
 			"Finnish News Dep": {"key": "fi_news_dep", "target": "Yksi#NUM", "p": 100, "d": 30, "info": "Please insert Corpus Info in config.json"},
+			"de_70mlcc": {"key": "de_70mlcc", "target": "sauna", "p": 100, "d": 30, "info": "Please insert Corpus Info in config.json"},
 			"Corona News ElasticTest": {"key": "corona_news", "target": "covid-19", "p": 20, "d": 2, "info": "Please insert Corpus Info in config.json"}
 	}
 
