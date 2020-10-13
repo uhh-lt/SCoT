@@ -544,6 +544,8 @@ def documents(collection="default"):
 	print(jo, bim, collection_key)
 
 	# get host, port and index from config
+	with open('./config.json') as config_file:
+		config = json.load(config_file)
 	es_host = config["collections_info_elastic"][collection_key]["es_host"]
 	es_port = config["collections_info_elastic"][collection_key]["es_port"]
 	es_index = config["collections_info_elastic"][collection_key]["es_index"]
