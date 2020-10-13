@@ -15,9 +15,9 @@ app = new Vue({
 		// all possible collections queried from database
 		collections : {}, // collections keys and names
 		collections_names: [], // collections_names
-		// all possible start years queried from the database
+		// all possible start years per selected collection queried from the database after selection of collection
 		start_years : [],
-		// all possible end years queried from the database
+		// all possible end years per selected collection queried from the database after selection of collection
 		end_years : [],
 		
 		// Different Graph-Algos ##########################################################
@@ -338,7 +338,8 @@ app = new Vue({
 		/*
 		/ ############## SIDEBAR RIGHT ADDITIONAL FUNCTIONS Get documents from backend ##############################
 		/ You can click one row in node-context or edge-context
-		/ and get sentences that contain a combination of two words
+		/ and get sentences that contain a combination of one jo (paradigm) and one bim (syntagmatic context)
+		/ in the following wort1 = jo und wort2=bim
 		/ Various methods
 		*/
 		
@@ -399,24 +400,30 @@ app = new Vue({
 				app.docSearch(wort1, wort2)
 			}
 		},
-		// doc search function - searches for sentences that contain two words (regardless of time-id)
-		// experimental feature that can be used to request original data (ie sentences)
-			// that contain node1 and the selected row -word [to do]
-			// data is gathered from these fields (see above methods)
-			// data["word1"] = this.active_edge.source_text
-			// data["word2"] = this.active_edge.target_text
-			// data["time_id"] = this.active_edge.time_ids[0]
-			// data["word1"] = this.active_node.source_text
-			//data["word2"] = this.active_node.target_text
+		// doc search function - searches for sentences that have been analyzed with a jo and a bim (regardless of time-id)
+		//can be triggered from nodes - context OR edge-context
+		// data is gathered from these fields (see above methods)
+		// JO = WORT1
+		// EDGE - WORT1
+		// data["word1"] = this.active_edge.source_text
+		// data["word2"] = this.active_edge.target_text
+		// NODE - WORT1
+		// data["word1"] = this.active_node.source_text
+		// data["word2"] = this.active_node.target_text
+		// data["time_id"] = this.active_edge.time_ids[0]
+		// BIM = WORT2
+
+
 		docSearch(wort1, wort2){
 						
 			this.context_mode4 = true
 			this.busy_right4 = true
 			let data = {}
-			data["word1"] = wort1
-			data["word2"] = wort2
+			data["jo"] = wort1
+			data["bim"] = wort2
+			data["collection_key"] = this.collection_key
 				
-			console.log("selected", data["word1"], data["word2"])
+			console.log("selected", data["jo"], data["bim"])
 			let url = './api/collections/'+this.collection_key +'/documents'
 			console.log(url)
 			axios.post(url, data)

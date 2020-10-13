@@ -1,5 +1,5 @@
 {
-	"flask_host" : "0.0.0.0",
+	"host" : "0.0.0.0",
 
 	"elasticsearch": {"host": "elasticsearch", "port": 9200},
 
@@ -10,13 +10,6 @@
 		"corona_news" : "mysql://root:root@127.0.0.1:3310/scot_test"
 
 	},
-
-	"collections_info_elastic" : {
-		"fi_news_dep" : {"es_index": "fi_news_dep", "es_host": "127.0.0.1", "es_port": 9200},
-		"de70mlcc" : {"es_index": "de70mlcc", "es_host": "127.0.0.1", "es_port": 9200},
-		"corona_news" : {"es_index": "corona_news", "es_host": "127.0.0.1", "es_port": 9200}
-	},
-
 	"collections_info_frontend":{
 		
 		"Finnish News Dep": {"key": "fi_news_dep", "target": "Yksi#NUM", "p": 100, "d": 30, "info": "Please insert Corpus Info in config.json"},

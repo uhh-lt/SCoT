@@ -6,7 +6,7 @@ import json
 
 def main():
     # settings
-    es = Elasticsearch([{'host': 'elasticsearch', 'port': 9200}])
+    es = Elasticsearch([{'host': '127.0.0.1', 'port': 9200}])
     indexname = "corona_news"
     importfile = "./news.csv"
     
@@ -23,16 +23,19 @@ def main():
     timedocs[1] = [(x[0], x[1], x[2]) for x in docs[100:2100]]
     timedocs[2] = [(x[0], x[1], x[2]) for x in docs[2100:4100]]
     timedocs[3] = [(x[0], x[1], x[2]) for x in docs[4100:6100]]
+    time_slices = ["20200126-20200323", "20200324-20200411", "20200412-20200428"]
 
     # push to elasticsearch
     
     for k in timedocs.keys():
         for dok in timedocs[k]:
             doc = {
-                'text': dok[1],
+                'jos': dok[1],
+                'bims': dok[1],
+                'sentence': dok[1],
                 'source': dok[2],
                 'date': dok[0],
-                'time_id': k
+                'time_slice': time_slices[k-1]
             }
             es.index(index=indexname, body=doc)
     es.indices.refresh(index=indexname)

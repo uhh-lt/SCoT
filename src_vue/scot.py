@@ -527,9 +527,9 @@ def cluster_information():
 	return dic_res
 
 @app.route('/api/collections/<string:collection>/documents', methods=['POST'])
-# retrieves documents (ie sentences) which contain two words (not related to time-id yet)
-# Param: collection
-# Param: word1, word2
+# retrieves sentences which contain one jo and one bim [also called wort1=jo, wort2=bim]
+# Param: collection_key
+# Param: jo [wort1], bim [wort2]
 # [Param: time-id - not implemented yet]
 # Returns_ elasticsearch response
 # the response_dictionary is limited to max 200
@@ -537,19 +537,28 @@ def cluster_information():
 def documents(collection="default"):
 	if request.method == 'POST':
 		data = json.loads(request.data)
-		word1 = str(data["word1"])
-		word2 = str(data["word2"])
-		#time_id = int(data["time_id"])
-	######## EXPERIMENTALLY LIMITED TO "CORONA_NEWS"
-	collection = "corona_news"
-	##########
-	documentdb = Documentdb()
+		jo = str(data["jo"])
+		bim = str(data["bim"])
+		# time_id = int(data["time_id"])
+		collection_key = str(data["collection_key"])
+	print(jo, bim, collection_key)
+
+	# get host, port and index from config
+	es_host = config["collections_info_elastic"][collection_key]["es_host"]
+	es_port = config["collections_info_elastic"][collection_key]["es_port"]
+	es_index = config["collections_info_elastic"][collection_key]["es_index"]
+	print(es_index, es_host, es_port)
+
+	# init with host, port
+	documentdb = Documentdb(es_host, es_port)
+
+	# Todo search with specific index instead of collection_key
 	ret = []
-	res = documentdb.search(word1, word2, collection)
+	res = documentdb.search(jo, bim, es_index)
 	ret_set = set()
 	for hit in res["hits"]["hits"]:
-		text = hit["_source"]["date"][:10]+ " [" + str(hit["_source"]["time_id"])+ "] : " \
-		+ hit["_source"]["text"] + " [" + hit["_source"]["source"] + "] "
+		text = hit["_source"]["date"][:10]+ " [" + str(hit["_source"]["time_slice"])+ "] : " \
+		+ hit["_source"]["sentence"] + " [" + hit["_source"]["source"] + "] "
 		ret_set.add(text)
 	ret_list = list(ret_set)
 	ret_list.sort()
@@ -566,4 +575,4 @@ if __name__ == '__main__':
 	# use the config file to get host and database parameters
 	with open('./config.json') as config_file:
 		config = json.load(config_file)
-	app.run(host=config['host'])
+	app.run(host=config['flask_host'])
