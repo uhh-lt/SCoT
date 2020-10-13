@@ -549,7 +549,7 @@ def documents(collection="default"):
 	es_index = config["collections_info_elastic"][collection_key]["es_index"]
 	print(es_index, es_host, es_port)
 
-	# init with host, port
+	# init with host, port 
 	documentdb = Documentdb(es_host, es_port)
 
 	# Todo search with specific index instead of collection_key
