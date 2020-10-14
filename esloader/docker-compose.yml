@@ -4,5 +4,7 @@ services:
     build: .
     volumes:
       - ../../../anwar:/anwar
+    networks:
+        scot-net:
     
     

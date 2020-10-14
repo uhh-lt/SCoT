@@ -10,3 +10,5 @@ COPY . /app
 # Install any needed packages specified in requirements.txt
 RUN pip install --trusted-host pypi.python.org -r requirements.txt
 
+#RUN permanent to keep alive
+CMD tail -f /dev/null
