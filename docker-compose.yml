@@ -19,7 +19,7 @@ services:
     image: mariadb:10.5.4
     container_name: mariadb_1054
     volumes:
-      # database - this can be combined with environment [implicit start-up scrip1] to source one db [-> not needed here because we need 2]
+      # database - this can be combined with environment [implicit start-up scrip1] to source one db [useful for very large dumps as here]
       - ${PWD}/db/dump.sql:/docker-entrypoint-initdb.d/dump.sql
       #  Permanent volume not needed - as the data does not change
       - ${PWD}/db/dev_data:/var/lib/mysql
