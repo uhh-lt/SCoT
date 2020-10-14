@@ -6,12 +6,12 @@ import json
 
 def main():
     # settings
-    es = Elasticsearch([{'host': 'localhost', 'port': 9292}])
+    es = Elasticsearch([{'host': 'elasticsearch', 'port': 9200}])
     indexname = "fi_news_dep"
-    importfile = "C:/Users/hitec_c/Documents/finnews_dep_wft.txt"
+    importfile = "../anwar/finnews_dep_wft.txt"
     # start and end rows are included in the dataset
     start = 25000
-    end = 25000
+    end = 25000000
     
     # read docs use counter as additional id to start and stop pushing to elasticsearch
     docs = []
@@ -19,6 +19,7 @@ def main():
     with open(importfile, newline='', encoding="UTF-8") as f:
         reader = csv.reader(f, delimiter="\t", quoting=csv.QUOTE_NONE)
         counter = 0
+        printcounter = 0
         for row in reader:
             if counter >= start:
                 ############### parse
@@ -50,6 +51,10 @@ def main():
             if counter >=end:
                 break
             counter += 1
+            printcounter += 1
+            if (printcounter == 1000):
+                print("esloaderfin", counter)
+                printcounter = 0
         es.indices.refresh(index=indexname)
 
 
