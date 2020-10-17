@@ -42,82 +42,82 @@ services:
   esloaderfin_01:
     build: ./esloader_v2
     volumes:
-      - ../../../anwar:/anwar
+      - ../anwar:/anwar
     networks:
       - scot-net
   esloaderfin_02:
     build: ./esloader_v2
     volumes:
-      - ../../../anwar:/anwar
+      - ../anwar:/anwar
     networks:
       - scot-net
   esloader70m_01:
     build: ./esloader_v2
     volumes:
-      - ../../../anwar:/anwar
+      - ../anwar:/anwar
     networks:
       - scot-net
 
   esloader70m_02:
     build: ./esloader_v2
     volumes:
-      - ../../../anwar:/anwar
+      - ../anwar:/anwar
     networks:
       - scot-net
 
   esloader70m_03:
     build: ./esloader_v2
     volumes:
-      - ../../../anwar:/anwar
+      - ../anwar:/anwar
     networks:
       - scot-net
 
   esloader70m_04:
     build: ./esloader_v2
     volumes:
-     - ../../../anwar:/anwar
+     - ../anwar:/anwar
     networks:
       - scot-net
 
   esloader70m_05:
     build: ./esloader_v2
     volumes:
-      - ../../../anwar:/anwar
+      - ../anwar:/anwar
     networks:
       - scot-net
 
   esloader70m_06:
     build: ./esloader_v2
     volumes:
-      - ../../../anwar:/anwar
+      - ../anwar:/anwar
     networks:
       - scot-net
 
   esloader70m_07:
     build: ./esloader_v2
     volumes:
-      - ../../../anwar:/anwar
+      - ../anwar:/anwar
     networks:
       - scot-net
 
   esloader70m_08:
     build: ./esloader_v2
     volumes:
-      - ../../../anwar:/anwar
+      - ../anwar:/anwar
     networks:
       - scot-net
 
   esloader70m_09:
     build: ./esloader_v2
     volumes:
-      - ../../../anwar:/anwar
+      - ../anwar:/anwar
     networks:
       - scot-net
 
   esloader70m_10:
     build: ./esloader_v2
     volumes:
-      - ../../../anwar:/anwar
+      - ../anwar:/anwar
     networks:
       - scot-net
 
