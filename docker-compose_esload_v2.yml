@@ -124,15 +124,14 @@ services:
     image: elasticsearch:7.8.0
     container_name: elasticsearch_ma1
     environment:
-      - cluster.name=es-cluster
       - node.name=elasticsearch_ma1
+      - cluster.initial_master_nodes=elasticsearch-ma1,elasticsearch-ma2, elasticsearch_ma3
+      - discovery.seed_hosts=elasticsearch-ma2:9300
+      - cluster.name=es-cluster
       - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
-      - "discovery.zen.ping.unicast.hosts=elasticsearch_ma2,elasticsearch_ma3"
-      - "discovery.zen.minimum_master_nodes=2"
-      - "xpack.security.enabled=false" #Disable security to make the setup and upgrade easier
-      - "xpack.watcher.enabled=false" #Disable watcher to avoid unnecessary activity
-      - "xpack.monitoring.enabled=false" #Disable monitoring to avoid unnecessary activity
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=true
+      
     ulimits:
       memlock:
         soft: -1
@@ -154,15 +153,13 @@ services:
     image: elasticsearch:7.8.0
     container_name: elasticsearch_ma2
     environment:
-      - cluster.name=es-cluster
       - node.name=elasticsearch_ma2
+      - cluster.initial_master_nodes=elasticsearch-ma1,elasticsearch-ma2, elasticsearch_ma3
+      - discovery.seed_hosts=elasticsearch-ma2:9300
+      - cluster.name=es-cluster
       - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
-      - "discovery.zen.ping.unicast.hosts=elasticsearch_ma1,elasticsearch_ma3"
-      - "discovery.zen.minimum_master_nodes=2"
-      - "xpack.security.enabled=false" #Disable security to make the setup and upgrade easier
-      - "xpack.watcher.enabled=false" #Disable watcher to avoid unnecessary activity
-      - "xpack.monitoring.enabled=false" #Disable monitoring to avoid unnecessary activity
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=true
     ulimits:
       memlock:
         soft: -1
@@ -184,15 +181,13 @@ services:
     image: elasticsearch:7.8.0
     container_name: elasticsearch_ma3
     environment:
-      - cluster.name=es-cluster
       - node.name=elasticsearch_ma3
+      - cluster.initial_master_nodes=elasticsearch-ma1,elasticsearch-ma2, elasticsearch_ma3
+      - discovery.seed_hosts=elasticsearch-ma2:9300
+      - cluster.name=es-cluster
       - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
-      - "discovery.zen.ping.unicast.hosts=elasticsearch_ma2,elasticsearch_ma1"
-      - "discovery.zen.minimum_master_nodes=2"
-      - "xpack.security.enabled=false" #Disable security to make the setup and upgrade easier
-      - "xpack.watcher.enabled=false" #Disable watcher to avoid unnecessary activity
-      - "xpack.monitoring.enabled=false" #Disable monitoring to avoid unnecessary activity
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=true
     ulimits:
       memlock:
         soft: -1
