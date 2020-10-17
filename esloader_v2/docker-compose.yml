@@ -11,13 +11,6 @@ services:
     networks:
       scot-net:
 
-  esloaderfin_02:
-    build: .
-    volumes:
-      - ../../../anwar:/anwar
-    networks:
-      scot-net: 
-  
   esloader70m_01:
     build: .
     volumes:
@@ -54,34 +47,6 @@ services:
       scot-net:
 
   esloader70m_06:
-    build: .
-    volumes:
-      - ../../../anwar:/anwar
-    networks:
-      scot-net:
-
-  esloader70m_07:
-    build: .
-    volumes:
-      - ../../../anwar:/anwar
-    networks:
-      scot-net:
-
-  esloader70m_08:
-    build: .
-    volumes:
-      - ../../../anwar:/anwar
-    networks:
-      scot-net:
-
-  esloader70m_09:
-    build: .
-    volumes:
-      - ../../../anwar:/anwar
-    networks:
-      scot-net:
-
-  esloader70m_10:
     build: .
     volumes:
       - ../../../anwar:/anwar
