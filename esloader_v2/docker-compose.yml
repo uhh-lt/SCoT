@@ -1,91 +1,75 @@
 version: "2.1"
-networks:
-  elasticsearch_v2:
+
 services:
     
   esloaderfin_01:
     build: .
     volumes:
       - ../../../anwar:/anwar
-    networks:
-        elasticsearch_v2:
 
   esloaderfin_02:
     build: .
     volumes:
       - ../../../anwar:/anwar
-    networks:
-      elasticsearch_v2: 
+
   
   esloader70m_01:
     build: .
     volumes:
       - ../../../anwar:/anwar
-    networks:
-        elasticsearch_v2:
 
   esloader70m_02:
     build: .
     volumes:
       - ../../../anwar:/anwar
-    networks:
-        elasticsearch_v2:
 
   esloader70m_03:
     build: .
     volumes:
       - ../../../anwar:/anwar
-    networks:
-      elasticsearch_v2:
+
 
   esloader70m_04:
     build: .
     volumes:
      - ../../../anwar:/anwar
-    networks:
-      elasticsearch_v2:
+
 
   esloader70m_05:
     build: .
     volumes:
       - ../../../anwar:/anwar
-    networks:
-      elasticsearch_v2:
+
 
   esloader70m_06:
     build: .
     volumes:
       - ../../../anwar:/anwar
-    networks:
-      elasticsearch_v2:
+
 
   esloader70m_07:
     build: .
     volumes:
       - ../../../anwar:/anwar
-    networks:
-      elasticsearch_v2:
+
 
   esloader70m_08:
     build: .
     volumes:
       - ../../../anwar:/anwar
-    networks:
-      elasticsearch_v2:
+
 
   esloader70m_09:
     build: .
     volumes:
       - ../../../anwar:/anwar
-    networks:
-      elasticsearch_v2:
+
 
   esloader70m_10:
     build: .
     volumes:
       - ../../../anwar:/anwar
-    networks:
-      elasticsearch_v2:
+
 
   elasticsearch_ma1:
     image: elasticsearch:7.8.0
@@ -113,9 +97,6 @@ services:
       - elasticsearch-scot_master_01:/usr/share/elasticsearch/data
     ports:
       - 9294:9200
-      - 9395:9300
-    networks:
-      elasticsearch_v2:
 
   elasticsearch_ma2:
     image: elasticsearch:7.8.0
@@ -141,11 +122,7 @@ services:
       - IPC_LOCK
     volumes:
       - elasticsearch-scot_master_02:/usr/share/elasticsearch/data
-    ports:
-      - 9296:9200
-      - 9397:9300
-    networks:
-     elasticsearch_v2:
+
       
   elasticsearch_ma3:
     image: elasticsearch:7.8.0
@@ -171,11 +148,7 @@ services:
       - IPC_LOCK
     volumes:
       - elasticsearch-scot_master_03:/usr/share/elasticsearch/data
-    ports:
-      - 9298:9200
-      - 9399:9300
-    networks:
-      elasticsearch_v2:
+
 volumes:
   elasticsearch-scot_master_01:
     driver: local
