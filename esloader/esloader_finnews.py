@@ -7,6 +7,7 @@ import sys
 import argparse
 import os
 
+# Single Thread loader - TOO SLOW
 
 def main(importfile, start, indexname, logfile):
     # Param: importfile - file to index - in line - tab format like finnews.txt
@@ -90,4 +91,4 @@ if __name__ == "__main__":
     print("start", parsed_args.start)
     print("esindex", parsed_args.esindex)
     print("logfile", parsed_args.logfile)
-    #main(parsed_args_indexfile, parsed_args.start, parsed_args.esindex, parsed_args.logfile)
+    main(parsed_args_indexfile, parsed_args.start, parsed_args.esindex, parsed_args.logfile)
