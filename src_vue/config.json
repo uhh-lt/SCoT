@@ -1,28 +1,25 @@
 {
 	"flask_host" : "0.0.0.0",
+		
 
 	"collections_info_backend" : {
-		"default" : "mysql://root:root@127.0.0.1:3310/DT_finnews_dependency",
-		"fi_news_dep" : "mysql://root:root@127.0.0.1:3310/DT_finnews_dependency",
-		"de70mlcc" : "mysql://root:root@127.0.0.1:3310/DT_de70mlcc_dependency",
-		"corona_news" : "mysql://root:root@127.0.0.1:3310/scot_test"
-
+					"default" : "mysql://user:password@db/scot",
+					"en_books" : "mysql://user:password@db/scot",
+					"fi_news_dep" : "mysql://scot:scot@ltdatabase1/DT_finnews_dependency",
+					"de70mlcc" : "mysql://scot:scot@ltdatabase1/DT_de70mlcc_dependency"
+					
 	},
 
 	"collections_info_elastic" : {
-		"fi_news_dep" : {"es_index": "fi_news_dep", "es_host": "127.0.0.1", "es_port": 9292},
-		"de70mlcc" : {"es_index": "de70mlcc", "es_host": "127.0.0.1", "es_port": 9292},
-		"corona_news" : {"es_index": "corona_news", "es_host": "127.0.0.1", "es_port": 9292}
-	},
+	"fi_news_dep" : {"es_index": "fi_news_dep", "es_host": "elasticsearch", "es_port": 9200},
+	"de70mlcc" : {"es_index": "de70mlcc", "es_host": "elasticsearch", "es_port": 9200}
+},
 
 	"collections_info_frontend":{
-		
-		"Finnish News Dep": {"key": "fi_news_dep", "target": "Yksi#NUM", "p": 100, "d": 30, "info": "Finnish News Corpus."},
-		"German News 70m Dep": {"key": "de70mlcc", "target": "Krise#NN", "p": 100, "d": 15, "info": "Leipzig Corpus of 70 million sentences from various German newspapers between 1995-"},
-		"Corona News ElasticTest": {"key": "corona_news", "target": "covid-19", "p": 20, "d": 2, "info": "Canadian news websites relating to corona 2020"}
-	
-
+			"English Books": {"key":"en_books", "target": "happiness/NN", "p": 100, "d": 30, "info": "English Google Books, 1520-2008."},
+			"German News 70m Dep": {"key": "de70mlcc", "target": "Krise#NN", "p": 100, "d": 15, "info": "Please insert Corpus Info in config.json"},
+			"Finnish News Dep": {"key": "fi_news_dep", "target": "Yksi#NUM", "p": 100, "d": 30, "info": "Please insert Corpus Info in config.json"}
 	}
-	
-	
+
+
 }
