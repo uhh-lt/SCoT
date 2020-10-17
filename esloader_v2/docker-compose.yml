@@ -2,7 +2,6 @@ version: "2.1"
 networks:
   elasticsearch_v2:
 services:
-  app:
     
   esloaderfin_01:
     build: ./esloader_v2
@@ -92,15 +91,15 @@ services:
     image: elasticsearch:7.8.0
     container_name: elasticsearch_ma1
     environment:
-        - cluster.name=es-cluster
-        - node.name=elasticsearch_ma1
-        - bootstrap.memory_lock=true
-        - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
-        - "discovery.zen.ping.unicast.hosts=elasticsearch_ma2,elasticsearch_ma3"
-        - "discovery.zen.minimum_master_nodes=2"
-        - "xpack.security.enabled=false" #Disable security to make the setup and upgrade easier
-        - "xpack.watcher.enabled=false" #Disable watcher to avoid unnecessary activity
-        - "xpack.monitoring.enabled=false" #Disable monitoring to avoid unnecessary activity
+      - cluster.name=es-cluster
+      - node.name=elasticsearch_ma1
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+      - "discovery.zen.ping.unicast.hosts=elasticsearch_ma2,elasticsearch_ma3"
+      - "discovery.zen.minimum_master_nodes=2"
+      - "xpack.security.enabled=false" #Disable security to make the setup and upgrade easier
+      - "xpack.watcher.enabled=false" #Disable watcher to avoid unnecessary activity
+      - "xpack.monitoring.enabled=false" #Disable monitoring to avoid unnecessary activity
     ulimits:
       memlock:
         soft: -1
@@ -133,7 +132,7 @@ services:
       - "xpack.monitoring.enabled=false" #Disable monitoring to avoid unnecessary activity
     ulimits:
       memlock:
-        soft: -1
+          soft: -1
           hard: -1
         nofile:
           soft: 65536
@@ -143,8 +142,8 @@ services:
     volumes:
       - elasticsearch-scot_master_02:/usr/share/elasticsearch/data
     ports:
-     - 9296:9200
-     - 9397:9300
+      - 9296:9200
+      - 9397:9300
     networks:
      elasticsearch_v2:
       
