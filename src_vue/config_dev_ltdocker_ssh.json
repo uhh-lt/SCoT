@@ -10,9 +10,9 @@
 	},
 
 	"collections_info_elastic" : {
-		"fi_news_dep" : {"es_index": "fi_news_dep", "es_host": "127.0.0.1", "es_port": 9200},
-		"de70mlcc" : {"es_index": "de70mlcc", "es_host": "127.0.0.1", "es_port": 9200},
-		"corona_news" : {"es_index": "corona_news", "es_host": "127.0.0.1", "es_port": 9200}
+		"fi_news_dep" : {"es_index": "fi_news_dep", "es_host": "127.0.0.1", "es_port": 9292},
+		"de70mlcc" : {"es_index": "de70mlcc", "es_host": "127.0.0.1", "es_port": 9292},
+		"corona_news" : {"es_index": "corona_news", "es_host": "127.0.0.1", "es_port": 9292}
 	},
 
 	"collections_info_frontend":{

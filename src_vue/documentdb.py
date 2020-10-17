@@ -14,19 +14,18 @@ class Documentdb:
 
     def search(self, jo, bim, es_index="corona_news"):
         self.es.indices.refresh(index=es_index)
-        query = jo + " " + bim
+        jobim = jo + "@" + bim
         res = self.es.search(index=es_index, 
-            body={"query": 
-                {"bool":
-                    {"must":
-                        [
-                        {"match": 
-                            {"jos":  jo}
-                        },
-                        {"match": 
-                            {"bims": bim}
+            body={
+                "query": {
+                    "bool":{
+                        "must":{
+                            "match": {
+                                "bims":
+                                {"query": jobim,
+                                }
+                            }
                         }
-                        ]
                     }
                 }
             }

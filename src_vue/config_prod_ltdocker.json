@@ -6,7 +6,7 @@
 					"default" : "mysql://user:password@db/scot",
 					"en_books" : "mysql://user:password@db/scot",
 					"fi_news_dep" : "mysql://scot:scot@ltdatabase1/DT_finnews_dependency",
-					"de70mlcc" : "mysql://root:root@ltdatabase1/DT_de70mlcc_dependency"
+					"de70mlcc" : "mysql://scot:scot@ltdatabase1/DT_de70mlcc_dependency"
 					
 	},
 
