@@ -38,35 +38,18 @@ services:
     networks:
       scot-net:
   
-  elasticsearch:
-    image: elasticsearch:7.8.0
-    container_name: elasticsearch_780
-    environment:
-      
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-      nofile:
-        soft: 65536
-        hard: 65536
-    cap_add:
-      - IPC_LOCK
-    volumes:
-      - elasticsearch-data:/usr/share/elasticsearch/data
-    ports:
-      - 9292:9200
-      - 9392:9300
-    networks:
-      scot-net:
-
   esloaderfin_01:
     build: ./esloader_v2
     volumes:
       - ../../../anwar:/anwar
     networks:
       scot-net:
-
+  esloaderfin_02:
+    build: ./esloader_v2
+    volumes:
+      - ../../../anwar:/anwar
+    networks:
+      scot-net:
   esloader70m_01:
     build: ./esloader_v2
     volumes:
@@ -205,7 +188,7 @@ services:
       - node.name=elasticsearch_ma3
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
-      - "discovery.zen.ping.unicast.hosts=elasticsearch_ma2,elasticsearch_ma3"
+      - "discovery.zen.ping.unicast.hosts=elasticsearch_ma2,elasticsearch_ma1"
       - "discovery.zen.minimum_master_nodes=2"
       - "xpack.security.enabled=false" #Disable security to make the setup and upgrade easier
       - "xpack.watcher.enabled=false" #Disable watcher to avoid unnecessary activity
@@ -232,8 +215,6 @@ volumes:
   elasticsearch-scot_master_01:
     driver: local
   elasticsearch-scot_master_02:
-    driver: local
-  elasticsearch-data:
     driver: local
   elasticsearch-scot_master_03:
     driver: local
