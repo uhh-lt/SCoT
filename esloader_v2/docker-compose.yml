@@ -132,13 +132,13 @@ services:
       - "xpack.monitoring.enabled=false" #Disable monitoring to avoid unnecessary activity
     ulimits:
       memlock:
-          soft: -1
-          hard: -1
-        nofile:
-          soft: 65536
-          hard: 65536
-        cap_add:
-          - IPC_LOCK
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    cap_add:
+      - IPC_LOCK
     volumes:
       - elasticsearch-scot_master_02:/usr/share/elasticsearch/data
     ports:
@@ -167,8 +167,8 @@ services:
       nofile:
         soft: 65536
         hard: 65536
-      cap_add:
-       - IPC_LOCK
+    cap_add:
+      - IPC_LOCK
     volumes:
       - elasticsearch-scot_master_03:/usr/share/elasticsearch/data
     ports:
