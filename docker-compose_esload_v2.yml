@@ -1,6 +1,7 @@
 version: "2.1"
 networks:
   scot-net:
+    driver: bridge
 
 services:
   app:
@@ -14,7 +15,7 @@ services:
     ports:
       - "10010:80"
     networks:
-      scot-net:
+      - scot-net
  
   db:
     image: mariadb:10.5.4
@@ -36,89 +37,89 @@ services:
       MYSQL_PASSWORD: password
       
     networks:
-      scot-net:
+      - scot-net
   
   esloaderfin_01:
     build: ./esloader_v2
     volumes:
       - ../../../anwar:/anwar
     networks:
-      scot-net:
+      - scot-net
   esloaderfin_02:
     build: ./esloader_v2
     volumes:
       - ../../../anwar:/anwar
     networks:
-      scot-net:
+      - scot-net
   esloader70m_01:
     build: ./esloader_v2
     volumes:
       - ../../../anwar:/anwar
     networks:
-      scot-net:
+      - scot-net
 
   esloader70m_02:
     build: ./esloader_v2
     volumes:
       - ../../../anwar:/anwar
     networks:
-      scot-net:
+      - scot-net
 
   esloader70m_03:
     build: ./esloader_v2
     volumes:
       - ../../../anwar:/anwar
     networks:
-      scot-net:
+      - scot-net
 
   esloader70m_04:
     build: ./esloader_v2
     volumes:
      - ../../../anwar:/anwar
     networks:
-      scot-net:
+      - scot-net
 
   esloader70m_05:
     build: ./esloader_v2
     volumes:
       - ../../../anwar:/anwar
     networks:
-      scot-net:
+      - scot-net
 
   esloader70m_06:
     build: ./esloader_v2
     volumes:
       - ../../../anwar:/anwar
     networks:
-      scot-net:
+      - scot-net
 
   esloader70m_07:
     build: ./esloader_v2
     volumes:
       - ../../../anwar:/anwar
     networks:
-      scot-net:
+      - scot-net
 
   esloader70m_08:
     build: ./esloader_v2
     volumes:
       - ../../../anwar:/anwar
     networks:
-      scot-net:
+      - scot-net
 
   esloader70m_09:
     build: ./esloader_v2
     volumes:
       - ../../../anwar:/anwar
     networks:
-      scot-net:
+      - scot-net
 
   esloader70m_10:
     build: ./esloader_v2
     volumes:
       - ../../../anwar:/anwar
     networks:
-      scot-net:
+      - scot-net
 
   elasticsearch_ma1:
     image: elasticsearch:7.8.0
@@ -126,26 +127,21 @@ services:
     environment:
       - node.name=elasticsearch_ma1
       - cluster.name=es-cluster
+      - discovery.seed_hosts=elasticsearch_ma2,elasticsearch_ma3
+      - cluster.initial_master_nodes=elasticsearch_ma3,elasticsearch_ma1,elasticsearch_ma2
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - xpack.security.enabled=false
       
     ulimits:
       memlock:
         soft: -1
         hard: -1
-      nofile:
-        soft: 65536
-        hard: 65536
-    cap_add:
-      - IPC_LOCK
     volumes:
       - elasticsearch-scot_master_01:/usr/share/elasticsearch/data
     ports:
       - 9293:9200
-      - 9393:9300
     networks:
-      scot-net:
+      - scot-net
 
   elasticsearch_ma2:
     image: elasticsearch:7.8.0
@@ -153,6 +149,8 @@ services:
     environment:
       - node.name=elasticsearch_ma2
       - cluster.name=es-cluster
+      - discovery.seed_hosts=elasticsearch_ma1,elasticsearch_ma3
+      - cluster.initial_master_nodes=elasticsearch_ma3,elasticsearch_ma1,elasticsearch_ma2
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       - xpack.security.enabled=false
@@ -160,16 +158,12 @@ services:
       memlock:
         soft: -1
         hard: -1
-      nofile:
-        soft: 65536
-        hard: 65536
-    cap_add:
-      - IPC_LOCK
     volumes:
       - elasticsearch-scot_master_02:/usr/share/elasticsearch/data
-    
+    ports:
+      - 9294:9201
     networks:
-      scot-net:
+      - scot-net
       
   elasticsearch_ma3:
     image: elasticsearch:7.8.0
@@ -177,6 +171,8 @@ services:
     environment:
       - node.name=elasticsearch_ma3
       - cluster.name=es-cluster
+      - discovery.seed_hosts=elasticsearch_ma1,elasticsearch_ma2
+      - cluster.initial_master_nodes=elasticsearch_ma3,elasticsearch_ma1,elasticsearch_ma2
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       - xpack.security.enabled=false
@@ -184,16 +180,13 @@ services:
       memlock:
         soft: -1
         hard: -1
-      nofile:
-        soft: 65536
-        hard: 65536
-    cap_add:
-      - IPC_LOCK
+    ports:
+      9295:9202
     volumes:
       - elasticsearch-scot_master_03:/usr/share/elasticsearch/data
-    
     networks:
-      scot-net:
+      - scot-net
+        
 
 
 volumes:
