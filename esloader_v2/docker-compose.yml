@@ -120,7 +120,7 @@ services:
 
     elasticsearch_ma2:
         image: elasticsearch:7.8.0
-        container_name: elasticsearch_ma1
+        container_name: elasticsearch_ma2
         environment:
           - cluster.name=es-cluster
           - node.name=elasticsearch_ma2
