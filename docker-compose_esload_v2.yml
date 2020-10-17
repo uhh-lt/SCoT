@@ -1,7 +1,6 @@
 version: "2.1"
 networks:
   scot-net:
-  scot-nete:
 
 services:
   app:
@@ -43,8 +42,7 @@ services:
     image: elasticsearch:7.8.0
     container_name: elasticsearch_780
     environment:
-      - xpack.security.enabled=false
-      - discovery.type=single-node
+      
     ulimits:
       memlock:
         soft: -1
@@ -67,77 +65,77 @@ services:
     volumes:
       - ../../../anwar:/anwar
     networks:
-      scot-nete:
+      scot-net:
 
   esloader70m_01:
     build: ./esloader_v2
     volumes:
       - ../../../anwar:/anwar
     networks:
-      scot-nete:
+      scot-net:
 
   esloader70m_02:
     build: ./esloader_v2
     volumes:
       - ../../../anwar:/anwar
     networks:
-      scot-nete:
+      scot-net:
 
   esloader70m_03:
     build: ./esloader_v2
     volumes:
       - ../../../anwar:/anwar
     networks:
-      scot-nete:
+      scot-net:
 
   esloader70m_04:
     build: ./esloader_v2
     volumes:
      - ../../../anwar:/anwar
     networks:
-      scot-nete:
+      scot-net:
 
   esloader70m_05:
     build: ./esloader_v2
     volumes:
       - ../../../anwar:/anwar
     networks:
-      scot-nete:
+      scot-net:
 
   esloader70m_06:
     build: ./esloader_v2
     volumes:
       - ../../../anwar:/anwar
     networks:
-      scot-nete:
+      scot-net:
 
   esloader70m_07:
     build: ./esloader_v2
     volumes:
       - ../../../anwar:/anwar
     networks:
-      scot-nete:
+      scot-net:
 
   esloader70m_08:
     build: ./esloader_v2
     volumes:
       - ../../../anwar:/anwar
     networks:
-      scot-nete:
+      scot-net:
 
   esloader70m_09:
     build: ./esloader_v2
     volumes:
       - ../../../anwar:/anwar
     networks:
-      scot-nete:
+      scot-net:
 
   esloader70m_10:
     build: ./esloader_v2
     volumes:
       - ../../../anwar:/anwar
     networks:
-      scot-nete:
+      scot-net:
 
   elasticsearch_ma1:
     image: elasticsearch:7.8.0
@@ -167,7 +165,7 @@ services:
       - 9293:9200
       - 9393:9300
     networks:
-      scot-nete:
+      scot-net:
 
   elasticsearch_ma2:
     image: elasticsearch:7.8.0
@@ -197,7 +195,7 @@ services:
       - 9294:9200
       - 9394:9300
     networks:
-      scot-nete:
+      scot-net:
       
   elasticsearch_ma3:
     image: elasticsearch:7.8.0
@@ -227,7 +225,7 @@ services:
       - 9295:9200
       - 9395:9300
     networks:
-      scot-nete:
+      scot-net:
 
 
 volumes:
@@ -235,7 +233,7 @@ volumes:
     driver: local
   elasticsearch-scot_master_02:
     driver: local
-  elasticsearch-data::
+  elasticsearch-data:
     driver: local
   elasticsearch-scot_master_03:
     driver: local
