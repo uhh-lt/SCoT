@@ -1,75 +1,92 @@
 version: "2.1"
+networks:
+  scot-net:
 
 services:
-    
+
   esloaderfin_01:
     build: .
     volumes:
       - ../../../anwar:/anwar
+    networks:
+      scot-net:
 
   esloaderfin_02:
     build: .
     volumes:
       - ../../../anwar:/anwar
-
+    networks:
+      scot-net: 
   
   esloader70m_01:
     build: .
     volumes:
       - ../../../anwar:/anwar
+    networks:
+      scot-net:
 
   esloader70m_02:
     build: .
     volumes:
       - ../../../anwar:/anwar
+    networks:
+      scot-net:
 
   esloader70m_03:
     build: .
     volumes:
       - ../../../anwar:/anwar
-
+    networks:
+      scot-net:
 
   esloader70m_04:
     build: .
     volumes:
      - ../../../anwar:/anwar
-
+    networks:
+      scot-net:
 
   esloader70m_05:
     build: .
     volumes:
       - ../../../anwar:/anwar
-
+    networks:
+      scot-net:
 
   esloader70m_06:
     build: .
     volumes:
       - ../../../anwar:/anwar
-
+    networks:
+      scot-net:
 
   esloader70m_07:
     build: .
     volumes:
       - ../../../anwar:/anwar
-
+    networks:
+      scot-net:
 
   esloader70m_08:
     build: .
     volumes:
       - ../../../anwar:/anwar
-
+    networks:
+      scot-net:
 
   esloader70m_09:
     build: .
     volumes:
       - ../../../anwar:/anwar
-
+    networks:
+      scot-net:
 
   esloader70m_10:
     build: .
     volumes:
       - ../../../anwar:/anwar
-
+    networks:
+      scot-net:
 
   elasticsearch_ma1:
     image: elasticsearch:7.8.0
@@ -97,6 +114,8 @@ services:
       - elasticsearch-scot_master_01:/usr/share/elasticsearch/data
     ports:
       - 9294:9200
+    networks:
+      scot-net:
 
   elasticsearch_ma2:
     image: elasticsearch:7.8.0
@@ -122,7 +141,8 @@ services:
       - IPC_LOCK
     volumes:
       - elasticsearch-scot_master_02:/usr/share/elasticsearch/data
-
+    networks:
+      scot-net:
       
   elasticsearch_ma3:
     image: elasticsearch:7.8.0
@@ -148,6 +168,9 @@ services:
       - IPC_LOCK
     volumes:
       - elasticsearch-scot_master_03:/usr/share/elasticsearch/data
+    networks:
+      scot-net:
+
 
 volumes:
   elasticsearch-scot_master_01:
