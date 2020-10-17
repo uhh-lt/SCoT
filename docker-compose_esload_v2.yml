@@ -130,7 +130,7 @@ services:
       - cluster.name=es-cluster
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - xpack.security.enabled=true
+      - xpack.security.enabled=false
       
     ulimits:
       memlock:
@@ -159,7 +159,7 @@ services:
       - cluster.name=es-cluster
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - xpack.security.enabled=true
+      - xpack.security.enabled=false
     ulimits:
       memlock:
         soft: -1
@@ -187,7 +187,7 @@ services:
       - cluster.name=es-cluster
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - xpack.security.enabled=true
+      - xpack.security.enabled=false
     ulimits:
       memlock:
         soft: -1
