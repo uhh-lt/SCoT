@@ -139,7 +139,7 @@ services:
     volumes:
       - elasticsearch-scot_master_01:/usr/share/elasticsearch/data
     ports:
-      - 9293: 9200
+      - 9293:9200
     networks:
       - scot-net
 
@@ -161,7 +161,7 @@ services:
     volumes:
       - elasticsearch-scot_master_02:/usr/share/elasticsearch/data
     ports:
-      - 9294: 9201
+      - 9294:9201
     networks:
       - scot-net
       
@@ -181,7 +181,7 @@ services:
         soft: -1
         hard: -1
     ports:
-      9295: 9202
+      - 9295:9202
     volumes:
       - elasticsearch-scot_master_03:/usr/share/elasticsearch/data
     networks:
