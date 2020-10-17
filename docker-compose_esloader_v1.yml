@@ -15,6 +15,20 @@ services:
     networks:
       scot-net:
  
+  esloaderfin:
+    build: ./esloader
+    volumes:
+      - ../../../anwar:/anwar
+    networks:
+      scot-net:
+  
+  esloader70m:
+    build: ./esloader
+    volumes:
+      - ../../../anwar:/anwar
+    networks:
+      scot-net:
+
   db:
     image: mariadb:10.5.4
     container_name: mariadb_1054
