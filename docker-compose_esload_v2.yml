@@ -125,8 +125,6 @@ services:
     container_name: elasticsearch_ma1
     environment:
       - node.name=elasticsearch_ma1
-      - cluster.initial_master_nodes=elasticsearch-ma1,elasticsearch-ma2, elasticsearch_ma3
-      - discovery.seed_hosts=elasticsearch-ma2:9300
       - cluster.name=es-cluster
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
@@ -154,8 +152,6 @@ services:
     container_name: elasticsearch_ma2
     environment:
       - node.name=elasticsearch_ma2
-      - cluster.initial_master_nodes=elasticsearch-ma1,elasticsearch-ma2, elasticsearch_ma3
-      - discovery.seed_hosts=elasticsearch-ma2:9300
       - cluster.name=es-cluster
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
@@ -171,9 +167,7 @@ services:
       - IPC_LOCK
     volumes:
       - elasticsearch-scot_master_02:/usr/share/elasticsearch/data
-    ports:
-      - 9294:9200
-      - 9394:9300
+    
     networks:
       scot-net:
       
@@ -182,8 +176,6 @@ services:
     container_name: elasticsearch_ma3
     environment:
       - node.name=elasticsearch_ma3
-      - cluster.initial_master_nodes=elasticsearch-ma1,elasticsearch-ma2, elasticsearch_ma3
-      - discovery.seed_hosts=elasticsearch-ma2:9300
       - cluster.name=es-cluster
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
@@ -199,9 +191,7 @@ services:
       - IPC_LOCK
     volumes:
       - elasticsearch-scot_master_03:/usr/share/elasticsearch/data
-    ports:
-      - 9295:9200
-      - 9395:9300
+    
     networks:
       scot-net:
 
