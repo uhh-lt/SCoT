@@ -118,65 +118,65 @@ services:
     networks:
       elasticsearch_v2:
 
-    elasticsearch_ma2:
-        image: elasticsearch:7.8.0
-        container_name: elasticsearch_ma2
-        environment:
-          - cluster.name=es-cluster
-          - node.name=elasticsearch_ma2
-          - bootstrap.memory_lock=true
-          - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
-          - "discovery.zen.ping.unicast.hosts=elasticsearch_ma1,elasticsearch_ma3"
-          - "discovery.zen.minimum_master_nodes=2"
-          - "xpack.security.enabled=false" #Disable security to make the setup and upgrade easier
-          - "xpack.watcher.enabled=false" #Disable watcher to avoid unnecessary activity
-          - "xpack.monitoring.enabled=false" #Disable monitoring to avoid unnecessary activity
-        ulimits:
-          memlock:
-            soft: -1
-            hard: -1
-          nofile:
-            soft: 65536
-            hard: 65536
-          cap_add:
-            - IPC_LOCK
-          volumes:
-            - elasticsearch-scot_master_02:/usr/share/elasticsearch/data
-          ports:
-            - 9296:9200
-            - 9397:9300
-          networks:
-            elasticsearch_v2:
+  elasticsearch_ma2:
+    image: elasticsearch:7.8.0
+    container_name: elasticsearch_ma2
+    environment:
+      - cluster.name=es-cluster
+      - node.name=elasticsearch_ma2
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+      - "discovery.zen.ping.unicast.hosts=elasticsearch_ma1,elasticsearch_ma3"
+      - "discovery.zen.minimum_master_nodes=2"
+      - "xpack.security.enabled=false" #Disable security to make the setup and upgrade easier
+      - "xpack.watcher.enabled=false" #Disable watcher to avoid unnecessary activity
+      - "xpack.monitoring.enabled=false" #Disable monitoring to avoid unnecessary activity
+    ulimits:
+      memlock:
+        soft: -1
+          hard: -1
+        nofile:
+          soft: 65536
+          hard: 65536
+        cap_add:
+          - IPC_LOCK
+    volumes:
+      - elasticsearch-scot_master_02:/usr/share/elasticsearch/data
+    ports:
+     - 9296:9200
+     - 9397:9300
+    networks:
+     elasticsearch_v2:
       
-    elasticsearch_ma3:
-        image: elasticsearch:7.8.0
-        container_name: elasticsearch_ma3
-        environment:
-          - cluster.name=es-cluster
-          - node.name=elasticsearch_ma3
-          - bootstrap.memory_lock=true
-          - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
-          - "discovery.zen.ping.unicast.hosts=elasticsearch_ma2,elasticsearch_ma3"
-          - "discovery.zen.minimum_master_nodes=2"
-          - "xpack.security.enabled=false" #Disable security to make the setup and upgrade easier
-          - "xpack.watcher.enabled=false" #Disable watcher to avoid unnecessary activity
-          - "xpack.monitoring.enabled=false" #Disable monitoring to avoid unnecessary activity
-        ulimits:
-          memlock:
-            soft: -1
-            hard: -1
-          nofile:
-            soft: 65536
-            hard: 65536
-          cap_add:
-            - IPC_LOCK
-        volumes:
-          - elasticsearch-scot_master_03:/usr/share/elasticsearch/data
-        ports:
-          - 9298:9200
-          - 9399:9300
-        networks:
-          elasticsearch_v2:
+  elasticsearch_ma3:
+    image: elasticsearch:7.8.0
+    container_name: elasticsearch_ma3
+    environment:
+      - cluster.name=es-cluster
+      - node.name=elasticsearch_ma3
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+      - "discovery.zen.ping.unicast.hosts=elasticsearch_ma2,elasticsearch_ma3"
+      - "discovery.zen.minimum_master_nodes=2"
+      - "xpack.security.enabled=false" #Disable security to make the setup and upgrade easier
+      - "xpack.watcher.enabled=false" #Disable watcher to avoid unnecessary activity
+      - "xpack.monitoring.enabled=false" #Disable monitoring to avoid unnecessary activity
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+      cap_add:
+       - IPC_LOCK
+    volumes:
+      - elasticsearch-scot_master_03:/usr/share/elasticsearch/data
+    ports:
+      - 9298:9200
+      - 9399:9300
+    networks:
+      elasticsearch_v2:
 volumes:
   elasticsearch-scot_master_01:
     driver: local
