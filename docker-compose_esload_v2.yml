@@ -42,21 +42,21 @@ services:
   # command arguments are es-server port es-index indexfile start end date-parsetyp workers log-file
   esloaderfin_01:
     build: ./esloader_v2
-    command: python3 esloader_finnews_mt2.py elasticsearch_ma1 9200 fin_news ../anwar/finnews_dep_wft.txt 0 7000000 fin 50 log.txt
+    command: python3 esloader_finnews_mt2.py elasticsearch_ma1 9200 fin_news ../anwar/finnews_dep_wft.txt 0 7000000 fin 1 log.txt
     volumes:
       - ../anwar:/anwar
     networks:
       - scot-net
   esloaderfin_02:
     build: ./esloader_v2
-    command: python3 esloader_finnews_mt2.py elasticsearch_ma1 9200 fin_news ../anwar/finnews_dep_wft.txt 7000000 14000000 fin 50 log.txt
+    command: python3 esloader_finnews_mt2.py elasticsearch_ma1 9200 fin_news ../anwar/finnews_dep_wft.txt 7000000 13987699 fin 1 log.txt
     volumes:
       - ../anwar:/anwar
     networks:
       - scot-net
   esloader70m_01:
     build: ./esloader_v2
-    command: python3 esloader_finnews_mt2.py elasticsearch_ma2 9200 de70 ../anwar/de70mlcc_dep_wft.txt 0 7000000 de70 50 log.txt
+    command: python3 esloader_finnews_mt2.py elasticsearch_ma1 9200 de70 ../anwar/de70mlcc_dep_wft.txt 0 7000000 de70 1 log.txt
     volumes:
       - ../anwar:/anwar
     networks:
@@ -64,7 +64,7 @@ services:
 
   esloader70m_02:
     build: ./esloader_v2
-    command: python3 esloader_finnews_mt2.py elasticsearch_ma2 9200 de70 ../anwar/de70mlcc_dep_wft.txt 7000000 14000000 de70 50 log.txt
+    command: python3 esloader_finnews_mt2.py elasticsearch_ma1 9200 de70 ../anwar/de70mlcc_dep_wft.txt 7000000 14000000 de70 1 log.txt
     volumes:
       - ../anwar:/anwar
     networks:
@@ -72,7 +72,7 @@ services:
 
   esloader70m_03:
     build: ./esloader_v2
-    command: python3 esloader_finnews_mt2.py elasticsearch_ma3 9200 de70 ../anwar/de70mlcc_dep_wft.txt 14000000 21000000 de70 50 log.txt
+    command: python3 esloader_finnews_mt2.py elasticsearch_ma2 9200 de70 ../anwar/de70mlcc_dep_wft.txt 14000000 21000000 de70 1 log.txt
     volumes:
       - ../anwar:/anwar
     networks:
@@ -80,7 +80,7 @@ services:
 
   esloader70m_04:
     build: ./esloader_v2
-    command: python3 esloader_finnews_mt2.py elasticsearch_ma3 9200 de70 ../anwar/de70mlcc_dep_wft.txt 21000000 28000000 de70 50 log.txt
+    command: python3 esloader_finnews_mt2.py elasticsearch_ma2 9200 de70 ../anwar/de70mlcc_dep_wft.txt 21000000 28000000 de70 1 log.txt
     volumes:
      - ../anwar:/anwar
     networks:
@@ -88,6 +88,7 @@ services:
 
   esloader70m_05:
     build: ./esloader_v2
+    command: python3 esloader_finnews_mt2.py elasticsearch_ma2 9200 de70 ../anwar/de70mlcc_dep_wft.txt 28000000 35000000 de70 1 log.txt
     volumes:
       - ../anwar:/anwar
     networks:
@@ -95,6 +96,7 @@ services:
 
   esloader70m_06:
     build: ./esloader_v2
+    command: python3 esloader_finnews_mt2.py elasticsearch_ma2 9200 de70 ../anwar/de70mlcc_dep_wft.txt 35000000 42000000 de70 1 log.txt
     volumes:
       - ../anwar:/anwar
     networks:
@@ -102,6 +104,7 @@ services:
 
   esloader70m_07:
     build: ./esloader_v2
+    command: python3 esloader_finnews_mt2.py elasticsearch_ma3 9200 de70 ../anwar/de70mlcc_dep_wft.txt 42000000 49000000 de70 1 log.txt
     volumes:
       - ../anwar:/anwar
     networks:
@@ -109,6 +112,7 @@ services:
 
   esloader70m_08:
     build: ./esloader_v2
+    command: python3 esloader_finnews_mt2.py elasticsearch_ma3 9200 de70 ../anwar/de70mlcc_dep_wft.txt 49000000 56000000 de70 1 log.txt
     volumes:
       - ../anwar:/anwar
     networks:
@@ -116,6 +120,7 @@ services:
 
   esloader70m_09:
     build: ./esloader_v2
+    command: python3 esloader_finnews_mt2.py elasticsearch_ma3 9200 de70 ../anwar/de70mlcc_dep_wft.txt 56000000 63000000 de70 1 log.txt
     volumes:
       - ../anwar:/anwar
     networks:
@@ -123,6 +128,7 @@ services:
 
   esloader70m_10:
     build: ./esloader_v2
+    command: python3 esloader_finnews_mt2.py elasticsearch_ma3 9200 de70 ../anwar/de70mlcc_dep_wft.txt 63000000 70000000 de70 1 log.txt
     volumes:
       - ../anwar:/anwar
     networks:
