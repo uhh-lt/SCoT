@@ -12,7 +12,7 @@ from elasticsearch.helpers import streaming_bulk
 import urllib3
 import logging
 
-def parserthreadfunc(esserver, esport, esindex, indexfile, start, end, workerid):
+def parserthreadfunc(esserver, esport, esindex, indexfile, start, end, parsetype, workerid):
    
     
     # read docs & pushing to elasticsearch
@@ -48,7 +48,7 @@ def parserthreadfunc(esserver, esport, esindex, indexfile, start, end, workerid)
                 sentence = row[3]
                 #time-slice field = date field with this text file
                 # de70 [1995, 1999]
-                if parstype="de70":
+                if parsetype="de70":
                     time_slice = row[4][1:5]+"-"+row[4][-5:-1]
                 # fin 1995-1999
                 else:
@@ -98,9 +98,9 @@ def parserthreadfunc(esserver, esport, esindex, indexfile, start, end, workerid)
     except:
         logging.error("Worker", workerid, " error at number ", start + successes)
 
-    loggin.info("worker ended ", workerid, " hat indiziert ", successes, " end id ", start + successes)
+    logging.info("worker ended ", workerid, " hat indiziert ", successes, " end id ", start + successes)
 
-def main(esserver, esport, esindex, indexfile, start, end, workers, logfile):
+def main(esserver, esport, esindex, indexfile, start, end, parstype, workers, logfile):
     # Param: importfile - file to index - in line - tab format like finnews.txt
     # Param: start - line to start from file (just in case it has been stopped at some point)
     # param: indexname - elasticsearch index to use
@@ -112,7 +112,7 @@ def main(esserver, esport, esindex, indexfile, start, end, workers, logfile):
         startw = int(start) + work * workerinterval
         endw = int(start) + (work +1) * workerinterval +1
         logging.info("worker starting with id", workerid, "parsing docs from to", startw, endw)
-        p = Process(target=parserthreadfunc, args=(esserver, esport, esindex, indexfile, startw, endw, workerid))
+        p = Process(target=parserthreadfunc, args=(esserver, esport, esindex, indexfile, startw, endw, parstype, workerid))
         p.start()
         workerid += 1
     
@@ -134,10 +134,10 @@ def create_arg_parser():
                     help='end indexing at line')
     parser.add_argument('parstype',
                     help='deals with different dates in fin and de70')
-    parser.add_argument('logfile',
-                    help='path to logfile ie \dir\file.txt')
     parser.add_argument('workers',
                     help='number of workers')
+    parser.add_argument('logfile',
+                    help='path to logfile ie \dir\file.txt')
     
     
     return parser
