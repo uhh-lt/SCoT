@@ -48,7 +48,7 @@ def parserthreadfunc(esserver, esport, esindex, indexfile, start, end, parsetype
                 sentence = row[3]
                 #time-slice field = date field with this text file
                 # de70 [1995, 1999]
-                if parsetype="de70":
+                if parsetype=="de70":
                     time_slice = row[4][1:5]+"-"+row[4][-5:-1]
                 # fin 1995-1999
                 else:
@@ -71,14 +71,14 @@ def parserthreadfunc(esserver, esport, esindex, indexfile, start, end, parsetype
             
                 #print (doc)
             
-            ##### count and log
-            printcounter += 1
-            if (printcounter == 1000):
-                now = datetime.now()
-                date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
-                logging.info("indexing importfile ", indexfile, "line number", counter, "to es index", esindex)
-                printcounter = 0
-            #es.indices.refresh(index=esindex)
+                ##### count and log
+                printcounter += 1
+                if (printcounter == 1000):
+                    now = datetime.now()
+                    date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
+                    logging.info("indexing importfile ", indexfile, "line number", counter, "to es index", esindex)
+                    printcounter = 0
+                #es.indices.refresh(index=esindex)
                 counter += 1
                 if counter >= end:
                     break
