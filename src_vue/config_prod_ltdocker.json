@@ -11,8 +11,8 @@
 	},
 
 	"collections_info_elastic" : {
-	"fi_news_dep" : {"es_index": "fi_news_dep", "es_host": "elasticsearch", "es_port": 9200},
-	"de70mlcc" : {"es_index": "de70mlcc", "es_host": "elasticsearch", "es_port": 9200}
+	"fi_news_dep" : {"es_index": "fi_news_dep", "es_host": "elasticsearch_ma1", "es_port": 9200},
+	"de70mlcc" : {"es_index": "de70mlcc", "es_host": "elasticsearch_ma1", "es_port": 9200}
 },
 
 	"collections_info_frontend":{

@@ -9,7 +9,6 @@ import os
 from multiprocessing import Process
 from elasticsearch.helpers import bulk
 from elasticsearch.helpers import streaming_bulk
-import tqdm
 import urllib3
 
 def parserthreadfunc(esserver, esport, esindex, indexfile, start, end, workerid):
@@ -54,7 +53,7 @@ def parserthreadfunc(esserver, esport, esindex, indexfile, start, end, workerid)
 
                 doc = { "_index": esindex,
                 "_id": counter,
-                "_doc": {
+                "_source": {
                     'jobim': jobimsES,
                     'sentence': sentence,
                     'source': source,
