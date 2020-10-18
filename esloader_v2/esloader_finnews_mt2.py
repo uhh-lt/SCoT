@@ -23,8 +23,11 @@ def parserthreadfunc(esserver, esport, esindex, indexfile, start, end, parsetype
             for i in range(start):
                 next(reader)
             counter = start
-            #printcounter = 0
+            printcounter = 0
             for row in reader:
+                # interval does not include end
+                if counter >= end:
+                    break
                 ############### parse
                 # jo - field is ignored (duplicate information to jobim field)
                 #josi = row[0]
@@ -74,21 +77,19 @@ def parserthreadfunc(esserver, esport, esindex, indexfile, start, end, parsetype
                 ##### count and log
                 printcounter += 1
                 if (printcounter == 1000):
-                    now = datetime.now()
-                    date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
-                    logging.info("indexing importfile ", indexfile, "line number", counter, "to es index", esindex)
+                    #now = datetime.now()
+                    #date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
+                    logging.info("indexing importfile " + str(indexfile) + "line number" + str(counter) + "to es index" + str(esindex))
                     printcounter = 0
                 #es.indices.refresh(index=esindex)
                 counter += 1
-                if counter >= end:
-                    break
-                
                 yield doc
+                
                 
      # settings
     es = Elasticsearch([{'host': esserver, 'port': esport}])
     #log = open(logfile, "a")
-    logging.info("Worker", workerid, " now indexing documents...")
+    logging.info("Worker" + str(workerid) + " now indexing documents...")
     successes = 0
     try:
         for ok, action in streaming_bulk(
@@ -96,22 +97,31 @@ def parserthreadfunc(esserver, esport, esindex, indexfile, start, end, parsetype
         ):
             successes += ok
     except:
-        logging.error("Worker", workerid, " error at number ", start + successes)
-
-    logging.info("worker ended ", workerid, " hat indiziert ", successes, " end id ", start + successes)
+        string = "Worker" + str(workerid) + " error at number " + str(start + successes)
+        logging.error(string)
+    string = "Worker" + str(workerid) + " hat indiziert und ist nun at " + str(start + successes)
+    logging.info(string)
 
 def main(esserver, esport, esindex, indexfile, start, end, parstype, workers, logfile):
     # Param: importfile - file to index - in line - tab format like finnews.txt
     # Param: start - line to start from file (just in case it has been stopped at some point)
     # param: indexname - elasticsearch index to use
+    # not including the END
     logging.basicConfig(filename=logfile, encoding='utf-8', level=logging.DEBUG)
+    # set workers and docs to process
+    workers = int(workers)
     interval = int(end) - int(start)
-    workerinterval = int (interval / workers)
+    # fit interval to workers nach oben
+    if (interval % workers) != 0:
+        interval += workers - (interval % workers)
+    # workerinterval should be integer now
+    workerinterval = int (interval / workers) 
     workerid = 0
     for work in range(workers):
         startw = int(start) + work * workerinterval
-        endw = int(start) + (work +1) * workerinterval +1
-        logging.info("worker starting with id", workerid, "parsing docs from to", startw, endw)
+        endw = int(start) + (work +1) * workerinterval
+        string = "worker starting with id" + str(workerid) + "parsing docs from to" + str(startw) + " " + str(endw)
+        logging.info(string)
         p = Process(target=parserthreadfunc, args=(esserver, esport, esindex, indexfile, startw, endw, parstype, workerid))
         p.start()
         workerid += 1
