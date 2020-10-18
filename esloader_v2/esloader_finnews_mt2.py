@@ -9,6 +9,7 @@ import os
 from multiprocessing import Process
 from elasticsearch.helpers import bulk
 from elasticsearch.helpers import streaming_bulk
+from elasticsearch.helpers import parallel_bulk
 import urllib3
 import logging
 
@@ -76,7 +77,7 @@ def parserthreadfunc(esserver, esport, esindex, indexfile, start, end, parsetype
             
                 ##### count and log
                 printcounter += 1
-                if (printcounter == 1000):
+                if (printcounter == 10):
                     #now = datetime.now()
                     #date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
                     logging.info("indexing importfile " + str(indexfile) + "line number" + str(counter) + "to es index" + str(esindex))
@@ -92,15 +93,15 @@ def parserthreadfunc(esserver, esport, esindex, indexfile, start, end, parsetype
     logging.info("Worker" + str(workerid) + " now indexing documents...")
     successes = 0
     try:
-        for ok, action in streaming_bulk(
-            client=es, actions=generate(),
+        for ok, action in parallel_bulk(
+            client=es, actions=generate()
         ):
             successes += ok
     except:
         string = "Worker" + str(workerid) + " error at number " + str(start + successes)
-        logging.error(string)
+        print(string)
     string = "Worker" + str(workerid) + " hat indiziert und ist nun at " + str(start + successes)
-    logging.info(string)
+    print(string)
 
 def main(esserver, esport, esindex, indexfile, start, end, parstype, workers, logfile):
     # Param: importfile - file to index - in line - tab format like finnews.txt
@@ -121,7 +122,7 @@ def main(esserver, esport, esindex, indexfile, start, end, parstype, workers, lo
         startw = int(start) + work * workerinterval
         endw = int(start) + (work +1) * workerinterval
         string = "worker starting with id" + str(workerid) + "parsing docs from to" + str(startw) + " " + str(endw)
-        logging.info(string)
+        print(string)
         p = Process(target=parserthreadfunc, args=(esserver, esport, esindex, indexfile, startw, endw, parstype, workerid))
         p.start()
         workerid += 1
@@ -147,7 +148,7 @@ def create_arg_parser():
     parser.add_argument('workers',
                     help='number of workers')
     parser.add_argument('logfile',
-                    help='path to logfile ie \dir\file.txt')
+                    help='path to logfile ie dirfile.txt')
     
     
     return parser
@@ -168,10 +169,11 @@ if __name__ == "__main__":
     print("start", parsed_args.start)
     print("end", parsed_args.end)
     print("parstype", parsed_args.parstype)
+    # disable multiprocessing - and use thread-api
+    parsed_args.workers = 1
     print("workers number", parsed_args.workers)
-    #workers = 50
     print("logfile", parsed_args.logfile)
-    # logfile = "C:/Users/hitec_c/Documents/finnews_log.txt"
+    #parsed_args.logfile = "C:/Users/hitec_c/Documents/finnews_log.txt"
     
         
     main(parsed_args.esserver, parsed_args.esport, parsed_args.esindex, parsed_args.indexfile, parsed_args.start, parsed_args.end, parsed_args.parstype, parsed_args.workers, parsed_args.logfile)
