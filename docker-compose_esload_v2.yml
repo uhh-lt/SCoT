@@ -137,7 +137,7 @@ services:
       - discovery.seed_hosts=elasticsearch_ma2,elasticsearch_ma3
       - cluster.initial_master_nodes=elasticsearch_ma3,elasticsearch_ma1,elasticsearch_ma2
       - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
       
     ulimits:
       memlock:
@@ -159,7 +159,7 @@ services:
       - discovery.seed_hosts=elasticsearch_ma1,elasticsearch_ma3
       - cluster.initial_master_nodes=elasticsearch_ma3,elasticsearch_ma1,elasticsearch_ma2
       - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
       - xpack.security.enabled=false
     ulimits:
       memlock:
@@ -181,7 +181,7 @@ services:
       - discovery.seed_hosts=elasticsearch_ma1,elasticsearch_ma2
       - cluster.initial_master_nodes=elasticsearch_ma3,elasticsearch_ma1,elasticsearch_ma2
       - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
       - xpack.security.enabled=false
     ulimits:
       memlock:
