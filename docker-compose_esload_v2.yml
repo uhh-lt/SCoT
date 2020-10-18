@@ -56,7 +56,7 @@ services:
       - scot-net
   esloader70m_01:
     build: ./esloader_v2
-    command: python3 esloader_finnews_mt2.py elasticsearch_ma2 9201 de70 ../anwar/de70mlcc_dep_wft.txt 0 7000000 de70 50 log.txt
+    command: python3 esloader_finnews_mt2.py elasticsearch_ma1 9200 de70 ../anwar/de70mlcc_dep_wft.txt 0 7000000 de70 50 log.txt
     volumes:
       - ../anwar:/anwar
     networks:
@@ -64,7 +64,7 @@ services:
 
   esloader70m_02:
     build: ./esloader_v2
-    command: python3 esloader_finnews_mt2.py elasticsearch_ma2 9201 de70 ../anwar/de70mlcc_dep_wft.txt 7000000 14000000 de70 50 log.txt
+    command: python3 esloader_finnews_mt2.py elasticsearch_ma1 9200 de70 ../anwar/de70mlcc_dep_wft.txt 7000000 14000000 de70 50 log.txt
     volumes:
       - ../anwar:/anwar
     networks:
@@ -166,7 +166,7 @@ services:
     volumes:
       - elasticsearch-scot_master_02:/usr/share/elasticsearch/data
     ports:
-      - 9294:9201
+      - 9294:9200
     networks:
       - scot-net
       
@@ -186,7 +186,7 @@ services:
         soft: -1
         hard: -1
     ports:
-      - 9295:9202
+      - 9295:9200
     volumes:
       - elasticsearch-scot_master_03:/usr/share/elasticsearch/data
     networks:
