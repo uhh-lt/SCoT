@@ -82,6 +82,7 @@ def parserthreadfunc(esserver, esport, esindex, indexfile, start, end, parsetype
                     #date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
                     logging.info("indexing importfile " + str(indexfile) + "line number" + str(counter) + "to es index" + str(esindex))
                     printcounter = 0
+                    print(doc)
                 #es.indices.refresh(index=esindex)
                 counter += 1
                 yield doc
@@ -94,7 +95,7 @@ def parserthreadfunc(esserver, esport, esindex, indexfile, start, end, parsetype
     successes = 0
     try:
         for ok, action in bulk(
-            client=es, actions=generate(), chunk_size=10000
+            client=es, actions=generate(), chunk_size=10
         ):
             successes += ok
     except:

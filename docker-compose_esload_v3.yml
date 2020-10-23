@@ -3,7 +3,7 @@ networks:
   scot-net:
     driver: bridge
 
-
+services:
   # command arguments are es-server port es-index indexfile start end date-parsetyp workers log-file
   esloaderfin_01:
     build: ./esloader_v3
