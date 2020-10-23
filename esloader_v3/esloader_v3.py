@@ -80,7 +80,7 @@ def parserthreadfunc(esserver, esport, esindex, indexfile, start, end, parsetype
                 if (printcounter == 10):
                     #now = datetime.now()
                     #date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
-                    logging.info("indexing importfile " + str(indexfile) + "line number" + str(counter) + "to es index" + str(esindex))
+                    print("indexing importfile " + str(indexfile) + "line number" + str(counter) + "to es index" + str(esindex))
                     printcounter = 0
                     print(doc)
                 #es.indices.refresh(index=esindex)
@@ -91,7 +91,7 @@ def parserthreadfunc(esserver, esport, esindex, indexfile, start, end, parsetype
      # settings
     es = Elasticsearch([{'host': esserver, 'port': esport}])
     #log = open(logfile, "a")
-    logging.info("Worker" + str(workerid) + " now indexing documents...")
+    # logging.info("Worker" + str(workerid) + " now indexing documents...")
     successes = 0
     try:
         for ok, action in bulk(
@@ -109,7 +109,7 @@ def main(esserver, esport, esindex, indexfile, start, end, parstype, workers, lo
     # Param: start - line to start from file (just in case it has been stopped at some point)
     # param: indexname - elasticsearch index to use
     # not including the END
-    logging.basicConfig(filename=logfile, encoding='utf-8', level=logging.DEBUG)
+    # logging.basicConfig(filename=logfile, encoding='utf-8', level=logging.DEBUG)
     # set workers and docs to process
     workers = int(workers)
     interval = int(end) - int(start)
