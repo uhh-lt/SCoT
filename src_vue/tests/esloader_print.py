@@ -77,32 +77,32 @@ def parserthreadfunc(esserver, esport, esindex, indexfile, start, end, parsetype
             
                 ##### count and log
                 printcounter += 1
-                if (printcounter == 1000):
+                if (printcounter == 1):
                     #now = datetime.now()
                     #date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
                     print("indexing importfile " + str(indexfile) + "line number" + str(counter) + "to es index" + str(esindex))
                     printcounter = 0
-                    #print(doc)
+                    print(doc)
                 #es.indices.refresh(index=esindex)
                 counter += 1
-                yield doc
+                #yield doc
                 
-                
+    generate()            
      # settings
-    es = Elasticsearch([{'host': esserver, 'port': esport}])
+    #es = Elasticsearch([{'host': esserver, 'port': esport}])
     #log = open(logfile, "a")
     # logging.info("Worker" + str(workerid) + " now indexing documents...")
-    successes = 0
-    try:
-        for ok, action in streaming_bulk(
-            client=es, actions=generate(), chunk_size=1000,
-        ):
-            successes += ok
-    except:
-        string = "Worker" + str(workerid) + " error at number " + str(start + successes)
-        print(string)
-    string = "Worker" + str(workerid) + " hat indiziert und ist nun at " + str(start + successes)
-    print(string)
+    #successes = 0
+    #try:
+    #    for ok, action in streaming_bulk(
+    #        client=es, actions=generate(), chunk_size=10
+    #    ):
+    #        successes += ok
+    #except:
+    #    string = "Worker" + str(workerid) + " error at number " + str(start + successes)
+    #    print(string)
+    #string = "Worker" + str(workerid) + " hat indiziert und ist nun at " + str(start + successes)
+    #print(string)
 
 def main(esserver, esport, esindex, indexfile, start, end, parstype, workers, logfile):
     # Param: importfile - file to index - in line - tab format like finnews.txt
