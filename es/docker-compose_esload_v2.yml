@@ -1,0 +1,211 @@
+version: "2.1"
+networks:
+  scot-net:
+    driver: bridge
+
+services:
+  app:
+    #build: ./src_vue
+    image: uhhlt/scot
+    #volumes:
+      #- .:/src_vue
+      #- ${PWD}/src_vue/config.json:/app/config.json
+    #links:
+     # - db
+    ports:
+      - "10010:80"
+    networks:
+      - scot-net
+ 
+  db:
+    image: mariadb:10.5.4
+    container_name: mariadb_1054
+    volumes:
+      # database - this can be combined with environment [implicit start-up scrip1] to source one db [useful for very large dumps as here]
+      - ${PWD}/db/dump.sql:/docker-entrypoint-initdb.d/dump.sql
+      #  Permanent volume not needed - as the data does not change
+      - ${PWD}/db/dev_data:/var/lib/mysql
+      # SECOND START-UP SCRIPT VIA scripts in entrypoint folder
+      # all scripts in this folder are copied somewhere - thus do NOT reference other files in them - use USE db; - execution lexically
+      #- ${PWD}/db/init/init_dev:/docker-entrypoint-initdb.d
+
+    # environment works as a first start-up script and executes mysql commands on the docker image
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: scot
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      
+    networks:
+      - scot-net
+  
+  # command arguments are es-server port es-index indexfile start end date-parsetyp workers log-file
+  esloaderfin_01:
+    build: ./esloader_v2
+    command: python3 esloader_finnews_mt2.py elasticsearch_ma1 9200 fin_news ../anwar/finnews_dep_wft.txt 0 7000000 fin 1 log.txt
+    volumes:
+      - ../anwar:/anwar
+    networks:
+      - scot-net
+  esloaderfin_02:
+    build: ./esloader_v2
+    command: python3 esloader_finnews_mt2.py elasticsearch_ma1 9200 fin_news ../anwar/finnews_dep_wft.txt 7000000 13987699 fin 1 log.txt
+    volumes:
+      - ../anwar:/anwar
+    networks:
+      - scot-net
+  esloader70m_01:
+    build: ./esloader_v2
+    command: python3 esloader_finnews_mt2.py elasticsearch_ma1 9200 de70 ../anwar/de70mlcc_dep_wft.txt 0 7000000 de70 1 log.txt
+    volumes:
+      - ../anwar:/anwar
+    networks:
+      - scot-net
+
+  esloader70m_02:
+    build: ./esloader_v2
+    command: python3 esloader_finnews_mt2.py elasticsearch_ma1 9200 de70 ../anwar/de70mlcc_dep_wft.txt 7000000 14000000 de70 1 log.txt
+    volumes:
+      - ../anwar:/anwar
+    networks:
+      - scot-net
+
+  esloader70m_03:
+    build: ./esloader_v2
+    command: python3 esloader_finnews_mt2.py elasticsearch_ma2 9200 de70 ../anwar/de70mlcc_dep_wft.txt 14000000 21000000 de70 1 log.txt
+    volumes:
+      - ../anwar:/anwar
+    networks:
+      - scot-net
+
+  esloader70m_04:
+    build: ./esloader_v2
+    command: python3 esloader_finnews_mt2.py elasticsearch_ma2 9200 de70 ../anwar/de70mlcc_dep_wft.txt 21000000 28000000 de70 1 log.txt
+    volumes:
+     - ../anwar:/anwar
+    networks:
+      - scot-net
+
+  esloader70m_05:
+    build: ./esloader_v2
+    command: python3 esloader_finnews_mt2.py elasticsearch_ma2 9200 de70 ../anwar/de70mlcc_dep_wft.txt 28000000 35000000 de70 1 log.txt
+    volumes:
+      - ../anwar:/anwar
+    networks:
+      - scot-net
+
+  esloader70m_06:
+    build: ./esloader_v2
+    command: python3 esloader_finnews_mt2.py elasticsearch_ma2 9200 de70 ../anwar/de70mlcc_dep_wft.txt 35000000 42000000 de70 1 log.txt
+    volumes:
+      - ../anwar:/anwar
+    networks:
+      - scot-net
+
+  esloader70m_07:
+    build: ./esloader_v2
+    command: python3 esloader_finnews_mt2.py elasticsearch_ma3 9200 de70 ../anwar/de70mlcc_dep_wft.txt 42000000 49000000 de70 1 log.txt
+    volumes:
+      - ../anwar:/anwar
+    networks:
+      - scot-net
+
+  esloader70m_08:
+    build: ./esloader_v2
+    command: python3 esloader_finnews_mt2.py elasticsearch_ma3 9200 de70 ../anwar/de70mlcc_dep_wft.txt 49000000 56000000 de70 1 log.txt
+    volumes:
+      - ../anwar:/anwar
+    networks:
+      - scot-net
+
+  esloader70m_09:
+    build: ./esloader_v2
+    command: python3 esloader_finnews_mt2.py elasticsearch_ma3 9200 de70 ../anwar/de70mlcc_dep_wft.txt 56000000 63000000 de70 1 log.txt
+    volumes:
+      - ../anwar:/anwar
+    networks:
+      - scot-net
+
+  esloader70m_10:
+    build: ./esloader_v2
+    command: python3 esloader_finnews_mt2.py elasticsearch_ma3 9200 de70 ../anwar/de70mlcc_dep_wft.txt 63000000 70000000 de70 1 log.txt
+    volumes:
+      - ../anwar:/anwar
+    networks:
+      - scot-net
+
+  elasticsearch_ma1:
+    image: elasticsearch:7.8.0
+    container_name: elasticsearch_ma1
+    environment:
+      - node.name=elasticsearch_ma1
+      - cluster.name=es-cluster
+      - discovery.seed_hosts=elasticsearch_ma2,elasticsearch_ma3
+      - cluster.initial_master_nodes=elasticsearch_ma3,elasticsearch_ma1,elasticsearch_ma2
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+      
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - elasticsearch-scot_master_01:/usr/share/elasticsearch/data
+    ports:
+      - 9293:9200
+    networks:
+      - scot-net
+
+  elasticsearch_ma2:
+    image: elasticsearch:7.8.0
+    container_name: elasticsearch_ma2
+    environment:
+      - node.name=elasticsearch_ma2
+      - cluster.name=es-cluster
+      - discovery.seed_hosts=elasticsearch_ma1,elasticsearch_ma3
+      - cluster.initial_master_nodes=elasticsearch_ma3,elasticsearch_ma1,elasticsearch_ma2
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+      - xpack.security.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - elasticsearch-scot_master_02:/usr/share/elasticsearch/data
+    ports:
+      - 9294:9200
+    networks:
+      - scot-net
+      
+  elasticsearch_ma3:
+    image: elasticsearch:7.8.0
+    container_name: elasticsearch_ma3
+    environment:
+      - node.name=elasticsearch_ma3
+      - cluster.name=es-cluster
+      - discovery.seed_hosts=elasticsearch_ma1,elasticsearch_ma2
+      - cluster.initial_master_nodes=elasticsearch_ma3,elasticsearch_ma1,elasticsearch_ma2
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+      - xpack.security.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - 9295:9200
+    volumes:
+      - elasticsearch-scot_master_03:/usr/share/elasticsearch/data
+    networks:
+      - scot-net
+        
+
+
+volumes:
+  elasticsearch-scot_master_01:
+    driver: local
+  elasticsearch-scot_master_02:
+    driver: local
+  elasticsearch-scot_master_03:
+    driver: local
