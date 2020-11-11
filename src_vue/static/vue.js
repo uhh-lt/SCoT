@@ -26,7 +26,7 @@ app = new Vue({
 		// experimental not implemented yet
 		graph_type: "max_across_slices",
 		// all possible graph types not implemented yet
-		graph_types :["max_across_slices", "max_per_slice", "stable_nodes"], 
+		graph_types :["max_across_slices", "max_per_slice", "stable_graph", "scottiplus"], 
 		
 
 		// #### BASIC NETWORK-GRAPH DATA ##########################
@@ -38,8 +38,9 @@ app = new Vue({
 		target_word : "",
 		// this means number of nodes
 		senses : 0,
-		// this does not mean number of edges, but edge factor (the number of overlayed directed edges is [senses*edges] -> AB[time1], BA[time1] and AB[time2] -> 1 edge)
-		edges : 0,
+		// this does not mean number of edges, but percentage of max edges -> number of directed edges = floor(edges/100*(senses*(senses-1))
+		// edges : 0,
+		edge_max_ratio : 0,
 
 		// MAIN-NETWORK-GRAPH-DATA FROM BACKEND
 		nodes : [],
@@ -90,7 +91,7 @@ app = new Vue({
 		// scaled = "true" -> thickness = sqrt(weight * factor)
 		link_thickness_factor : 0.1,
 		// opacity of links base and reduced (for many functions)
-		base_link_opacity : 0.5,
+		base_link_opacity : 0.2,
 		reduced_link_opacity: 0.0,
 		// radius of nodes
 		radius : 5,
@@ -269,8 +270,72 @@ app = new Vue({
 		
 	},
 	computed: {
+
+		/**
+		 * TODO implement parameters better
+		 * Calculates important parameters for quering and building the graph
+		 * The five key parameters are: 
+		 * i[ntervals] = number of intervals selected
+		 * w[ords]2[to]t[arget] = number of
+		 * 		1. most similar words to target - global [data]
+		 * 		2. most similar words to target per interval [data]
+		 * n[odes] = number of 
+		 * 		3. nearest neighbour-nodes local [graph]
+		 * 		4. nearest neighbour-nodes global [graph]
+		 * w[ords]2[to]w[ords within w2t]= numder of
+		 * 		1. most similar words within n different words globally [data]
+		 * 		2, most similar words within n words within interval [data]
+		 * l[inks]:
+		 * 		3. links between nearest neighbours local [graph]
+		 * 		4. links between nearest neighbours gobal [graph]
+		 */
+
+		/**
+		 * Return number of interval selected
+		 */
+
+		intervalnumber: function(){
+			let starts = []
+			let ends = []
+			for (let key in app.start_years){
+				starts.push(app.start_years[key]["text"])
+			}
+			for (let key in app.end_years){
+				ends.push(app.end_years[key]["text"])
+			}
+			console.log(app.start_year, app.end_year)
+			let startst = app.start_year.toString()
+			let endst = app.end_year.toString()
 			
-		
+			console.log("in intervalnum", starts, ends)
+			let start = starts.indexOf(startst)
+			let end = ends.indexOf(endst)
+			console.log ("interval length", end, start)
+			return end-start + 1
+		},
+
+		/**
+		 * Returns number of directed global data links that is sent to backend for querying data 
+		 */
+
+		edges: function(){
+			let ret = Math.round(app.edge_max_ratio/100 * this.max_dir_edges)
+			console.log ("edges function ", ret) 
+			console.log ("in edge func intervalnumber", this.intervalnumber)
+			return ret
+
+		},
+			
+		max_dir_edges: function(){
+
+			// if graph-type max-across dynamically scale interval-data for edges
+			if (app.graph_type ==  "max_across_slices"){ 
+
+				return app.senses * (app.senses-1) * this.intervalnumber
+			} else {
+				return app.senses * (app.senses-1)
+			}
+		},
 		/*
 		Returns all the clusters as an array of objects of the form 
 			{"text": cluster_name}, "value": {"cluster_id": some_id, "cluster_name": some_cluster_name, "colour": some_cluster_colour}
@@ -445,7 +510,7 @@ app = new Vue({
 			this.collection_key = this.collections[this.collection_name]["key"]
 			this.target_word = this.collections[this.collection_name]["target"]
 			this.senses = this.collections[this.collection_name]["p"]
-			this.edges = this.collections[this.collection_name]["d"]
+			this.edge_max_ratio = this.collections[this.collection_name]["d"]
 			this.collection_info = this.collections[this.collection_name]["info"]
 			console.log("in onchange db" + this.collection_key)
 			console.log("in onchange db" + this.collection_name)
@@ -2588,8 +2653,8 @@ app = new Vue({
 					var links = data_from_db[0].links;
 					var target = [data_from_db[1]];
 					console.log(target, this.target_word)
-					var singletons = data_from_db[2].singletons;
-					console.log("in data get singletons", singletons)
+					app.singletons = data_from_db[2].singletons;
+					console.log("in data get singletons", app.singletons)
 					// Call D3 function to render graph
 					render_graph(nodes, links, target)
 					// no local vars needed from here on

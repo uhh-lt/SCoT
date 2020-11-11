@@ -78,9 +78,10 @@ def recluster():
 	links = []
 	if request.method == 'POST':
 		data = json.loads(request.data)
+		#print(data)
 		nodes = data["nodes"]
 		links_list = data["links"]
-		#print(data)
+		#Thprint(data)
 		for item in links_list:
 			links.append((str(item["source"]), str(item["target"]), {'weight': float(item["weight"])}))
 
@@ -223,6 +224,7 @@ def max_per_slice(db, target_word, time_ids, paradigms, density):
 		print("total additiver graph nodes", len(nodes))
 		#print(nodes)
 		remove_singletons = True
+		# print (nodes)
 		edges, nodes, singletons = db.get_edges_per_time(nodes, paradigms, density, time_ids, remove_singletons)
 		return edges, nodes, singletons
 
@@ -265,7 +267,7 @@ def clusters(
 		# gets Stable Graph - ie only nodes that occur at least in factor * time_ids (ie 66%)
 		elif str(graph_type)=="stable_graph":
 			# factor determines minimum number of time-slices
-			factor = 1
+			factor = 0.66
 			nodes = db.get_stable_nodes(target_word, paradigms, time_ids, factor)
 			edges, nodes, singletons = db.get_edges_in_time(nodes, density, time_ids)
 
@@ -354,7 +356,8 @@ def clusters(
 		else:
 			print("normal graph scot")
 			nodes = db.get_nodes(target_word, paradigms, time_ids)
-			edges, nodes, singletons = db.get_edges(nodes, density, time_ids)
+			edges, nodes, singletons = db.get_edges_in_time(nodes, density, time_ids)
+			print("nodes", len(nodes), "edges", len(edges), "singletons", len(singletons))
 		## ------------------- experimental features ----- end
 		
 		return singletons, chineseWhispers.chinese_whispers(nodes, edges)
@@ -380,16 +383,17 @@ def get_clustered_graph(
 		target_word = str(data["target_word"])
 		start_year = int(data["start_year"])
 		end_year = int(data["end_year"])
-		paradigms = int(data["senses"])
-		density = int(data["edges"])
+		nodes = int(data["senses"])
+		edges = int(data["edges"])
 		graph_type = str(data["graph_type"])
 			
 
 	
-	singletons, clustered_graph = clusters(collection, target_word, start_year, end_year, paradigms, density, graph_type)
+	singletons, clustered_graph = clusters(collection, target_word, start_year, end_year, nodes, edges, graph_type)
+	#print(singletons)
 	c_graph = json.dumps([clustered_graph, {'target_word': target_word}, {'singletons': singletons}], sort_keys=False, indent=4)
 	
-	
+	#print(c_graph)
 	return c_graph
 
 

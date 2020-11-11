@@ -11,15 +11,16 @@
 	},
 
 	"collections_info_elastic" : {
-	"fi_news_dep" : {"es_index": "fin_news", "es_host": "elasticsearch_ma1", "es_port": 9200},
-	"de70mlcc" : {"es_index": "de70", "es_host": "elasticsearch_ma1", "es_port": 9200}
+	"fi_news_dep" : {"es_index": "fi_news_dep", "es_host": "elasticsearch", "es_port": 9200},
+	"de70mlcc" : {"es_index": "de70mlcc", "es_host": "elasticsearch", "es_port": 9200}
 },
+"collections_info_frontend":{
+		
+	"English Books": {"key":"en_books", "target": "crisis/NN", "p": 100, "d": 8, "info": "English Google Books, 1520-2008."},
+		"German News 70m Dep": {"key": "de70mlcc", "target": "Krise#NN", "p": 100, "d": 5, "info": "German Online News - 70 Million Random Sentences, 1995-2010 "},
+		"Finnish News Dep": {"key": "fi_news_dep", "target": "Yksi#NUM", "p": 100, "d": 5, "info": "Various Finnish Online News - 14 Million Sentences, "}
+	
 
-	"collections_info_frontend":{
-			"English Books": {"key":"en_books", "target": "happiness/NN", "p": 100, "d": 30, "info": "English Google Books, 1520-2008."},
-			"German News 70m Dep": {"key": "de70mlcc", "target": "Krise#NN", "p": 100, "d": 15, "info": "Please insert Corpus Info in config.json"},
-			"Finnish News Dep": {"key": "fi_news_dep", "target": "Yksi#NUM", "p": 100, "d": 30, "info": "Please insert Corpus Info in config.json"}
-	}
-
+}
 
 }
