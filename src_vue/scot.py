@@ -122,86 +122,6 @@ def get_end_years(collection):
 	end_years = db.get_all_years("end_year")
 	return json.dumps(end_years)
 
-def scottiplus(db, target_word, time_ids, paradigms, density):
-		node_dic = {}
-		for time_id in time_ids:
-			time = []
-			time.append(time_id)
-			result = db.get_nodes(target_word, paradigms, time)
-			print("nodes pro time-id", len(result))
-			#print(result)
-			for res in result:
-				if res[0] not in node_dic:
-					node_dic[res[0]] = res[1]
-				else:
-					# add time res[1]["time_ids"] zu node_dic[res[0]]["time_ids"]
-					node_dic[res[0]]["time_ids"].append(res[1]["time_ids"][0])
-					node_dic[res[0]]["weights"].append(res[1]["weights"][0])
-		nodes = []
-		for k,v in node_dic.items():
-			nodes.append([k, v])
-		print("total additiver graph nodes", len(nodes))
-		
-		remove_singletons = False
-		edges, nodes, singletons = db.get_edges_per_time(nodes, paradigms, density, time_ids, remove_singletons)
-		#print(nodes)
-		
-		# Scottiplus prune nodes and edges to reach p and q
-		# nodes
-		nodeDic = {}
-		for node in nodes:
-			nodeDic[node[0]] = node[1]
-		# sort it
-		nodeDic = {k:v for k,v in sorted(nodeDic.items(), key=lambda item: max(item[1]["weights"]), reverse = True)}
-		globalp = paradigms
-		nodesnew=[]
-		nodesnew_text=[]
-		for k,v in nodeDic.items():
-			nodesnew.append([k, v])
-			nodesnew_text.append(k)
-			globalp -= 1
-			if globalp <= 0:
-				break
-		print(len(nodesnew))
-		print(nodesnew_text)
-		#print(nodesnew)
-		# prune edges
-		#print(edges)
-		edgesnew=[]
-		globalpd = paradigms * density
-		edgeDic = {}
-		for edge in edges:
-			if edge[0] in nodesnew_text and edge[1] in nodesnew_text:
-				edgeDic[(edge[0], edge[1])]=edge[2]
-		edgeDic = {k:v for k,v in sorted(edgeDic.items(), key=lambda item: max(item[1]["weights"]), reverse = True)}
-		edgenew_text = set()
-		for k,v in edgeDic.items():
-			edgesnew.append((k[0], k[1], v))
-			edgenew_text.add(k[0])
-			edgenew_text.add(k[1])
-			globalpd -= 1
-			if globalpd <= 0:
-				break
-		print(len(edgesnew))
-		#print(edgesnew)
-		# update singletons
-		singletonsnew = set()
-		for node in nodesnew_text:
-			if node not in edgenew_text:
-				singletonsnew.add(node)
-		# kill no corresponding node
-		#sprint(singletonsnew)
-		singletonsnew = list(singletonsnew)
-
-		# remove singletons from nodes
-		nodesnewno = []
-		for node in nodesnew:
-			if node[0] not in singletonsnew:
-				nodesnewno.append(node)
-		nodesnew = nodesnewno
-		#print(edgesnew, nodesnew)
-
-		return edgesnew, nodesnew, singletonsnew
 
 def max_per_slice(db, target_word, time_ids, paradigms, density):
 		node_dic = {}
@@ -244,120 +164,34 @@ def clusters(
 		
 		db = Database(getDbFromRequest(collection))
 		time_ids = db.get_time_ids(start_year, end_year)
-		## ------------------- experimental features ----- start
-
-		# Get word2vec-egoGraph
-		# disabled - result not good
-		#if graph_type == "WV":
-			#w2v = Word2VecLoader()
-			# all in one function
-			# nodes, edges, singletons = w2v.egoGraph(target_word, paradigms, density, time_ids)
-
-		if str(graph_type)=="scottiplus":
-		# scottiplus is a mix of scot and scotti (max_per_slice)
-		# scot uses the graph-parameter p and d as global parameters
-		# -> this results in an optimal global graph over time
-		# scotti uses the graph-parameters p and d local threshold parameters for each graph in each slice
-		# -> this results in an optimal interpretability of the development over time
-		# Scottiplus combines both functions
-		# it builds a scotti graph and then chops down the number of nodes and edges to fulfil the global p and q requirements
-			edges, nodes, singletons = scottiplus(db, target_word, time_ids, paradigms, density)
-
-
-		# gets Stable Graph - ie only nodes that occur at least in factor * time_ids (ie 66%)
-		elif str(graph_type)=="stable_graph":
-			# factor determines minimum number of time-slices
-			factor = 0.66
-			nodes = db.get_stable_nodes(target_word, paradigms, time_ids, factor)
-			edges, nodes, singletons = db.get_edges_in_time(nodes, density, time_ids)
-
+		## ------------------- new algos ----- start
+		print(graph_type)
 		# get additive nodes - ie the top paradigms from each selected time id
 		# problem size of graph may vary between paradigm and time-id*paradigm
-		elif str(graph_type)=="max_per_slice":
+		if str(graph_type)=="scotti_interval":
+			print("NGOT interval")
+			# NGOT - Interval-based
+			# fixes nodes and density in relation to interval-graph - classic overlay
 			edges, nodes, singletons = max_per_slice(db, target_word, time_ids, paradigms, density)
-			
-		# learn label from graph with two time-ids and transfer to graph with three time-ids
-		# not used currently
-		elif str(graph_type) =="learn-2-3":
-			# erstelle Graph1 mit ersten beiden time-ids
-			time_ids1 = [1,2]
-			edges1, nodes1, singletons1 = max_per_slice(db, target_word, time_ids1, paradigms, density)
-			#print(edges1, nodes1)
-			graph1 = chineseWhispers.chinese_whispers(nodes1, edges1)
-			# erstelle Graph2 mit drei time-ids
-			time_ids2 = [1,2,3]
-			edges2, nodes2, singletons2 = max_per_slice(db, target_word, time_ids2, paradigms, density)
-			graph2 = chineseWhispers.chinese_whispers(nodes2, edges2)
-			#print(graph2)
-			# transfer cluster of nodes from graph1 to same nodes of graph2
-			# and attache new cluster-ids from counter-upwards to unknown nodes
-			nodesOne = graph1["nodes"]
-			nodesTwo = graph2["nodes"]
-			counter = len(nodesTwo) +1
-			newNodes = set()
-			
-			for node2 in nodesTwo:
-				# find similar node in nodesTwo
-				exists = False
-				for node1 in nodesOne:
-					if node1["target_text"] == node2["target_text"]:
-						#print("ersetze in node2", node2["target_text"], node2["class"], " mit ", node1["class"])
-						node2["class"] = node1["class"]
-						exists = True
-						break
-				if (exists==False):
-						node2["class"] = counter
-						counter += 1
-						#print("counter 2", counter)
-						newNodes.add(node2["target_text"])
-			
-			graph23 = chineseWhispers.continue_clustering(graph2, newNodes)
-			return singletons2, graph23
-
-		elif str(graph_type) == "learn-2-base":
-			# erstelle Graph1 mit ersten beiden time-ids
-			# clustere diese
-			# und füge unbekannten nodes aus graphen mit drei time-ids hinzu (ungeclustered)
-			# markiere die neuen nodes, indem die classe groesse als anzahl der nodes gesetzt wird
-			time_ids1 = [1,2]
-			edges1, nodes1, singletons1 = max_per_slice(db, target_word, time_ids1, paradigms, density)
-			#print(edges1, nodes1)
-			graph1 = chineseWhispers.chinese_whispers(nodes1, edges1)
-			# erstelle Graph2 mit drei time-ids
-			time_ids2 = [1,2,3]
-			edges2, nodes2, singletons2 = max_per_slice(db, target_word, time_ids2, paradigms, density)
-			graph2 = chineseWhispers.chinese_whispers(nodes2, edges2)
-			#print(graph2)
-			# transfer cluster of nodes from graph1 to same nodes of graph2
-			# and attache new cluster-ids from counter-upwards to unknown nodes
-			nodesOne = graph1["nodes"]
-			nodesTwo = graph2["nodes"]
-			counter = len(nodesTwo) +1
-			#print(nodesOne, nodesTwo)
-			
-			for node2 in nodesTwo:
-				# find similar node in nodesTwo
-				exists = False
-				for node1 in nodesOne:
-					if node1["target_text"] == node2["target_text"]:
-						#print("learn23 - ersetze in node2", node2["target_text"], node2["class"], " mit ", node1["class"])
-						node2["class"] = node1["class"]
-						exists = True
-						break
-				if (exists==False):
-						#print(node2["time_ids"])
-						counter += 1
-						#print("learn23 - ersetze counter in node2", node2["target_text"], node2["class"], " mit ", counter)
-						node2["class"] = counter
-			
-			return singletons2, graph2
-
-		# ---- standard from here - but can change to db.get_edges_in_time to avoid implicit nodes
-		else:
-			print("normal graph scot")
+		elif str(graph_type)=="scotti_overlay":
+			print("NGOT overlay")
+			# NGOT - Overlay-fixed (expands global nodes dynamically)
+			# Edges in time, fixed global overlay edges, scaled
 			nodes = db.get_nodes(target_word, paradigms, time_ids)
 			edges, nodes, singletons = db.get_edges_in_time(nodes, density, time_ids)
-			print("nodes", len(nodes), "edges", len(edges), "singletons", len(singletons))
+		elif str(graph_type) == "scotti_global":
+			print("NGOT global")
+			# background fixing dynamic for edges - static for nodes (currently)
+			# Nodes not scaled yet for global algo - global searches for paradigms * |time-ids |
+			nodes = db.get_nodes_global(target_word, paradigms, time_ids)
+			edges, nodes, singletons = db.get_edges(nodes, density, time_ids)
+		# ---- standard from here - but can change to db.get_edges_in_time to avoid implicit nodes
+		else:
+			# standard scot: nodes overlay, edges: global - static
+			print("scot - nodes global fixed/data fixed - edges - global dyn - data fixed")
+			nodes = db.get_nodes(target_word, paradigms, time_ids)
+			edges, nodes, singletons = db.get_edges(nodes, density, time_ids)
+		print("nodes", len(nodes), "directed edges", len(edges), "singletons", len(singletons))
 		## ------------------- experimental features ----- end
 		
 		return singletons, chineseWhispers.chinese_whispers(nodes, edges)
@@ -393,7 +227,7 @@ def get_clustered_graph(
 	#print(singletons)
 	c_graph = json.dumps([clustered_graph, {'target_word': target_word}, {'singletons': singletons}], sort_keys=False, indent=4)
 	
-	#print(c_graph)
+	print(c_graph)
 	return c_graph
 
 

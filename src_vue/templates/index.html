@@ -101,7 +101,7 @@
 		</b-from-group>
 		[{{intervalnumber}} intervals]
 		<hr style="border: 1px solid gray;" />
-		<h5>Graph-Parameters</h5>
+		<h5>Overlay-Graph</h5>
 		<!-- Enter target word -->
 		<b-form-group class="input" label="Target word">  
 			<b-form-input v-model="target_word" placeholder="target word" size="sm"></b-form-input>
@@ -111,22 +111,23 @@
 			<b-form-input type="number" v-model="senses" min="0" placeholder="number of neighbours" size="sm"></b-form-input>
 		</b-form-group>
 		<!-- Enter factor that determines number of edges per graph -->
-		<b-form-group class="input"> Max. density in %: [{{edges}} of {{max_dir_edges}} poss. links]
+		<b-form-group class="input"> Max. density in %: [{{edges}} of {{max_dir_edges}} links]
 			<b-form-input type="number" v-model="edge_max_ratio" min="0" max="100" placeholder="number of edges" size="sm"></b-form-input>
 		</b-form-group>
 		<!-- Enter a graph type -->
-		<!-- <b-form-group class="input" label="Graph-Typ">
+		<b-form-group class="input" label="Graph-Typ">
 			<b-form-select v-model="graph_type" :options="graph_types" size="sm"></b-form-select>
-		</b-from-group> -->
+		</b-from-group>
+		
 		
 		<!-- Render button -->
 		<hr style="border: 1px solid gray;" />
 		<h5></h5>
 		<b-button class="lmmargin_button" size="sm" variant="success" v-on:click="render_graph()">Create and Cluster Graph</b-button>
-		<!-- Render button -->
 		<!-- <b-button id="update_button" size="sm" class="lrmargin_button" variant="success" >Update Graph</b-button> -->
 		
 			<hr style="border: 1px solid gray;" />
+	
 		<!-- Save and Load Graph buttons -->
 		<b-button :disabled="time_diff == 1" class="lmmargin_button" size="sm" variant="success" v-on:click="saveGraph()" download="graph.json" href=""><i class="fas fa-download"></i> Save Graph</b-button>
 		<b-button size="sm" class="lmmargin_button" variant="success" v-on:click="displayForm()"> <i class="fas fa-upload"></i> Load Graph</b-button>

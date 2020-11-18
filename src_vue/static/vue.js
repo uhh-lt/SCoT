@@ -24,9 +24,18 @@ app = new Vue({
 		// The Graph-algos use the two key parameters sensed and the edge factor differently
 		// the main scot algo uses them globally
 		// experimental not implemented yet
-		graph_type: "max_across_slices",
+		graph_type: "",
 		// all possible graph types not implemented yet
-		graph_types :["max_across_slices", "max_per_slice", "stable_graph", "scottiplus"], 
+		graph_types :[], 
+		
+		// information to be queries
+		graph_type_keys: {
+			"SCoTTi_Overlay": "scotti_overlay",
+			"SCoT": "scot",
+			"SCoTTi-Interval": "scotti_interval",
+			"SCoTTi-Global" : "scotti_global"
+			
+		},
 		
 
 		// #### BASIC NETWORK-GRAPH DATA ##########################
@@ -271,25 +280,7 @@ app = new Vue({
 	},
 	computed: {
 
-		/**
-		 * TODO implement parameters better
-		 * Calculates important parameters for quering and building the graph
-		 * The five key parameters are: 
-		 * i[ntervals] = number of intervals selected
-		 * w[ords]2[to]t[arget] = number of
-		 * 		1. most similar words to target - global [data]
-		 * 		2. most similar words to target per interval [data]
-		 * n[odes] = number of 
-		 * 		3. nearest neighbour-nodes local [graph]
-		 * 		4. nearest neighbour-nodes global [graph]
-		 * w[ords]2[to]w[ords within w2t]= numder of
-		 * 		1. most similar words within n different words globally [data]
-		 * 		2, most similar words within n words within interval [data]
-		 * l[inks]:
-		 * 		3. links between nearest neighbours local [graph]
-		 * 		4. links between nearest neighbours gobal [graph]
-		 */
-
+		
 		/**
 		 * Return number of interval selected
 		 */
@@ -303,14 +294,15 @@ app = new Vue({
 			for (let key in app.end_years){
 				ends.push(app.end_years[key]["text"])
 			}
-			console.log(app.start_year, app.end_year)
+			//console.log(app.start_year, app.end_year)
 			let startst = app.start_year.toString()
 			let endst = app.end_year.toString()
 			
-			console.log("in intervalnum", starts, ends)
+			//console.log("in intervalnum", starts, ends)
 			let start = starts.indexOf(startst)
 			let end = ends.indexOf(endst)
 			console.log ("interval length", end, start)
+			
 			return end-start + 1
 		},
 
@@ -321,16 +313,16 @@ app = new Vue({
 		edges: function(){
 			let ret = Math.round(app.edge_max_ratio/100 * this.max_dir_edges)
 			console.log ("edges function ", ret) 
-			console.log ("in edge func intervalnumber", this.intervalnumber)
+			//console.log ("in edge func intervalnumber", this.intervalnumber)
 			return ret
 
 		},
 			
 		max_dir_edges: function(){
 
-			// if graph-type max-across dynamically scale interval-data for edges
-			if (app.graph_type ==  "max_across_slices"){ 
-
+			// Scot is currently implemented with a fixed
+			if (this.graph_type_keys[this.graph_type] ==  "scotti_global"){ 
+				
 				return app.senses * (app.senses-1) * this.intervalnumber
 			} else {
 				return app.senses * (app.senses-1)
@@ -520,7 +512,13 @@ app = new Vue({
 			this.getEndYears()
 						
 		},
-				
+		// init graph_types
+		getGraphTypes: function(){
+			
+			this.graph_types = Object.keys(this.graph_type_keys)
+			this.graph_type = this.graph_types[0]
+		
+		},
 		// init collections from axios
 		getCollections: function(){
 			
@@ -2626,7 +2624,7 @@ app = new Vue({
 			data["senses"] = this.senses;
 			data["edges"] = this.edges;
 			data["time_diff"] = this.time_diff;
-			data["graph_type"] = this.graph_type
+			data["graph_type"] = this.graph_type_keys[this.graph_type]
 
 			
 
@@ -2849,6 +2847,7 @@ app = new Vue({
 		this.getStartYears();
 		this.getEndYears();
 		this.getCollections();
+		this.getGraphTypes();
 	}
 
 });

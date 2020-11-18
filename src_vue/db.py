@@ -54,6 +54,45 @@ class Database:
 			time_ids.append(int(r['id']))
 		return time_ids
 
+	def get_nodes_global(
+		self,
+		target_word,
+		max_paradigms,
+		selected_time_ids
+		):
+		# sglobal node function - ie searches nodes regardless of overlay or time-interval
+		# SCALES PARADIGMS WITH THE NUMBER OF TIME-IDS
+		max_paradigms = max_paradigms * len(selected_time_ids)
+		# get the nodes for a target word from the database
+		# PARAM target_word is str
+		# PARAM max_paradigms
+		# PARAM selected_time_ids is int-array
+		# RETURNS nodes
+		
+		nodes = []
+		target_word_senses = self.db.query(
+			'SELECT word2, time_id, score FROM similar_words '
+			'WHERE word1=:tw AND word1!=word2 '
+			'ORDER BY score DESC',
+			tw=target_word
+			)
+		fullNodeCounter = 0
+		for row in target_word_senses:
+			exists = False
+			if int(row['time_id']) in selected_time_ids and fullNodeCounter < max_paradigms:
+				for node in nodes:
+					if node[0] == str(row['word2']):
+						exists = True
+						if not int(row["time_id"]) in node[1]["time_ids"]:
+							node[1]["time_ids"].append(int(row['time_id']))
+							node[1]["weights"].append(float(row['score']))
+							fullNodeCounter += 1
+				
+				if not exists:
+					nodes.append([str(row['word2']), {"time_ids": [int(row['time_id'])], "weights": [float(row["score"])], "target_text": str(row['word2'])}])
+					fullNodeCounter +=1
+		#print(nodes)
+		return nodes
 
 	
 	def get_nodes(
@@ -62,11 +101,14 @@ class Database:
 		max_paradigms,
 		selected_time_ids
 		):
+		# standard node function for all graph-algos
+		# scot and scotti-global fix the global number of nodes in the overlay with the same algorithm
+		# scotte-interval fixed the global number of nodes in one interval
 		# get the nodes for a target word from the database
 		# PARAM target_word is str
 		# PARAM max_paradigms
 		# PARAM selected_time_ids is int-array
-		# RETURNS 
+		# RETURNS nodes
 
 		nodes = []
 		target_word_senses = self.db.query(
@@ -170,20 +212,26 @@ class Database:
 
 	def get_edges(self, nodes, max_edges, time_ids):
 		# standard edge function for SCoT - 
-		# allocated edges 
-		# Attention: edges can be set independent of time_ids 
+		# This queries and counts all single directed edges
+		# There are THREE problems with this algorithm:
+		# 1. Massive problem it does not scale with the the number of time-ids
+		# !! Attention this was probably NOT intended !! This algorithm is problemati!!! 
+		# This has been temporarily solved in the frontend - by scaling max_edges for the graph-type "max_across_slices" by factor i
+		# There is also a second problem:
+		# 2. Edges can be set independent of time_ids 
 		# this can result in node1 from time2, node 2 from time4, and edge from time5 (ie pseudo-nodes)
 		# this results in "invisible nodes" (ie node from time5 is implicitly present due to edge from that id)
-		# new algo get_edges_in_time below avoids that
+		# 3. Data-Structure - singleton information that is filtered out - deletes nodes from datastructre (this is not a good idea)
+
 		# Param: nodes
-		# Para: max_edges
+		# Para: max_edges = Supremum of Cardinality of Set of Edges
 		# Param: time_ids
 		#
 		edges = []
 		connections = []
 		node_list = []
 		singletons = []
-		
+		print("scot param in directed max_edges", max_edges)
 			
 		for node in nodes:
 			node_list.append(node[0])
@@ -196,8 +244,7 @@ class Database:
 			nodes=node_list
 			)
 
-		# get global maximum of edges
-		# edge factor int(max_edges)*len(node_list)
+		# get global maximum of edges - max edges
 		for row in con:
 			if not str(row['word1'])==str(row['word2']) and int(row['time_id']) in time_ids \
 				and len(connections)<int(max_edges):
@@ -213,14 +260,15 @@ class Database:
 				if (c[0], c[1]) not in potential_edges:
 					potential_edges[(c[0], c[1])] = (c[2], c[3]) 
 		#print("filtered set of potential_edges", potential_edges)
-		
+		# map to edge format
+		for k,v in potential_edges.items():
+			edges.append((k[0], k[1], {'weight': v[0], 'weights': [v[0]], 'time_ids': [v[1]], 'source_text': k[0], 'target_text': k[1]}))
 		# filter out the singletons (ie those nodes that have no connecting edge)
 		for n in node_list:
 			exists = False
 			for k,v in potential_edges.items():
 				if n == k[0] or n == k[1]:
 					exists = True
-					edges.append((k[0], k[1], {'weight': v[0], 'weights': [v[0]], 'time_ids': [v[1]], 'source_text': k[0], 'target_text': k[1]}))
 			if not exists:
 				singletons.append(n)
 				#removes singletons from graph
@@ -228,62 +276,95 @@ class Database:
 					if n == node[0]:
 						nodes.remove(node)
 		singletons = list(singletons)
+		print("max across slices filters out overlay edges!!! -> count of dir edges = overlayd directed edges")
 		return edges, nodes, singletons
 		
 	def get_edges_in_time(self, nodes, max_edges, time_ids):
-		# CURRENTLY NOT IN USE
-		# selects top edges based on global max = nodes*max_edges
-		# then filters edges set and only connects nodes in SAME TIME-iD
-		# this is the difference to algo get_edges which can result in pseudo-nodes
+		# EDGE ALGORITHM FOR NGOT-Overlay
+		# This scales datapoints to get |overlay-nodes| = max_edges/2
+		# Scales, Edges in Time-Intevals, Logic for Overlay-centric approach
+		# No PseudoNodes, overlay information for edges
 		edges = []
 		connections = []
 		node_list = []
 		singletons = []
 		node_dic = {}
+		i = len(time_ids)
+		print("number intervals", i)
+		print("ngot overlay param in max_ed", max_edges)
 	
 		for node in nodes:
 			node_list.append(node[0])
 			node_dic[node[0]] = node[1]
 		#print(node_dic)
 		#{'a': {'time_ids': [2, 1], 'weights': [0.474804, 0.289683], 'target_text': 'a'},
-
+		
+		# QUERY ALL DIRECTED EDGES THAT FULFIL BASIC CRITERIA (WORD1, WORD2, in Selected Time-ids) in ALL SELECTED TIME-IDS
 		con = self.db.query(
 			'SELECT word1, word2, score, time_id '
 			'FROM similar_words '
-			'WHERE word1 IN :nodes AND word2 IN :nodes '
+			'WHERE word1 IN :nodes AND word2 IN :nodes AND time_id IN :time_ids '
 			'ORDER BY score DESC',
-			nodes=node_list
+			nodes=node_list,
+			time_ids = time_ids
 			)
-
-		# get global maximum of edges
-		# max edge factor int(max_edges)*len(node_list)
+		
+		# get all // alternativ restrict already here: to  global_max = max_edges * i
 		for row in con:
-			if not str(row['word1'])==str(row['word2']) and int(row['time_id']) in time_ids \
-				and len(connections)<int(max_edges):
+			if not str(row['word1'])==str(row['word2']) and int(row['time_id']) in time_ids:
+				#and len(connections)<int(global_max):
 				connections.append([str(row['word1']), str(row['word2']), float(row['score']), int(row['time_id'])])
-				
-		# print("max global edges", connections)
+		print("ngot overlay all possible directed edges", len(connections))
 
-		# filter global max-set of edges by those MAX-TIME-IDS CONNECTIONS that connect two nodes in graph IN TIME ID
+		# filter global max-set of edges by those which correspond to the more specific time-ids of teh nodes
+		# REDUCTION1: begin time overlay process of edges
 		potential_edges = {}
 		singletons = []
 		for c in connections:
-			if c[0] in node_dic and c[1] in node_dic and c[3] in node_dic[c[0]]["time_ids"] and c[3] in node_dic[c[1]]["time_ids"]:
-				# new and c[3] in node_dic[c[0]]["time_ids"] and c[3] in node_dic[c[1]]["time_ids"]
-				# if there is no edge yet, append it -- RESULTS IN MAX ONLY EDGE in EXISTING TIME-SLOT IN WHICH BOTH NODES OCCUR
+			try:
+				if c[3] in node_dic[c[0]]["time_ids"] and c[3] in node_dic[c[1]]["time_ids"]:
+						
+					if (c[0], c[1]) not in potential_edges:
+						potential_edges[(c[0], c[1])] = ([c[2]], [c[3]]) 
+					else:
+				 		potential_edges[(c[0], c[1])][0].append(c[2])
+				 		potential_edges[(c[0], c[1])][1].append(c[3])
+			except:
+				continue
+		print ("potential directed time-overlayd edges", len(potential_edges))
 
-				if (c[0], c[1]) not in potential_edges:
-					potential_edges[(c[0], c[1])] = (c[2], c[3]) 
-		#print("filtered set of potential_edges", potential_edges)
+		#REDUCTION2: reduce max undirected edges to the number of global overlay undirected edges = max_edges in total
+		overlay = []
+		for key in potential_edges.keys():
+			if ((key[0], key[1]) in overlay or (key[1], key[0]) in overlay):
+				continue
+			else:
+				overlay.append((key[0], key[1]))
+		
+		# shorten overlay to max global (time-overlaid) length
+		undirected = int((max_edges+1)/2)
+		# check that is not larger than all potential edges (check macht klarer)
+		if undirected > int((len(potential_edges)+1)/2):
+			undirected = int((len(potential_edges)+1)/2)
+		overlay = overlay[:undirected]
+		print("overlay UNDIRECTED laenge adated to available edges", len(overlay))
+		# trim potential edges to values in overlay (which is shortened already)
+		potential_edges_new = {}
+		for key,value in potential_edges.items():
+			if (key[0], key[1]) in overlay or (key[1], key[0]) in overlay:
+				potential_edges_new[key] = value
+
+		print("new time-overlaid directed edges", len(potential_edges_new))
+		# map to edge format
+		for k,v in potential_edges_new.items():
+			edges.append((k[0], k[1], {'weight': max(v[0]), 'weights': v[0], 'time_ids': v[1], 'source_text': k[0], 'target_text': k[1]}))
 		
 		# filter out the singletons (ie those nodes that have no connecting edge)
 		for n in node_list:
 			exists = False
-			for k,v in potential_edges.items():
+			for k,v in potential_edges_new.items():
 				if n == k[0] or n == k[1]:
 					exists = True
-					edges.append((k[0], k[1], {'weight': v[0], 'weights': [v[0]], 'time_ids': [v[1]], 'source_text': k[0], 'target_text': k[1]}))
-
 			if not exists:
 				singletons.append(n)
 				#filter out singletons
@@ -292,10 +373,11 @@ class Database:
 						nodes.remove(node)
 
 		singletons = list(singletons)
-		
+		print("attention directed edges are already time-overlaid")
 		return edges, nodes, singletons
 
 	def get_edges_per_time(self, nodes, max_paradigms, max_edges, time_ids, remove_singletons):
+		# EDGE Algo for NGOT - Interval
 		# Algorithm is part of a projection that creates an overlay graph from all single graphs in each time-id with the same params
 		# algorithm allocates nodes and edges per time slice based on parametes and overlays them both! 
 		# thus for each slice there is the same max of edges: the max per time-slice = max_paradigms * max edge
@@ -397,6 +479,6 @@ class Database:
 		# return singletons als liste
 		singletons = list(singleton_set)
 
-		print("anzahl edges additive graph", len(edges))
+		print("anzahl time overlayed directed edges additive graph", len(edges))
 		#print (edges)
 		return edges, nodes, singletons
