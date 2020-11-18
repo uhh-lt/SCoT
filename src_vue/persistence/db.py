@@ -2,7 +2,7 @@ import records
 import json
 
 class Database:
-	def __init__(self, collection, configfile = './config.json'):
+	def __init__(self, collection, configfile = './config/config.json'):
 		with open(configfile) as config_file:
 			config = json.load(config_file)
 		if (collection in [*config["collections_info_backend"]]):

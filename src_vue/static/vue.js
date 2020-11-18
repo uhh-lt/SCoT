@@ -29,11 +29,12 @@ app = new Vue({
 		graph_types :[], 
 		
 		// information to be queries
+		// "SCoTTi-Interval": "ngot_interval",
 		graph_type_keys: {
-			"SCoTTi_Overlay": "scotti_overlay",
-			"SCoT": "scot",
-			"SCoTTi-Interval": "scotti_interval",
-			"SCoTTi-Global" : "scotti_global"
+			"Overlay nodes & overlay edges": "ngot_overlay",
+			"Overlay nodes & global dynamic edges (scot2)": "scot"
+			
+			
 			
 		},
 		
@@ -320,8 +321,8 @@ app = new Vue({
 			
 		max_dir_edges: function(){
 
-			// Scot is currently implemented with a fixed
-			if (this.graph_type_keys[this.graph_type] ==  "scotti_global"){ 
+			// Scot V2 dynamically scales the number of edges with the number of intervals selected
+			if (this.graph_type_keys[this.graph_type] ==  "scot"){ 
 				
 				return app.senses * (app.senses-1) * this.intervalnumber
 			} else {

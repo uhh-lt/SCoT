@@ -1,13 +1,15 @@
 from flask import Flask, jsonify, render_template, request, Response
 from flask_cors import CORS
+import sys
+from pathlib import Path
 
-from db import Database
-import chineseWhispers
+
+from persistence.db import Database
+import services.chineseWhispers as chineseWhispers
 import urllib.parse
 import json
 import urllib.request
-#from word2vecloader import Word2VecLoader
-from documentdb import Documentdb
+from persistence.documentdb import Documentdb
 
 DEBUG = True
 PARAMETERS = {}
@@ -90,7 +92,7 @@ def recluster():
 
 @app.route('/api/collections')
 def databases_info():
-	with open('./config.json') as config_file:
+	with open('./config/config.json') as config_file:
 			config = json.load(config_file)
 	return json.dumps(config["collections_info_frontend"])
 
@@ -168,18 +170,18 @@ def clusters(
 		print(graph_type)
 		# get additive nodes - ie the top paradigms from each selected time id
 		# problem size of graph may vary between paradigm and time-id*paradigm
-		if str(graph_type)=="scotti_interval":
+		if str(graph_type)=="ngot_interval":
 			print("NGOT interval")
 			# NGOT - Interval-based
 			# fixes nodes and density in relation to interval-graph - classic overlay
 			edges, nodes, singletons = max_per_slice(db, target_word, time_ids, paradigms, density)
-		elif str(graph_type)=="scotti_overlay":
+		elif str(graph_type)=="ngot_overlay":
 			print("NGOT overlay")
 			# NGOT - Overlay-fixed (expands global nodes dynamically)
 			# Edges in time, fixed global overlay edges, scaled
 			nodes = db.get_nodes(target_word, paradigms, time_ids)
 			edges, nodes, singletons = db.get_edges_in_time(nodes, density, time_ids)
-		elif str(graph_type) == "scotti_global":
+		elif str(graph_type) == "ngot_global":
 			print("NGOT global")
 			# background fixing dynamic for edges - static for nodes (currently)
 			# Nodes not scaled yet for global algo - global searches for paradigms * |time-ids |
@@ -227,7 +229,7 @@ def get_clustered_graph(
 	#print(singletons)
 	c_graph = json.dumps([clustered_graph, {'target_word': target_word}, {'singletons': singletons}], sort_keys=False, indent=4)
 	
-	print(c_graph)
+	#print(c_graph)
 	return c_graph
 
 
@@ -382,7 +384,7 @@ def documents(collection="default"):
 	print(jo, bim, collection_key)
 
 	# get host, port and index from config
-	with open('./config.json') as config_file:
+	with open('./config/config.json') as config_file:
 		config = json.load(config_file)
 	es_host = config["collections_info_elastic"][collection_key]["es_host"]
 	es_port = config["collections_info_elastic"][collection_key]["es_port"]
@@ -412,7 +414,11 @@ def documents(collection="default"):
 	return {"docs": ret}
 
 if __name__ == '__main__':
+	# init packaging system parent
+	# print(str(Path(__file__).parent.absolute()))
+	# this is not permanent (this is why we do it again and again ...)
+	sys.path.append(str(Path(__file__).parent.absolute()))
 	# use the config file to get host and database parameters
-	with open('./config.json') as config_file:
+	with open('./config/config.json') as config_file:
 		config = json.load(config_file)
 	app.run(host=config['flask_host'])
