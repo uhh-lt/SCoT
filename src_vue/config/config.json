@@ -2,13 +2,12 @@
 	"flask_host" : "0.0.0.0",
 
 	"collections_info_backend" : {
-		"default" : "mysql://root:root@127.0.0.1:3377/scot",
-		"en_books" : "mysql://root:root@127.0.0.1:3377/scot",
-		"fi_news" : "mysql://root:root@127.0.0.1:3306/DT_finnews_dependency",
-		"de70" : "mysql://root:root@127.0.0.1:3306/DT_de70mlcc_dependency"
+		"default" : "mysql://user:password@db/scot",
+		"en_books" : "mysql://user:password@db/scot",
+		"fi_news" : "mysql://scot:scot@ltdatabase1/DT_finnews_dependency",
+		"de70" : "mysql://scot:scot@ltdatabase1/DT_de70mlcc_dependency"
 		
-
-	},
+},
 
 	"collections_info_elastic" : {
 		"fi_news" : {"es_index": "fi_news", "es_host": "127.0.0.1", "es_port": 9292},

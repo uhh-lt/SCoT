@@ -1,102 +1,64 @@
 from dataclasses import dataclass, field, asdict
-from typing import List
+from typing import List, Dict
+from flask_sqlalchemy import SQLAlchemy
 
+"""  
+This defines the model of the overlay-graph and its subclasses
+"""
 
+#------------- JSON GRAPH ELEMENTS
+# create Nodes first
 @dataclass
 class OverlayNode:
     id: str = None
-    #data information
+    #overlay data information
     time_ids: List[int] = None
     weights: List[float] = None
-    # calculated scores and clusters
+     # calculated scores and clusters
     centrality_score: float = None
     cluster_id: int = None
-    #display
+    #display - values can be tweaked in frontend
     x: float = None
     y: float = None
     hidden: bool = None
+    # color and opacity can change during various interactions
+    color: float = None
+    opacity: float = None
 
+# links depend on nodes
 @dataclass
-class IntervalNode:
-    # this is non-overlayd node
-    # from one time-interval
-    id: str = None
-    #data information
-    time_id: int = None
-    weight: float = None
-    # calculated scores and clusters
-    # in the interval it exists
-    centrality_score: float = None
-    # this cluster-id relates to an intervalCluster
-    cluster_id: int = None
-    #display
-    x: float = None
-    y: float = None
-    hidden: bool = None
-
-@dataclass
-class OverlayLink:
-    id: str = None
-    #data information
+class OverlayLink():
+    # restraint - the time-ids of an edge must be within the time-ids of the nodes
     source: OverlayNode = None
     target: OverlayNode = None
     time_ids: List[int] = field(default_factory=[None])
     weights: List[float] = field(default_factory=[None])
 
+# Calculated Cluster of Nodes and Edges
 @dataclass
-class IntervalLink:
-    id: str = None
-    #data information
-    source: IntervalNode = None
-    target: IntervalNode = None
-    time_id: int = None
-    weight: float = None
-
-
-@dataclass
-class OverlayCluster:
+class OverlyCluster:
     id: int = None
     # changeable by user
     name: str = None
-    #data information
-    nodes: List[OverlayNode] = None
-    #edges between cluster nodes
-    edges: List[OverlayLink] = None
     # Display
     cluster_color : int = None
     # Display - special cluster node for displaying cluster
     cluster_node : OverlayNode = None
-
-@dataclass
-class IntervalCluster:
-    id: int = None
-    # changeable by user
-    name: str = None
-    # interval
-    time_id: int = None
     #data information
-    nodes: List[IntervalNode] = None
+    nodes: List[OverlayNode] = None
     #edges between cluster nodes
-    edges: List[IntervalLink] = None
-    # Display
-    cluster_color : int = None
-    # Display - special cluster node for displaying cluster
-    cluster_node : IntervalNode = None
-
+    edges: List[OverlayLink] = None
+    
+# -------- SINGLETON-GRAPHS - nodes not in clusters
 
 @dataclass
 class OverlaySingletons:
     #data information
     nodes: List[OverlayNode] = None
 
-@dataclass
-class IntervalSingletons:
-    #data information
-    nodes: List[IntervalNode] = None
-    time_id: int = None
+# -------- PARAMETERS OF THE GRAPH 
 
-
-@dataclass
+@dataclass(frozen =True)
 class InOutParameter:
     # Dependending on the graph-building-algorithm
     # and graphtype [overlay graph - interval graph]
@@ -121,23 +83,13 @@ class InOutParameter:
     interval_edges: List[int]  = None
     interval_nodes: List[int]  = None
 
-@dataclass
-class OverlayGraph:
+# ----------- RESULTING GRAPHS
+@dataclass(frozen=True)
+class OverlayGraph():
+    in_out_parameter: InOutParameter = None
     overlay_nodes: List[OverlayNode]  = None
     overlay_edges: List[OverlayLink] = None
     overlay_cluster: List[OverlayCluster] = None
     overlay_singletons: List[OverlayNode] = None
-    in_out_parameter: InOutParameter = None
-
-@dataclass
-class IntervalGraph:
-    interval_nodes: List[IntervalNode]  = None
-    interval_edges: List[IntervalLink] = None
-    interval_cluster: List[IntervalCluster] = None
-    interval_singletons: List[IntervalNode] = None
-    in_out_parameter: InOutParameter = None
-   
-
-
 
 

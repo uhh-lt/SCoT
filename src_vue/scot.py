@@ -1,19 +1,20 @@
+import sys
+import json
+import urllib.parse
+import urllib.request
+
 from flask import Flask, jsonify, render_template, request, Response
 from flask_cors import CORS
-import sys
 from pathlib import Path
+from abc import ABC, abstractmethod
+from typing import Dict, List
 
-
+from persistence.documentdb import Documentdb
 from persistence.db import Database
 import services.chineseWhispers as chineseWhispers
-import urllib.parse
-import json
-import urllib.request
-from persistence.documentdb import Documentdb
 
-DEBUG = True
-PARAMETERS = {}
-
+# FLASK---------------------------------------------------------------------------------
+# ---------- FLASK SUBCLASSING
 class CustomFlask(Flask):
     jinja_options = Flask.jinja_options.copy()
     jinja_options.update(dict(
@@ -21,74 +22,27 @@ class CustomFlask(Flask):
         variable_end_string='%%'
     ))
 
+# ----------- FLASK PARAMETERS
+DEBUG = True
+PARAMETERS = {}
 app = CustomFlask(__name__, 
         static_folder= "./static")  # This replaces your existing "app = Flask(__name__)"
 app.config.from_object(__name__)
 CORS(app)
 
-def getDbFromRequest(collection):
+# ------------ App REST-API Controller -----------------------------------------------------------------------
+# Main Landing Page
+@app.route('/')
+def index():
+	return render_template('index.html')
+
+# ENDPOINTS and METHODS 1: COLLECTION INFORMATION ------------------------
+def getDbFromRequest(collection:str)->(str):
 	if collection != "" and collection != None:
 		return collection
 	else:
 		return "default"
 
-@app.route('/')
-
-def index():
-	return render_template('index.html')
-
-@app.route('/api/induction', methods=['POST'])
-# learning: induce known cluster colors from slices1-2 to graph 1-2-3
-# cluster all new nodes in graph 1-2-3 with chinese-whispers-label-prop algo
-# Param: nodes [names my be string or any other type]
-# Param: edges with weights [weights may be int or float]
-# No time-ids needed here: cumulated graph is clustered irrespective of time
-# precondition: classes of new nodes have a number > len(nodes)
-# Note: Condition: for calling Chinese Whispers: type-safe FLOAT, type-safe STRING
-# Note: Method guarantees type-safety by casting to float and string
-
-def induction():
-	nodes = []
-	newnodes = []
-	links = []
-	if request.method == 'POST':
-		data = json.loads(request.data)
-		#print(data)
-		for item in data["links"]:
-			links.append((str(item["source"]), str(item["target"]), {'weight': float(item["weight"])}))
-		for node in data["nodes"]:
-			nodes.append(node["id"])
-			if int(node["class"])>len(data["nodes"]):
-				newnodes.append(node["id"])
-				
-		#print("induction new nodes", newnodes)
-		reclustered_graph = chineseWhispers.induction(data, newnodes)
-		#print("------------ induction reclustered -----------------------")
-		#print(reclustered_graph["nodes"])
-		return json.dumps(reclustered_graph)
-
-@app.route('/api/reclustering', methods=['POST'])
-# recluster the existing cumulated graph by running Chinese Whispers on it
-# Param: nodes [names my be string or any other type]
-# Param: edges with weights [weights may be int or float]
-# No time-ids needed here: cumulated graph is clustered irrespective of time
-# Note: Condition: for calling Chinese Whispers: type-safe FLOAT, type-safe STRING
-# Note: Method guarantees type-safety by casting to float and string
-
-def recluster():
-	nodes = []
-	links = []
-	if request.method == 'POST':
-		data = json.loads(request.data)
-		#print(data)
-		nodes = data["nodes"]
-		links_list = data["links"]
-		#Thprint(data)
-		for item in links_list:
-			links.append((str(item["source"]), str(item["target"]), {'weight': float(item["weight"])}))
-
-		reclustered_graph = chineseWhispers.chinese_whispers(nodes, links)
-		return json.dumps(reclustered_graph)
 
 @app.route('/api/collections')
 def databases_info():
@@ -124,6 +78,7 @@ def get_end_years(collection):
 	end_years = db.get_all_years("end_year")
 	return json.dumps(end_years)
 
+# Endpoints 2 and Methods: -------------------------------- GET CLUSTERED GRAPH --------------------------
 
 def max_per_slice(db, target_word, time_ids, paradigms, density):
 		node_dic = {}
@@ -232,15 +187,45 @@ def get_clustered_graph(
 	#print(c_graph)
 	return c_graph
 
+@app.route('/api/reclustering', methods=['POST'])
+# recluster the existing cumulated graph by running Chinese Whispers on it
+# Param: nodes [names my be string or any other type]
+# Param: edges with weights [weights may be int or float]
+# No time-ids needed here: cumulated graph is clustered irrespective of time
+# Note: Condition: for calling Chinese Whispers: type-safe FLOAT, type-safe STRING
+# Note: Method guarantees type-safety by casting to float and string
 
-def get_edge_info(collection, word1, word2, time_id):
-	# get edge, ie. intersection of two word features in one time-id, from database
-	# Param word1 (not null, valid)
-	# Param word2 (not null, valid)
-	# Param collection (not null, valid)
-	# Param time_id(not null, valid)
+def recluster():
+	nodes = []
+	links = []
+	if request.method == 'POST':
+		data = json.loads(request.data)
+		#print(data)
+		nodes = data["nodes"]
+		links_list = data["links"]
+		#Thprint(data)
+		for item in links_list:
+			links.append((str(item["source"]), str(item["target"]), {'weight': float(item["weight"])}))
+
+		reclustered_graph = chineseWhispers.chinese_whispers(nodes, links)
+		return json.dumps(reclustered_graph)
+
+# ENDPOINTS & METHODS 3: ------------------------------------ FEATURE INFORMATION ---------------------------------------------------
+
+
+def get_edge_info(collection: str, word1: str, word2: str, time_id: int):
+	# See Mitra(2015)
+	# get edge-score explanation = intersection of two word features in one time-id, from database
+	# Param word1 (str, not null, valid)
+	# Param word2 (str, not null, valid)
+	# Param collection (str, not null, valid)
+	# Param time_id(int, not null, valid)
 	# Preconditions (see conditions after params)
-	# db returns dictionary {"feature": score} with maxima and intersection set
+	# RETURNS
+	# dictionary1 word1: {"feature": score} (nullable - there may not be any data in this time-id), ordered by score desc
+	# dictionary2 word2: {"feature": score} (nullable - there may not be anay data in this time-id), ordered by score desc
+	# intersection set of keys (str) (nullable - there may not be any overlap)
+	# max values 1 und 2 (nullable )
 
 	db = Database(getDbFromRequest(collection))
 	res1_dic = db.get_features(word1, time_id)
@@ -366,6 +351,8 @@ def cluster_information():
 	
 	return dic_res
 
+# ENDPOINTS 4: GET TEXT INFORMATION FROM DOCUMENT DB -------------------------------------------------------------------------------------
+
 @app.route('/api/collections/<string:collection>/documents', methods=['POST'])
 # retrieves sentences which contain one jo and one bim [also called wort1=jo, wort2=bim]
 # Param: collection_key
@@ -412,6 +399,8 @@ def documents(collection="default"):
 		ret.append({"doc": "No Results."})
 
 	return {"docs": ret}
+
+# CLASS - START UP ----------------------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
 	# init packaging system parent

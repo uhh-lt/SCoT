@@ -29,12 +29,12 @@ app = new Vue({
 		graph_types :[], 
 		
 		// information to be queries
-		// "SCoTTi-Interval": "ngot_interval",
+		// 
 		graph_type_keys: {
-			"Overlay nodes & overlay edges": "ngot_overlay",
-			"Overlay nodes & global dynamic edges (scot2)": "scot"
-			
-			
+			"Interval (Best for overview and time-diff)": "ngot_interval",
+			"Overlay (Best for comparison of equally sized networks)" : "ngot_overlay",
+			"Global (Best for advanced density-manipulation)": "scot",
+								
 			
 		},
 		

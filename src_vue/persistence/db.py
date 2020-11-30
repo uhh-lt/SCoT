@@ -1,8 +1,30 @@
+from abc import ABC, abstractmethod
+from typing import Dict, List, Protocol
 import records
 import json
 
-class Database:
-	def __init__(self, collection, configfile = './config/config.json'):
+class DatabaseInterface(Protocol):
+	# ------ GENERAL COLLECTION INFORMATION
+
+
+
+	# ------ GRAPH
+
+
+	#------- FEATURES
+	@abstractmethod
+	def get_features(self, word1: str, time_id: int) -> Dict[str, float]:
+		# see Biemann/Riedl(2013) and Mitra(2015) et.al. for an explanation
+		# get syntagmatic feature and significance score for word1
+		# Param word1 (not null, valid) 
+		# Param time_id (not null, valid) 
+		# return feature (as STRING) and score as FLOAT
+		pass
+
+
+
+class Database(DatabaseInterface):
+	def __init__(self, collection, configfile = './config/config.json') -> None:
 		with open(configfile) as config_file:
 			config = json.load(config_file)
 		if (collection in [*config["collections_info_backend"]]):
@@ -10,29 +32,13 @@ class Database:
 		else:
 			self.db = records.Database(config["collections_info_backend"]['default'])
 	
-	def get_features(self, word1, time_id):
-		# get feature and score for a word ie its syntagmatic context
-		# Param word1 (not null, valid) (CAST to str just to be sure)
-		# Param time_id (not null, valid) - CAST to int (just to be sure)
-		# return feature (as STRING) and score as FLOAT
+# --- COLLECTION INFORMATION
+# TODO Why are there two functions? Does this make sense?
 
-		features = {}
-		f = self.db.query(
-			'SELECT feature, score FROM similar_features '
-			'WHERE word1=:tw and time_id=:td '
-			'ORDER BY score DESC',
-			tw=str(word1),
-			td=int(time_id)
-			)
-		
-		for row in f:
-			features[str(row['feature'])] = float(row['score'])
-		
 
-		return features
-
-	def get_all_years(self, position):
+	def get_all_years(self, position) -> List[Dict[int, str]]:
 		# get all the information on a certain column in the time_slices table, e.g. position='start_year'
+		# TODO position - is not a position but a column name ??????
 		years = []
 		t = self.db.query('SELECT * FROM time_slices ORDER BY id ASC')
 		for row in t:
@@ -53,6 +59,8 @@ class Database:
 		for r in t:
 			time_ids.append(int(r['id']))
 		return time_ids
+
+# ---------------------- GRAPH NODES AND EDGES
 
 	def get_nodes_global(
 		self,
@@ -482,3 +490,18 @@ class Database:
 		print("anzahl time overlayed directed edges additive graph", len(edges))
 		#print (edges)
 		return edges, nodes, singletons
+
+# FEATURES ---------------------------------------------------------------------------------------------
+	def get_features(self, word1: str, time_id: int)-> Dict[str, float]:
+		
+		features: Dict(str, float) = {}
+		f = self.db.query(
+			'SELECT feature, score FROM similar_features '
+			'WHERE word1=:tw and time_id=:td '
+			'ORDER BY score DESC',
+			tw=str(word1),
+			td=int(time_id)
+			)
+		for row in f:
+			features[str(row['feature'])] = float(row['score'])
+		return features

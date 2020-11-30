@@ -1,5 +1,6 @@
 Flask
 flask_restplus
+lask-SQLAlchemy
 records
 networkx==2.3
 mysqlclient

@@ -101,21 +101,21 @@
 		</b-from-group>
 		[{{intervalnumber}} intervals]
 		<hr style="border: 1px solid gray;" />
-		<h5>Overlay-Graph</h5>
+		<h5>Overlay-Network</h5>
 		<!-- Enter target word -->
 		<b-form-group class="input" label="Target word">  
 			<b-form-input v-model="target_word" placeholder="target word" size="sm"></b-form-input>
 		</b-form-group>
 		<!-- Enter number of neighbouring nodes -->
-		<b-form-group class="input"> Max. nearest neighbours
+		<b-form-group class="input"> Number of nearest neighbour nodes
 			<b-form-input type="number" v-model="senses" min="0" placeholder="number of neighbours" size="sm"></b-form-input>
 		</b-form-group>
 		<!-- Enter factor that determines number of edges per graph -->
-		<b-form-group class="input"> Max. density in %: [{{edges}} of {{max_dir_edges}} links]
+		<b-form-group class="input"> Density in %: [{{edges}} of {{max_dir_edges}} links]
 			<b-form-input type="number" v-model="edge_max_ratio" min="0" max="100" placeholder="number of edges" size="sm"></b-form-input>
 		</b-form-group>
 		<!-- Enter a graph type -->
-		<b-form-group class="input" label="Graph-Typ">
+		<b-form-group class="input" label="Network-Type">
 			<b-form-select v-model="graph_type" :options="graph_types" size="sm"></b-form-select>
 		</b-from-group>
 		
