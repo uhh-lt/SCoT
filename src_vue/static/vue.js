@@ -181,7 +181,7 @@ app = new Vue({
             { key: "text", label: "Node", sortable: true },
             { key: "centrality_score", sortable: true },
         ],
-        // centrality-score pverview up limits of bands
+        // centrality-score preview up limits of bands
         gr0_ul: 0.01,
         gr1_ul: 0.02,
         gr2_ul: 0.03,
@@ -1285,14 +1285,16 @@ app = new Vue({
 
             app.centrality_scores.forEach(function (d) {
                 //console.log(parseFloat(d));
-                if (parseFloat(d) <= parseFloat(app.gr0_ul)) {
+                if (parseFloat(d) <= parseFloat(app.centrality_threshold_s)) {
                     group0 += 1;
-                } else if (parseFloat(d) <= parseFloat(app.gr1_ul)) {
+                } else if (
+                    parseFloat(d) <= parseFloat(app.centrality_threshold_m)
+                ) {
                     group1 += 1;
-                } else if (parseFloat(d) <= parseFloat(app.gr2_ul)) {
+                    /*   } else if (parseFloat(d) <= parseFloat(app.gr2_ul)) {
                     group2 += 1;
                 } else if (parseFloat(d) <= parseFloat(app.gr3_ul)) {
-                    group3 += 1;
+                    group3 += 1; */
                 } else {
                     group4 += 1;
                 }
@@ -1300,13 +1302,16 @@ app = new Vue({
 
             app.centrality_score_distribution.push(
                 {
-                    centrality_score: "x < " + app.gr0_ul,
+                    centrality_score: "x < " + app.centrality_threshold_s,
                     number_of_nodes: group0,
                 },
                 {
-                    centrality_score: app.gr0_ul + "-" + app.gr1_ul,
+                    centrality_score:
+                        app.centrality_threshold_s +
+                        "-" +
+                        app.centrality_threshold_m,
                     number_of_nodes: group1,
-                },
+                } /* 
                 {
                     centrality_score: app.gr1_ul + "-" + app.gr2_ul,
                     number_of_nodes: group2,
@@ -1314,9 +1319,9 @@ app = new Vue({
                 {
                     centrality_score: app.gr2_ul + "-" + app.gr3_ul,
                     number_of_nodes: group3,
-                },
+                }, */,
                 {
-                    centrality_score: "x > " + app.gr3_ul,
+                    centrality_score: "x > " + app.centrality_threshold_m,
                     number_of_nodes: group4,
                 }
             );

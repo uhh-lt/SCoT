@@ -5,7 +5,9 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 
-	<title>scot</title>
+	<title>SCoT</title>
+	<link rel="shortcut icon" href=".%% url_for('static', filename='favicon.ico') %%">
+	</link>
 	<!-- D3 and vue.js -->
 	<script src="https://d3js.org/d3.v5.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3-tip/0.9.1/d3-tip.js"></script>
@@ -317,22 +319,20 @@
 						<hr>
 						<div>
 							<div style="font-size: 20px; font-weight:bold;">
-								Customize Thresholds
+								Customize Thresholds [Close and Open for Recalc]
 							</div>
 							<div style="margin-top: 2ex">
-								<span style="text-decoration: underline">Small radius</span> for nodes with centrality
-								score: 0.0 - {{centrality_threshold_s}}: <b-form-input size="sm" type="text"
-									v-model="centrality_threshold_s"> </b-form-input>
+								<span style="text-decoration: underline">Threshold Small/Medium</span>
+								<b-form-input size="sm" type="text" v-model="centrality_threshold_s"> </b-form-input>
 							</div>
 							<div style="margin-top: 2ex">
-								<span style="text-decoration: underline;">Medium radius</span> for nodes with centrality
-								score: {{centrality_threshold_s}} - {{centrality_threshold_m}}: <b-form-input size="sm"
-									type="text" v-model="centrality_threshold_m"> </b-form-input>
+								<span style="text-decoration: underline;">Threshold Medium/Large</span>
+								<b-form-input size="sm" type="text" v-model="centrality_threshold_m"> </b-form-input>
 							</div>
-							<div style="margin-top: 2ex">
+							<!-- <div style="margin-top: 2ex">
 								<span style="text-decoration: underline">Large radius</span> for nodes with centrality
 								score over {{centrality_threshold_m}}
-							</div>
+							</div> -->
 						</div>
 					</b-modal>
 					<hr style="border: 1px solid gray;" />
