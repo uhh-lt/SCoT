@@ -38,6 +38,8 @@ def getDbFromRequest(collection:str)->(str):
 	"""# Helper_method - 
 		return collection-key - if valid or else:return "default"
 	"""
+	with open('./config/config.json') as config_file:
+			config = json.load(config_file)
 	if collection != "" and collection != None and collection in config["collections_info_backend"]:
 		return collection
 	else:

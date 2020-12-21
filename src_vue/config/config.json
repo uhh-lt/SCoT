@@ -4,18 +4,18 @@
   "collections_info_backend": {
     "default": "mysql://user:password@db/scot",
     "en_books": "mysql://user:password@db/scot",
-    "fi_news_dep": "mysql://scot:scot@ltdatabase1/DT_finnews_dependency",
-    "de70mlcc": "mysql://scot:scot@ltdatabase1/DT_de70mlcc_dependency"
+    "fi_news": "mysql://scot:scot@ltdatabase1/DT_finnews_dependency",
+    "de70": "mysql://scot:scot@ltdatabase1/DT_de70mlcc_dependency"
   },
 
   "collections_info_elastic": {
-    "fi_news_dep": {
-      "es_index": "fi_news_dep",
+    "fi_news": {
+      "es_index": "fi_news",
       "es_host": "elasticsearch",
       "es_port": 9200
     },
-    "de70mlcc": {
-      "es_index": "de70mlcc",
+    "de70": {
+      "es_index": "de70",
       "es_host": "elasticsearch",
       "es_port": 9200
     }
@@ -25,21 +25,21 @@
       "key": "en_books",
       "target": "crisis/NN",
       "p": 100,
-      "d": 8,
+      "d": 20,
       "info": "English Google Books, 1520-2008."
     },
     "German News 70m Dep": {
-      "key": "de70mlcc",
+      "key": "de70",
       "target": "Krise#NN",
       "p": 100,
-      "d": 5,
+      "d": 8,
       "info": "German Online News - 70 Million Random Sentences, 1995-2010 "
     },
     "Finnish News Dep": {
-      "key": "fi_news_dep",
+      "key": "fi_news",
       "target": "Yksi#NUM",
       "p": 100,
-      "d": 5,
+      "d": 8,
       "info": "Various Finnish Online News - 14 Million Sentences, "
     }
   }
