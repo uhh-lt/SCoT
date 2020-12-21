@@ -33,11 +33,8 @@
 </head>
 
 <body style="background-color: white;">
-
 	<div id="vue-app">
-
 		<b-container id="body-container" fluid>
-
 			<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX NAVBAR XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
 			<!-- Navbar with option buttons -->
 			<b-navbar type="dark" variant="secondary" toggleable="lg" fixed="top">
@@ -49,7 +46,6 @@
 					</b-button>
 					<b-button size="sm" class="lrmargin_button" v-b-toggle.sidebar-right variant="success">Analyse
 						Clusters</b-button>
-
 				</b-nav-form>
 				<b-navbar-nav class="ml-auto">
 					<b-nav-form v-on:submit.prevent>
@@ -71,8 +67,6 @@
 				style="opacity: 0.9;" width="20%" left shadow>
 				<template v-slot:footer="{ hide }">
 					<div class="d-flex bg-secondary text-light align-items-center px-3 py-2">
-
-
 					</div>
 				</template>
 				<br>
@@ -81,13 +75,10 @@
 					<b-form-radio-group size="m" v-model="left_selected" :options="left_options" buttons
 						button-variant="success" name="radios-btn-default"></b-form-radio-group>
 				</b-form-group>
-
-
 				<div v-if="left_selected === 'graph_data'">
 					<b-overlay :show="overlay_main" :variant="'dark'" rounded="sm" spinner-type="border"
 						spinner-variant="success">
 						<hr style="border: 1px solid gray;" />
-
 						<h5>Interval data</h5>
 						<!-- Enter database -->
 						<b-form-group class="input" label="Collection">
@@ -97,53 +88,48 @@
 						<!-- Enter an start year -->
 						<b-form-group class="input" label="Start of first interval">
 							<b-form-select v-model="start_year" :options="start_years" size="sm"></b-form-select>
-							</b-from-group>
-							<!-- Enter an end year -->
-							<b-form-group class="input" label="End of last interval">
-								<b-form-select v-model="end_year" :options="end_years" size="sm"></b-form-select>
-								</b-from-group>
-
-								<hr style="border: 1px solid gray;" />
-								<h5>Graph parameters</h5>
-								<!-- Enter target word -->
-								<b-form-group class="input" label="t: target word">
-									<b-form-input v-model="target_word" placeholder="target word" size="sm">
-									</b-form-input>
-								</b-form-group>
-								<!-- Enter number of neighbouring nodes -->
-								<b-form-group class="input">n: number of nearest neighbour nodes
-									<b-form-input type="number" v-model="senses" min="0"
-										placeholder="number of neighbours" size="sm"></b-form-input>
-								</b-form-group>
-								<!-- Enter factor that determines number of edges per graph -->
-								<b-form-group class="input"> d: density in %: [{{edges}} of {{max_dir_edges}} dir.
-									links]
-									<b-form-input type="number" v-model="edge_max_ratio" min="0" max="100"
-										placeholder="number of edges" size="sm"></b-form-input>
-								</b-form-group>
-								i: {{intervalnumber}} intervals
-								<!-- Enter a graph type -->
-								<b-form-group class="input" label="Graph type">
-									<b-form-select v-model="graph_type" :options="graph_types" size="sm">
-									</b-form-select>
-									</b-from-group>
-
-
-									<!-- Render button -->
-									<hr style="border: 1px solid gray;" />
-									<h5></h5>
-									<b-button class="lmmargin_button" size="sm" variant="success"
-										v-on:click="render_graph_vue()">Create and Cluster Graph</b-button>
-									<!-- <b-button id="update_button" size="sm" class="lrmargin_button" variant="success" >Update Graph</b-button> -->
-
-									<hr style="border: 1px solid gray;" />
-
-									<!-- Save and Load Graph buttons -->
-									<b-button :disabled="time_diff == 1" class="lmmargin_button" size="sm"
-										variant="success" v-on:click="saveGraph()" download="graph.json" href=""><i
-											class="fas fa-download"></i> Save Graph</b-button>
-									<b-button size="sm" class="lmmargin_button" variant="success"
-										v-on:click="displayForm()"> <i class="fas fa-upload"></i> Load Graph</b-button>
+						</b-form-group>
+						<!-- Enter an end year -->
+						<b-form-group class="input" label="End of last interval">
+							<b-form-select v-model="end_year" :options="end_years" size="sm"></b-form-select>
+						</b-form-group>
+						i: {{intervalnumber}} intervals
+						<hr style="border: 1px solid gray;" />
+						<h5>Graph parameters</h5>
+						<!-- Enter target word -->
+						<b-form-group class="input" label="t: target word">
+							<b-form-input v-model="target_word" placeholder="target word" size="sm">
+							</b-form-input>
+						</b-form-group>
+						<!-- Enter number of neighbouring nodes -->
+						<b-form-group class="input">n: number of nearest neighbour nodes
+							<b-form-input type="number" v-model="senses" min="0" placeholder="number of neighbours"
+								size="sm"></b-form-input>
+						</b-form-group>
+						<!-- Enter factor that determines number of edges per graph -->
+						<b-form-group class="input"> d: density in %: [{{edges}} of {{max_dir_edges}} dir.
+							links]
+							<b-form-input type="number" v-model="edge_max_ratio" min="0" max="100"
+								placeholder="number of edges" size="sm"></b-form-input>
+						</b-form-group>
+						<!-- Enter a graph type -->
+						<b-form-group class="input" label="Graph type">
+							<b-form-select v-model="graph_type" :options="graph_types" size="sm">
+							</b-form-select>
+						</b-form-group>
+						<!-- Render button -->
+						<hr style="border: 1px solid gray;" />
+						<h5></h5>
+						<b-button class="lmmargin_button" size="sm" variant="success" v-on:click="render_graph_vue()">
+							Create and Cluster Graph</b-button>
+						<!-- <b-button id="update_button" size="sm" class="lrmargin_button" variant="success" >Update Graph</b-button> -->
+						<hr style="border: 1px solid gray;" />
+						<!-- Save and Load Graph buttons -->
+						<b-button :disabled="time_diff == 1" class="lmmargin_button" size="sm" variant="success"
+							v-on:click="saveGraph()" download="graph.json" href=""><i class="fas fa-download"></i>
+							Save Graph</b-button>
+						<b-button size="sm" class="lmmargin_button" variant="success" v-on:click="displayForm()"> <i
+								class="fas fa-upload"></i> Load Graph</b-button>
 					</b-overlay>
 				</div>
 				<div v-if="left_selected === 'graph_view'">
@@ -166,20 +152,20 @@
 					<!-- Button to restart simulation with all the nodes -->
 					<p>
 						<b-button id="restart_button" variant="success" size="sm" class="lrmargin_button"
-							v-on:click="restart_change()"> Restart Simulation </b-button>
+							v-on:click="restart_change()"> Restart Simulation
+						</b-button>
 					</p>
 					<!-- Set charge strength for simulation -->
 					<b-form-group> Charge strength: {{charge}}
 						<b-form-input id="range_charge" v-model="charge" v-on:change="charge_change()" type="range"
-							min="-200" max="100"></b-form-input>
+							min="-200" max="100">
+						</b-form-input>
 					</b-form-group>
 					<!-- Set link distance for simulation -->
 					<b-form-group> Link distance: {{linkdistance}}
 						<b-form-input id="range_linkdistance" v-model="linkdistance" v-on:change="linkdistance_change()"
 							type="range" min="-10" max="200"></b-form-input>
 					</b-form-group>
-
-
 				</div>
 				<div v-if="left_selected === 'graph_help'">
 					<!--<hr>-->
@@ -194,8 +180,6 @@
 					<div>
 						{{collection_info}}
 					</div>
-
-
 				</div>
 			</b-sidebar>
 			<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR Left 2 - Cluster CONTEXT ANALYSIS VIEW XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
@@ -213,10 +197,7 @@
 				<p style="margin-left: 10px;font-size:12px"> Clusters exhibit similarity between multiple paradigms.
 					The following list shows the top 200 context-words among all nodes. The score is the normalized
 					cumulated significance of the word for the cluster.
-
-
 				</p>
-
 				<div>
 					<b-table striped-hover :busy="busy_right2" :fields="fields_cluster" :items="cluster_shared_object"
 						:sort-by="'score'" :sort-desc="true" style="color: white;font-size:12px">
@@ -228,7 +209,6 @@
 						</template>
 					</b-table>
 				</div>
-
 			</b-sidebar>
 			<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR Left 3 - document CONTEXT ANALYSIS VIEW XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
 			<b-sidebar v-show="context_mode4" id="sidebar-right4" title="Example Sentences" width="20%"
@@ -239,10 +219,7 @@
 				<br>
 				<br>
 				<!-- <p style="margin-left: 10px;font-size:12px" > Example Sentences
-		
-				
-		</p> -->
-
+				</p> -->
 				<div>
 					<b-table striped-hover :busy="busy_right4" :fields="fields_documents" :items="documents"
 						:sort-by="'docs'" :sort-desc="true" style="color: white;font-size:12px">
@@ -254,7 +231,6 @@
 						</template>
 					</b-table>
 				</div>
-
 			</b-sidebar>
 			<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR-RIGHT ANALYSIS CLUSTERING XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
 			<b-sidebar width="23%" id="sidebar-right" title="Cluster analysis" bg-variant="secondary"
@@ -332,10 +308,6 @@
 							</div>
 						</div>
 					</b-modal>
-
-
-
-
 					<!-- Modal to Customize Thresholds-->
 					<b-modal id="modal-centrality-1" title="Customize Highlighting Thresholds"
 						@ok="highlightCentralNodes(centrality_threshold_s, centrality_threshold_m)">
