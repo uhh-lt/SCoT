@@ -9,24 +9,28 @@
 	<!-- D3 and vue.js -->
 	<script src="https://d3js.org/d3.v5.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3-tip/0.9.1/d3-tip.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.min.js"></script>
 	<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/vue-clickaway@2.2.2/dist/vue-clickaway.min.js"></script>
 
-	<!-- Other JavaScript files -->
-	<script type="text/javascript" src=".%% url_for('static', filename='render_sense_graph.js') %%"></script>
-
 	<!-- Stylesheets -->
-	<link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css"/>
-	<link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap-vue@2.11.0/dist/bootstrap-vue.css"/>
+	<link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap@4.5.3/dist/css/bootstrap.min.css"/>
+	<link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap-vue@2.21.1/dist/bootstrap-vue.css"/>
+
 	<!-- Necessary for buttons to look good -->
-		<link type="text/css" href="https://unpkg.com/bootstrap/dist/css/bootstrap-theme.min.css" rel="stylesheet">
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous"/>
 	<link rel= "stylesheet" type= "text/css" href=".%% url_for('static', filename='style.css') %%"/>
 
-	<!-- Bootstrap Vue -->
+	<!-- Bootstrap Vue --->
 	<script src="https://unpkg.com/vue"></script>
-	<script src="https://unpkg.com/bootstrap-vue@2.11.0/dist/bootstrap-vue.js"></script>
+	<script src="https://unpkg.com/bootstrap-vue@2.21.1/dist/bootstrap-vue.js"></script>
+
+	<link rel="shortcut icon" href=".%% url_for('static', filename='favicon.ico') %%"/>>
+	
+	<!-- Other JavaScript files -->
+	<script type="text/javascript" src=".%% url_for('static', filename='render_sense_graph.js') %%"></script>
+
+
 </head>
 
 <body style="background-color: white;"> 
@@ -83,10 +87,10 @@
 		 
 		
 	<div v-if="left_selected === 'graph_data'">
-		
+		<b-overlay :show="overlay_main" :variant="'dark'" rounded="sm" spinner-type="border" spinner-variant="success" >
 		<hr style="border: 1px solid gray;" />
 		
-		<h5>Interval-Data</h5>
+		<h5>Interval data</h5>
 		<!-- Enter database -->
 		<b-form-group class="input" label="Collection">  
 			<b-form-select v-on:change="onChangeDb" v-model="collection_name" :options="collections_names" size="sm"></b-form-select>
@@ -99,23 +103,24 @@
 		<b-form-group class="input" label="End of last interval">
 			<b-form-select v-model="end_year" :options="end_years" size="sm"></b-form-select>
 		</b-from-group>
-		[{{intervalnumber}} intervals]
+		
 		<hr style="border: 1px solid gray;" />
-		<h5>Overlay-Network</h5>
+		<h5>Graph parameters</h5>
 		<!-- Enter target word -->
-		<b-form-group class="input" label="Target word">  
+		<b-form-group class="input" label="t: target word">  
 			<b-form-input v-model="target_word" placeholder="target word" size="sm"></b-form-input>
 		</b-form-group>
 		<!-- Enter number of neighbouring nodes -->
-		<b-form-group class="input"> Number of nearest neighbour nodes
+		<b-form-group class="input">n: number of nearest neighbour nodes
 			<b-form-input type="number" v-model="senses" min="0" placeholder="number of neighbours" size="sm"></b-form-input>
 		</b-form-group>
 		<!-- Enter factor that determines number of edges per graph -->
-		<b-form-group class="input"> Density in %: [{{edges}} of {{max_dir_edges}} links]
+		<b-form-group class="input"> d: density in %: [{{edges}} of {{max_dir_edges}} dir. links]
 			<b-form-input type="number" v-model="edge_max_ratio" min="0" max="100" placeholder="number of edges" size="sm"></b-form-input>
 		</b-form-group>
+		i: {{intervalnumber}} intervals
 		<!-- Enter a graph type -->
-		<b-form-group class="input" label="Network-Type">
+		<b-form-group class="input" label="Graph type">
 			<b-form-select v-model="graph_type" :options="graph_types" size="sm"></b-form-select>
 		</b-from-group>
 		
@@ -123,7 +128,7 @@
 		<!-- Render button -->
 		<hr style="border: 1px solid gray;" />
 		<h5></h5>
-		<b-button class="lmmargin_button" size="sm" variant="success" v-on:click="render_graph()">Create and Cluster Graph</b-button>
+		<b-button class="lmmargin_button" size="sm" variant="success" v-on:click="render_graph_vue()">Create and Cluster Graph</b-button>
 		<!-- <b-button id="update_button" size="sm" class="lrmargin_button" variant="success" >Update Graph</b-button> -->
 		
 			<hr style="border: 1px solid gray;" />
@@ -131,7 +136,7 @@
 		<!-- Save and Load Graph buttons -->
 		<b-button :disabled="time_diff == 1" class="lmmargin_button" size="sm" variant="success" v-on:click="saveGraph()" download="graph.json" href=""><i class="fas fa-download"></i> Save Graph</b-button>
 		<b-button size="sm" class="lmmargin_button" variant="success" v-on:click="displayForm()"> <i class="fas fa-upload"></i> Load Graph</b-button>
-	
+	</b-overlay>
 	</div>
 	<div v-if="left_selected === 'graph_view'">
 		<div>
@@ -844,7 +849,8 @@
 		
 		<b-col sm="12">
 			<!-- div to render the svg with the graph in (see render_sense_graph.js) -->
-			<b-overlay :show="overlay_main">
+			<b-overlay :show="overlay_main" rounded="sm" spinner-type="border" spinner-variant="dark" >
+														
 			<!-- for some weird reason it did not work with id="graph", but with id="graph2"... don't ask me why -->
 			<div id="graph2" class="svg-container"></div>
 		</b-overlay>
@@ -928,9 +934,9 @@
 	</div>
 </b-modal>
 
-<!-- include script vue.js -->
-<script type="text/javascript" src=".%% url_for('static', filename='vue.js') %%"></script>
 
 </body>
+<!-- include script vue.js -->
+<script type="text/javascript" src=".%% url_for('static', filename='vue.js') %%"></script>
 
 </html>

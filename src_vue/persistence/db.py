@@ -5,20 +5,32 @@ import json
 
 class DatabaseInterface(Protocol):
 	# ------ GENERAL COLLECTION INFORMATION
-
-
+	@abstractmethod
+	def get_all_years(self, position) -> List[Dict[int, str]]:
+		"""Gets all years from database
+		Args:
+			position ([type]): 
+		Returns:
+			List[Dict[int, str]]: [description]
+		"""
+		pass
 
 	# ------ GRAPH
+	# --------NODES (Gets nodes first)
 
+
+	# --------EDGES (determines edges based on nodes in time-intervals)
 
 	#------- FEATURES
 	@abstractmethod
 	def get_features(self, word1: str, time_id: int) -> Dict[str, float]:
-		# see Biemann/Riedl(2013) and Mitra(2015) et.al. for an explanation
-		# get syntagmatic feature and significance score for word1
-		# Param word1 (not null, valid) 
-		# Param time_id (not null, valid) 
-		# return feature (as STRING) and score as FLOAT
+		""" get syntagmatic feature and significance score for word1 from DB
+		Args:
+			word1 (str): paradigm
+			time_id (int): in time_id
+		Returns:
+			Dict[str, float]: Dictionary of all features and scores
+		"""
 		pass
 
 
@@ -33,23 +45,36 @@ class Database(DatabaseInterface):
 			self.db = records.Database(config["collections_info_backend"]['default'])
 	
 # --- COLLECTION INFORMATION
-# TODO Why are there two functions? Does this make sense?
 
-
-	def get_all_years(self, position) -> List[Dict[int, str]]:
-		# get all the information on a certain column in the time_slices table, e.g. position='start_year'
-		# TODO position - is not a position but a column name ??????
+	def get_all_years(self, column_name) -> List[Dict[int, str]]:
+		""" gets initial information on years and ids for collection 
+		Args:
+			column_name ([type]): start_years or end_years
+		Returns:
+			List[Dict[int, str]]: [description]
+		"""
 		years = []
 		t = self.db.query('SELECT * FROM time_slices ORDER BY id ASC')
 		for row in t:
 			year = {}
-			year["value"] = int(row[position])
-			year["text"] = str(row[position])
+			# value and text needed for vue dropdown
+			year["value"] = int(row[column_name])
+			year["text"] = str(row[column_name])
+			# id needed for various operations
+			year["id"] = int(row['id'])
 			years.append(year)
 		return years
 
+# ------------------ GRAPH QUERY YEAR_TIME_ID RESOLVER
 
 	def get_time_ids(self, start_year, end_year):
+		""" frontend queries years - these are resolved to time-ids by this function
+		Args:
+			start_year ([type]): [description]
+			end_year ([type]): [description]
+		Returns:
+			[type]: list of time-ids
+		"""
 		# get the corresponding ids for the start and end_year parameters
 		time_ids = []
 		t = self.db.query(
@@ -70,7 +95,7 @@ class Database(DatabaseInterface):
 		):
 		# sglobal node function - ie searches nodes regardless of overlay or time-interval
 		# SCALES PARADIGMS WITH THE NUMBER OF TIME-IDS
-		max_paradigms = max_paradigms * len(selected_time_ids)
+		# max_paradigms = max_paradigms * len(selected_time_ids)
 		# get the nodes for a target word from the database
 		# PARAM target_word is str
 		# PARAM max_paradigms
@@ -102,6 +127,34 @@ class Database(DatabaseInterface):
 		#print(nodes)
 		return nodes
 
+
+	def get_nodes_interval(
+		self,
+		target_word,
+		max_paradigms,
+		selected_time_id
+		):
+		# Node function for interval-graph with one selected time_id
+		# get the nodes for a target word from the database
+		# PARAM target_word is str
+		# PARAM max_paradigms [max required data for this interval] = LIMIT
+		# PARAM selected_time_ids is int-array
+		# RETURNS nodes
+
+		nodes = []
+		target_word_senses = self.db.query(
+			'SELECT word2, time_id, score FROM similar_words '
+			'WHERE word1=:tw AND word1!=word2 AND time_id=:ti '
+			'ORDER BY score DESC '
+			'LIMIT :li'
+			,
+			li=max_paradigms,
+			ti=selected_time_id,
+			tw=target_word
+			)
+		for row in target_word_senses:
+			nodes.append([str(row['word2']), {"time_ids": [int(row['time_id'])], "weights": [float(row["score"])], "target_text": str(row['word2'])}])
+		return nodes
 	
 	def get_nodes(
 		self,
@@ -219,7 +272,7 @@ class Database(DatabaseInterface):
 		return nodes
 
 	def get_edges(self, nodes, max_edges, time_ids):
-		# standard edge function for SCoT - 
+		# LEGACY standard edge function for SCoT - NOT USED ANYMORE
 		# This queries and counts all single directed edges
 		# There are THREE problems with this algorithm:
 		# 1. Massive problem it does not scale with the the number of time-ids
@@ -393,6 +446,7 @@ class Database(DatabaseInterface):
 		# PARAM: max paradigms, max edges are the params for the graph per time-slice
 		# PARAM: time-ids - the slices in which one graph each is created
 		# RETURNS Edges, nodes_filtered, and singletons of the overaly graph
+		# IMPLEMENTATION NOTE: The query to the DB is expensive. Thus, all edges are requested and filtered here.
 		
 		# VARS -----------------------------
 		# RETURN-VARS of Overlay graph

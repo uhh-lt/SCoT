@@ -11,7 +11,9 @@ from typing import Dict, List
 
 from persistence.documentdb import Documentdb
 from persistence.db import Database
-import services.chineseWhispers as chineseWhispers
+import services.chinese_whispers as chineseWhispers
+from services.build_graphs import ngot_interval
+
 
 # FLASK---------------------------------------------------------------------------------
 # ---------- FLASK SUBCLASSING
@@ -30,6 +32,17 @@ app = CustomFlask(__name__,
 app.config.from_object(__name__)
 CORS(app)
 
+
+# ----------------- HELPERS
+def getDbFromRequest(collection:str)->(str):
+	"""# Helper_method - 
+		return collection-key - if valid or else:return "default"
+	"""
+	if collection != "" and collection != None and collection in config["collections_info_backend"]:
+		return collection
+	else:
+		return "default"
+
 # ------------ App REST-API Controller -----------------------------------------------------------------------
 # Main Landing Page
 @app.route('/')
@@ -37,121 +50,84 @@ def index():
 	return render_template('index.html')
 
 # ENDPOINTS and METHODS 1: COLLECTION INFORMATION ------------------------
-def getDbFromRequest(collection:str)->(str):
-	if collection != "" and collection != None:
-		return collection
-	else:
-		return "default"
-
 
 @app.route('/api/collections')
-def databases_info():
+
+def collections_info():
+	"""compiles info about collections from config frontend information
+	and collection-databases
+	Returns:
+		JSON - with all information - this is stored in the frontend as collections
+	Precondition: start and end years are well ordered with ids beginning with 1 and ending with n
+	"""
 	with open('./config/config.json') as config_file:
 			config = json.load(config_file)
-	return json.dumps(config["collections_info_frontend"])
+	# add information about intervals
+	config_fe = config["collections_info_frontend"]
+	for collection in config_fe:
+		key = config_fe[collection]["key"]
+		db = Database(getDbFromRequest(key))
+		config_fe[collection]['start_years'] = db.get_all_years("start_year")
+		config_fe[collection]['end_years'] = db.get_all_years("end_year")
+		
+	return json.dumps(config_fe)
 
-
-@app.route('/api/collections/<string:collection>/interval/<int:start>/<int:end>')
-# Retrieve the time id(s) of a certain interval between a specified start and end year
-# Param selected start from all start (must be valid - precondition to be ensured by frontend)
-# Param selected end from all ends (must be valid - precondition to be ensured by frontend)
-# Returns interval as json
-
-def interval(start, end, collection):
-	db = Database(getDbFromRequest(collection))
-	interval = db.get_time_ids(start, end)
-	return json.dumps(interval)
-
-
-@app.route('/api/collections/<string:collection>/start_years')
-# retrieve all possible start years from the database
-def get_start_years(collection):
-	db = Database(getDbFromRequest(collection))
-	start_years = db.get_all_years("start_year")
-	return json.dumps(start_years)
-
-
-@app.route('/api/collections/<string:collection>/end_years')
-# retrieve all possible end years from the database
-def get_end_years(collection):
-	db = Database(getDbFromRequest(collection))
-	end_years = db.get_all_years("end_year")
-	return json.dumps(end_years)
 
 # Endpoints 2 and Methods: -------------------------------- GET CLUSTERED GRAPH --------------------------
-
-def max_per_slice(db, target_word, time_ids, paradigms, density):
-		node_dic = {}
-		for time_id in time_ids:
-			time = []
-			time.append(time_id)
-			result = db.get_nodes(target_word, paradigms, time)
-			#print("nodes pro time-id", len(result))
-			#print(result)
-			for res in result:
-				if res[0] not in node_dic:
-					node_dic[res[0]] = res[1]
-				else:
-					# add time res[1]["time_ids"] zu node_dic[res[0]]["time_ids"]
-					node_dic[res[0]]["time_ids"].append(res[1]["time_ids"][0])
-					node_dic[res[0]]["weights"].append(res[1]["weights"][0])
-		nodes = []
-		for k,v in node_dic.items():
-			nodes.append([k, v])
-		print("total additiver graph nodes", len(nodes))
-		#print(nodes)
-		remove_singletons = True
-		# print (nodes)
-		edges, nodes, singletons = db.get_edges_per_time(nodes, paradigms, density, time_ids, remove_singletons)
-		return edges, nodes, singletons
-
 
 # main graph projection and clustering algorith
 # offers various projections and clustering-algos depending on graph-type
 # Params: collection, target-word, start-year, end-year, density, paradigms, graph-type
-def clusters(
-		collection, 
-		target_word,
-		start_year,
-		end_year,
-		paradigms,
-		density,
-		graph_type
-		):
+def clusters(collection:str, target_word:str, start_year, end_year, paradigms,	density, graph_type	):
+	"""[summary]
+
+	Args:
+		collection ([type]): [description]
+		target_word ([type]): [description]
+		start_year ([type]): [description]
+		end_year ([type]): [description]
+		paradigms ([type]): [description]
+		density ([type]): [description]
+		graph_type ([type]): [description]
+
+	Returns:
+		[type]: [description]
+	"""
+	db = Database(getDbFromRequest(collection))
+	# Resolve start and end year -> time-ids
+	time_ids = db.get_time_ids(start_year, end_year)
+	## ------------------- new algos ----- start
+	print(graph_type)
+	# get additive nodes - ie the top paradigms from each selected time id
+	# problem size of graph may vary between paradigm and time-id*paradigm
+	if str(graph_type)=="ngot_interval":
+		print("NGOT interval")
+		# NGOT - Interval-based
+		# fixes nodes and density in relation to interval-graph - classic overlay
+		edges, nodes, singletons = ngot_interval(db, target_word, time_ids, paradigms, density)
+	elif str(graph_type)=="ngot_overlay":
+		print("NGOT overlay")
+		# NGOT - Overlay-fixed (expands global nodes dynamically)
+		# Edges in time, fixed global overlay edges, scaled
+		nodes = db.get_nodes(target_word, paradigms, time_ids)
+		edges, nodes, singletons = db.get_edges_in_time(nodes, density, time_ids)
+	elif str(graph_type) == "ngot_global":
+		print("NGOT global")
+		# NOT IMPLEMENTED FULLY YET
+		# background fixing dynamic for edges - static for nodes (currently)
+		# Nodes not scaled yet for global algo - global searches for paradigms * |time-ids |
+		nodes = db.get_nodes_global(target_word, paradigms, time_ids)
+		edges, nodes, singletons = db.get_edges_in_time(nodes, density, time_ids)
+	# ---- standard from here - but can change to db.get_edges_in_time to avoid implicit nodes
+	else:
+		# standard scot: nodes overlay, edges: global - static
+		print("scot - nodes global fixed/data fixed - edges - global dyn - data fixed")
+		nodes = db.get_nodes(target_word, paradigms, time_ids)
+		edges, nodes, singletons = db.get_edges(nodes, density, time_ids)
+	#print("nodes", len(nodes), "directed edges", len(edges), "singletons", len(singletons))
+	## ------------------- experimental features ----- end
 		
-		db = Database(getDbFromRequest(collection))
-		time_ids = db.get_time_ids(start_year, end_year)
-		## ------------------- new algos ----- start
-		print(graph_type)
-		# get additive nodes - ie the top paradigms from each selected time id
-		# problem size of graph may vary between paradigm and time-id*paradigm
-		if str(graph_type)=="ngot_interval":
-			print("NGOT interval")
-			# NGOT - Interval-based
-			# fixes nodes and density in relation to interval-graph - classic overlay
-			edges, nodes, singletons = max_per_slice(db, target_word, time_ids, paradigms, density)
-		elif str(graph_type)=="ngot_overlay":
-			print("NGOT overlay")
-			# NGOT - Overlay-fixed (expands global nodes dynamically)
-			# Edges in time, fixed global overlay edges, scaled
-			nodes = db.get_nodes(target_word, paradigms, time_ids)
-			edges, nodes, singletons = db.get_edges_in_time(nodes, density, time_ids)
-		elif str(graph_type) == "ngot_global":
-			print("NGOT global")
-			# background fixing dynamic for edges - static for nodes (currently)
-			# Nodes not scaled yet for global algo - global searches for paradigms * |time-ids |
-			nodes = db.get_nodes_global(target_word, paradigms, time_ids)
-			edges, nodes, singletons = db.get_edges(nodes, density, time_ids)
-		# ---- standard from here - but can change to db.get_edges_in_time to avoid implicit nodes
-		else:
-			# standard scot: nodes overlay, edges: global - static
-			print("scot - nodes global fixed/data fixed - edges - global dyn - data fixed")
-			nodes = db.get_nodes(target_word, paradigms, time_ids)
-			edges, nodes, singletons = db.get_edges(nodes, density, time_ids)
-		print("nodes", len(nodes), "directed edges", len(edges), "singletons", len(singletons))
-		## ------------------- experimental features ----- end
-		
-		return singletons, chineseWhispers.chinese_whispers(nodes, edges)
+	return singletons, chineseWhispers.chinese_whispers(nodes, edges)
 
 
 @app.route('/api/collections/<string:collection>/sense_graph', methods=['POST'])
@@ -404,7 +380,6 @@ def documents(collection="default"):
 
 if __name__ == '__main__':
 	# init packaging system parent
-	# print(str(Path(__file__).parent.absolute()))
 	# this is not permanent (this is why we do it again and again ...)
 	sys.path.append(str(Path(__file__).parent.absolute()))
 	# use the config file to get host and database parameters
