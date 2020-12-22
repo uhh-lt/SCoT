@@ -114,9 +114,11 @@ def get_clustered_graph(
 	# as default calls overlay_global (dynamic version of first SCoT-algorithm)
 	else:
 		edges, nodes, singletons = ngot_overlay_global(db, target_word, time_ids, paradigms, density)
-	# cluster graph and return
+	# cluster graph
 	clustered_graph = chineseWhispers.chinese_whispers(nodes, edges)
+	# convert to datastructure format
 	c_graph = json.dumps([clustered_graph, {'target_word': target_word}, {'singletons': singletons}], sort_keys=False, indent=4)
+	# return
 	return c_graph
 
 @app.route('/api/reclustering', methods=['POST'])

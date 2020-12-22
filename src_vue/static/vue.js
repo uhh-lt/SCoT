@@ -180,7 +180,7 @@ app = new Vue({
         centrality_scores: [],
         // for table display
         centrality_fields: [
-            { key: "text", label: "Node", sortable: true },
+            { key: "node", sortable: true },
             { key: "centrality_score", sortable: true },
         ],
         // centrality-score preview up limits of bands
@@ -1005,7 +1005,7 @@ app = new Vue({
 		Returns an object with the {cluster_id : amount of nodes} and a string containing the cluster names and the number of nodes
 		*/
         findNeighbourhoodClusters: function (node) {
-            neighbourhoodClusters = {};
+            let neighbourhoodClusters = {};
             var links = d3.selectAll(".link");
 
             links.each(function (d) {
@@ -1047,10 +1047,10 @@ app = new Vue({
                 });
             });
 
-            var neighbourhoodClusters_str = [];
+            let neighbourhoodClusters_str = [];
             // Get the cluster name to each cluster id in the neighbourhood
             Object.keys(neighbourhoodClusters).forEach(function (d) {
-                var name = app.getClusterNameFromID(d);
+                let name = app.getClusterNameFromID(d);
                 // build a list with the cluster names and number of nodes for display in the frontend
                 neighbourhoodClusters_str.push(
                     name + "(" + neighbourhoodClusters[d] + ")"
@@ -1065,15 +1065,15 @@ app = new Vue({
 		Check if the neighbourhood of a node is balanced 
 		*/
         is_balanced: function (clusterDistr) {
-            var balanced = false;
-            var b = "no";
+            let balanced = false;
+            let b = "no";
 
             // only worth checking if there are at least two neighbourhood clusters
             if (Object.keys(clusterDistr).length > 1) {
                 var max = 0;
                 var mean = 0;
 
-                clusterDistrValues = Object.values(clusterDistr);
+                let clusterDistrValues = Object.values(clusterDistr);
 
                 clusterDistrValues.forEach(function (d) {
                     mean += d;
@@ -1086,8 +1086,8 @@ app = new Vue({
                 max = Math.max(...clusterDistrValues);
 
                 // get rid of the cluster with the maximum connections
-                clusterDistrWithoutMax = clusterDistr;
-                for (cluster in clusterDistrWithoutMax) {
+                let clusterDistrWithoutMax = clusterDistr;
+                for (let cluster in clusterDistrWithoutMax) {
                     if (clusterDistrWithoutMax[cluster] === max) {
                         delete clusterDistrWithoutMax[cluster];
                         break;
@@ -1198,11 +1198,11 @@ app = new Vue({
                 });
 
                 if (is_cluster_node === "false") {
-                    var result = app.findNeighbourhoodClusters(node_text);
-                    var neighbourClusterDistr = result[0];
-                    var neighbourClusterDistr_string = result[1];
+                    let result = app.findNeighbourhoodClusters(node_text);
+                    let neighbourClusterDistr = result[0];
+                    let neighbourClusterDistr_string = result[1];
 
-                    b = app.is_balanced(neighbourClusterDistr)[1];
+                    let b = app.is_balanced(neighbourClusterDistr)[1];
 
                     candidate["text"] = node_text;
                     candidate[
@@ -1290,10 +1290,14 @@ app = new Vue({
 
             app.centrality_scores.forEach(function (d) {
                 //console.log(parseFloat(d));
-                if (parseFloat(d) <= parseFloat(app.centrality_threshold_s)) {
+                if (
+                    parseFloat(d["centrality_score"]) <=
+                    parseFloat(app.centrality_threshold_s)
+                ) {
                     group0 += 1;
                 } else if (
-                    parseFloat(d) <= parseFloat(app.centrality_threshold_m)
+                    parseFloat(d["centrality_score"]) <=
+                    parseFloat(app.centrality_threshold_m)
                 ) {
                     group1 += 1;
                     /*   } else if (parseFloat(d) <= parseFloat(app.gr2_ul)) {
@@ -1337,15 +1341,16 @@ app = new Vue({
 		*/
         getCentralityScores: function () {
             app.centrality_scores = [];
-            // console.log(app.nodes);
+            console.log(app.nodes);
             for (let d of app.nodes) {
                 if (d["centrality_score"] != null) {
-                    app.centrality_scores.push(
-                        parseFloat(d["centrality_score"])
-                    );
+                    app.centrality_scores.push({
+                        node: d["id"],
+                        centrality_score: d["centrality_score"],
+                    });
                 }
             }
-            // console.log(app.centrality_scores);
+            console.log(app.centrality_scores);
         },
         /*
 		Reset all the nodes make to their original size
@@ -1613,7 +1618,7 @@ app = new Vue({
             var generated_cluster_id = app.generate_cluster_id().toString();
 
             selected_nodes.each(function (d, i) {
-                text = "";
+                let text = "";
                 var childnodes = this.childNodes;
 
                 childnodes.forEach(function (d, i) {
@@ -1775,11 +1780,11 @@ app = new Vue({
 		The list is stored in the data variable clicked_nodes.
 		*/
         findSelectedNodes: function () {
-            list = [];
+            let list = [];
             var selected_nodes = d3.select(".selected");
 
             selected_nodes.each(function (d, i) {
-                node_characteristics = {};
+                let node_characteristics = {};
                 var childnodes = this.childNodes;
 
                 childnodes.forEach(function (d) {
@@ -1874,7 +1879,7 @@ app = new Vue({
                 var in_source_interval = false;
                 var in_target_interval = false;
 
-                interval = parseInt(app.interval_id);
+                let interval = parseInt(app.interval_id);
 
                 // check if source time ids of a link include the time slice id of the selected interval
                 if (source_time_ids.includes(interval)) {
@@ -2345,7 +2350,7 @@ app = new Vue({
             // accumulate all the graph nodes
             var nodes_array = [];
             nodes.selectAll("g").each(function (d, i) {
-                childnodes = this.childNodes;
+                let childnodes = this.childNodes;
 
                 var is_cluster_node;
                 childnodes.forEach(function (d, i) {

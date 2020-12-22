@@ -1,20 +1,6 @@
 def ngot_interval(db, target_word, time_ids, paradigms, density):
-	"""creates overlay with interval-graphs per time_id in time-ids
-	step1: selects all nodes: 
-	step2: selects all the edges: 
-	
-	Args:
-		db ([type]): db for querying data for selected collections
-		target_word ([type]): all neighbourhood graphs relate to target_word
-		time_ids ([type]): one graph for each interval in time_ids
-		paradigms ([type]): number of nodes per interval-graph
-		density ([type]): [density]
-
-	Returns:
-		[type]: graphS
-	"""
+	### creates overlay with interval-graphs per time_id in time-ids
 	print("NGOT interval")
-		
 	# STEP 1: GET ALL NODES FROM EACH INTERVAl
 	node_dic = {}
 	for time_id in time_ids:
