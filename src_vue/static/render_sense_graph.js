@@ -240,7 +240,7 @@ const render_graph = function (graph_nodes, graph_links, target) {
         .on("mouseout", time_diff_tip.hide);
 
     // append a label to the node which displays its id
-    var labels = app.node
+    let labels = app.node
         .append("text")
         .text(function (d) {
             return d.id;
@@ -576,7 +576,7 @@ function restart() {
     });
     node.exit().remove();
 
-    var g = node
+    let g = node
         .enter()
         .append("g")
         .attr("stroke", "#fff")
@@ -596,7 +596,7 @@ function restart() {
             showContextMenu(this);
         });
 
-    var circle = g
+    let circle = g
         .append("circle")
         .attr("fill", function (d) {
             return d.colour;
@@ -608,7 +608,7 @@ function restart() {
         })
         .attr("cluster_node", true);
 
-    var text = g
+    let text = g
         .append("text")
         .text(function (d) {
             return d.id;
@@ -666,9 +666,8 @@ function addclusternode(name, colour, cluster_id) {
 }
 
 // On backspace anywhere in the html body delete cluster node
-// TODO: only focus this on the svg element, otherwise it is really annoying when entering stuff in input fields
 function deleteClusterNode() {
-    var selected_nodes = d3.selectAll(".node").selectAll("g");
+    let selected_nodes = d3.selectAll(".node").selectAll("g");
     selected_nodes.each(function (d) {
         if (d.selected) {
             var childnodes = this.childNodes;
@@ -705,7 +704,7 @@ function update_graph() {
     });
     node.exit().remove();
 
-    var g = node
+    let g = node
         .enter()
         .append("g")
         .attr("stroke", "#fff")
@@ -817,7 +816,7 @@ function update_graph() {
     ticked();
 
     // colour the links
-    var all_links = svg.selectAll("line");
+    let all_links = svg.selectAll("line");
     all_links.each(function () {
         // check if link is connected to cluster node
         var is_connected_to_cluster_node = false;
@@ -1051,8 +1050,8 @@ function keyupped() {
 }
 
 function reset_zoom() {
-    var container = d3.select("#svg");
-    var zoom = d3
+    let container = d3.select("#svg");
+    let zoom = d3
         .zoom()
         .scaleExtent([0.7, 8])
         .on("zoom", () => {

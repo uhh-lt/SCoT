@@ -39,10 +39,12 @@ app = new Vue({
         //  keys used for querying specific graph from backend
         // not used : "n & d Global Static (absolute nodes and dir. edges)" : "ngot_global",
         graph_type_keys: {
-            "n & d per INTERVAL (best for overview and time-diff)":
+            "INTERVAL[n&d per i] (best for overview and time-diff)":
                 "ngot_interval",
-            "n & d per OVERLAY (best for comparison)": "ngot_overlay",
-            "n per OVERLAY & d GLOBAL (edge manipulation)": "scot",
+            "OVERLAY[n&d] (best for comparison)": "ngot_overlay",
+            "OVERLAY[n] & GLOBAL[d total] (edge manipulation)": "scot",
+            "GLOBAL[n*i] & GLOBAL[d total] (node & edge manipulation)":
+                "ngot_global",
         },
 
         // #### BASIC NETWORK-GRAPH DATA ##########################
@@ -327,7 +329,10 @@ app = new Vue({
         max_dir_edges: function () {
             // Scot V2 dynamically scales the number of edges with the number of intervals selected
             // || this.graph_type_keys[this.graph_type] ===  "ngot_global"
-            if (this.graph_type_keys[this.graph_type] === "scot") {
+            if (
+                this.graph_type_keys[this.graph_type] === "scot" ||
+                this.graph_type_keys[this.graph_type] === "ngot_global"
+            ) {
                 return this.senses * (this.senses - 1) * this.intervalnumber;
             } else {
                 return this.senses * (this.senses - 1);

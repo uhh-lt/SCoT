@@ -1,41 +1,8 @@
-from abc import ABC, abstractmethod
-from typing import Dict, List, Protocol
+from typing import Dict, List
 import records
 import json
 
-class DatabaseInterface(Protocol):
-	# ------ GENERAL COLLECTION INFORMATION
-	@abstractmethod
-	def get_all_years(self, position) -> List[Dict[int, str]]:
-		"""Gets all years from database
-		Args:
-			position ([type]): 
-		Returns:
-			List[Dict[int, str]]: [description]
-		"""
-		pass
-
-	# ------ GRAPH
-	# --------NODES (Gets nodes first)
-
-
-	# --------EDGES (determines edges based on nodes in time-intervals)
-
-	#------- FEATURES
-	@abstractmethod
-	def get_features(self, word1: str, time_id: int) -> Dict[str, float]:
-		""" get syntagmatic feature and significance score for word1 from DB
-		Args:
-			word1 (str): paradigm
-			time_id (int): in time_id
-		Returns:
-			Dict[str, float]: Dictionary of all features and scores
-		"""
-		pass
-
-
-
-class Database(DatabaseInterface):
+class Database():
 	def __init__(self, collection, configfile = './config/config.json') -> None:
 		with open(configfile) as config_file:
 			config = json.load(config_file)
@@ -85,7 +52,7 @@ class Database(DatabaseInterface):
 			time_ids.append(int(r['id']))
 		return time_ids
 
-# ---------------------- GRAPH NODES AND EDGES
+# ---------------------- GRAPH NODES 
 
 	def get_nodes_global(
 		self,
@@ -95,7 +62,7 @@ class Database(DatabaseInterface):
 		):
 		# sglobal node function - ie searches nodes regardless of overlay or time-interval
 		# SCALES PARADIGMS WITH THE NUMBER OF TIME-IDS
-		# max_paradigms = max_paradigms * len(selected_time_ids)
+		max_paradigms = max_paradigms * len(selected_time_ids)
 		# get the nodes for a target word from the database
 		# PARAM target_word is str
 		# PARAM max_paradigms
@@ -124,7 +91,8 @@ class Database(DatabaseInterface):
 				if not exists:
 					nodes.append([str(row['word2']), {"time_ids": [int(row['time_id'])], "weights": [float(row["score"])], "target_text": str(row['word2'])}])
 					fullNodeCounter +=1
-		#print(nodes)
+		print("ngot global all single nodes ", fullNodeCounter)
+		print("ngot global overlaid resulting nodes ", len(nodes))
 		return nodes
 
 
@@ -156,15 +124,13 @@ class Database(DatabaseInterface):
 			nodes.append([str(row['word2']), {"time_ids": [int(row['time_id'])], "weights": [float(row["score"])], "target_text": str(row['word2'])}])
 		return nodes
 	
-	def get_nodes(
+	def get_nodes_overlay(
 		self,
 		target_word,
 		max_paradigms,
 		selected_time_ids
 		):
-		# standard node function for all graph-algos
-		# scot and scotti-global fix the global number of nodes in the overlay with the same algorithm
-		# scotte-interval fixed the global number of nodes in one interval
+		# OVERLAY-CENTRIC node function for all graph-algos
 		# get the nodes for a target word from the database
 		# PARAM target_word is str
 		# PARAM max_paradigms
@@ -193,86 +159,12 @@ class Database(DatabaseInterface):
 		#print(nodes)
 		return nodes
 	
-	def get_stable_nodes(
-		self,
-		target_word,
-		max_paradigms,
-		selected_time_ids,
-		factor
-		):
-		# gets Stable Graph - ie only nodes that occur at least in factor*len(time_ids) time_ids
-		# PARAM factor
-		# PARAM target_word is str
-		# PARAM max_paradigms
-		# PARAM selected_time_ids is int-array
-		# RETURNS 
-		
-		nodes = []
-		target_word_senses = self.db.query(
-			'SELECT word2, time_id, score FROM similar_words '
-			'WHERE word1=:tw AND word1!=word2 '
-			'ORDER BY score DESC',
-			tw=target_word
-			)
-		
-		# put all into node_list 
-		for row in target_word_senses:
-			exists = False
-			if int(row['time_id']) in selected_time_ids:
-				for node in nodes:
-					if node[0] == str(row['word2']):
-						exists = True
-						if not int(row["time_id"]) in node[1]["time_ids"]:
-							node[1]["time_ids"].append(int(row['time_id']))
-							node[1]["weights"].append(float(row['score']))
-				
-				if not exists:
-					nodes.append([str(row['word2']), {"time_ids": [int(row['time_id'])], "weights": [float(row["score"])], "target_text": str(row['word2'])}])
-		
-		#filter by those that exist in more than factor selected time_ids until max threshold reached
-		#print("nodes erste runde")
-		
-		nodes_stable = []
-		for node in nodes:
-			#print("node time_ids", node[1]["time_ids"])
-			if float(len(set(node[1]["time_ids"]).intersection(set(selected_time_ids)))) >= factor*len(set(selected_time_ids)) and len(nodes_stable) < max_paradigms:
-				nodes_stable.append(node)
-			
+	# --------------------------------------- GET EDGES
 
-		
-		#print("nodes_stable", nodes_stable)
-		return nodes_stable
-		
-	def get_all_nodes(
-		self,
-		time_ids
-		):
-		# experimental for target-word "Xall" - get all nodes
-		# get the nodes for all words target word from the database
-		# precondition_ time_ids not null, is integer
-		# postcondition: nodes array words - str-type, time-id int, score -float, target-text str
-		nodes = []
-		nodeset = set()
-		target_word_senses = self.db.query(
-			'SELECT * FROM similar_words'
-			)
-		for row in target_word_senses:
-			if row['time_id'] in time_ids:
-				word1 = str(row["word1"])
-				word2 = str(row["word2"])
-											
-				if word2 not in nodeset:
-					nodes.append([str(row['word2']), {"time_ids": [int(row['time_id'])], "weights": [float(row["score"])], "target_text": str(row['word2'])}])
-					nodeset.add(word2)
-				if word1 not in nodeset:
-					nodes.append([str(row['word1']), {"time_ids": [int(row['time_id'])], "weights": [float(row["score"])], "target_text": str(row['word1'])}])
-					nodeset.add(word1)
-				
-		#print(nodes)
-		return nodes
 
 	def get_edges(self, nodes, max_edges, time_ids):
-		# LEGACY standard edge function for SCoT - NOT USED ANYMORE
+		# LEGACY standard edge function  - used for ngot global and ngot overlay-global
+		# TODO needs updating
 		# This queries and counts all single directed edges
 		# There are THREE problems with this algorithm:
 		# 1. Massive problem it does not scale with the the number of time-ids
@@ -446,7 +338,7 @@ class Database(DatabaseInterface):
 		# PARAM: max paradigms, max edges are the params for the graph per time-slice
 		# PARAM: time-ids - the slices in which one graph each is created
 		# RETURNS Edges, nodes_filtered, and singletons of the overaly graph
-		# IMPLEMENTATION NOTE: The query to the DB is expensive. Thus, all edges are requested and filtered here.
+		# IMPLEMENTATION NOTE: Several queries per timeid to the DB are too expensive. Thus, all edges are requested and filtered here.
 		
 		# VARS -----------------------------
 		# RETURN-VARS of Overlay graph

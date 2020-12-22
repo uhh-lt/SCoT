@@ -6,13 +6,12 @@ import urllib.request
 from flask import Flask, jsonify, render_template, request, Response
 from flask_cors import CORS
 from pathlib import Path
-from abc import ABC, abstractmethod
 from typing import Dict, List
 
 from persistence.documentdb import Documentdb
 from persistence.db import Database
 import services.chinese_whispers as chineseWhispers
-from services.build_graphs import ngot_interval
+from services.build_graphs import ngot_interval, ngot_global, ngot_overlay, ngot_overlay_global
 
 
 # FLASK---------------------------------------------------------------------------------
@@ -77,62 +76,9 @@ def collections_info():
 
 # Endpoints 2 and Methods: -------------------------------- GET CLUSTERED GRAPH --------------------------
 
-# main graph projection and clustering algorith
-# offers various projections and clustering-algos depending on graph-type
-# Params: collection, target-word, start-year, end-year, density, paradigms, graph-type
-def clusters(collection:str, target_word:str, start_year, end_year, paradigms,	density, graph_type	):
-	"""[summary]
-
-	Args:
-		collection ([type]): [description]
-		target_word ([type]): [description]
-		start_year ([type]): [description]
-		end_year ([type]): [description]
-		paradigms ([type]): [description]
-		density ([type]): [description]
-		graph_type ([type]): [description]
-
-	Returns:
-		[type]: [description]
-	"""
-	db = Database(getDbFromRequest(collection))
-	# Resolve start and end year -> time-ids
-	time_ids = db.get_time_ids(start_year, end_year)
-	## ------------------- new algos ----- start
-	print(graph_type)
-	# get additive nodes - ie the top paradigms from each selected time id
-	# problem size of graph may vary between paradigm and time-id*paradigm
-	if str(graph_type)=="ngot_interval":
-		print("NGOT interval")
-		# NGOT - Interval-based
-		# fixes nodes and density in relation to interval-graph - classic overlay
-		edges, nodes, singletons = ngot_interval(db, target_word, time_ids, paradigms, density)
-	elif str(graph_type)=="ngot_overlay":
-		print("NGOT overlay")
-		# NGOT - Overlay-fixed (expands global nodes dynamically)
-		# Edges in time, fixed global overlay edges, scaled
-		nodes = db.get_nodes(target_word, paradigms, time_ids)
-		edges, nodes, singletons = db.get_edges_in_time(nodes, density, time_ids)
-	elif str(graph_type) == "ngot_global":
-		print("NGOT global")
-		# NOT IMPLEMENTED FULLY YET
-		# background fixing dynamic for edges - static for nodes (currently)
-		# Nodes not scaled yet for global algo - global searches for paradigms * |time-ids |
-		nodes = db.get_nodes_global(target_word, paradigms, time_ids)
-		edges, nodes, singletons = db.get_edges_in_time(nodes, density, time_ids)
-	# ---- standard from here - but can change to db.get_edges_in_time to avoid implicit nodes
-	else:
-		# standard scot: nodes overlay, edges: global - static
-		print("scot - nodes global fixed/data fixed - edges - global dyn - data fixed")
-		nodes = db.get_nodes(target_word, paradigms, time_ids)
-		edges, nodes, singletons = db.get_edges(nodes, density, time_ids)
-	#print("nodes", len(nodes), "directed edges", len(edges), "singletons", len(singletons))
-	## ------------------- experimental features ----- end
-		
-	return singletons, chineseWhispers.chinese_whispers(nodes, edges)
-
-
 @app.route('/api/collections/<string:collection>/sense_graph', methods=['POST'])
+# calls main graph projection and clustering algorithm
+# offers various projections and clustering-algos depending on graph-type
 # Retrieves the clustered graph data according to the input parameters of the user and return it as json
 # Param: target word: user selected target word out of all possible target words
 # Param: selected_start_year: user selected start year out of all possible start years
@@ -152,17 +98,25 @@ def get_clustered_graph(
 		target_word = str(data["target_word"])
 		start_year = int(data["start_year"])
 		end_year = int(data["end_year"])
-		nodes = int(data["senses"])
-		edges = int(data["edges"])
+		paradigms = int(data["senses"])
+		density = int(data["edges"])
 		graph_type = str(data["graph_type"])
-			
-
-	
-	singletons, clustered_graph = clusters(collection, target_word, start_year, end_year, nodes, edges, graph_type)
-	#print(singletons)
+	db = Database(getDbFromRequest(collection))
+	# Resolve start and end year -> time-ids
+	time_ids = db.get_time_ids(start_year, end_year)
+	# build neighbourhood graph over time
+	if str(graph_type)=="ngot_interval":
+		edges, nodes, singletons = ngot_interval(db, target_word, time_ids, paradigms, density)
+	elif str(graph_type)=="ngot_overlay":
+		edges, nodes, singletons = ngot_overlay(db, target_word, time_ids, paradigms, density)
+	elif str(graph_type) == "ngot_global":
+		edges, nodes, singletons = ngot_global(db, target_word, time_ids, paradigms, density)
+	# as default calls overlay_global (dynamic version of first SCoT-algorithm)
+	else:
+		edges, nodes, singletons = ngot_overlay_global(db, target_word, time_ids, paradigms, density)
+	# cluster graph and return
+	clustered_graph = chineseWhispers.chinese_whispers(nodes, edges)
 	c_graph = json.dumps([clustered_graph, {'target_word': target_word}, {'singletons': singletons}], sort_keys=False, indent=4)
-	
-	#print(c_graph)
 	return c_graph
 
 @app.route('/api/reclustering', methods=['POST'])
@@ -370,7 +324,7 @@ def documents(collection="default"):
 	ret_list = list(ret_set)
 	ret_list.sort()
 	#print(ret_list)
-	if ret_list != None and len(ret_list) > 0:
+	if len(ret_list) > 0:
 		for text in ret_list:
 			ret.append({"doc": text })
 	else:
