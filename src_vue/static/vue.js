@@ -1,419 +1,125 @@
-app = new Vue({
-    el: "#vue-app",
-    data: {
-        /**
-         * // ATTENTION: naming does not adhere to javascript standard - but is coherent in all parts of this app (thus better not to change)
-         */
-        // #### BASIC APP AND COLLECTION DATA (PRESETS AND QUERY-VARS)
-        // PRESET title top-left
-        title: "Sense Clustering over Time",
+let app = new Vue({
+  el: "#vue-app",
+  data: dataObject,
+  computed: {
+    /**
+     * Return number of interval selected
+     */
+    intervalnumber() {
+      let starts = [];
+      let ends = [];
 
-        //Interval Data - Time-Series Base of Graph #############################
-        // all possible collection info queried from database via rest-api
-        collections: {},
-        //Selected User Values for frontend- suggestions from collections
-        // the title for description in the frontend
-        collection_name: "fetching data...",
-        // dropdown list
-        collections_names: ["fetching data..."],
-        // Displayed in Info
-        collection_info: "0",
-        // stored in background: The key is unique identifier of the collection and is used for querying data from the backend
-        collection_key: "0",
-        // Selected start-year out of all possible start years for the selected collection
-        start_year: 0,
-        // dropdown list: all possible start years per selected collection queried from the database after selection of collection
-        start_years: [{ id: 1, text: "fetching data...", value: 0 }],
-        // Selected end-year out of all possible end years for the selected collection
-        end_year: 0,
-        // dropdown_list all possible end years per selected collection queried from the database after selection of collection
-        end_years: [{ id: 1, text: "fetching data...", value: 0 }],
+      for (let key in this.start_years) {
+        starts.push(this.start_years[key]["value"]);
+      }
+      for (let key in this.end_years) {
+        ends.push(this.end_years[key]["value"]);
+      }
 
-        // Different Graph-Algos ##########################################################
-        // The Graph-algos use the two key parameters sensed and the edge factor differently
-        // the main scot algo uses them globally
-        // experimental not implemented yet
-        graph_type: "fetching data...",
-        // all possible graph types displays dropdown listin frontend
-        graph_types: ["fetching data..."],
-        //  keys used for querying specific graph from backend
-        // not used : "n & d Global Static (absolute nodes and dir. edges)" : "ngot_global",
-        graph_type_keys: {
-            "INTERVAL[n&d per i] (best for overview and time-diff)":
-                "ngot_interval",
-            "OVERLAY[n&d] (best for comparison)": "ngot_overlay",
-            "OVERLAY[n] & GLOBAL[d total] (edge manipulation)": "scot",
-            "GLOBAL[n*i] & GLOBAL[d total] (node & edge manipulation)":
-                "ngot_global",
-        },
+      let startst = this.start_year;
+      let endst = this.end_year;
 
-        // #### BASIC NETWORK-GRAPH DATA ##########################
-        // "A complex network is a graph in which a set of elements is associated with a set of entities, and in which the relation
-        // between the elements represents a relationship between the corresponding entities".
-        // Links = edges , nodes = vertices
-        // User Values - Input
-        target_word: "",
-        // this means number of nodes
-        senses: 0,
-        // this means density
-        edge_max_ratio: 0,
+      let start = starts.indexOf(startst);
+      let end = ends.indexOf(endst);
 
-        // MAIN-NETWORK-GRAPH-DATA FROM BACKEND
-        nodes: [],
-        // link data
-        links: [],
-        // array with node ids that are not connected to any other nodes
-        // ToDO the relationship between nodes and singletons is not well done (ie singletons do not have time information)
-        singletons: [],
-
-        // D3-FRONTEND-GRAPH
-        // represents the DOM element for a node (see render_sense_graph.js)
-        node: "",
-        // the circles of updated nodes
-        circles: [],
-        // represents the DOM element for a link (see render_sense_graph.js)
-        link: "",
-        // list of objects to store all the information on the clusters in a rendered graph (see function get_clusters())
-        clusters: [],
-        // new clusters calculated by reclustering the graph
-        newclusters: {},
-        // An object for remembering which nodes are connected. The key is of the form "source, target"
-        linkedByIndex: {},
-
-        // SAVED AND LOADED GRAPH-FILE
-        // file from which a graph is to be loaded
-        file: null,
-        // graph loaded from file
-        read_graph: null,
-
-        // ##### VIEW SETTINGS APP AND SVG-GRAPH
-        // base color scheme bootstrap vue (not implemented via var yet)
-        bv_variant: "black",
-        bv_type: "white",
-        // for setting the view port size for the graph
-        viewport_height: screen.availHeight * 1,
-        viewport_width: screen.availWidth * 1,
-        // for setting the svg size for the graph
-        svg_height: screen.availHeight * 1.5,
-        svg_width: screen.availWidth * 1.5,
-        // the force simulation
-        simulation: null,
-        // link thickness parameters
-        link_thickness_scaled: "false",
-        // scaled = "false" -> thickness = sqrt(value)
-        link_thickness_value: 1,
-        // scaled = "true" -> thickness = sqrt(weight * factor)
-        link_thickness_factor: 0.003,
-        // opacity of links base and reduced (for many functions)
-        base_link_opacity: 0.2,
-        reduced_link_opacity: 0.05,
-        // radius of nodes
-        radius: 5,
-        //overlays central
-        overlay_main: false,
-        // dragging behaviour sticky_mode === "true" -> force, sticky_mode === "false" -> brush
-        sticky_mode: "true",
-        // simulation parameters
-        charge: -50,
-        linkdistance: 50,
-        // true, if a graph is rendered. Used in the HTML to only show buttons if a graph is rendered
-        graph_rendered: false,
-        // wait rendering - show blur over graph
-        wait_rendering: false,
-
-        // ### DATA SETTINGS SIDEBARS
-        // limits the size of clusters for context-information-search
-        cluster_search_limit: 1000,
-        // edge-click information for data-query for sidebar
-        active_edge: {
-            time_ids: [1],
-            weights: [1],
-            source_text: "happiness/NN",
-            target_text: "gladness/NN",
-        },
-        // sigebar right: holds edge context information (score, key, score2)
-        simbim_object: [],
-        // node-click information for data-query for sidebar
-        active_node: {
-            time_ids: [1],
-            weights: [1],
-            source_text: "happiness/NN",
-            target_text: "gladness/NN",
-        },
-        // sigebar right: holds node context information (score, key, score2)
-        simbim_node_object: [],
-        // sigebar right: holds cluster context information (score, key, score2)
-        cluster_shared_object: [],
-        // the time id of the graph start year, user input for skipping through time slices
-        min_time_id: 1,
-        // the time_id of the graph end year, user input for skipping through time slices
-        max_time_id: 10,
-        // time ids for the time diff mode
-        interval_start: 0,
-        interval_end: 0,
-        // user input: time slice id for skipping through time slices in time diff mode
-        interval_id: 0,
-        // display nodes in one time-slice
-        time_slice_nodes: [],
-        // accumulate which nodes are born, deceased, shortlived or normal
-        time_diff_nodes: {},
-        // true if a node is selected, for showing node option menu
-        node_selected: false,
-        // true if a link is selected
-        link_selected: false,
-        // check if selected node is cluster node, for options in the node option menu
-        select_node_is_no_cluster_node: true,
-        // array that holds information about all selected nodes
-        clicked_nodes: [],
-        // user input for assignment to different cluster (text, colour)
-        new_assigned_cluster: {},
-        // user input new cluster name
-        created_cluster_name: "",
-        // user input new cluster colour
-        created_cluster_colour: "",
-        // true if the user has selected a cluster
-        // TODO implement functionality, currently buggy and not in use
-        cluster_selected: false,
-        // search term for searching a node in the graph
-        searchterm: "",
-        // betweenness centrality
-        centrality_scores: [],
-        // for table display
-        centrality_fields: [
-            { key: "node", sortable: true },
-            { key: "centrality_score", sortable: true },
-        ],
-        // centrality-score preview up limits of bands
-        gr0_ul: 0.01,
-        gr1_ul: 0.02,
-        gr2_ul: 0.03,
-        gr3_ul: 0.04,
-
-        // user input
-        centrality_threshold_s: "0.01",
-        centrality_threshold_m: "0.02",
-        centrality_score_distribution: [],
-        // toggling the edit column
-        edit_column_open: false,
-        // highlight balanced neighbourhood
-        highlightWobblies: false,
-        // highlight betweenness centrality
-        hightlighInbetweennessCentrality: false,
-        // balanced neighbourhood table fields
-        wobblyCandidatesFields: [
-            { key: "text", label: "Node", sortable: true },
-            {
-                key: "connected_clusters",
-                label: "Connected Clusters",
-                sortable: false,
-            },
-            { key: "balanced", label: "Balanced", sortable: true },
-            { key: "show_details", label: "Show Details" },
-        ],
-        // array containing information about the neighbourhood of each node
-        wobblyCandidates: [],
-        // node-year for context-information
-        node_time_id: 1,
-        // row_selected in Node-context
-        row_selected: [],
-        // row_selected in edge Context
-        row_selected_edge: [],
-
-        // #### VIEW MODES SIDEBARS AND NAVBARS
-        // ## SIDEBAR LEFT GRAPH
-        left_selected: "graph_data",
-        left_options: [
-            { text: "Graph", value: "graph_data" },
-            { text: "View", value: "graph_view" },
-            { text: "Info", value: "graph_help" },
-        ],
-        // ## SIDEBAR right Cluster
-        right_selected: "cluster_basic",
-        right_selected_previous: "cluster_basic",
-        right_options: [
-            { text: "Cluster", value: "cluster_basic" },
-            { text: "Time-Diff", value: "cluster_time" },
-            { text: "Functions", value: "cluster_functions" },
-        ],
-        // controls node colors cluster or time-diff
-        time_diff: false,
-        // edge context sidebar is programmatically controlled
-        context_mode: false,
-        showSidebarRight1: false,
-        // spinner while loading table data
-        busy_right1: false,
-        // table information for edge -context view sidebar
-        fields_edges: [
-            { key: "node1", label: "node1", sortable: true },
-            { key: "edge", label: "context-word", sortable: true },
-            { key: "node2", label: "node2", sortable: true },
-        ],
-        // cluster context sidebar
-        context_mode2: false,
-        showSidebarRight2: false,
-        busy_right2: true,
-        // table information for cluster -context view sidebar
-        fields_cluster: [
-            { key: "score", sortable: true },
-            { key: "wort", sortable: true },
-        ],
-        // node context sidebar
-        context_mode3: false,
-        showSidebarRight3: false,
-        busy_right3: false,
-        // table information for node -context view sidebar
-        fields_nodes: [
-            { key: "node1", label: "node1", sortable: true },
-            { key: "edge", label: "context-word", sortable: true },
-            { key: "node2", label: "node2", sortable: true },
-        ],
-        // doc context sidebar
-        context_mode4: false,
-        // show sidebar
-        showSidebarRight4: false,
-        // spinner
-        busy_right4: false,
-        // table information for cluster -context view sidebar
-        documents: [],
-        fields_documents: [{ key: "doc", sortable: true }],
-
-        // ############# DEPRECATED #########################
-        // Deprecated
-        data_from_db: {},
-        // Deprecated: parameters for updating the graph
-        update_senses: 150,
-        update_edges: 50,
-        // clipboard for data from db in update() and getData()
-        // all the nodes in the updated graph
-        updated_nodes: null,
-        // all the links in the updated graph
-        updated_links: null,
+      return end - start + 1;
     },
-    computed: {
-        /**
-         * Return number of interval selected
-         */
+    /**
+     * Returns number of directed global data links that is sent to backend for querying data
+     */
+    edges() {
+      let ret = Math.round((this.edge_max_ratio / 100) * this.max_dir_edges);
 
-        intervalnumber: function () {
-            let starts = [];
-            let ends = [];
-
-            for (let key in this.start_years) {
-                starts.push(this.start_years[key]["value"]);
-            }
-            for (let key in this.end_years) {
-                ends.push(this.end_years[key]["value"]);
-            }
-
-            let startst = this.start_year;
-            let endst = this.end_year;
-
-            let start = starts.indexOf(startst);
-            let end = ends.indexOf(endst);
-
-            return end - start + 1;
-        },
-
-        /**
-         * Returns number of directed global data links that is sent to backend for querying data
-         */
-
-        edges: function () {
-            let ret = Math.round(
-                (this.edge_max_ratio / 100) * this.max_dir_edges
-            );
-
-            return ret;
-        },
-
-        max_dir_edges: function () {
-            // Scot V2 dynamically scales the number of edges with the number of intervals selected
-            // || this.graph_type_keys[this.graph_type] ===  "ngot_global"
-            if (
-                this.graph_type_keys[this.graph_type] === "scot" ||
-                this.graph_type_keys[this.graph_type] === "ngot_global"
-            ) {
-                return this.senses * (this.senses - 1) * this.intervalnumber;
-            } else {
-                return this.senses * (this.senses - 1);
-            }
-        },
-        /*
+      return ret;
+    },
+    max_dir_edges() {
+      // Scot V2 dynamically scales the number of edges with the number of intervals selected
+      // || this.graph_type_keys[this.graph_type] ===  "ngot_global"
+      if (
+        this.graph_type_keys[this.graph_type] === "scot" ||
+        this.graph_type_keys[this.graph_type] === "ngot_global"
+      ) {
+        return this.senses * (this.senses - 1) * this.intervalnumber;
+      } else {
+        return this.senses * (this.senses - 1);
+      }
+    },
+    /*
 		Returns all the clusters as an array of objects of the form 
 			{"text": cluster_name}, "value": {"cluster_id": some_id, "cluster_name": some_cluster_name, "colour": some_cluster_colour}
 		to be used as the options when selecting a different cluster for a node.
-		All the information about the clusters is already stored in the data variable clusters.
+		All the information about the clusters is already stored in the data letiable clusters.
 		*/
-        cluster_options: function () {
-            app.new_assigned_cluster = {};
-            let options = [];
-            for (let i = 0; i < this.clusters.length; i++) {
-                options.push({
-                    text: this.clusters[i].cluster_name,
-                    value: {
-                        cluster_id: this.clusters[i].id,
-                        cluster_name: this.clusters[i].cluster_name,
-                        colour: this.clusters[i].colour,
-                    },
-                });
-            }
-            return options;
-        },
-        /*
+    cluster_options() {
+      app.new_assigned_cluster = {};
+      let options = [];
+      for (let i = 0; i < this.clusters.length; i++) {
+        options.push({
+          text: this.clusters[i].cluster_name,
+          value: {
+            cluster_id: this.clusters[i].id,
+            cluster_name: this.clusters[i].cluster_name,
+            colour: this.clusters[i].colour,
+          },
+        });
+      }
+      return options;
+    },
+    /*
 		Returns all the possible start years for the small time diff interval
 		(Only the start years between the start year and the end year of the graph)
 		*/
-        reducedStartYears: function () {
-            let reducedStartYears = [];
-            for (let i = 0; i < app.start_years.length; i++) {
-                if (
-                    this.start_years[i].value >= this.start_year &&
-                    this.end_year > this.start_years[i].value
-                ) {
-                    reducedStartYears.push(this.start_years[i]);
-                }
-            }
-            return reducedStartYears;
-        },
-        /*
+    reducedStartYears() {
+      let reducedStartYears = [];
+      for (let i = 0; i < app.start_years.length; i++) {
+        if (
+          this.start_years[i].value >= this.start_year &&
+          this.end_year > this.start_years[i].value
+        ) {
+          reducedStartYears.push(this.start_years[i]);
+        }
+      }
+      return reducedStartYears;
+    },
+    /*
 		Returns all the possible end years for the small time diff interval.
 		(The years small that the end year of the graph and larger than the start year of the small interval)
 		Takes into account the selected start year of the small time diff interval.
 		*/
-        reducedEndYears: function () {
-            let reducedEndYears = [];
-            for (let i = 0; i < this.end_years.length; i++) {
-                if (
-                    this.end_years[i].value <= this.end_year &&
-                    this.end_years[i].value > this.interval_start
-                ) {
-                    reducedEndYears.push(this.end_years[i]);
-                }
-            }
-            return reducedEndYears;
-        },
-        /*
+    reducedEndYears() {
+      let reducedEndYears = [];
+      for (let i = 0; i < this.end_years.length; i++) {
+        if (
+          this.end_years[i].value <= this.end_year &&
+          this.end_years[i].value > this.interval_start
+        ) {
+          reducedEndYears.push(this.end_years[i]);
+        }
+      }
+      return reducedEndYears;
+    },
+    /*
 		Returns a string showing the start and end year of a time slice
 		*/
-        time_slice_from_interval: function () {
-            let start = this.start_years[this.interval_id - 1];
-            let end = this.end_years[this.interval_id - 1];
-            if (typeof start === "undefined") {
-                start = "-";
-            } else {
-                start = start.text;
-            }
-            if (typeof end === "undefined") {
-                end = "-";
-            } else {
-                end = end.text;
-            }
+    time_slice_from_interval() {
+      let start = this.start_years[this.interval_id - 1];
+      let end = this.end_years[this.interval_id - 1];
+      if (typeof start === "undefined") {
+        start = "-";
+      } else {
+        start = start.text;
+      }
+      if (typeof end === "undefined") {
+        end = "-";
+      } else {
+        end = end.text;
+      }
 
-            return start + " - " + end;
-        },
+      return start + " - " + end;
     },
-    methods: {
-        /*
+  },
+  methods: {
+    /*
 		/ ############## SIDEBAR RIGHT ADDITIONAL FUNCTIONS Get documents from backend ##############################
 		/ You can click one row in node-context or edge-context
 		/ and get sentences that contain a combination of one jo (paradigm) and one bim (syntagmatic context)
@@ -421,2707 +127,1488 @@ app = new Vue({
 		/ Various methods
 		*/
 
-        // returns selected row in table node-context information
-        onRowSelected(items) {
-            //this.selected = items
-            // console.log(items);
-            this.row_selected = items;
-        },
-        // returns selected row in table node-context information
-        onRowSelectedEdge(items) {
-            //this.selected = items
-            console.log(items);
-            this.row_selected_edge = items;
-        },
-        // function for button search N1/
-        edgeContextSearchEdgeOne() {
-            let wort1 = this.active_edge.source_text;
-            if (
-                this.row_selected_edge == null ||
-                this.row_selected_edge["length"] == 0
-            ) {
-                //console.log("items is null")
-                alert(
-                    "Please select a row in the table to select a search term."
-                );
-            } else {
-                let wort2 = this.row_selected_edge[0]["edge"];
-                app.docSearch(wort1, wort2);
-            }
-        },
-        // function for button search N2
-        edgeContextSearchEdgeTwo() {
-            let wort1 = this.active_edge.target_text;
-            if (
-                this.row_selected_edge == null ||
-                this.row_selected_edge["length"] == 0
-            ) {
-                //console.log("items is null")
-                alert(
-                    "Please select a row in the table to select a search term."
-                );
-            } else {
-                let wort2 = this.row_selected_edge[0]["edge"];
-                app.docSearch(wort1, wort2);
-            }
-        },
-        // function for buttion search N1
-        nodeContextSearchNodeOne() {
-            let wort1 = this.active_node.source_text;
-            if (this.row_selected == null || this.row_selected["length"] == 0) {
-                //console.log("items is null")
-                alert(
-                    "Please select a row in the table to select a search term."
-                );
-            } else {
-                let wort2 = this.row_selected[0]["edge"];
-                app.docSearch(wort1, wort2);
-            }
-        },
-        // function for button search N2
-        nodeContextSearchNodeTwo() {
-            let wort1 = this.active_node.target_text;
-            if (this.row_selected == null || this.row_selected["length"] == 0) {
-                //console.log("items is null")
-                alert(
-                    "Please select a row in the table to select a search term."
-                );
-            } else {
-                let wort2 = this.row_selected[0]["edge"];
-                app.docSearch(wort1, wort2);
-            }
-        },
-        // doc search function - searches for sentences that have been analyzed with a jo and a bim (regardless of time-id)
-        //can be triggered from nodes - context OR edge-context
-        // data is gathered from these fields (see above methods)
-        // JO = WORT1
-        // EDGE - WORT1
-        // data["word1"] = this.active_edge.source_text
-        // data["word2"] = this.active_edge.target_text
-        // NODE - WORT1
-        // data["word1"] = this.active_node.source_text
-        // data["word2"] = this.active_node.target_text
-        // data["time_id"] = this.active_edge.time_ids[0]
-        // BIM = WORT2
+    // returns selected row in table node-context information
+    onRowSelected(items) {
+      //this.selected = items
+      // console.log(items);
+      this.row_selected = items;
+    },
+    // returns selected row in table node-context information
+    onRowSelectedEdge(items) {
+      //this.selected = items
+      console.log(items);
+      this.row_selected_edge = items;
+    },
+    // function for button search N1/
+    edgeContextSearchEdgeOne() {
+      let wort1 = this.active_edge.source_text;
+      if (
+        this.row_selected_edge == null ||
+        this.row_selected_edge["length"] == 0
+      ) {
+        //console.log("items is null")
+        alert("Please select a row in the table to select a search term.");
+      } else {
+        let wort2 = this.row_selected_edge[0]["edge"];
+        app.docSearch(wort1, wort2);
+      }
+    },
+    // function for button search N2
+    edgeContextSearchEdgeTwo() {
+      let wort1 = this.active_edge.target_text;
+      if (
+        this.row_selected_edge == null ||
+        this.row_selected_edge["length"] == 0
+      ) {
+        //console.log("items is null")
+        alert("Please select a row in the table to select a search term.");
+      } else {
+        let wort2 = this.row_selected_edge[0]["edge"];
+        app.docSearch(wort1, wort2);
+      }
+    },
+    // function for buttion search N1
+    nodeContextSearchNodeOne() {
+      let wort1 = this.active_node.source_text;
+      if (this.row_selected == null || this.row_selected["length"] == 0) {
+        //console.log("items is null")
+        alert("Please select a row in the table to select a search term.");
+      } else {
+        let wort2 = this.row_selected[0]["edge"];
+        app.docSearch(wort1, wort2);
+      }
+    },
+    // function for button search N2
+    nodeContextSearchNodeTwo() {
+      let wort1 = this.active_node.target_text;
+      if (this.row_selected == null || this.row_selected["length"] == 0) {
+        //console.log("items is null")
+        alert("Please select a row in the table to select a search term.");
+      } else {
+        let wort2 = this.row_selected[0]["edge"];
+        app.docSearch(wort1, wort2);
+      }
+    },
+    // doc search function - searches for sentences that have been analyzed with a jo and a bim (regardless of time-id)
+    //can be triggered from nodes - context OR edge-context
 
-        docSearch(wort1, wort2) {
-            app.context_mode4 = true;
-            app.busy_right4 = true;
-            let data = {};
-            data["jo"] = wort1;
-            data["bim"] = wort2;
-            data["collection_key"] = this.collection_key;
+    docSearch: function (wort1, wort2) {
+      docSearch_io(wort1, wort2);
+    },
 
-            console.log("selected", data["jo"], data["bim"]);
-            let url = "./api/collections/" + this.collection_key + "/documents";
-            console.log(url);
-            axios.post(url, data).then((res) => {
-                let ret = [];
-                console.log(res);
-                app.documents = res.data["docs"];
-                console.log(this.documents);
-                app.busy_right4 = false;
-            }); // end then
-        },
-
-        /*
+    /*
 		/ ############ Graph-Menu - DATA Functions ###########################
 		*/
-        // on change database in frontend - update function
-        onChangeDb: function () {
-            this.collection_key = this.collections[this.collection_name]["key"];
-            this.target_word = this.collections[this.collection_name]["target"];
-            this.senses = this.collections[this.collection_name]["p"];
-            this.edge_max_ratio = this.collections[this.collection_name]["d"];
-            this.collection_info = this.collections[this.collection_name][
-                "info"
-            ];
-            console.log("in onchange db" + this.collection_key);
-            console.log("in onchange db" + this.collection_name);
+    // on change database in frontend - update function
+    onChangeDb() {
+      this.collection_key = this.collections[this.collection_name]["key"];
+      this.target_word = this.collections[this.collection_name]["target"];
+      this.senses = this.collections[this.collection_name]["p"];
+      this.edge_max_ratio = this.collections[this.collection_name]["d"];
+      this.collection_info = this.collections[this.collection_name]["info"];
+      console.log("in onchange db" + this.collection_key);
+      console.log("in onchange db" + this.collection_name);
 
-            // async
-            this.getStartYears();
-            this.getEndYears();
-        },
-        // init graph_types
-        getGraphTypes: function () {
-            this.graph_types = Object.keys(this.graph_type_keys);
-            this.graph_type = this.graph_types[0];
-        },
-        // init collections from axios
-        getCollections: function () {
-            axios
-                .get("./api/collections")
-                .then((res) => {
-                    this.collections = res.data;
-                    this.collections_names = Object.keys(this.collections);
-                    this.collection_name = this.collections_names[0];
-                    this.getGraphTypes();
-                    this.onChangeDb();
-                })
-                .catch((error) => {
-                    console.error(error);
-                });
-        },
-        /*
+      // async
+      this.getStartYears();
+      this.getEndYears();
+    },
+    // init graph_types
+    getGraphTypes() {
+      this.graph_types = Object.keys(this.graph_type_keys);
+      this.graph_type = this.graph_types[0];
+    },
+    // init collections from axios
+    getCollections() {
+      axios
+        .get("./api/collections")
+        .then((res) => {
+          this.collections = res.data;
+          this.collections_names = Object.keys(this.collections);
+          this.collection_name = this.collections_names[0];
+          this.getGraphTypes();
+          this.onChangeDb();
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    },
+    /*
 		/ ############ Graph-Menu - VIEW Functions ###########################
 		*/
-        // these functions mainly act as VUE event handlers (instaed of the d3 ones)
-        resetZoom: function () {
-            reset_zoom();
-        },
-        stickyChange(booleanStr) {
-            console.log("vue test change");
-            sticky_change(booleanStr);
-        },
+    // these functions mainly act as VUE event handlers (instaed of the d3 ones)
+    resetZoom() {
+      reset_zoom();
+    },
+    stickyChange(booleanStr) {
+      sticky_change(booleanStr);
+    },
 
-        // restart
-        restart_change() {
-            app.node.each(function (d) {
-                //console.log(d)
-                d.fx = null;
-                d.fy = null;
-            });
-            app.simulation.alphaTarget(0);
-            restart();
-        },
+    // restart
+    restart_change() {
+      restart_change_d3();
+    },
 
-        // update the charge strength if the user moves the range input with the value from the Vue data variable charge and restart the simulation with the new value
-        charge_change() {
-            console.log("charge change");
-            app.simulation.force(
-                "charge",
-                d3
-                    .forceManyBody()
-                    .strength(app.charge)
-                    .distanceMin(1)
-                    .distanceMax(2000)
-            );
-            app.simulation.alpha(1).restart();
-        },
-        // update the link distance if the user moves the range input with the value from the Vue data variable linkdistance and restart the simulation with the new value
-        linkdistance_change() {
-            console.log("linkdist change");
-            let forceLinkDistance = app.simulation.force("link");
-            forceLinkDistance.distance(app.linkdistance);
-            app.simulation.alpha(1).restart();
-        },
+    // update the charge strength if the user moves the range input with the value from the Vue data variable charge and restart the simulation with the new value
+    charge_change() {
+      charge_change_d3();
+    },
+    // update the link distance if the user moves the range input with the value from the Vue data variable linkdistance and restart the simulation with the new value
+    linkdistance_change() {
+      linkdistance_change_d3();
+    },
 
-        nonevent(e) {
-            //do nothing
-        },
-        /*
+    nonevent(e) {
+      //do nothing
+    },
+    /*
 		/ automated sidebars via close buttion #############################
 		*/
-        toggleSidebarContext: function () {
-            this.context_mode3 = false;
-            this.context_mode = !this.context_mode;
-            console.log("in toggle", this.context_mode);
-        },
+    toggleSidebarContext() {
+      this.context_mode3 = false;
+      this.context_mode = !this.context_mode;
+      console.log("in toggle", this.context_mode);
+    },
 
-        toggleSidebarContext2: function () {
-            this.context_mode2 = !this.context_mode2;
-            console.log("in toggle2", this.context_mode2);
-        },
+    toggleSidebarContext2() {
+      this.context_mode2 = !this.context_mode2;
+      console.log("in toggle2", this.context_mode2);
+    },
 
-        toggleSidebarContext3: function () {
-            this.context_mode = false;
-            this.context_mode3 = !this.context_mode3;
-            console.log("in toggle3", this.context_mode3);
-        },
+    toggleSidebarContext3() {
+      this.context_mode = false;
+      this.context_mode3 = !this.context_mode3;
+      console.log("in toggle3", this.context_mode3);
+    },
 
-        toggleSidebarContext4: function () {
-            this.context_mode4 = !this.context_mode4;
-            console.log("in toggle4", this.context_mode4);
-        },
+    toggleSidebarContext4() {
+      this.context_mode4 = !this.context_mode4;
+      console.log("in toggle4", this.context_mode4);
+    },
 
-        toggle_time_diff: function () {
-            //  lazy change - ie state changes only after this function
-            console.log("inside toggle time diff START", this.time_diff);
-            // wenn time-diff on -- dann gehen wir weg von time-diff daher
-            if (this.time_diff && this.graph_rendered) {
-                this.reset_time_diff_colours();
-            }
-            if (this.right_selected === "cluster_time") {
-                this.time_diff = false;
-            }
-            console.log("inside toggle time diff END", this.time_diff);
-        },
-
-        /*
+    toggle_time_diff() {
+      //  lazy change - ie state changes only after this function
+      console.log("inside toggle time diff START", this.time_diff);
+      // wenn time-diff on -- dann gehen wir weg von time-diff daher
+      if (this.time_diff && this.graph_rendered) {
+        this.reset_time_diff_colours();
+      }
+      if (this.right_selected === "cluster_time") {
+        this.time_diff = false;
+      }
+      console.log("inside toggle time diff END", this.time_diff);
+    },
+    /*
 		/ ############# GRAPH-INTERACTION FUNCTIONS ######################
 		*/
-
-        // fade nodes on hover
-        mouseOver: function (opacity) {
-            return function (d) {
-                // check all other nodes to see if they're connected
-                // to this one. if so, keep the opacity, otherwise
-                // fade
-                app.node.style("stroke-opacity", function (o) {
-                    let thisOpacity = app.isConnected(d, o) ? 1 : opacity;
-                    return thisOpacity;
-                });
-                app.node.style("fill-opacity", function (o) {
-                    let thisOpacity = app.isConnected(d, o) ? 1 : opacity;
-                    return thisOpacity;
-                });
-                // also style link accordingly
-                app.link.style("stroke-opacity", function (o) {
-                    return o.source === d || o.target === d
-                        ? this.base_link_opacity
-                        : this.reduced_link_opacity;
-                });
-                //link.style("stroke", function(o){
-                // TODO: how to get o.source.colour for graph rendered from db?
-                // works for graph loaded from file
-                //	return o.source === d || o.target === d ? o.source.colour : "#ddd";
-                //});
-            };
-        },
-
-        // fade everything back in
-        mouseOut: function () {
-            app.node.style("stroke-opacity", 1);
-            app.node.style("fill-opacity", 1);
-            app.link.style("stroke-opacity", this.base_link_opacity);
-            //link.style("stroke", "#ddd");
-        },
-
-        /*
-		/ ############## TIME_DIFF-FUNCTIONS ####################################
+    // fade nodes on hover
+    mouseOver(opacity) {
+      mouseOver_d3(opacity);
+    },
+    // fade everything back in
+    mouseOut() {
+      mouseOut_d3();
+    },
+    /*
+        / ############## TIME_DIFF-FUNCTIONS ####################################
+        / These are triggered from vue but relate to d3 - script 
 		*/
-
-        // reset the colour of the nodes to cluster colours
-        reset_time_diff_colours: function () {
-            app.circles.style("stroke-opacity", 1);
-            app.link.style("stroke-opacity", this.base_link_opacity);
-
-            var circleChilds = d3
-                .selectAll(".node")
-                .selectAll("g")
-                .selectAll("circle");
-
-            circleChilds.each(function (d) {
-                var node_cluster_id = this.getAttribute("cluster_id");
-                console.log("in reset color vue.js ", app.clusters);
-                for (var i = 0; i < app.clusters.length; i++) {
-                    // set the colour of the nodes back to the cluster colours
-                    if (node_cluster_id === app.clusters[i].cluster_id) {
-                        this.setAttribute("fill", app.clusters[i].colour);
-                    }
-                }
-            });
-            app.node.style("stroke-opacity", 1);
-            app.node.style("fill-opacity", 1);
-            // don't show time diff tooltip
-            // TODO tooltip hier ausstellen
-            app.circles.on("mouseover", null);
-            app.circles.on("mouseout", null);
-            app.node.on("mouseover", app.mouseOver(0.2));
-            app.node.on("mouseout", app.mouseOut);
-        },
-        // /*
-        // EXPERIMENTAL Deletes a complete time-group
-        // */
-        delete_multiple_nodes: async function (labels) {
-            // get all the text labels
-            console.log(labels);
-
-            // find the correct nodes and delete them and the links connecting to them
-            let nodes = d3.selectAll(".node").selectAll("g");
-            nodes.each(function (d) {
-                let childnodes = this.childNodes;
-                let node_id;
-
-                childnodes.forEach(function (d, i) {
-                    if (d.tagName === "text") {
-                        node_id = d.getAttribute("text");
-                    }
-                });
-
-                // if they belong to the list, that is to be deleted, ...
-                if (labels.includes(node_id)) {
-                    console.log("in node del", node_id);
-                    app.deletenode(node_id);
-                    app.deletelinks(node_id);
-                }
-            });
-
-            // remove nodes from DOM with D3 and update the simulation
-            app.node
-                .data(app.nodes, function (d) {
-                    return d.id;
-                })
-                .exit()
-                .remove();
-            app.link
-                .data(app.links, function (d) {
-                    return d.source.id + "-" + d.target.id;
-                })
-                .exit()
-                .remove();
-
-            app.simulation.nodes(app.nodes);
-            app.simulation.force("link").links(app.links);
-            app.simulation.alpha(1).restart();
-        },
-        /*
+    // reset the colour of the nodes to cluster colours
+    reset_time_diff_colours() {
+      reset_time_diff_colours_d3();
+    },
+    // /*
+    // EXPERIMENTAL Deletes a complete time-group
+    // */
+    delete_multiple_nodes(labels) {
+      delete_multiple_nodes_d3(labels);
+    },
+    /*
 		################## CLUSTER-FUNCTIONS Deletes a complete cluster
 		*/
-        delete_cluster: async function (cluster_name, cluster_id, labels) {
-            // get all the text labels
-            let text_labels = [];
-            for (var i = 0; i < labels.length; i++) {
-                text_labels.push(labels[i].text);
-            }
-
-            // see how many nodes are in the cluster
-            var number_of_nodes = text_labels.length;
-
-            // find the correct nodes and delete them and the links connecting to them
-            var nodes = d3.selectAll(".node").selectAll("g");
-            nodes.each(function (d) {
-                let childnodes = this.childNodes;
-                var node_id;
-                var id;
-
-                childnodes.forEach(function (d, i) {
-                    if (d.tagName === "circle") {
-                        id = d.getAttribute("cluster_id");
-                    }
-                    if (d.tagName === "text") {
-                        node_id = d.getAttribute("text");
-                    }
-                });
-
-                // if they belong to the cluster, that is to be deleted, ...
-                if (id === cluster_id) {
-                    app.deletenode(node_id);
-                    app.deletelinks(node_id);
-                }
-            });
-
-            // remove nodes from DOM with D3 and update the simulation
-            app.node
-                .data(app.nodes, function (d) {
-                    return d.id;
-                })
-                .exit()
-                .remove();
-            app.link
-                .data(app.links, function (d) {
-                    return d.source.id + "-" + d.target.id;
-                })
-                .exit()
-                .remove();
-
-            app.simulation.nodes(app.nodes);
-            app.simulation.force("link").links(app.links);
-            app.simulation.alpha(1).restart();
-
-            // Update the number of updated senses for when saving the file the name will be correct
-            if (app.updated_nodes != null) {
-                app.update_senses = app.update_senses - number_of_nodes;
-            }
-
-            // update number of senses
-            app.senses = app.senses - number_of_nodes;
-
-            // recalculate the cluster information
-            await app.get_clusters();
-        },
-        // check the dictionary to see if nodes are linked
-        isConnected: function (a, b) {
-            return (
-                app.linkedByIndex[a.id + "," + b.id] ||
-                app.linkedByIndex[b.id + "," + a.id] ||
-                a.id == b.id
-            );
-        },
-        /*
+    delete_cluster(cluster_name, cluster_id, labels) {
+      delete_cluster_d3(cluster_name, cluster_id, labels);
+    },
+    // check the dictionary to see if nodes are linked
+    isConnected(a, b) {
+      return (
+        app.linkedByIndex[a.id + "," + b.id] ||
+        app.linkedByIndex[b.id + "," + a.id] ||
+        a.id == b.id
+      );
+    },
+    /*
 		Returns an object with the connections in the graph
 		*/
-        calc_linkedByIndex: function () {
-            app.linkedByIndex = {};
-            app.links.forEach(function (d) {
-                app.linkedByIndex[d.source.id + "," + d.target.id] = 1;
-            });
-        },
-        /*
+    calc_linkedByIndex() {
+      app.linkedByIndex = {};
+      app.links.forEach(function (d) {
+        app.linkedByIndex[d.source.id + "," + d.target.id] = 1;
+      });
+    },
+    /*
 		Delete one selected node
 		*/
-        delete_selected_nodes: async function () {
-            app.findSelectedNodes();
-            app.clicked_nodes.forEach(function (d) {
-                app.deletenode(d.id);
-                app.deletelinks(d.id);
-            });
-            // update DOM elements
-            var node = app.node.data(app.nodes, function (d) {
-                return d.id;
-            });
-            node.exit().remove();
-            app.node = node.enter().append("g").merge(node);
-
-            var link = app.link.data(app.links, function (d) {
-                return d.source.id + "-" + d.target.id;
-            });
-            link.exit().remove();
-            app.link = link.enter().append("line").merge(link);
-
-            // update number of senses and updated senses
-            app.senses = app.senses - 1;
-            if (app.updated_nodes != null) {
-                app.update_senses = app.update_senses - 1;
-            }
-
-            // update simulation
-            app.simulation.nodes(app.nodes);
-            app.simulation.force("link").links(app.links);
-
-            app.simulation.alpha(1).restart();
-
-            // recalculate the cluster information
-            await app.get_clusters();
-        },
-        /*
+    delete_selected_nodes() {
+      delete_selected_nodes_d3();
+    },
+    /*
 		Delete a node from the data
 		*/
-        deletenode: function (node_id) {
-            for (var i = 0; i < app.nodes.length; i++) {
-                if (app.nodes[i]["id"] === node_id) {
-                    app.nodes.splice(i, 1);
-                }
-            }
-        },
-        /*
+    deletenode(node_id) {
+      for (let i = 0; i < app.nodes.length; i++) {
+        if (app.nodes[i]["id"] === node_id) {
+          app.nodes.splice(i, 1);
+        }
+      }
+    },
+    /*
 		Delete all the links connected to a specific node from the data
 		*/
-        deletelinks: function (node_id) {
-            var allLinks = d3.select(".link").selectAll("line");
-
-            allLinks.each(function (d) {
-                if (
-                    this.getAttribute("target") === node_id ||
-                    this.getAttribute("source") === node_id
-                ) {
-                    for (var i = 0; i < app.links.length; i++) {
-                        if (
-                            app.links[i].target.id === node_id ||
-                            app.links[i].source.id === node_id
-                        ) {
-                            app.links.splice(i, 1);
-                        }
-                    }
-                }
-            });
-        },
-        /*
+    deletelinks(node_id) {
+      deletelinks_d3(node_id);
+    },
+    /*
 		Check if a specific link is connected to a cluster node
 		*/
-        check_cluster_node_connection: function (link_endpoint) {
-            var is_connected = false;
-            var nodes = d3.selectAll(".node").selectAll("g");
-            nodes.each(function () {
-                var children = this.childNodes;
-                children.forEach(function (d) {
-                    let is_cluster_node = d.getAttribute("cluster_node");
-                });
-                if (is_cluster_node === "true") {
-                    is_connected = true;
-                }
-            });
-            return is_connected;
-        },
-        /*
+    check_cluster_node_connection(link_endpoint) {
+      check_cluster_node_connection_d3(link_endpoint);
+    },
+    /*
 		Apply the changes the user made to the general settings
 		*/
-        update_general_settings: function () {
-            var svg = d3.select("svg");
-
-            // set svg size
-            svg.attr("viewBox", "0 0 " + app.svg_height + " " + app.svg_width);
-
-            // set view port
-            //svg.attr("width", app.viewport_width);
-            //svg.attr("height", app.viewport_height);
-
-            // set link thickness
-            var links = d3.selectAll(".link");
-            links.each(function (d) {
-                var children = this.childNodes;
-                children.forEach(function (p) {
-                    var weight = p.getAttribute("weight");
-                    var thickness;
-                    if (app.link_thickness_scaled === "true") {
-                        thickness = Math.sqrt(
-                            weight / app.link_thickness_factor
-                        );
-                    } else {
-                        thickness = Math.sqrt(app.link_thickness_value);
-                    }
-                    p.setAttribute("stroke-width", thickness);
-                });
-            });
-            app.simulation.alpha(0).restart();
-        },
-        /*
+    update_general_settings() {
+      update_general_settings_d3();
+    },
+    /*
 		Get the name of a cluster via its id
 		*/
-        getClusterNameFromID: function (id) {
-            var cluster_name;
+    getClusterNameFromID(id) {
+      let cluster_name;
 
-            for (var i = 0; i < app.clusters.length; i++) {
-                if (id === app.clusters[i].cluster_id) {
-                    cluster_name = app.clusters[i].cluster_name;
-                }
-            }
+      for (let i = 0; i < app.clusters.length; i++) {
+        if (id === app.clusters[i].cluster_id) {
+          cluster_name = app.clusters[i].cluster_name;
+        }
+      }
 
-            return cluster_name;
-        },
-        /*
+      return cluster_name;
+    },
+    /*
 		Get the id of the cluster that a specific node belongs to
 		*/
-        findClusterId: function (node_id) {
-            var cluster_id;
+    findClusterId(node_id) {
+      let cluster_id;
 
-            for (var i = 0; i < app.clusters.length; i++) {
-                var labels = [];
-                var cluster = app.clusters[i];
+      for (let i = 0; i < app.clusters.length; i++) {
+        let labels = [];
+        let cluster = app.clusters[i];
 
-                for (var j = 0; j < cluster.labels.length; j++) {
-                    labels.push(cluster.labels[j].text);
-                }
+        for (let j = 0; j < cluster.labels.length; j++) {
+          labels.push(cluster.labels[j].text);
+        }
 
-                if (labels.includes(node_id)) {
-                    cluster_id = cluster.cluster_id;
-                }
-            }
-            return cluster_id;
-        },
-        /*
+        if (labels.includes(node_id)) {
+          cluster_id = cluster.cluster_id;
+        }
+      }
+      return cluster_id;
+    },
+    /*
 		Get the clusters to which a node is connected and the amount of nodes per cluster
 		Returns an object with the {cluster_id : amount of nodes} and a string containing the cluster names and the number of nodes
 		*/
-        findNeighbourhoodClusters: function (node) {
-            let neighbourhoodClusters = {};
-            var links = d3.selectAll(".link");
+    findNeighbourhoodClusters: function (node) {
+      let neighbourhoodClusters = {};
+      var links = d3.selectAll(".link");
 
-            links.each(function (d) {
-                var children = this.childNodes;
-                var neighbour_cluster;
+      links.each(function (d) {
+        var children = this.childNodes;
+        var neighbour_cluster;
 
-                children.forEach(function (p) {
-                    var source = p.getAttribute("source");
-                    var target = p.getAttribute("target");
-                    if (source === node) {
-                        neighbour_cluster = app.findClusterId(target);
-                        if (neighbour_cluster !== undefined) {
-                            // if the cluster has been encountered before ...
-                            if (
-                                neighbourhoodClusters.hasOwnProperty(
-                                    neighbour_cluster.toString()
-                                )
-                            ) {
-                                neighbourhoodClusters[neighbour_cluster] += 1;
-                            } else {
-                                neighbourhoodClusters[neighbour_cluster] = 1;
-                            }
-                        }
-                    }
-                    if (target === node) {
-                        neighbour_cluster = app.findClusterId(source);
-                        if (neighbour_cluster !== undefined) {
-                            if (
-                                neighbourhoodClusters.hasOwnProperty(
-                                    neighbour_cluster.toString()
-                                )
-                            ) {
-                                neighbourhoodClusters[neighbour_cluster] += 1;
-                            } else {
-                                neighbourhoodClusters[neighbour_cluster] = 1;
-                            }
-                        }
-                    }
-                });
-            });
+        children.forEach(function (p) {
+          var source = p.getAttribute("source");
+          var target = p.getAttribute("target");
+          if (source === node) {
+            neighbour_cluster = app.findClusterId(target);
+            if (neighbour_cluster !== undefined) {
+              // if the cluster has been encountered before ...
+              if (
+                neighbourhoodClusters.hasOwnProperty(
+                  neighbour_cluster.toString()
+                )
+              ) {
+                neighbourhoodClusters[neighbour_cluster] += 1;
+              } else {
+                neighbourhoodClusters[neighbour_cluster] = 1;
+              }
+            }
+          }
+          if (target === node) {
+            neighbour_cluster = app.findClusterId(source);
+            if (neighbour_cluster !== undefined) {
+              if (
+                neighbourhoodClusters.hasOwnProperty(
+                  neighbour_cluster.toString()
+                )
+              ) {
+                neighbourhoodClusters[neighbour_cluster] += 1;
+              } else {
+                neighbourhoodClusters[neighbour_cluster] = 1;
+              }
+            }
+          }
+        });
+      });
 
-            let neighbourhoodClusters_str = [];
-            // Get the cluster name to each cluster id in the neighbourhood
-            Object.keys(neighbourhoodClusters).forEach(function (d) {
-                let name = app.getClusterNameFromID(d);
-                // build a list with the cluster names and number of nodes for display in the frontend
-                neighbourhoodClusters_str.push(
-                    name + "(" + neighbourhoodClusters[d] + ")"
-                );
-            });
-            return [
-                neighbourhoodClusters,
-                neighbourhoodClusters_str.join(", "),
-            ];
-        },
-        /*
+      let neighbourhoodClusters_str = [];
+      // Get the cluster name to each cluster id in the neighbourhood
+      Object.keys(neighbourhoodClusters).forEach(function (d) {
+        let name = app.getClusterNameFromID(d);
+        // build a list with the cluster names and number of nodes for display in the frontend
+        neighbourhoodClusters_str.push(
+          name + "(" + neighbourhoodClusters[d] + ")"
+        );
+      });
+      return [neighbourhoodClusters, neighbourhoodClusters_str.join(", ")];
+    },
+    /*
 		Check if the neighbourhood of a node is balanced 
 		*/
-        is_balanced: function (clusterDistr) {
-            let balanced = false;
-            let b = "no";
+    is_balanced: function (clusterDistr) {
+      let balanced = false;
+      let b = "no";
 
-            // only worth checking if there are at least two neighbourhood clusters
-            if (Object.keys(clusterDistr).length > 1) {
-                var max = 0;
-                var mean = 0;
+      // only worth checking if there are at least two neighbourhood clusters
+      if (Object.keys(clusterDistr).length > 1) {
+        var max = 0;
+        var mean = 0;
 
-                let clusterDistrValues = Object.values(clusterDistr);
+        let clusterDistrValues = Object.values(clusterDistr);
 
-                clusterDistrValues.forEach(function (d) {
-                    mean += d;
-                });
+        clusterDistrValues.forEach(function (d) {
+          mean += d;
+        });
 
-                // the mean number of connections per cluster
-                mean = mean / clusterDistrValues.length;
+        // the mean number of connections per cluster
+        mean = mean / clusterDistrValues.length;
 
-                // the max number of connections to a cluster
-                max = Math.max(...clusterDistrValues);
+        // the max number of connections to a cluster
+        max = Math.max(...clusterDistrValues);
 
-                // get rid of the cluster with the maximum connections
-                let clusterDistrWithoutMax = clusterDistr;
-                for (let cluster in clusterDistrWithoutMax) {
-                    if (clusterDistrWithoutMax[cluster] === max) {
-                        delete clusterDistrWithoutMax[cluster];
-                        break;
-                    }
-                }
+        // get rid of the cluster with the maximum connections
+        let clusterDistrWithoutMax = clusterDistr;
+        for (let cluster in clusterDistrWithoutMax) {
+          if (clusterDistrWithoutMax[cluster] === max) {
+            delete clusterDistrWithoutMax[cluster];
+            break;
+          }
+        }
 
-                // check if the heuristic holds
-                Object.values(clusterDistrWithoutMax).forEach(function (d) {
-                    // heuristic
-                    if (max - d < mean / 2) {
-                        balanced = true;
-                        b = "yes";
-                    }
-                });
-            }
-            return [balanced, b];
-        },
-        /*
+        // check if the heuristic holds
+        Object.values(clusterDistrWithoutMax).forEach(function (d) {
+          // heuristic
+          if (max - d < mean / 2) {
+            balanced = true;
+            b = "yes";
+          }
+        });
+      }
+      return [balanced, b];
+    },
+    /*
 		For a specific node return an array containg an object for each neighbouring cluster with the cluster id and the neighbouring nodes per cluster
 		*/
-        findNeighboursAndClusters: function (node) {
-            var neighbours = [];
-            var links = d3.selectAll(".link");
+    findNeighboursAndClusters: function (node) {
+      var neighbours = [];
+      var links = d3.selectAll(".link");
 
-            links.each(function (d) {
-                var children = this.childNodes;
+      links.each(function (d) {
+        var children = this.childNodes;
 
-                children.forEach(function (p) {
-                    var source = p.getAttribute("source");
-                    var target = p.getAttribute("target");
+        children.forEach(function (p) {
+          var source = p.getAttribute("source");
+          var target = p.getAttribute("target");
 
-                    if (source === node) {
-                        var target_cluster_id = app.findClusterId(target);
-                        if (target_cluster_id !== undefined) {
-                            var exists = false;
-                            for (var i = 0; i < neighbours.length; i++) {
-                                // if there the cluster exists in neighbours already, just push the target to the array of neighbours
-                                if (
-                                    neighbours[i]["cluster_id"] ===
-                                    target_cluster_id
-                                ) {
-                                    neighbours[i]["neighbours"].push(target);
-                                    exists = true;
-                                }
-                            }
-                            if (exists === false) {
-                                neighbours.push({
-                                    cluster_id: target_cluster_id,
-                                    neighbours: [target],
-                                });
-                            }
-                        }
-                    } else if (target === node) {
-                        var source_cluster_id = app.findClusterId(source);
-                        if (source_cluster_id !== undefined) {
-                            var exists = false;
-                            for (var i = 0; i < neighbours.length; i++) {
-                                if (
-                                    neighbours[i]["cluster_id"] ===
-                                    source_cluster_id
-                                ) {
-                                    neighbours[i]["neighbours"].push(source);
-                                    exists = true;
-                                }
-                            }
-                            if (exists === false) {
-                                neighbours.push({
-                                    cluster_id: source_cluster_id,
-                                    neighbours: [source],
-                                });
-                            }
-                        }
-                    }
+          if (source === node) {
+            var target_cluster_id = app.findClusterId(target);
+            if (target_cluster_id !== undefined) {
+              var exists = false;
+              for (var i = 0; i < neighbours.length; i++) {
+                // if there the cluster exists in neighbours already, just push the target to the array of neighbours
+                if (neighbours[i]["cluster_id"] === target_cluster_id) {
+                  neighbours[i]["neighbours"].push(target);
+                  exists = true;
+                }
+              }
+              if (exists === false) {
+                neighbours.push({
+                  cluster_id: target_cluster_id,
+                  neighbours: [target],
                 });
-            });
-            return neighbours;
-        },
-        /*
+              }
+            }
+          } else if (target === node) {
+            var source_cluster_id = app.findClusterId(source);
+            if (source_cluster_id !== undefined) {
+              var exists = false;
+              for (var i = 0; i < neighbours.length; i++) {
+                if (neighbours[i]["cluster_id"] === source_cluster_id) {
+                  neighbours[i]["neighbours"].push(source);
+                  exists = true;
+                }
+              }
+              if (exists === false) {
+                neighbours.push({
+                  cluster_id: source_cluster_id,
+                  neighbours: [source],
+                });
+              }
+            }
+          }
+        });
+      });
+      return neighbours;
+    },
+    /*
 		For each node, check if their neighbourhood is balanced and find neighbouring nodes
 		*/
-        findWobblyCandidates: function () {
-            app.wobblyCandidates = [];
+    findWobblyCandidates: function () {
+      app.wobblyCandidates = [];
 
-            if (app.hightlighInbetweennessCentrality === true) {
-                app.resetCentralityHighlighting();
-                app.hightlighInbetweennessCentrality = false;
-            }
+      if (app.hightlighInbetweennessCentrality === true) {
+        app.resetCentralityHighlighting();
+        app.hightlighInbetweennessCentrality = false;
+      }
 
-            var nodes = d3.selectAll(".node").selectAll("g");
-            var texts = d3.selectAll(".node").selectAll("g").select("text");
+      var nodes = d3.selectAll(".node").selectAll("g");
+      var texts = d3.selectAll(".node").selectAll("g").select("text");
 
-            nodes.each(function (d, i) {
-                var children = this.childNodes;
-                var text = d3.select(texts.nodes()[i]);
-                var cluster_id;
-                var node_text;
-                var candidate = {};
-                var is_cluster_node;
+      nodes.each(function (d, i) {
+        var children = this.childNodes;
+        var text = d3.select(texts.nodes()[i]);
+        var cluster_id;
+        var node_text;
+        var candidate = {};
+        var is_cluster_node;
 
-                children.forEach(function (p) {
-                    if (p.tagName === "text") {
-                        node_text = p.getAttribute("text");
-                    }
-                    if (p.tagName === "circle") {
-                        cluster_id = p.getAttribute("cluster_id");
-                        is_cluster_node = p.getAttribute("cluster_node");
-                    }
-                });
+        children.forEach(function (p) {
+          if (p.tagName === "text") {
+            node_text = p.getAttribute("text");
+          }
+          if (p.tagName === "circle") {
+            cluster_id = p.getAttribute("cluster_id");
+            is_cluster_node = p.getAttribute("cluster_node");
+          }
+        });
 
-                if (is_cluster_node === "false") {
-                    let result = app.findNeighbourhoodClusters(node_text);
-                    let neighbourClusterDistr = result[0];
-                    let neighbourClusterDistr_string = result[1];
+        if (is_cluster_node === "false") {
+          let result = app.findNeighbourhoodClusters(node_text);
+          let neighbourClusterDistr = result[0];
+          let neighbourClusterDistr_string = result[1];
 
-                    let b = app.is_balanced(neighbourClusterDistr)[1];
+          let b = app.is_balanced(neighbourClusterDistr)[1];
 
-                    candidate["text"] = node_text;
-                    candidate[
-                        "connected_clusters"
-                    ] = neighbourClusterDistr_string;
-                    candidate["balanced"] = b;
-                    candidate["neighbours"] = app.findNeighboursAndClusters(
-                        node_text
-                    );
+          candidate["text"] = node_text;
+          candidate["connected_clusters"] = neighbourClusterDistr_string;
+          candidate["balanced"] = b;
+          candidate["neighbours"] = app.findNeighboursAndClusters(node_text);
 
-                    app.wobblyCandidates.push(candidate);
-                }
-            });
-        },
-        /*
+          app.wobblyCandidates.push(candidate);
+        }
+      });
+    },
+    /*
 		Highlight the nodes with a balanced neighbourhood in the graph
 		*/
-        highlightWobblyCandidates: function () {
-            if (app.hightlighInbetweennessCentrality === true) {
-                app.resetCentralityHighlighting();
-                app.hightlighInbetweennessCentrality = false;
-            }
-            app.highlightWobblies = true;
-            var nodes = d3.selectAll(".node").selectAll("g");
-            var texts = d3.selectAll(".node").selectAll("g").select("text");
+    highlightWobblyCandidates: function () {
+      if (app.hightlighInbetweennessCentrality === true) {
+        app.resetCentralityHighlighting();
+        app.hightlighInbetweennessCentrality = false;
+      }
+      app.highlightWobblies = true;
+      var nodes = d3.selectAll(".node").selectAll("g");
+      var texts = d3.selectAll(".node").selectAll("g").select("text");
 
-            nodes.each(function (d, i) {
-                var children = this.childNodes;
-                var text = d3.select(texts.nodes()[i]);
-                var cluster_id;
-                var node_text;
-                var candidate = {};
-                var is_cluster_node;
+      nodes.each(function (d, i) {
+        var children = this.childNodes;
+        var text = d3.select(texts.nodes()[i]);
+        var cluster_id;
+        var node_text;
+        var candidate = {};
+        var is_cluster_node;
 
-                children.forEach(function (p) {
-                    if (p.tagName === "text") {
-                        node_text = p.getAttribute("text");
-                    }
-                    if (p.tagName === "circle") {
-                        cluster_id = p.getAttribute("cluster_id");
-                        is_cluster_node = p.getAttribute("cluster_node");
-                    }
-                });
+        children.forEach(function (p) {
+          if (p.tagName === "text") {
+            node_text = p.getAttribute("text");
+          }
+          if (p.tagName === "circle") {
+            cluster_id = p.getAttribute("cluster_id");
+            is_cluster_node = p.getAttribute("cluster_node");
+          }
+        });
 
-                if (is_cluster_node === "false") {
-                    var neighbourClusterDistr = app.findNeighbourhoodClusters(
-                        node_text
-                    )[0];
-                    let balanced = app.is_balanced(neighbourClusterDistr)[0];
+        if (is_cluster_node === "false") {
+          var neighbourClusterDistr = app.findNeighbourhoodClusters(
+            node_text
+          )[0];
+          let balanced = app.is_balanced(neighbourClusterDistr)[0];
 
-                    // if a node has a balanced neighbourhood, make it large
-                    if (balanced === true) {
-                        children.forEach(function (p) {
-                            if (p.tagName === "circle") {
-                                p.setAttribute("r", 20);
-                                text.style("font-size", "20px");
-                            }
-                        });
-                    }
-
-                    // if node is connected to more than one cluster, make it medium-sized
-                    else if (Object.keys(neighbourClusterDistr).length > 1) {
-                        children.forEach(function (p) {
-                            if (p.tagName === "circle") {
-                                p.setAttribute("r", 10);
-                                text.style("font-size", "14px");
-                            }
-                        });
-                    }
-                }
+          // if a node has a balanced neighbourhood, make it large
+          if (balanced === true) {
+            children.forEach(function (p) {
+              if (p.tagName === "circle") {
+                p.setAttribute("r", 20);
+                text.style("font-size", "20px");
+              }
             });
-        },
-        /*
+          }
+
+          // if node is connected to more than one cluster, make it medium-sized
+          else if (Object.keys(neighbourClusterDistr).length > 1) {
+            children.forEach(function (p) {
+              if (p.tagName === "circle") {
+                p.setAttribute("r", 10);
+                text.style("font-size", "14px");
+              }
+            });
+          }
+        }
+      });
+    },
+    /*
+    /*
 		Calculate how many nodes have a certain centrality score, so that the user has some reference when changing the thresholds
 		*/
-        calculateCentralityDistribution: function () {
-            app.centrality_score_distribution = [];
-            app.getCentralityScores();
+    calculateCentralityDistribution() {
+      app.centrality_score_distribution = [];
+      app.getCentralityScores();
 
-            let group0 = 0;
-            let group1 = 0;
-            let group2 = 0;
-            let group3 = 0;
-            let group4 = 0;
+      let group0 = 0;
+      let group1 = 0;
+      let group4 = 0;
 
-            app.centrality_scores.forEach(function (d) {
-                //console.log(parseFloat(d));
-                if (
-                    parseFloat(d["centrality_score"]) <=
-                    parseFloat(app.centrality_threshold_s)
-                ) {
-                    group0 += 1;
-                } else if (
-                    parseFloat(d["centrality_score"]) <=
-                    parseFloat(app.centrality_threshold_m)
-                ) {
-                    group1 += 1;
-                    /*   } else if (parseFloat(d) <= parseFloat(app.gr2_ul)) {
-                    group2 += 1;
-                } else if (parseFloat(d) <= parseFloat(app.gr3_ul)) {
-                    group3 += 1; */
-                } else {
-                    group4 += 1;
-                }
-            });
+      app.centrality_scores.forEach(function (d) {
+        //console.log(parseFloat(d));
+        if (
+          parseFloat(d["centrality_score"]) <=
+          parseFloat(app.centrality_threshold_s)
+        ) {
+          group0 += 1;
+        } else if (
+          parseFloat(d["centrality_score"]) <=
+          parseFloat(app.centrality_threshold_m)
+        ) {
+          group1 += 1;
+        } else {
+          group4 += 1;
+        }
+      });
 
-            app.centrality_score_distribution.push(
-                {
-                    centrality_score: "x < " + app.centrality_threshold_s,
-                    number_of_nodes: group0,
-                },
-                {
-                    centrality_score:
-                        app.centrality_threshold_s +
-                        "-" +
-                        app.centrality_threshold_m,
-                    number_of_nodes: group1,
-                } /* 
-                {
-                    centrality_score: app.gr1_ul + "-" + app.gr2_ul,
-                    number_of_nodes: group2,
-                },
-                {
-                    centrality_score: app.gr2_ul + "-" + app.gr3_ul,
-                    number_of_nodes: group3,
-                }, */,
-                {
-                    centrality_score: "x > " + app.centrality_threshold_m,
-                    number_of_nodes: group4,
-                }
-            );
+      app.centrality_score_distribution.push(
+        {
+          centrality_score: "x < " + app.centrality_threshold_s,
+          number_of_nodes: group0,
         },
-        /*
+        {
+          centrality_score:
+            app.centrality_threshold_s + "-" + app.centrality_threshold_m,
+          number_of_nodes: group1,
+        },
+        {
+          centrality_score: "x > " + app.centrality_threshold_m,
+          number_of_nodes: group4,
+        }
+      );
+    },
+    /*
 		For each node, get the centrality score
 		Returns an array of objects {node: centrality_score}
 		*/
-        getCentralityScores: function () {
-            app.centrality_scores = [];
-            console.log(app.nodes);
-            for (let d of app.nodes) {
-                if (d["centrality_score"] != null) {
-                    app.centrality_scores.push({
-                        node: d["id"],
-                        centrality_score: d["centrality_score"],
-                    });
-                }
-            }
-            console.log(app.centrality_scores);
-        },
-        /*
+    getCentralityScores() {
+      app.centrality_scores = [];
+      console.log(app.nodes);
+      for (let d of app.nodes) {
+        if (d["centrality_score"] != null) {
+          app.centrality_scores.push({
+            node: d["id"],
+            centrality_score: d["centrality_score"],
+          });
+        }
+      }
+      console.log(app.centrality_scores);
+    },
+    /*
 		Reset all the nodes make to their original size
 		*/
-        resetCentralityHighlighting: function () {
-            var circles = d3.selectAll(".node").selectAll("g").select("circle");
-            var texts = d3.selectAll(".node").selectAll("g").select("text");
-
-            circles.each(function (d, i) {
-                if (this.getAttribute("centrality_score") != null) {
-                    this.setAttribute("r", 5);
-                    var text = d3.select(texts.nodes()[i]);
-                    text.style("font-size", "10px");
-                }
-            });
-        },
-        /*
+    resetCentralityHighlighting() {
+      resetCentralityHighlighting_d3();
+    },
+    /*
 		Highlight betweenness centrality in graph
 		*/
-        highlightCentralNodes: function (threshold_s, threshold_m) {
-            if (app.highlightWobblies === true) {
-                app.resetCentralityHighlighting();
-                app.highlightWobblies = false;
-            }
-            app.hightlighInbetweennessCentrality = true;
-            threshold_s = parseFloat(threshold_s);
-            threshold_m = parseFloat(threshold_m);
-
-            var nodes = d3.selectAll(".node").selectAll("g");
-            var texts = d3.selectAll(".node").selectAll("g").select("text");
-
-            nodes.each(function (d, i) {
-                var children = this.childNodes;
-                var text = d3.select(texts.nodes()[i]);
-
-                children.forEach(function (d, i) {
-                    if (d.tagName == "circle") {
-                        if (d.getAttribute("centrality_score") != null) {
-                            var centrality_score = parseFloat(
-                                d.getAttribute("centrality_score")
-                            );
-                            // three different sizes depending on centrality score
-                            if (centrality_score <= threshold_s) {
-                                d.setAttribute("r", 2.5);
-                                text.style("font-size", "8px");
-                            } else if (
-                                centrality_score > threshold_s &&
-                                centrality_score <= threshold_m
-                            ) {
-                                d.setAttribute("r", 10.0);
-                                text.style("font-size", "14px");
-                            } else {
-                                d.setAttribute("r", 20.0);
-                                text.style("font-size", "20px");
-                            }
-                        }
-                    }
-                });
-            });
-        },
-        /*
+    highlightCentralNodes(threshold_s, threshold_m) {
+      highlightCentralNodes_d3(threshold_s, threshold_m);
+    },
+    /*
 		Reset the highlighting of the node search
 		*/
-        unsearch_nodes: function () {
-            // undo highlighting
-            var nodes = d3.selectAll(".node").selectAll("g");
-            var links = d3.selectAll(".link");
-
-            nodes.each(function (d) {
-                var children = this.childNodes;
-                this.setAttribute("stroke", null);
-
-                children.forEach(function (d) {
-                    if (d.tagName === "text") {
-                        d.style.fill = "black";
-                        d.style.fontSize = "10px";
-                        d.style.opacity = 1;
-                    }
-                    if (d.tagName === "circle") {
-                        r = d.getAttribute("r");
-                        d.style.opacity = 1;
-                        if (r > 5) {
-                            new_r = r / 2;
-                            d.setAttribute("r", new_r);
-                        }
-                    }
-                });
-            });
-
-            links.each(function (d) {
-                var children = this.childNodes;
-                children.forEach(function (p) {
-                    p.style.strokeOpacity = this.base_link_opacity;
-                });
-            });
-        },
-        /*
+    unsearch_nodes() {
+      unsearch_nodes_d3();
+    },
+    /*
 		Search a node in the graph using prefix matching
 		*/
-        search_node: function () {
-            found_matching_string = false;
-
-            // alert if no search term was entered
-            if (app.searchterm === "") {
-                alert("Please enter a search term.");
-            } else {
-                var nodes = d3.selectAll(".node").selectAll("g");
-
-                nodes.each(function (d) {
-                    var children = this.childNodes;
-                    var text = "";
-
-                    children.forEach(function (d) {
-                        if (d.tagName === "text") {
-                            text = d.getAttribute("text");
-                        }
-                    });
-
-                    // prefix matching, see if there is a node that matches the search term
-                    if (text.lastIndexOf(app.searchterm, 0) === 0) {
-                        found_matching_string = true;
-                    }
-                });
-
-                // if a node was found, do the highlighting
-                if (found_matching_string === true) {
-                    nodes.each(function (d) {
-                        var children = this.childNodes;
-                        var text = "";
-
-                        children.forEach(function (d) {
-                            if (d.tagName === "text") {
-                                text = d.getAttribute("text");
-                            }
-                        });
-
-                        // prefix matching
-                        if (text.lastIndexOf(app.searchterm, 0) === 0) {
-                            this.setAttribute("stroke", "yellow");
-                            // highlight matching node
-                            children.forEach(function (d) {
-                                if (d.tagName === "text") {
-                                    d.style.fontSize = "16px";
-                                }
-                                if (d.tagName === "circle") {
-                                    r = d.getAttribute("r");
-                                    new_r = r * 2;
-                                    d.setAttribute("r", new_r);
-                                }
-                            });
-                        } else {
-                            // reduce opacity of the other nodes
-                            // TODO: reduce opacity of links -> coloured links are a bit to strong
-                            children.forEach(function (d) {
-                                if (d.tagName === "text") {
-                                    d.style.opacity = 0.4;
-                                }
-                                if (d.tagName === "circle") {
-                                    d.style.opacity = 0.4;
-                                }
-                            });
-                        }
-
-                        var links = d3.selectAll(".link");
-                        links.each(function (d) {
-                            var children = this.childNodes;
-                            children.forEach(function (p) {
-                                p.style.strokeOpacity = this.reduced_link_opacity;
-                            });
-                        });
-                    });
-                    // if no matching node was found, show alert
-                } else if (found_matching_string === false) {
-                    alert(
-                        "No match found. Please try a different search term."
-                    );
-                }
-                app.searchterm = "";
-            }
-        },
-        // Not quite there yet. Save cluster_selected for every cluster
-        // Otherwise weird behaviour when selecting different cluster
-        select_cluster: function (cluster) {
-            if (app.cluster_selected === false) {
-                app.cluster_selected = true;
-                var cluster_id = cluster.cluster_id;
-                var cluster_nodes = [];
-                for (var i = 0; i < cluster.labels.length; i++) {
-                    cluster_nodes.push(cluster.labels[i].text);
-                }
-
-                var links = d3.selectAll(".link").selectAll("line");
-
-                links.each(function (d) {
-                    var source = this.getAttribute("source");
-                    var target = this.getAttribute("target");
-                    if (
-                        cluster_nodes.includes(source) &&
-                        cluster_nodes.includes(target)
-                    ) {
-                        this.setAttribute("stroke", cluster.colour);
-                    }
-                });
-                if (app.sticky_mode === "false") {
-                    var nodes = d3.selectAll(".node").selectAll("g");
-                    nodes.classed("selected", function (d, i) {
-                        if (cluster_nodes.includes(d.id)) {
-                            return true;
-                        } else {
-                            return false;
-                        }
-                    });
-                }
-            } else {
-                app.cluster_selected = false;
-                var cluster_id = cluster.cluster_id;
-                var cluster_nodes = [];
-                for (var i = 0; i < cluster.labels.length; i++) {
-                    cluster_nodes.push(cluster.labels[i].text);
-                }
-
-                var links = d3.selectAll(".link").selectAll("line");
-
-                links.each(function (d) {
-                    var source = this.getAttribute("source");
-                    var target = this.getAttribute("target");
-                    if (
-                        cluster_nodes.includes(source) &&
-                        cluster_nodes.includes(target)
-                    ) {
-                        this.setAttribute("stroke", "#999");
-                    }
-                });
-            }
-        },
-        /*
+    search_node() {
+      search_node_d3();
+    },
+    // Not quite there yet. Save cluster_selected for every cluster
+    // Otherwise weird behaviour when selecting different cluster
+    select_cluster(cluster) {
+      select_cluster_d3(cluster);
+    },
+    /*
 		Generate a new, random cluster id, that differs from the existing ones
 		*/
-        generate_cluster_id: function () {
-            var number_of_nodes = d3.selectAll(".node").selectAll("g").size();
+    generate_cluster_id() {
+      let number_of_nodes = d3.selectAll(".node").selectAll("g").size();
 
-            var existing_cluster_ids = [];
-            for (var i = 0; i < app.clusters.length; i++) {
-                var cluster = app.clusters[i];
-                existing_cluster_ids.push(parseInt(cluster.cluster_id));
-            }
+      let existing_cluster_ids = [];
+      for (let i = 0; i < app.clusters.length; i++) {
+        let cluster = app.clusters[i];
+        existing_cluster_ids.push(parseInt(cluster.cluster_id));
+      }
 
-            var random_number = Math.floor(
-                Math.random() * Math.floor(number_of_nodes + 10)
-            );
+      let random_number = Math.floor(
+        Math.random() * Math.floor(number_of_nodes + 10)
+      );
 
-            while (existing_cluster_ids.includes(random_number)) {
-                random_number = Math.floor(
-                    Math.random() * Math.floor(number_of_nodes + 10)
-                );
-            }
+      while (existing_cluster_ids.includes(random_number)) {
+        random_number = Math.floor(
+          Math.random() * Math.floor(number_of_nodes + 10)
+        );
+      }
 
-            return random_number;
-        },
-        /*
+      return random_number;
+    },
+    /*
 		Create a new cluster from scratch when using the node options to change the cluster of a node
 		*/
-        createNewCluster: function (event) {
-            var selected_nodes = d3.selectAll(".node").selectAll("g");
-            var generated_cluster_id = app.generate_cluster_id().toString();
-
-            selected_nodes.each(function (d, i) {
-                let text = "";
-                var childnodes = this.childNodes;
-
-                childnodes.forEach(function (d, i) {
-                    if (d.tagName === "text") {
-                        text = d.getAttribute("text");
-                    }
-                });
-
-                for (var j = 0; j < app.clicked_nodes.length; j++) {
-                    // if the node is one of the selected nodes, assign the new attributes
-                    if (app.clicked_nodes[j].id === text) {
-                        childnodes.forEach(function (d, k) {
-                            if (d.tagName === "circle") {
-                                d.setAttribute(
-                                    "cluster_id",
-                                    generated_cluster_id
-                                );
-                                d.setAttribute(
-                                    "cluster",
-                                    app.created_cluster_name
-                                );
-                                d.setAttribute(
-                                    "fill",
-                                    app.created_cluster_colour
-                                );
-                            }
-                        });
-                    }
-                }
-            });
-
-            // update the information about the clusters in the graph in the data variable clusters.
-            app.get_clusters();
-
-            app.created_cluster_colour = "";
-            app.created_cluster_name = "";
-
-            // colour the links accordingly
-            var links = d3.selectAll(".link");
-            links.each(function (d) {
-                var children = this.childNodes;
-                children.forEach(function (p) {
-                    var source = p.getAttribute("source");
-                    var target = p.getAttribute("target");
-                    var source_colour = app.findColour(source);
-                    var target_colour = app.findColour(target);
-                    if (source_colour === target_colour) {
-                        p.setAttribute("stroke", source_colour);
-                    } else {
-                        p.setAttribute("stroke", "#999");
-                    }
-                });
-            });
-        },
-        /*
-		Check if the selected node is a non cluster node. Only those should be considered for changing their cluster assignment
-		*/
-        is_normal_node: function () {
-            var normal_node;
-            var selected_node = d3.selectAll(".selected").select("circle");
-
-            selected_node.each(function (d) {
-                var n = d3.select(this);
-                if (n.attr("cluster_node") === "true") {
-                    normal_node = false;
-                } else {
-                    normal_node = true;
-                }
-            });
-
-            return normal_node;
-        },
-        /*
+    createNewCluster(event) {
+      createNewCluster_d3(event);
+    },
+    /*
 		Find the colour of a given node_id
 		*/
-        findColour: function (node_id) {
-            var nodes = d3.selectAll(".node").selectAll("g");
-            var colour;
-
-            nodes.each(function (d) {
-                var node_name;
-                var children = this.childNodes;
-                children.forEach(function (p) {
-                    if (p.tagName === "text") {
-                        node_name = p.getAttribute("text");
-                    }
-                });
-
-                if (node_name === node_id) {
-                    children.forEach(function (p) {
-                        if (p.tagName === "circle") {
-                            colour = p.getAttribute("fill");
-                        }
-                    });
-                }
-            });
-            return colour;
-        },
-        /*
+    findColour(node_id) {
+      findColour_d3(node_id);
+    },
+    /*
 		Assigns the newly selected cluster id, cluster name and cluster colour to the selected node node.
 		*/
-        assignNewCluster: function () {
-            var selected_nodes = d3.selectAll(".node").selectAll("g");
-
-            selected_nodes.each(function (d, i) {
-                text = "";
-                var childnodes = this.childNodes;
-
-                childnodes.forEach(function (d, i) {
-                    if (d.tagName === "text") {
-                        text = d.getAttribute("text");
-                    }
-                });
-
-                for (var j = 0; j < app.clicked_nodes.length; j++) {
-                    // if the node is one of the selected nodes, assign the new attributes
-                    if (app.clicked_nodes[j].id === text) {
-                        childnodes.forEach(function (d, k) {
-                            if (d.tagName === "circle") {
-                                d.setAttribute(
-                                    "cluster_id",
-                                    app.new_assigned_cluster.cluster_id
-                                );
-                                d.setAttribute(
-                                    "cluster",
-                                    app.new_assigned_cluster.cluster_name
-                                );
-                                d.setAttribute(
-                                    "fill",
-                                    app.new_assigned_cluster.colour
-                                );
-                            }
-                        });
-                    }
-                }
-            });
-            // update the information about the clusters in the graph in the data variable clusters.
-            app.get_clusters();
-
-            var links = d3.selectAll(".link");
-            links.each(function (d) {
-                var children = this.childNodes;
-                children.forEach(function (p) {
-                    var source = p.getAttribute("source");
-                    var target = p.getAttribute("target");
-                    var source_colour = app.findColour(source);
-                    var target_colour = app.findColour(target);
-                    if (source_colour === target_colour) {
-                        p.setAttribute("style", "stroke:" + source_colour);
-                    } else {
-                        p.setAttribute("style", "stroke: #999");
-                    }
-                });
-            });
-        },
-        /*
+    assignNewCluster() {
+      assignNewCluster_d3();
+    },
+    /*
 		Return a list of all selected nodes as a list of objects
 		An object depicts one selected node with slots for its colour, its cluster id, its cluster name and its id.
-		The list is stored in the data variable clicked_nodes.
+		The list is stored in the data letiable clicked_nodes.
 		*/
-        findSelectedNodes: function () {
-            let list = [];
-            var selected_nodes = d3.select(".selected");
-
-            selected_nodes.each(function (d, i) {
-                let node_characteristics = {};
-                var childnodes = this.childNodes;
-
-                childnodes.forEach(function (d) {
-                    if (d.tagName === "circle") {
-                        // cluster nodes should not be considered
-                        if (d.getAttribute("cluster_node") === "false") {
-                            node_characteristics["colour"] = d.getAttribute(
-                                "fill"
-                            );
-                            app.created_cluster_colour =
-                                node_characteristics["colour"];
-                            node_characteristics["cluster_id"] = d.getAttribute(
-                                "cluster_id"
-                            );
-                            node_characteristics[
-                                "cluster_name"
-                            ] = d.getAttribute("cluster");
-                        }
-                    }
-
-                    if (d.tagName === "text") {
-                        node_characteristics["id"] = d.getAttribute("text");
-                    }
-                });
-                list.push(node_characteristics);
-            });
-            app.clicked_nodes = list;
-        },
-        /*
+    findSelectedNodes() {
+      findSelectedNodes_d3();
+    },
+    /*
 		Set the opacity of all the nodes and edges that are not in the inspected time slice to 0.2.
 		*/
-        skip_through_time_slices: function () {
-            var nodes = d3.selectAll(".node").selectAll("g");
-
-            nodes.each(function (d, i) {
-                // Set opacity to one in the beginning - important when changing time slice.
-                this.style.strokeOpacity = 1.0;
-                this.style.fillOpacity = 1.0;
-
-                var childnodes = this.childNodes;
-                // assume that every node is not in the interval
-                var in_interval = false;
-
-                childnodes.forEach(function (d, i) {
-                    if (d.tagName === "circle") {
-                        // for all nodes that have time ids, retrieve them - cluster nodes do not have any.
-                        if (d.getAttribute("cluster_node") === "false") {
-                            var time_ids = d.getAttribute("time_ids");
-                            if (time_ids !== null) {
-                                time_ids = time_ids.split(",");
-
-                                // check if the time ids of the node include the id of the interval
-                                time_ids.forEach(function (d, i) {
-                                    if (d === app.interval_id) {
-                                        // if so, the node occurs in the selected time slice
-                                        in_interval = true;
-                                    }
-                                });
-                            }
-                        }
-                    }
-                });
-
-                // Set the opacity to 0.2 for all nodes that do not occur in the focused time slice
-                if (in_interval === false) {
-                    this.style.strokeOpacity = 0.2;
-                    this.style.fillOpacity = 0.2;
-                }
-            });
-
-            var links = d3.selectAll(".link").selectAll("line");
-
-            links.each(function (d, i) {
-                // Set the opacity of all links to base_link_opacity initially
-                this.style.strokeOpacity = this.base_link_opacity;
-
-                // select the time ids of the source and the target
-                var source_time_ids = d.source.time_ids;
-                var target_time_ids = d.target.time_ids;
-
-                if (
-                    typeof source_time_ids === "string" &&
-                    typeof target_time_ids === "string"
-                ) {
-                    source_time_ids = source_time_ids.split(",");
-                    target_time_ids = target_time_ids.split(",");
-
-                    source_time_ids = source_time_ids.map((x) => parseInt(x));
-                    target_time_ids = target_time_ids.map((x) => parseInt(x));
-                }
-
-                var in_source_interval = false;
-                var in_target_interval = false;
-
-                let interval = parseInt(app.interval_id);
-
-                // check if source time ids of a link include the time slice id of the selected interval
-                if (source_time_ids.includes(interval)) {
-                    in_source_interval = true;
-                }
-
-                // check if the target time ids of a link include the time slice if of the selected interval
-                if (
-                    !(
-                        target_time_ids === null ||
-                        typeof target_time_ids === "undefined"
-                    ) &&
-                    target_time_ids.includes(interval)
-                ) {
-                    in_target_interval = true;
-                }
-
-                // the link only has opacity 1.0 if both source and target are in the selected time slice
-                if (
-                    in_source_interval === false ||
-                    in_target_interval === false
-                ) {
-                    this.style.strokeOpacity = this.reduced_link_opacity;
-                }
-            });
-        },
-        /*
+    skip_through_time_slices() {
+      skip_through_time_slices_d3();
+    },
+    /*
 		Returns all the time ids of a node as a string of start year and end year to be displayed in the tooltip on a node in the time diff mode
 		*/
-        toolTipLink: function (time_ids, weights, targetA, targetB) {
-            let stringRet =
-                "Edge: " + targetA + " - " + targetB + "<br>" + "<br>";
-            stringRet += "Max. similarity:" + "<br>";
-            stringRet += this.selectInterval(time_ids, weights) + "<br>";
-            stringRet += "For context-information - click me!";
-            return stringRet;
-        },
+    toolTipLink(time_ids, weights, targetA, targetB) {
+      let stringRet = "Edge: " + targetA + " - " + targetB + "<br>" + "<br>";
+      stringRet += "Max. similarity:" + "<br>";
+      stringRet += this.selectInterval(time_ids, weights) + "<br>";
+      stringRet += "For context-information - click me!";
+      return stringRet;
+    },
 
-        toolTipNode: function (time_ids, target_text, weights) {
-            let stringRet = "Node: " + target_text + "<br>" + "<br>";
-            stringRet +=
-                "Highest similarities with " + app.target_word + ":" + "<br>";
-            stringRet += this.selectInterval(time_ids, weights) + "<br>";
-            return stringRet;
-        },
+    toolTipNode(time_ids, target_text, weights) {
+      let stringRet = "Node: " + target_text + "<br>" + "<br>";
+      stringRet +=
+        "Highest similarities with " + app.target_word + ":" + "<br>";
+      stringRet += this.selectInterval(time_ids, weights) + "<br>";
+      return stringRet;
+    },
 
-        time_diff_true() {
-            this.time_diff = true;
-            console.log("time diff true");
-        },
+    time_diff_true() {
+      this.time_diff = true;
+      console.log("time diff true");
+    },
 
-        time_diff_true_and_reset() {
-            this.time_diff = true;
-            console.log("time diff true");
-            this.reset_time_diff_colours();
-        },
+    time_diff_true_and_reset() {
+      this.time_diff = true;
+      console.log("time diff true");
+      this.reset_time_diff_colours();
+    },
 
-        selectIntervalWithActive: function () {
-            console.log(
-                "in selectIntervalwitactive" + this.active_edge.time_ids
-            );
-            return this.selectInterval(
-                this.active_edge.time_ids,
-                this.active_edge.weights
-            ).slice(0, -4);
-        },
+    selectIntervalWithActive() {
+      console.log("in selectIntervalwitactive" + this.active_edge.time_ids);
+      return this.selectInterval(
+        this.active_edge.time_ids,
+        this.active_edge.weights
+      ).slice(0, -4);
+    },
 
-        selectInterval: function (time_ids, weights) {
-            let intervalString = "";
-            if (time_ids !== null && typeof time_ids !== "undefined") {
-                if (typeof time_ids === "string") {
-                    time_ids = time_ids.split(",");
-                }
-            }
-            if (weights !== null && typeof weights !== "undefined") {
-                if (typeof weights === "string") {
-                    weights = weights.split(",");
-                }
-            }
-            for (let index = 0; index < time_ids.length; index++) {
-                let start = this.start_years[time_ids[index] - 1].text;
-                let end = this.end_years[time_ids[index] - 1].text;
-                intervalString +=
-                    start + " - " + end + " [" + weights[index] + "]" + "<br>";
-            }
-            return intervalString;
-        },
-        /*
+    selectInterval(time_ids, weights) {
+      let intervalString = "";
+      if (time_ids !== null && typeof time_ids !== "undefined") {
+        if (typeof time_ids === "string") {
+          time_ids = time_ids.split(",");
+        }
+      }
+      if (weights !== null && typeof weights !== "undefined") {
+        if (typeof weights === "string") {
+          weights = weights.split(",");
+        }
+      }
+      for (let index = 0; index < time_ids.length; index++) {
+        let start = this.start_years[time_ids[index] - 1].text;
+        let end = this.end_years[time_ids[index] - 1].text;
+        intervalString +=
+          start + " - " + end + " [" + weights[index] + "]" + "<br>";
+      }
+      return intervalString;
+    },
+    /*
 		Color nodes depending on whether they started to occur in the selected small time interval, stopped to occur in said interval, or both.
 		Basically comparing the graph time interval and the small time interval selected by the user.
 		# INTERVAL COUNTING ALWAYS START FIRST ID IN DATABASE WITH 1
 		*/
-        show_time_diff: async function () {
-            let big_time_interval = [];
-            let startindex = this.start_years.find(
-                (startindex) => startindex.value === this.start_year
-            )["id"];
-            let endindex = this.end_years.find(
-                (endindex) => endindex.value === this.end_year
-            )["id"];
+    show_time_diff() {
+      let big_time_interval = [];
+      let startindex = this.start_years.find(
+        (startindex) => startindex.value === this.start_year
+      )["id"];
+      let endindex = this.end_years.find(
+        (endindex) => endindex.value === this.end_year
+      )["id"];
 
-            for (let ind = startindex; ind <= endindex; ind++) {
-                big_time_interval.push(ind);
-            }
+      for (let ind = startindex; ind <= endindex; ind++) {
+        big_time_interval.push(ind);
+      }
 
-            console.log("in startindx", app.interval_start, app.interval_end);
-            let small_time_interval = [];
-            let startindex2 = this.start_years.find(
-                (startind) => startind.text === app.interval_start
-            )["id"];
-            console.log("start id", startindex2);
-            let endindex2 = this.end_years.find(
-                (endind) => endind.text === app.interval_end
-            )["id"];
+      console.log("in startindx", app.interval_start, app.interval_end);
+      let small_time_interval = [];
+      let startindex2 = this.start_years.find(
+        (startind) => startind.text === app.interval_start
+      )["id"];
+      console.log("start id", startindex2);
+      let endindex2 = this.end_years.find(
+        (endind) => endind.text === app.interval_end
+      )["id"];
 
-            for (let ind = startindex2; ind <= endindex2; ind++) {
-                small_time_interval.push(ind);
-            }
+      for (let ind = startindex2; ind <= endindex2; ind++) {
+        small_time_interval.push(ind);
+      }
 
-            let period_before = [];
-            let period_after = [];
+      let period_before = [];
+      let period_after = [];
 
-            let small_interval_start_time_id = Math.min(...small_time_interval);
-            let small_interval_end_time_id = Math.max(...small_time_interval);
-            console.log(
-                "nall intervall start time id",
-                small_interval_start_time_id
-            );
-            console.log("small end time", small_interval_end_time_id);
-            console.log("big time intervall", big_time_interval);
+      let small_interval_start_time_id = Math.min(...small_time_interval);
+      let small_interval_end_time_id = Math.max(...small_time_interval);
+      console.log("nall intervall start time id", small_interval_start_time_id);
+      console.log("small end time", small_interval_end_time_id);
+      console.log("big time intervall", big_time_interval);
 
-            for (var i = 0; i < big_time_interval.length; i++) {
-                if (big_time_interval[i] < small_interval_start_time_id) {
-                    period_before.push(big_time_interval[i]);
-                } else if (big_time_interval[i] > small_interval_end_time_id) {
-                    period_after.push(big_time_interval[i]);
+      for (let i = 0; i < big_time_interval.length; i++) {
+        if (big_time_interval[i] < small_interval_start_time_id) {
+          period_before.push(big_time_interval[i]);
+        } else if (big_time_interval[i] > small_interval_end_time_id) {
+          period_after.push(big_time_interval[i]);
+        }
+        console.log("big", big_time_interval);
+        console.log("before", period_before);
+        console.log("after", period_after);
+      }
+
+      let time_diff_nodes = {
+        born_in_interval: [],
+        deceases_in_interval: [],
+        exists_only_in_interval: [],
+        exists_only_before: [],
+        exists_throughout: [],
+        exists_only_after: [],
+        exists_before_and_after: [],
+      };
+
+      let nodes = d3.selectAll(".node").selectAll("g");
+
+      nodes.each(function (d) {
+        let childnodes = this.childNodes;
+        let node_text;
+
+        childnodes.forEach(function (d) {
+          if (d.tagName === "text") {
+            node_text = d.getAttribute("text");
+          }
+        });
+
+        childnodes.forEach(function (d) {
+          if (d.tagName === "circle") {
+            if (d.getAttribute("cluster_node") === "false") {
+              let time_ids = d.getAttribute("time_ids");
+
+              if (time_ids !== null && typeof time_ids !== "undefined") {
+                time_ids = time_ids.split(",");
+                time_ids = time_ids.map((x) => parseInt(x));
+                console.log("in time ids", time_ids, node_text);
+                node_text = node_text; //+ " [" + time_ids.sort() + "]"
+                let in_interval = false;
+                let before_interval = false;
+                let after_interval = false;
+
+                for (let i = 0; i < time_ids.length; i++) {
+                  let t = time_ids[i];
+
+                  if (period_before.includes(t)) {
+                    before_interval = true;
+                  }
+                  if (small_time_interval.includes(t)) {
+                    in_interval = true;
+                  }
+                  if (period_after.includes(t)) {
+                    after_interval = true;
+                  }
                 }
-                console.log("big", big_time_interval);
-                console.log("before", period_before);
-                console.log("after", period_after);
+
+                if (!before_interval && in_interval && !after_interval) {
+                  d.setAttribute("fill", "yellow");
+                  time_diff_nodes.exists_only_in_interval.push(node_text);
+                } else if (!before_interval && in_interval && after_interval) {
+                  d.setAttribute("fill", "#28a745");
+                  time_diff_nodes.born_in_interval.push(node_text);
+                } else if (before_interval && in_interval && !after_interval) {
+                  d.setAttribute("fill", "#dc3545");
+                  time_diff_nodes.deceases_in_interval.push(node_text);
+                } else if (before_interval && in_interval && after_interval) {
+                  d.setAttribute("fill", "#343a41");
+                  time_diff_nodes.exists_throughout.push(node_text);
+                  console.log("pushed throughout");
+                } else if (before_interval && !in_interval && !after_interval) {
+                  d.setAttribute("fill", "#dc3546");
+                  time_diff_nodes.exists_only_before.push(node_text);
+                } else if (!before_interval && !in_interval && after_interval) {
+                  d.setAttribute("fill", "#28a746");
+                  time_diff_nodes.exists_only_after.push(node_text);
+                } else if (before_interval && !in_interval && after_interval) {
+                  d.setAttribute("fill", "#343a40");
+                  time_diff_nodes.exists_before_and_after.push(node_text);
+                }
+              }
             }
+            // would be good to see exactly the time slices of the respective nodes
+          }
+        });
+      });
 
-            let time_diff_nodes = {
-                born_in_interval: [],
-                deceases_in_interval: [],
-                exists_only_in_interval: [],
-                exists_only_before: [],
-                exists_throughout: [],
-                exists_only_after: [],
-                exists_before_and_after: [],
-            };
-
-            let nodes = d3.selectAll(".node").selectAll("g");
-
-            nodes.each(function (d) {
-                var childnodes = this.childNodes;
-                var node_text;
-
-                childnodes.forEach(function (d) {
-                    if (d.tagName === "text") {
-                        node_text = d.getAttribute("text");
-                    }
-                });
-
-                childnodes.forEach(function (d) {
-                    if (d.tagName === "circle") {
-                        if (d.getAttribute("cluster_node") === "false") {
-                            var time_ids = d.getAttribute("time_ids");
-
-                            if (
-                                time_ids !== null &&
-                                typeof time_ids !== "undefined"
-                            ) {
-                                time_ids = time_ids.split(",");
-                                time_ids = time_ids.map((x) => parseInt(x));
-                                console.log("in time ids", time_ids, node_text);
-                                node_text = node_text; //+ " [" + time_ids.sort() + "]"
-                                var in_interval = false;
-                                var before_interval = false;
-                                var after_interval = false;
-
-                                for (var i = 0; i < time_ids.length; i++) {
-                                    var t = time_ids[i];
-
-                                    if (period_before.includes(t)) {
-                                        before_interval = true;
-                                    }
-                                    if (small_time_interval.includes(t)) {
-                                        in_interval = true;
-                                    }
-                                    if (period_after.includes(t)) {
-                                        after_interval = true;
-                                    }
-                                }
-
-                                if (
-                                    !before_interval &&
-                                    in_interval &&
-                                    !after_interval
-                                ) {
-                                    d.setAttribute("fill", "yellow");
-                                    time_diff_nodes.exists_only_in_interval.push(
-                                        node_text
-                                    );
-                                } else if (
-                                    !before_interval &&
-                                    in_interval &&
-                                    after_interval
-                                ) {
-                                    d.setAttribute("fill", "#28a745");
-                                    time_diff_nodes.born_in_interval.push(
-                                        node_text
-                                    );
-                                } else if (
-                                    before_interval &&
-                                    in_interval &&
-                                    !after_interval
-                                ) {
-                                    d.setAttribute("fill", "#dc3545");
-                                    time_diff_nodes.deceases_in_interval.push(
-                                        node_text
-                                    );
-                                } else if (
-                                    before_interval &&
-                                    in_interval &&
-                                    after_interval
-                                ) {
-                                    d.setAttribute("fill", "#343a41");
-                                    time_diff_nodes.exists_throughout.push(
-                                        node_text
-                                    );
-                                    console.log("pushed throughout");
-                                } else if (
-                                    before_interval &&
-                                    !in_interval &&
-                                    !after_interval
-                                ) {
-                                    d.setAttribute("fill", "#dc3546");
-                                    time_diff_nodes.exists_only_before.push(
-                                        node_text
-                                    );
-                                } else if (
-                                    !before_interval &&
-                                    !in_interval &&
-                                    after_interval
-                                ) {
-                                    d.setAttribute("fill", "#28a746");
-                                    time_diff_nodes.exists_only_after.push(
-                                        node_text
-                                    );
-                                } else if (
-                                    before_interval &&
-                                    !in_interval &&
-                                    after_interval
-                                ) {
-                                    d.setAttribute("fill", "#343a40");
-                                    time_diff_nodes.exists_before_and_after.push(
-                                        node_text
-                                    );
-                                }
-                            }
-                        }
-                        // would be good to see exactly the time slices of the respective nodes
-                    }
-                });
-            });
-
-            app.time_diff_nodes = time_diff_nodes;
-            console.log(time_diff_nodes);
-        },
-        /*
+      app.time_diff_nodes = time_diff_nodes;
+      console.log(time_diff_nodes);
+    },
+    /*
 		Fetch the updated amount of nodes and edges as well as the singletons from the BE.
 		*/
-        update: function () {
-            console.log("called update");
-            var target_word = this.target_word;
-            var start_year = this.start_year;
-            var end_year = this.end_year;
-            var senses = this.update_senses;
-            var edges = this.update_edges;
-            var time_diff = this.time_diff;
-
-            app.time_diff = false;
-            var url =
-                "./api/collections/" +
-                this.collection_key +
-                "/sense_graph" +
-                "/" +
-                target_word +
-                "/" +
-                start_year +
-                "/" +
-                end_year +
-                "/" +
-                senses +
-                "/" +
-                edges;
-
-            return axios
-                .get(url)
-                .then((res) => {
-                    this.data_from_db = res.data;
-                    app.updated_nodes = this.data_from_db[0].nodes;
-
-                    app.updated_links = this.data_from_db[0].links;
-
-                    app.singletons = this.data_from_db[2].singletons;
-                })
-                .catch((error) => {
-                    console.error(error);
-                });
-        },
-        /*
+    update() {
+      update_io();
+    },
+    /*
 		Reset the opacity of all nodes and edges to their original values (nodes: 1.0, edges: 0.6).
 		*/
-        reset_opacity: function () {
-            var nodes = d3.selectAll(".node").selectAll("g");
-            var links = d3.selectAll(".link");
-
-            nodes.each(function (d) {
-                this.style.strokeOpacity = 1.0;
-                this.style.fillOpacity = 1.0;
-            });
-
-            links.each(function (d) {
-                var childnodes = this.childNodes;
-                childnodes.forEach(function (d) {
-                    d.setAttribute("style", "stroke: #999;");
-                    d.setAttribute(
-                        "style",
-                        "stroke-opacity:" + this.base_link_opacity
-                    );
-                });
-            });
-        },
-        /*
+    reset_opacity() {
+      reset_opacity_d3();
+    },
+    /*
 		Fade in the nodes of a certain colour and the connecting links.
 		The purpose of this function is to fade in only the red, yellow, green and grey nodes in the time diff mode.
 		@param String CSS colour such as 'red'
 		*/
-        fade_in_nodes: function (colour) {
-            var nodes = d3.selectAll(".node").selectAll("g");
-            var links = d3.selectAll(".link");
+    fade_in_nodes(colour) {
+      fade_in_nodes_d3(colour);
+    },
 
-            // collect all the nodes with opacity 1.0, so you can check them against the source and target of links
-            var faded_in = [];
-
-            nodes.each(function (d, i) {
-                var childnodes = this.childNodes;
-                var node_colour;
-
-                childnodes.forEach(function (d) {
-                    if (d.tagName === "circle") {
-                        node_colour = d.getAttribute("fill");
-                    }
-                });
-
-                if (colour !== node_colour) {
-                    this.style.strokeOpacity = 0.2;
-                    this.style.fillOpacity = 0.2;
-                } else {
-                    childnodes.forEach(function (d) {
-                        if (d.tagName === "text") {
-                            faded_in.push(d.getAttribute("text"));
-                        }
-                    });
-                }
-            });
-
-            links.each(function (d) {
-                var linknodes = this.childNodes;
-
-                linknodes.forEach(function (d) {
-                    var source = d.getAttribute("source");
-                    var target = d.getAttribute("target");
-
-                    if (
-                        faded_in.includes(source) &&
-                        faded_in.includes(target)
-                    ) {
-                        // if the link is faded in, set the colour to the same as all the nodes
-                        d.setAttribute("style", "stroke:" + colour);
-                    } else {
-                        d.setAttribute(
-                            "style",
-                            "stroke-opacity:" + this.reduced_link_opacity
-                        );
-                    }
-                });
-            });
-        },
-
-        /*
+    /*
 		Set the opacity of nodes and links of a specific cluster.
-		@param Object cluster: the entry for a specific cluster in the data variable clusters.
+		@param Object cluster: the entry for a specific cluster in the data letiable clusters.
 		@param float opacity: some number between 0.0 and 1.0.
 		@param float link_opacity: some number between 0.0 and 1.0.
 		*/
-        set_cluster_opacity: function (cluster, opacity, link_opacity) {
-            var cluster_id = cluster.cluster_id;
-            var cluster_nodes = [];
+    set_cluster_opacity(cluster, opacity, link_opacity) {
+      let cluster_id = cluster.cluster_id;
+      let cluster_nodes = [];
 
-            for (var i = 0; i < cluster.labels.length; i++) {
-                cluster_nodes.push(cluster.labels[i].text);
-            }
+      for (let i = 0; i < cluster.labels.length; i++) {
+        cluster_nodes.push(cluster.labels[i].text);
+      }
 
-            var svg = d3.select("#svg");
-            var nodes = svg.selectAll(".node");
-            var links = svg.selectAll(".link");
+      let svg = d3.select("#svg");
+      let nodes = svg.selectAll(".node");
+      let links = svg.selectAll(".link");
 
-            nodes.selectAll("g").each(function (d, i) {
-                var childnodes = this.childNodes;
-                var node_text;
-                var node_cluster_id;
-                childnodes.forEach(function (d, i) {
-                    if (d.tagName === "circle") {
-                        node_cluster_id = d.getAttribute("cluster_id");
-                    }
-                    if (d.tagName === "text") {
-                        node_text = d.getAttribute("text");
-                    }
-                });
-                if (!cluster_nodes.includes(node_text)) {
-                    this.style.strokeOpacity = opacity;
-                    this.style.fillOpacity = opacity;
-                }
-            });
+      nodes.selectAll("g").each(function (d, i) {
+        let childnodes = this.childNodes;
+        let node_text;
+        let node_cluster_id;
+        childnodes.forEach(function (d, i) {
+          if (d.tagName === "circle") {
+            node_cluster_id = d.getAttribute("cluster_id");
+          }
+          if (d.tagName === "text") {
+            node_text = d.getAttribute("text");
+          }
+        });
+        if (!cluster_nodes.includes(node_text)) {
+          this.style.strokeOpacity = opacity;
+          this.style.fillOpacity = opacity;
+        }
+      });
 
-            links.each(function (d, i) {
-                var childnodes = this.childNodes;
-                childnodes.forEach(function (d, i) {
-                    var source = d.getAttribute("source");
-                    var target = d.getAttribute("target");
-                    if (
-                        !cluster_nodes.includes(source) ||
-                        !cluster_nodes.includes(target)
-                    ) {
-                        //d.setAttribute("style", "stroke-opacity:" + link_opacity);
-                        d.style.strokeOpacity = link_opacity;
-                    }
-                    //if (cluster_nodes.includes(source) && cluster_nodes.includes(target)) {
-                    //if (opacity < 1) {
-                    //	d.setAttribute("style", "stroke:" + cluster.colour);
-                    //} else {
-                    //		d.setAttribute("style", "stroke:" + cluster.colour);
-                    //}
-                    //}
-                });
-            });
-        },
-        /*
+      links.each(function (d, i) {
+        let childnodes = this.childNodes;
+        childnodes.forEach(function (d, i) {
+          let source = d.getAttribute("source");
+          let target = d.getAttribute("target");
+          if (
+            !cluster_nodes.includes(source) ||
+            !cluster_nodes.includes(target)
+          ) {
+            //d.setAttribute("style", "stroke-opacity:" + link_opacity);
+            d.style.strokeOpacity = link_opacity;
+          }
+          //if (cluster_nodes.includes(source) && cluster_nodes.includes(target)) {
+          //if (opacity < 1) {
+          //	d.setAttribute("style", "stroke:" + cluster.colour);
+          //} else {
+          //		d.setAttribute("style", "stroke:" + cluster.colour);
+          //}
+          //}
+        });
+      });
+    },
+    /*
 		Send all the nodes and edges to the backend, recluster them and change the nodes in the graph accordingly (cluster id, cluster name, colour)
 		*/
-        recluster: function () {
-            this.overlay_main = true;
-            if (app.highlightWobblies === true) {
-                app.resetCentralityHighlighting();
-                app.highlightWobblies = false;
+    recluster() {
+      app.overlay_main = true;
+      if (app.highlightWobblies === true) {
+        app.resetCentralityHighlighting();
+        app.highlightWobblies = false;
+      }
+      //document.getElementById("edit_clusters_popup").style.display = "none";
+
+      let svg = d3.select("#svg");
+      let nodes = svg.selectAll(".node");
+      let links = svg.selectAll(".link");
+
+      let data = {};
+
+      // accumulate all the graph nodes
+      let nodes_array = [];
+      nodes.selectAll("g").each(function (d, i) {
+        let childnodes = this.childNodes;
+
+        let is_cluster_node;
+        childnodes.forEach(function (d, i) {
+          if (d.tagName === "circle") {
+            is_cluster_node = d.getAttribute("cluster_node");
+          }
+        });
+
+        if (is_cluster_node === "false") {
+          childnodes.forEach(function (d, i) {
+            if (d.tagName === "text") {
+              nodes_array.push(d.getAttribute("text"));
             }
-            //document.getElementById("edit_clusters_popup").style.display = "none";
+          });
+        }
+      });
 
-            var svg = d3.select("#svg");
-            var nodes = svg.selectAll(".node");
-            var links = svg.selectAll(".link");
+      // accumulate all the links
+      let link_array = [];
 
-            var data = {};
+      links.each(function (d, i) {
+        let childnodes = this.childNodes;
+        childnodes.forEach(function (d, i) {
+          let link = {};
+          let source = d.getAttribute("source");
+          let target = d.getAttribute("target");
 
-            // accumulate all the graph nodes
-            var nodes_array = [];
-            nodes.selectAll("g").each(function (d, i) {
-                let childnodes = this.childNodes;
+          if (nodes_array.includes(source) && nodes_array.includes(target)) {
+            link["source"] = source;
+            link["target"] = target;
+            link["weight"] = d.getAttribute("weight");
 
-                var is_cluster_node;
-                childnodes.forEach(function (d, i) {
-                    if (d.tagName === "circle") {
-                        is_cluster_node = d.getAttribute("cluster_node");
-                    }
+            link_array.push(link);
+          }
+        });
+      });
+
+      // store all the nodes and links in a data object to be sent to the BE
+      data["nodes"] = nodes_array;
+      data["links"] = link_array;
+
+      axios
+        .post("./api/reclustering", data)
+        .then(function (response) {
+          this.newclusters = response.data;
+
+          let colour = d3.scaleOrdinal(d3.schemePaired);
+
+          let newClusteredNodes = this.newclusters.nodes;
+
+          let texts = nodes.selectAll("g").select("text");
+          let circles = nodes.selectAll("g").select("circle");
+
+          for (let i = 0; i < newClusteredNodes.length; i++) {
+            let node_id = newClusteredNodes[i].id;
+            let node_new_cluster = newClusteredNodes[i].class;
+            //let node_centr_score = newClusteredNodes[i].centrality_score;
+            // assign the updated attributes to the nodes
+            // Careful, data is not bound to DOM!
+            texts.each(function (d, i) {
+              let t = d3.select(this);
+              if (t.attr("text") === node_id) {
+                let circle = d3.select(circles.nodes()[i]);
+                //circle.attr("centrality_score", node_centr_score)
+                circle.attr("cluster", node_new_cluster);
+                circle.attr("fill", function () {
+                  return colour(node_new_cluster);
                 });
+                circle.attr("cluster_id", node_new_cluster);
+                circle.attr("cluster_node", false);
+              }
+            });
+          }
+          // update the data letiable clusters
+          app.get_clusters();
 
-                if (is_cluster_node === "false") {
-                    childnodes.forEach(function (d, i) {
-                        if (d.tagName === "text") {
-                            nodes_array.push(d.getAttribute("text"));
-                        }
-                    });
+          //let links = d3.selectAll(".link");
+
+          links.each(function () {
+            let children = this.childNodes;
+            children.forEach(function (d, i) {
+              let is_in_cluster = false;
+              let link = {};
+              let source = d.getAttribute("source");
+              let target = d.getAttribute("target");
+              let weight = d.getAttribute("weight");
+              link["source"] = source;
+              link["target"] = target;
+              link["weight"] = weight;
+              if (app.includes(link_array, link)) {
+                console.log("includes");
+                for (let i = 0; i < app.clusters.length; i++) {
+                  let node_ids = [];
+                  app.clusters[i].labels.forEach(function (p) {
+                    node_ids.push(p.text);
+                  });
+                  if (node_ids.includes(source) && node_ids.includes(target)) {
+                    let cluster_colour = app.clusters[i].colour;
+                    console.log(
+                      source,
+                      target,
+                      d.getAttribute("stroke"),
+                      cluster_colour
+                    );
+                    d.setAttribute("stroke", cluster_colour);
+                    console.log(d.getAttribute("stroke"));
+                    is_in_cluster = true;
+                  }
                 }
-            });
-
-            // accumulate all the links
-            var link_array = [];
-
-            links.each(function (d, i) {
-                childnodes = this.childNodes;
-                childnodes.forEach(function (d, i) {
-                    var link = {};
-                    var source = d.getAttribute("source");
-                    var target = d.getAttribute("target");
-
-                    if (
-                        nodes_array.includes(source) &&
-                        nodes_array.includes(target)
-                    ) {
-                        link["source"] = source;
-                        link["target"] = target;
-                        link["weight"] = d.getAttribute("weight");
-
-                        link_array.push(link);
-                    }
-                });
-            });
-
-            // store all the nodes and links in a data object to be sent to the BE
-            data["nodes"] = nodes_array;
-            data["links"] = link_array;
-
-            axios
-                .post("./api/reclustering", data)
-                .then(async function (response) {
-                    this.newclusters = response.data;
-
-                    var colour = d3.scaleOrdinal(d3.schemePaired);
-
-                    var newClusteredNodes = this.newclusters.nodes;
-
-                    var texts = nodes.selectAll("g").select("text");
-                    var circles = nodes.selectAll("g").select("circle");
-
-                    for (var i = 0; i < newClusteredNodes.length; i++) {
-                        var node_id = newClusteredNodes[i].id;
-                        var node_new_cluster = newClusteredNodes[i].class;
-                        //var node_centr_score = newClusteredNodes[i].centrality_score;
-                        // assign the updated attributes to the nodes
-                        // Careful, data is not bound to DOM!
-                        texts.each(function (d, i) {
-                            var t = d3.select(this);
-                            if (t.attr("text") === node_id) {
-                                var circle = d3.select(circles.nodes()[i]);
-                                //circle.attr("centrality_score", node_centr_score)
-                                circle.attr("cluster", node_new_cluster);
-                                circle.attr("fill", function () {
-                                    return colour(node_new_cluster);
-                                });
-                                circle.attr("cluster_id", node_new_cluster);
-                                circle.attr("cluster_node", false);
-                            }
-                        });
-                    }
-                    // update the data variable clusters
-                    await app.get_clusters();
-
-                    //var links = d3.selectAll(".link");
-
-                    links.each(function () {
-                        var children = this.childNodes;
-                        children.forEach(function (d, i) {
-                            var is_in_cluster = false;
-                            var link = {};
-                            var source = d.getAttribute("source");
-                            var target = d.getAttribute("target");
-                            var weight = d.getAttribute("weight");
-                            link["source"] = source;
-                            link["target"] = target;
-                            link["weight"] = weight;
-                            if (app.includes(link_array, link)) {
-                                console.log("includes");
-                                for (var i = 0; i < app.clusters.length; i++) {
-                                    var node_ids = [];
-                                    app.clusters[i].labels.forEach(function (
-                                        p
-                                    ) {
-                                        node_ids.push(p.text);
-                                    });
-                                    if (
-                                        node_ids.includes(source) &&
-                                        node_ids.includes(target)
-                                    ) {
-                                        var cluster_colour =
-                                            app.clusters[i].colour;
-                                        console.log(
-                                            source,
-                                            target,
-                                            d.getAttribute("stroke"),
-                                            cluster_colour
-                                        );
-                                        d.setAttribute(
-                                            "stroke",
-                                            cluster_colour
-                                        );
-                                        console.log(d.getAttribute("stroke"));
-                                        is_in_cluster = true;
-                                    }
-                                }
-                                if (!is_in_cluster) {
-                                    d.setAttribute("stroke", "#999");
-                                }
-                            }
-                        });
-                    });
-                })
-                .catch(function (error) {
-                    console.log(error);
-                });
-            console.log("in recluster ende");
-            this.overlay_main = false;
-        },
-        includes: function (array, obj) {
-            let found = false;
-            array.forEach((d) => {
-                if (
-                    d.source === obj.source &&
-                    d.target === obj.target &&
-                    d.weight === obj.weight
-                ) {
-                    found = true;
+                if (!is_in_cluster) {
+                  d.setAttribute("stroke", "#999");
                 }
+              }
             });
-            return found;
-        },
+          });
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+      console.log("in recluster ende");
+      this.overlay_main = false;
+    },
 
-        /*
+    includes(array, obj) {
+      let found = false;
+      array.forEach((d) => {
+        if (
+          d.source === obj.source &&
+          d.target === obj.target &&
+          d.weight === obj.weight
+        ) {
+          found = true;
+        }
+      });
+      return found;
+    },
+
+    /*
 		Choose cluster for context analysis and display context information
 		*/
-        get_cluster_information: function (cluster) {
-            let links = this.links;
-            let nodes_graph = this.nodes;
-            let jsonReq = {
-                edges: [],
-                nodes: [],
-                collection: this.collection_key,
-            };
-            let nodes_tmp = [];
-            // get all nodes that are assigned to cluster - irrespective of time-ids
-            for (let key in cluster["labels"]) {
-                let dati = cluster["labels"][key];
-                nodes_tmp.push(dati["text"]);
-            }
+    get_cluster_information(cluster) {
+      let links = app.links;
+      let nodes_graph = app.nodes;
+      let jsonReq = {
+        edges: [],
+        nodes: [],
+        collection: this.collection_key,
+      };
+      let nodes_tmp = [];
+      // get all nodes that are assigned to cluster - irrespective of time-ids
+      for (let key in cluster["labels"]) {
+        let dati = cluster["labels"][key];
+        nodes_tmp.push(dati["text"]);
+      }
 
-            // get time-ids for nodes from global
-            nodes_tmp.forEach(function (item1, index) {
-                // all texts
-                nodes_graph.forEach(function (item2, index) {
-                    // all
-                    if (item1 === item2["target_text"]) {
-                        jsonReq["nodes"].push({
-                            label: item2["target_text"],
-                            time_id: item2["time_ids"][0],
-                        });
-                    }
-                });
+      // get time-ids for nodes from global
+      nodes_tmp.forEach(function (item1, index) {
+        // all texts
+        nodes_graph.forEach(function (item2, index) {
+          // all
+          if (item1 === item2["target_text"]) {
+            jsonReq["nodes"].push({
+              label: item2["target_text"],
+              time_id: item2["time_ids"][0],
             });
-            //console.log(jsonReq)
+          }
+        });
+      });
+      //console.log(jsonReq)
 
-            if (jsonReq["nodes"].length > this.cluster_search_limit) {
-                alert(
-                    "You clicked on cluster-context information. " +
-                        "Currently, you can only query clusters with 5 or less nodes. " +
-                        "Reason: cluster information is extracted from over 1 billion features which takes long for mysql."
-                );
-            } else {
-                console.log("cluster info continue with less than six");
-                app.busy_right2 = true;
-                app.context_mode2 = true;
-                // find edges that are inside the cluster (ie both nodes are cluster nodes)
-                for (let key in links) {
-                    let t1 = links[key]["source_text"];
-                    let t2 = links[key]["target_text"];
-                    let timeId = links[key]["time_ids"][0];
-                    let true1 = nodes_tmp.includes(t1);
-                    let true2 = nodes_tmp.includes(t2);
-                    if (true1 && true2) {
-                        jsonReq["edges"].push({
-                            source: t1,
-                            target: t2,
-                            time_id: timeId,
-                        });
-                        console.log("includes ", t1 + t2, timeId);
-                    }
-                }
-                //console.log(jsonReq)
-                let url = "./api/cluster_information";
-                axios
-                    .post(url, jsonReq)
-                    .then((res) => {
-                        console.log(res.data);
-                        let ret = [];
-                        for (var key in res.data) {
-                            retObj = {};
-                            retObj.wort = key;
-                            retObj.score = parseFloat(res.data[key]).toFixed(5);
-                            ret.push(retObj);
-                        }
-                        this.cluster_shared_object = ret;
-                        //console.log(this.cluster_shared_object)
-                        this.busy_right2 = false;
-                    })
-                    .catch((error) => {
-                        console.error(error);
-                    });
+      if (jsonReq["nodes"].length > this.cluster_search_limit) {
+        alert(
+          "You clicked on cluster-context information. " +
+            "Currently, you can only query clusters with 5 or less nodes. " +
+            "Reason: cluster information is extracted from over 1 billion features which takes long for mysql."
+        );
+      } else {
+        console.log("cluster info continue with less than six");
+        app.busy_right2 = true;
+        app.context_mode2 = true;
+        // find edges that are inside the cluster (ie both nodes are cluster nodes)
+        for (let key in links) {
+          let t1 = links[key]["source_text"];
+          let t2 = links[key]["target_text"];
+          let timeId = links[key]["time_ids"][0];
+          let true1 = nodes_tmp.includes(t1);
+          let true2 = nodes_tmp.includes(t2);
+          if (true1 && true2) {
+            jsonReq["edges"].push({
+              source: t1,
+              target: t2,
+              time_id: timeId,
+            });
+            console.log("includes ", t1 + t2, timeId);
+          }
+        }
+        //console.log(jsonReq)
+        let url = "./api/cluster_information";
+        axios
+          .post(url, jsonReq)
+          .then((res) => {
+            console.log(res.data);
+            let ret = [];
+            for (let key in res.data) {
+              retObj = {};
+              retObj.wort = key;
+              retObj.score = parseFloat(res.data[key]).toFixed(5);
+              ret.push(retObj);
             }
-        },
+            this.cluster_shared_object = ret;
+            //console.log(this.cluster_shared_object)
+            this.busy_right2 = false;
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      }
+    },
 
-        /*
+    /*
 		Get edge information, i.e. the feature-contexts words that are shared by paradigms
 		Since we are using similarity - bims (ie contexts) - the function is called simbim
 		*/
-        getSimBims: async function () {
-            this.busy_right1 = true;
-            let retArray = [];
-            let data = {};
-            data["word1"] = this.active_edge.source_text;
-            data["word2"] = this.active_edge.target_text;
-            data["time_id"] = this.active_edge.time_ids[0];
+    getSimBims() {
+      getSimBims_io();
+    },
 
-            let url = "./api/collections/" + this.collection_key + "/simbim";
-            console.log(url);
-            axios
-                .post(url, data)
-                .then((res) => {
-                    let ret = [];
-                    if (res.data["error"] == "none") {
-                        for (var key in res.data) {
-                            if (key != "error") {
-                                var dati = res.data[key];
-                                retObj = {};
-                                retObj.node1 = parseFloat(
-                                    dati["score"]
-                                ).toFixed(5);
-                                retObj.edge = dati["key"];
-                                retObj.node2 = parseFloat(
-                                    dati["score2"]
-                                ).toFixed(5);
-                                ret.push(retObj);
-                            }
-                        }
-                    }
-
-                    this.simbim_object = ret;
-                    this.busy_right1 = false;
-                })
-                .catch((error) => {
-                    console.error(error);
-                });
-        },
-
-        /*
+    /*
 		Get node-target word (invisible edge) information, i.e. the feature-contexts words that are shared by paradigms
 		Since we are using similarity - bims (ie contexts) - the function is called simbim
 		*/
-        getSimBimsNodes: async function () {
-            this.busy_right3 = true;
-            let retArray = [];
-            let data = {};
-            data["word1"] = this.target_word;
-            data["word2"] = this.active_node.target_text;
-            data["time_id"] = this.active_node.time_ids[0];
-            this.node_time_id = this.active_node.time_ids[0];
+    getSimBimsNodes() {
+      this.busy_right3 = true;
+      let retArray = [];
+      let data = {};
+      data["word1"] = this.target_word;
+      data["word2"] = this.active_node.target_text;
+      data["time_id"] = this.active_node.time_ids[0];
+      this.node_time_id = this.active_node.time_ids[0];
 
-            let url = "./api/collections/" + this.collection_key + "/simbim";
-            console.log(url);
-            axios
-                .post(url, data)
-                .then((res) => {
-                    let ret = [];
-                    if (res.data["error"] == "none") {
-                        for (var key in res.data) {
-                            if (key != "error") {
-                                var dati = res.data[key];
-                                retObj = {};
-                                retObj.node1 = parseFloat(
-                                    dati["score"]
-                                ).toFixed(5);
-                                retObj.edge = dati["key"];
-                                retObj.node2 = parseFloat(
-                                    dati["score2"]
-                                ).toFixed(5);
-                                ret.push(retObj);
-                            }
-                        }
-                    }
+      let url = "./api/collections/" + this.collection_key + "/simbim";
+      console.log(url);
+      axios
+        .post(url, data)
+        .then((res) => {
+          let ret = [];
+          if (res.data["error"] == "none") {
+            for (let key in res.data) {
+              if (key != "error") {
+                let dati = res.data[key];
+                retObj = {};
+                retObj.node1 = parseFloat(dati["score"]).toFixed(5);
+                retObj.edge = dati["key"];
+                retObj.node2 = parseFloat(dati["score2"]).toFixed(5);
+                ret.push(retObj);
+              }
+            }
+          }
 
-                    this.simbim_node_object = ret;
-                    this.busy_right3 = false;
-                })
-                .catch((error) => {
-                    console.error(error);
-                });
-        },
+          this.simbim_node_object = ret;
+          this.busy_right3 = false;
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    },
 
-        getStartYears: function () {
-            // Vue dropdown needs text and value
-            this.start_years = this.collections[this.collection_name][
-                "start_years"
-            ];
-            this.start_year = this.start_years[0]["value"];
-        },
-        getEndYears: function () {
-            this.end_years = this.collections[this.collection_name][
-                "end_years"
-            ];
-            this.end_year = this.end_years[this.end_years.length - 1]["value"];
-        },
-        /*
+    getStartYears() {
+      // Vue dropdown needs text and value
+      this.start_years = this.collections[this.collection_name]["start_years"];
+      this.start_year = this.start_years[0]["value"];
+    },
+    getEndYears() {
+      this.end_years = this.collections[this.collection_name]["end_years"];
+      this.end_year = this.end_years[this.end_years.length - 1]["value"];
+    },
+    /*
 		Apply changes in cluster name and colour to all the nodes in the graph (when pressing the "Apply" button in the edit column)
 		Data Changes---
 		*/
-        applyClusterSettings: function () {
-            let svg = d3.select("#svg");
-            let nodes = svg.selectAll(".node");
-            let links = svg.selectAll(".link");
-            console.log(
-                "applyClusterSettings, point 1: all clusters",
-                this.clusters
-            );
+    applyClusterSettings() {
+      let svg = d3.select("#svg");
+      let nodes = svg.selectAll(".node");
+      let links = svg.selectAll(".link");
+      console.log("applyClusterSettings, point 1: all clusters", this.clusters);
 
-            for (let i = 0; i < this.clusters.length; i++) {
-                let cluster_id = this.clusters[i].cluster_id;
-                let cluster_name = this.clusters[i].cluster_name;
-                let colour = this.clusters[i].colour;
-                //let add_cluster_node = this.clusters[i].add_cluster_node;
-                let labels = this.clusters[i].labels;
-                let text_labels = [];
+      for (let i = 0; i < this.clusters.length; i++) {
+        let cluster_id = this.clusters[i].cluster_id;
+        let cluster_name = this.clusters[i].cluster_name;
+        let colour = this.clusters[i].colour;
+        //let add_cluster_node = this.clusters[i].add_cluster_node;
+        let labels = this.clusters[i].labels;
+        let text_labels = [];
 
-                for (let j = 0; j < labels.length; j++) {
-                    text_labels.push(labels[j].text);
-                }
+        for (let j = 0; j < labels.length; j++) {
+          text_labels.push(labels[j].text);
+        }
+        console.log("applyClusterSettings, point 2: one cluster", text_labels);
+
+        // ######### EXPERIMENTAL PUSH CLUSTER NAME START
+
+        // wenn cluster_node hinzugefügt werden soll, aber nicht vorhanden ist
+        // if (add_cluster_node && !text_labels.includes(cluster_name)){
+        // 	text_labels.push(cluster_name)
+
+        // }
+        // ######### EXPERIMENTAL PUSH CLUSTER NAME END
+
+        nodes.selectAll("g").each(function (d, i) {
+          let node_cluster;
+          let node_fill;
+          let node_label;
+
+          childnodes = this.childNodes;
+
+          childnodes.forEach(function (d, i) {
+            if (d.tagName === "circle") {
+              node_cluster = d.getAttribute("cluster");
+              node_fill = d.getAttribute("fill");
+            }
+            if (d.tagName === "text") {
+              node_label = d.getAttribute("text");
+            }
+          });
+
+          if (text_labels.includes(node_label)) {
+            childnodes.forEach(function (d, i) {
+              if (d.tagName === "circle") {
                 console.log(
-                    "applyClusterSettings, point 2: one cluster",
-                    text_labels
+                  "applyClusterSettings, point 3: one node",
+                  node_label
                 );
+                d.setAttribute("cluster", cluster_name);
+                d.setAttribute("fill", colour);
+              }
+            });
+          }
+        });
 
-                // ######### EXPERIMENTAL PUSH CLUSTER NAME START
-
-                // wenn cluster_node hinzugefügt werden soll, aber nicht vorhanden ist
-                // if (add_cluster_node && !text_labels.includes(cluster_name)){
-                // 	text_labels.push(cluster_name)
-
-                // }
-                // ######### EXPERIMENTAL PUSH CLUSTER NAME END
-
-                nodes.selectAll("g").each(function (d, i) {
-                    let node_cluster;
-                    let node_fill;
-                    let node_label;
-
-                    childnodes = this.childNodes;
-
-                    childnodes.forEach(function (d, i) {
-                        if (d.tagName === "circle") {
-                            node_cluster = d.getAttribute("cluster");
-                            node_fill = d.getAttribute("fill");
-                        }
-                        if (d.tagName === "text") {
-                            node_label = d.getAttribute("text");
-                        }
-                    });
-
-                    if (text_labels.includes(node_label)) {
-                        childnodes.forEach(function (d, i) {
-                            if (d.tagName === "circle") {
-                                console.log(
-                                    "applyClusterSettings, point 3: one node",
-                                    node_label
-                                );
-                                d.setAttribute("cluster", cluster_name);
-                                d.setAttribute("fill", colour);
-                            }
-                        });
-                    }
-                });
-
-                // TODO: update colour of links
-                links.each(function (d) {
-                    var children = this.childNodes;
-                    var source;
-                    var target;
-                    children.forEach(function (p) {
-                        source = p.getAttribute("source");
-                        target = p.getAttribute("target");
-                        if (
-                            text_labels.includes(source) &&
-                            text_labels.includes(target)
-                        ) {
-                            p.setAttribute("stroke", colour);
-                        }
-                    });
-                });
+        // TODO: update colour of links
+        links.each(function (d) {
+          let children = this.childNodes;
+          let source;
+          let target;
+          children.forEach(function (p) {
+            source = p.getAttribute("source");
+            target = p.getAttribute("target");
+            if (text_labels.includes(source) && text_labels.includes(target)) {
+              p.setAttribute("stroke", colour);
             }
-        },
-        showEditMask: function () {
-            if (app.time_diff === "false") {
-                //update clusters before fading in the column, keep the old clusters in time diff mode though, so that the user can still see the information about clusters
-                app.get_clusters();
-            }
-            if (app.edit_column_open === false) {
-                app.edit_column_open = true;
-                document.getElementById("edit_clusters_popup").style.display =
-                    "block";
-            } else if (app.edit_column_open === true) {
-                app.edit_column_open = false;
-                document.getElementById("edit_clusters_popup").style.display =
-                    "none";
-            }
-        },
+          });
+        });
+      }
+    },
+    showEditMask() {
+      if (app.time_diff === "false") {
+        //update clusters before fading in the column, keep the old clusters in time diff mode though, so that the user can still see the information about clusters
+        app.get_clusters();
+      }
+      if (app.edit_column_open === false) {
+        app.edit_column_open = true;
+        document.getElementById("edit_clusters_popup").style.display = "block";
+      } else if (app.edit_column_open === true) {
+        app.edit_column_open = false;
+        document.getElementById("edit_clusters_popup").style.display = "none";
+      }
+    },
 
-        /*
-		Collect the information on the clusters from the graph and store it in the data variable clusters.
+    /*
+		Collect the information on the clusters from the graph and store it in the data letiable clusters.
 		@return Array of objects with cluster information
 		// commment by CH: This looks circular - data is pushed on the graph, modified there and then re-read from the graph
 		// Better: data is changed on the datastructure - and only displayed on the graph
 		*/
-        get_clusters: async function () {
-            function compare_clusters(a, b) {
-                if (a.labels.length < b.labels.length) {
-                    return 1;
-                }
-                if (a.labels.length > b.labels.length) {
-                    return -1;
-                }
-                return 0;
+    get_clusters() {
+      function compare_clusters(a, b) {
+        if (a.labels.length < b.labels.length) {
+          return 1;
+        }
+        if (a.labels.length > b.labels.length) {
+          return -1;
+        }
+        return 0;
+      }
+
+      app.clusters = [];
+      let clusters = [];
+
+      let svg = d3.select("#svg");
+      let nodes = svg.selectAll(".node").selectAll("g");
+
+      nodes.each(function (d, i) {
+        let cluster = {};
+        let exists = false;
+        let cluster_name;
+        let colour;
+        let text;
+        let cluster_id;
+        let cluster_node;
+
+        childnodes = this.childNodes;
+        childnodes.forEach(function (d, i) {
+          if (d.tagName === "circle") {
+            cluster_name = d.getAttribute("cluster");
+            cluster_id = d.getAttribute("cluster_id");
+            colour = d.getAttribute("fill");
+            cluster_node = d.getAttribute("cluster_node");
+          }
+
+          if (d.tagName === "text") {
+            text = d.getAttribute("text");
+          }
+        });
+
+        // TODO - I do not know what exactly this part of the function from IK is doing
+        // why does it only push None cluster nodes
+        clusters.forEach(function (c, i) {
+          //console.log(c)
+          if (c.cluster_name === cluster_name) {
+            exists = true;
+            if (cluster_node === "false") {
+              c.labels.push({
+                text: text,
+                cluster_node: cluster_node,
+              });
             }
+          }
+        });
 
-            app.clusters = [];
-            let clusters = [];
-
-            let svg = d3.select("#svg");
-            let nodes = svg.selectAll(".node").selectAll("g");
-
-            nodes.each(function (d, i) {
-                let cluster = {};
-                let exists = false;
-                let cluster_name;
-                let colour;
-                let text;
-                let cluster_id;
-                let cluster_node;
-
-                childnodes = this.childNodes;
-                childnodes.forEach(function (d, i) {
-                    if (d.tagName === "circle") {
-                        cluster_name = d.getAttribute("cluster");
-                        cluster_id = d.getAttribute("cluster_id");
-                        colour = d.getAttribute("fill");
-                        cluster_node = d.getAttribute("cluster_node");
-                    }
-
-                    if (d.tagName === "text") {
-                        text = d.getAttribute("text");
-                    }
-                });
-
-                // TODO - I do not know what exactly this part of the function from IK is doing
-                // why does it only push None cluster nodes
-                clusters.forEach(function (c, i) {
-                    //console.log(c)
-                    if (c.cluster_name === cluster_name) {
-                        exists = true;
-                        if (cluster_node === "false") {
-                            c.labels.push({
-                                text: text,
-                                cluster_node: cluster_node,
-                            });
-                        }
-                    }
-                });
-
-                if (!exists) {
-                    cluster["cluster_id"] = cluster_id;
-                    cluster["cluster_name"] = cluster_name;
-                    cluster["colour"] = colour;
-                    cluster["add_cluster_node"] = false;
-                    //cluster["delete_cluster"] = false;
-                    cluster.labels = [];
-                    if (cluster_node === "false") {
-                        cluster["labels"].push({
-                            text: text,
-                            cluster_node: cluster_node,
-                        });
-                        //console.log("in cluster labels", text, cluster_node )
-                    }
-                    if (cluster.labels.length > 0) {
-                        clusters.push(cluster);
-                    }
-                }
-                clusters.sort(compare_clusters);
-                //console.log(clusters)
+        if (!exists) {
+          cluster["cluster_id"] = cluster_id;
+          cluster["cluster_name"] = cluster_name;
+          cluster["colour"] = colour;
+          cluster["add_cluster_node"] = false;
+          //cluster["delete_cluster"] = false;
+          cluster.labels = [];
+          if (cluster_node === "false") {
+            cluster["labels"].push({
+              text: text,
+              cluster_node: cluster_node,
             });
+            //console.log("in cluster labels", text, cluster_node )
+          }
+          if (cluster.labels.length > 0) {
+            clusters.push(cluster);
+          }
+        }
+        clusters.sort(compare_clusters);
+        //console.log(clusters)
+      });
 
-            for (var i = 0; i < clusters.length; i++) {
-                Vue.set(app.clusters, i, clusters[i]);
-            }
-            return;
-        },
-        render_graph_vue: function () {
-            this.overlay_main = true;
-            this.graph_rendered = false;
-            this.wait_rendering = true;
-            console.log("wait rendering", this.wait_rendering);
-            this.getData();
-            // deleted async from function and nextTick
-            //await this.$nextTick()
-        },
-        /*
+      for (let i = 0; i < clusters.length; i++) {
+        Vue.set(app.clusters, i, clusters[i]);
+      }
+      return;
+    },
+    render_graph_vue() {
+      this.overlay_main = true;
+      this.graph_rendered = false;
+      this.wait_rendering = true;
+      console.log("wait rendering", this.wait_rendering);
+      this.getData();
+      // deleted async from function and nextTick
+      //await this.$nextTick()
+    },
+    /*
 		Get the data from the BE according to the parameters entered in the FE and render the graph
 		*/
-        getData: function () {
-            let data = {};
-            data["target_word"] = this.target_word;
-            data["start_year"] = this.start_year;
-            data["end_year"] = this.end_year;
-            data["senses"] = this.senses;
-            data["edges"] = this.edges;
-            data["time_diff"] = this.time_diff;
-            data["graph_type"] = this.graph_type_keys[this.graph_type];
-
-            app.start_years.forEach(function (d, i) {
-                if (d.value === app.start_year) {
-                    app.min_time_id = i + 1;
-                }
-            });
-
-            app.end_years.forEach(function (d, i) {
-                if (d.value === app.end_year) {
-                    app.max_time_id = i + 1;
-                }
-            });
-
-            const url =
-                "./api/collections/" + app.collection_key + "/sense_graph";
-
-            axios
-                .post(url, data)
-                .then((res) => {
-                    // local vars needed here because of async callbacks??
-                    let data_from_db = res.data;
-                    let nodes = data_from_db[0].nodes;
-                    console.log("in data get nodes", nodes);
-                    let links = data_from_db[0].links;
-                    let target = [data_from_db[1]];
-                    console.log(target, app.target_word);
-                    app.singletons = data_from_db[2].singletons;
-                    console.log("in data get singletons", app.singletons);
-                    // Call D3 function to render graph - registered in global object - not nice
-                    render_graph(nodes, links, target);
-                    // no local vars needed from here on
-                    this.graph_rendered = true;
-                    this.overlay_main = false;
-                    this.wait_rendering = false;
-                    console.log(
-                        "in get data:var wait rendering ",
-                        app.wait_rendering
-                    );
-                    // Update cluster information
-                    this.get_clusters();
-                })
-                .catch((error) => {
-                    console.log(error);
-                    if (error.response.status >= 500) {
-                        alert(error + "\nPlease try a different target word.");
-                    }
-                });
-        },
-        /*
+    getData() {
+      getData_io();
+    },
+    /*
 		Returns a json object with all the information needed to rerender a graph and saves it locally.
 		*/
-        saveGraph: function () {
-            var svg = d3.select("#svg");
-
-            var links = svg.selectAll(".link");
-            var nodes = svg.selectAll(".node");
-
-            var graph_links = [];
-            var graph_nodes = [];
-
-            links.selectAll("line").each(function (d, i) {
-                var source = this.getAttribute("source");
-                var target = this.getAttribute("target");
-                var weight = this.getAttribute("weight");
-                var colour = this.getAttribute("stroke");
-                var link = {};
-
-                link["source"] = source;
-                link["target"] = target;
-                link["weight"] = weight;
-                link["colour"] = colour;
-
-                graph_links.push(link);
-            });
-
-            nodes.selectAll("g").each(function (d, i) {
-                var x = this.__data__.x;
-                var y = this.__data__.y;
-                var fx = this.__data__.fx;
-                var fy = this.__data__.fy;
-                var id = this.__data__.id;
-                var cluster_id;
-                var cluster_name;
-                var is_cluster_node;
-                var colour;
-                var time_ids;
-                var centrality_score;
-
-                var node = {};
-
-                node["id"] = id;
-                node["x"] = x;
-                node["y"] = y;
-                node["fx"] = fx;
-                node["fy"] = fy;
-
-                var childnodes = this.childNodes;
-                childnodes.forEach(function (d, i) {
-                    if (d.tagName === "circle") {
-                        cluster_id = d.getAttribute("cluster_id");
-                        cluster_name = d.getAttribute("cluster");
-                        is_cluster_node = d.getAttribute("cluster_node");
-                        colour = d.getAttribute("fill");
-                        time_ids = d.getAttribute("time_ids");
-
-                        node["class"] = cluster_id;
-                        node["cluster_name"] = cluster_name;
-                        node["cluster_node"] = is_cluster_node;
-                        node["colour"] = colour;
-                        node["time_ids"] = time_ids;
-
-                        if (is_cluster_node === "false") {
-                            centrality_score = d.getAttribute(
-                                "centrality_score"
-                            );
-                            node["centrality_score"] = centrality_score;
-                        }
-                    }
-                });
-
-                graph_nodes.push(node);
-            });
-
-            var graph = {};
-            graph["links"] = graph_links;
-            graph["nodes"] = graph_nodes;
-            graph["singletons"] = app.singletons;
-            graph["target"] = app.target_word;
-            graph["link_distance"] = app.linkdistance;
-            graph["charge"] = app.charge;
-            graph["start_year"] = app.start_year;
-            graph["end_year"] = app.end_year;
-            graph["time_diff"] = app.time_diff;
-            graph["senses"] = app.senses;
-            graph["edges"] = app.edges;
-
-            var data = JSON.stringify(graph, null, 2);
-            var blob = new Blob([data], { type: "text/plain" });
-
-            const a = document.createElement("a");
-            document.body.appendChild(a);
-            const url = window.URL.createObjectURL(blob);
-            a.href = url;
-
-            if (app.updated_nodes === null && app.updated_links === null) {
-                a.download =
-                    app.target_word +
-                    "_" +
-                    app.senses +
-                    "_" +
-                    app.edges +
-                    ".json";
-            } else {
-                a.download =
-                    app.target_word +
-                    "_" +
-                    app.update_senses +
-                    "_" +
-                    app.update_edges +
-                    ".json";
-            }
-
-            // TODO What happens if nodes / clusters are deleted?
-
-            //a.download = app.target_word + "_" + graph_nodes.length + "_" + graph_links.length + ".json"
-
-            a.click();
-            setTimeout(() => {
-                window.URL.revokeObjectURL(url);
-                document.body.removeChild(a);
-            }, 0);
-        },
-        /*
+    saveGraph() {
+      saveGraph_io();
+    },
+    /*
 		Render the graph from a json file that the user has specified.
 		*/
-        loadGraph: function () {
-            document.getElementById("loadpopup").style.display = "none";
-            app.overlay_main = true;
-            const file = this.file;
-            const reader = new FileReader();
-            console.log("in load graph");
-            reader.onload = function (e) {
-                this.read_graph = JSON.parse(reader.result);
-                if (this.read_graph.singletons) {
-                    app.singletons = this.read_graph.singletons;
-                } else {
-                    app.singletons = [];
-                }
-
-                var nodes = this.read_graph.nodes;
-                var links = this.read_graph.links;
-                var target = this.read_graph.target;
-                app.target_word = target;
-                app.charge = this.read_graph.charge;
-                app.linkdistance = this.read_graph.link_distance;
-                app.start_year = this.read_graph.start_year;
-                app.end_year = this.read_graph.end_year;
-                app.time_diff = this.read_graph.time_diff;
-                app.senses = this.read_graph.senses;
-                app.edges = this.read_graph.edges;
-
-                app.start_years.forEach(function (d, i) {
-                    if (d.value === app.start_year) {
-                        app.min_time_id = i + 1;
-                    }
-                });
-
-                app.end_years.forEach(function (d, i) {
-                    if (d.value === app.end_year) {
-                        app.max_time_id = i + 1;
-                    }
-                });
-                //Call the D3 function to render the graph
-                render_graph(nodes, links, target, app.time_diff);
-            };
-            reader.readAsText(file);
-
-            app.graph_rendered = true;
-            app.overlay_main = false;
-        },
-        closeForm: function (id) {
-            document.getElementById(id).style.display = "none";
-        },
-        displayForm: function () {
-            document.getElementById("loadpopup").style.display = "block";
-        },
+    loadGraph() {
+      loadGraph_io();
     },
 
-    mounted: function () {
-        this.getCollections();
+    closeForm(id) {
+      document.getElementById(id).style.display = "none";
     },
+    displayForm() {
+      document.getElementById("loadpopup").style.display = "block";
+    },
+  },
+
+  mounted() {
+    this.getCollections();
+  },
 });
