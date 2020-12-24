@@ -43,6 +43,8 @@ def index():
 
 @app.route('/api/collections')
 def info():
+    with open('./config/config.json') as config_file:
+        config = json.load(config_file)
     return collections_info(config)
 
 # Endpoints 2: GET CLUSTERED GRAPH
@@ -59,7 +61,9 @@ def get_clustered_graph(collection):
         paradigms = int(data["senses"])
         density = int(data["edges"])
         graph_type = str(data["graph_type"])
-
+    # getconfig
+    with open('./config/config.json') as config_file:
+        config = json.load(config_file)
     # get ngot graph
     edges, nodes, singletons = get_graph(
         config, collection, target_word, start_year, end_year, paradigms, density, graph_type)
@@ -104,7 +108,8 @@ def simbim_get(collection="default"):
         word1 = str(data["word1"])
         word2 = str(data["word2"])
         time_id = int(data["time_id"])
-
+    with open('./config/config.json') as config_file:
+        config = json.load(config_file)
     return simbim(config, collection, data, word1, word2, time_id)
 
 
@@ -113,6 +118,8 @@ def simbim_get(collection="default"):
 def cluster_information_get():
     if request.method == 'POST':
         data = json.loads(request.data)
+    with open('./config/config.json') as config_file:
+        config = json.load(config_file)
     return cluster_information(config, data)
 
 
@@ -121,6 +128,7 @@ def cluster_information_get():
 def documents_get(collection="default"):
     if request.method == 'POST':
         data = json.loads(request.data)
+
     return documents(collection, data)
 
 
@@ -130,6 +138,5 @@ if __name__ == '__main__':
     sys.path.append(str(Path(__file__).parent.absolute()))
     # use the config file to get host and database parameters
     with open('./config/config.json') as config_file:
-        global config
         config = json.load(config_file)
     app.run(host=config['flask_host'])
