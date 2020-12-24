@@ -32,7 +32,6 @@ CORS(app)
 
 # App REST-API Controller ---------------------
 # App Parameters
-config = None
 
 
 @app.route('/')
@@ -131,5 +130,6 @@ if __name__ == '__main__':
     sys.path.append(str(Path(__file__).parent.absolute()))
     # use the config file to get host and database parameters
     with open('./config/config.json') as config_file:
+        global config
         config = json.load(config_file)
     app.run(host=config['flask_host'])

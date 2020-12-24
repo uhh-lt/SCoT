@@ -6,6 +6,7 @@ import json
 def collections_info(config):
     print("debug collection info")
     # add information about intervals
+    print(config)
     config_fe = config["collections_info_frontend"]
     for collection in config_fe:
         key = config_fe[collection]["key"]
