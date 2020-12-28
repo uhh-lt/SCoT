@@ -303,11 +303,38 @@ let app = new Vue({
 		*/
     // fade nodes on hover
     mouseOver(opacity) {
-      mouseOver_d3(opacity);
+      //mouseOver_d3(opacity);
+      return function (d) {
+        // check all other nodes to see if they're connected
+        // to this one. if so, keep the opacity, otherwise
+        // fade
+        app.node.style("stroke-opacity", function (o) {
+          let thisOpacity = app.isConnected(d, o) ? 1 : opacity;
+          return thisOpacity;
+        });
+        app.node.style("fill-opacity", function (o) {
+          let thisOpacity = app.isConnected(d, o) ? 1 : opacity;
+          return thisOpacity;
+        });
+        // also style link accordingly
+        app.link.style("stroke-opacity", function (o) {
+          return o.source === d || o.target === d
+            ? this.base_link_opacity
+            : this.reduced_link_opacity;
+        });
+        //link.style("stroke", function(o){
+        // TODO: how to get o.source.colour for graph rendered from db?
+        // works for graph loaded from file
+        //	return o.source === d || o.target === d ? o.source.colour : "#ddd";
+        //});
+      };
     },
     // fade everything back in
     mouseOut() {
-      mouseOut_d3();
+      app.node.style("stroke-opacity", 1);
+      app.node.style("fill-opacity", 1);
+      app.link.style("stroke-opacity", this.base_link_opacity);
+      //link.style("stroke", "#ddd");
     },
     /*
         / ############## TIME_DIFF-FUNCTIONS ####################################
@@ -707,7 +734,7 @@ let app = new Vue({
 
       app.centrality_score_distribution.push(
         {
-          centrality_score: "x < " + app.centrality_threshold_s,
+          centrality_score: "x <= " + app.centrality_threshold_s,
           number_of_nodes: group0,
         },
         {
@@ -1485,7 +1512,7 @@ let app = new Vue({
     },
 
     /*
-		Collect the information on the clusters from the graph and store it in the data letiable clusters.
+		Collect the information on the clusters from the graph and store it in the data clusters.
 		@return Array of objects with cluster information
 		// commment by CH: This looks circular - data is pushed on the graph, modified there and then re-read from the graph
 		// Better: data is changed on the datastructure - and only displayed on the graph

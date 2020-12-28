@@ -1,11 +1,4 @@
-/*
-Renders the graph on the svg element
-Paramams necessary due to callback - async??
-@param array of objects graph_nodes
-@param array of objects graph_links
-@param object target: the target word
-*/
-// global vars
+// global vars for d3 rendering functions - thus not in data (which is managed by Vue)
 let svg;
 let brush;
 let drag_node;
@@ -14,22 +7,35 @@ let time_diff_tip_link;
 let shiftKey;
 let sticky;
 
+// ------------------------- SVG COMPONENT ---------------------------
+/*
+Renders the graph on the svg element
+Paramams necessary due to update-cycle callback - async??
+@param array of objects graph_nodes
+@param array of objects graph_links
+@param object target: the target word
+*/
+
 const render_graph = function (graph_nodes, graph_links, target) {
   // DEFINE VARS #########################
-  // Set initial parameters for ease of use
+  // TODO Clean up vars and state
+  // Set initial parameters for ease of use -- why duplication?
   let radius = app.radius;
   sticky = app.sticky_mode;
   // init app vars here due to callback async (data may be here first...)
   app.nodes = graph_nodes;
   app.links = graph_links;
+
+  //
   // Choose a predefined colour scheme
   let color = d3.scaleOrdinal(d3.schemePaired);
 
+  // FUNCTION DESTROY
   // Always remove the svg element. Otherwise a new one is appended every time you click the render button
   d3.select("#graph2").select("svg").remove();
   console.log(app.viewport_width, app.viewport_height);
 
-  // SET SVG #############################################
+  // FUNCTION CREATE
   // Create the svg element on which you want to render the graph
   svg = d3
     .select("#graph2")
@@ -56,6 +62,7 @@ const render_graph = function (graph_nodes, graph_links, target) {
   brush = svg.append("g").attr("class", "brush");
 
   // initialize the class attributes selected and previouslySelected for each node
+  // this works on GRAPH-DATA-STRUCTURE
   app.nodes.forEach(function (d) {
     d.selected = false;
     d.previouslySelected = false;
@@ -182,13 +189,13 @@ const render_graph = function (graph_nodes, graph_links, target) {
         return radius * 2;
       } else {
         // experimental - nodes bigger according to similarity
-        // console.log(d.target_text, Math.max(...d.weights))
-        // if (isNaN(Math.max(...d.weights))){
-        // 	return radius
-        // } else if(Math.max(...d.weights)<=1){
-        // 	return radius * (Math.max(...d.weights)*5+1);
+        // console.log(d.target_text, Math.max(...d.weights));
+        // if (isNaN(Math.max(...d.weights))) {
+        //   return radius;
+        // } else if (Math.max(...d.weights) <= 1000) {
+        //   return Math.sqrt(Math.max(...d.weights));
         // } else {
-        // 	return radius
+        //   return radius;
         // }
         return radius;
       }
