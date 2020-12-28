@@ -174,7 +174,7 @@ class Database():
 
     # --------------------------------------- GET EDGES
 
-    def get_edges(self, nodes, max_edges, time_ids):
+    def get_edges(self, nodes, max_edges, time_ids, remove_singletons=True):
         # LEGACY standard edge function  - used for ngot global and ngot overlay-global
         # TODO needs updating
         # This queries and counts all single directed edges
@@ -239,14 +239,15 @@ class Database():
             if not exists:
                 singletons.append(n)
                 # removes singletons from graph
-                for node in nodes:
-                    if n == node[0]:
-                        nodes.remove(node)
+                if (remove_singletons):
+                    for node in nodes:
+                        if n == node[0]:
+                            nodes.remove(node)
         singletons = list(singletons)
         print("max across slices filters out overlay edges!!! -> count of dir edges = overlayd directed edges")
         return edges, nodes, singletons
 
-    def get_edges_in_time(self, nodes, max_edges, time_ids):
+    def get_edges_in_time(self, nodes, max_edges, time_ids, remove_singletons=True):
         # EDGE ALGORITHM FOR NGOT-Overlay
         # This scales datapoints to get |overlay-nodes| = max_edges/2
         # Scales, Edges in Time-Intevals, Logic for Overlay-centric approach
@@ -337,15 +338,16 @@ class Database():
             if not exists:
                 singletons.append(n)
                 # filter out singletons
-                for node in nodes:
-                    if n == node[0]:
-                        nodes.remove(node)
+                if (remove_singletons):
+                    for node in nodes:
+                        if n == node[0]:
+                            nodes.remove(node)
 
         singletons = list(singletons)
         print("attention directed edges are already time-overlaid")
         return edges, nodes, singletons
 
-    def get_edges_per_time(self, nodes, max_paradigms, max_edges, time_ids, remove_singletons):
+    def get_edges_per_time(self, nodes, max_paradigms, max_edges, time_ids, remove_singletons=True):
         # EDGE Algo for NGOT - Interval
         # Algorithm is part of a projection that creates an overlay graph from all single graphs in each time-id with the same params
         # algorithm allocates nodes and edges per time slice based on parametes and overlays them both!

@@ -64,15 +64,17 @@ def get_clustered_graph(collection):
         paradigms = int(data["senses"])
         density = int(data["edges"])
         graph_type = str(data["graph_type"])
+    remove_singletons = False
     # get ngot graph
     edges, nodes, singletons = get_graph(
-        get_config(), collection, target_word, start_year, end_year, paradigms, density, graph_type)
+        get_config(), collection, target_word, start_year, end_year, paradigms, density, graph_type, remove_singletons)
     # cluster graph
     clustered_graph = chinese_whispers(nodes, edges)
     # convert to datastructure format
     c_graph = json.dumps([clustered_graph, {'target_word': target_word}, {
                          'singletons': singletons}], sort_keys=False, indent=4)
     # return
+    print(c_graph)
     return c_graph
 
 

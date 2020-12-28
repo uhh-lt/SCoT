@@ -1,14 +1,50 @@
-let dataObject = {
-  // GRAPH/NETWORK ##################################################
-  // (1) The application queries a graph from the backend based on certain parameters that the user enters
-  // (2) It then receives a graph from the backend that serves as the main datastructure
-  // (3) it derives from this main-graph-datastructure a d3-graph model for display in the DOM
-  //
-  // The naming scheme of the application uses graph and network-terminology interchangeable
-  // "A complex network is a graph in which a set of elements is associated with a set of entities, and in which the relation
-  // between the elements represents a relationship between the corresponding entities".
-  // Links = edges , nodes = vertices
+// STATE MANAGEMENT ##################################################
+// (1) graph: The application works on a graph as the main datastructure
+// (1) vueData: it needs some duplicate parts of the graph for view-manipulation (while not changing the original ones)
+// (3) d3Data: it derives from this main-graph-datastructure a d3-graph model for display in the DOM
+//
+// The naming scheme of the application uses graph and network-terminology interchangeable
+// "A complex network is a graph in which a set of elements is associated with a set of entities, and in which the relation
+// between the elements represents a relationship between the corresponding entities".
+// Links = edges , nodes = vertices
 
+let graph = {
+  /**
+   * This is the BASE-MODEL on which the two frameworks work
+   * Some props also exist as duplicates in the VueAPP (where they can be changed)
+   * for example: target-word here is immutable for this graph
+   * BUT target-word in the vue-app can be changed by user (it is committed by create graph to this model)
+   */
+
+  nodes: [],
+  links: [],
+  singletons: [],
+  clusters: [],
+  props: {
+    collection_key: "",
+    start_year: "",
+    end_year: "",
+    target_word: "",
+    senses: 0,
+    edges: 0,
+    graph_type: "",
+  },
+};
+
+let d3Data = {
+  node: "",
+  circles: [],
+  link: "",
+  svg: null,
+  brush: null,
+  drag_node: null,
+  time_diff_tip: null,
+  time_diff_tip_link: null,
+  shiftKey: null,
+  simulation: null,
+};
+
+let vueData = {
   // (1) GRAPH PARAMETERS DISPLAYED IN SLIDER LEFT ------------------------------------------
   // all possible collection info queried from database via rest-api
   collections: {},
@@ -48,25 +84,15 @@ let dataObject = {
   // d: density - [as defined by graph algo]
   edge_max_ratio: 0,
   // --------------------------
-  // (2) MAIN-NETWORK-GRAPH-DATA ----------------------------------------------------------------------------------------
-  nodes: [],
-  // link data
-  links: [],
-  // array with node ids that are not connected to any other nodes
-  // ToDO the relationship between nodes and singletons is not well done (ie singletons do not have time information)
+  // DUPLICATES OF MAIN-NETWORK-GRAPH-DATA FOR DISPLAY & MANIPULATION ---------------------
+  // For display
   singletons: [],
-  // list of objects to store all the information on the clusters
+  // is created in the frontend [is that useful?]
   clusters: [],
+  // ADDITIONAL FIELDS FOR WORKING ON GRAPH
   // new clusters calculated by reclustering the graph
   newclusters: {},
   // -----------------------
-  // (3) D3 Frontend-Graph ---------------------------------------------------------------------------------------------
-  // D3 nodes
-  node: "",
-  // D3 circles of the D3 nodes
-  circles: [],
-  // D3 Links
-  link: "",
   // An object for remembering which nodes are connected. The key is of the form "source, target"
   linkedByIndex: {},
 
@@ -77,8 +103,6 @@ let dataObject = {
   // for setting the svg size for the graph
   svg_height: screen.availHeight * 1.5,
   svg_width: screen.availWidth * 1.5,
-  // the force simulation
-  simulation: null,
   // link thickness parameters
   link_thickness_scaled: "false",
   // scaled = "false" -> thickness = sqrt(value)
@@ -90,12 +114,14 @@ let dataObject = {
   reduced_link_opacity: 0.05,
   // radius of nodes
   radius: 5,
+  // radius of cluter nodes
+  clusterNodeRadius: 20,
   // dragging behaviour sticky_mode === "true" -> force, sticky_mode === "false" -> brush
   sticky_mode: "true",
   // simulation parameters
   charge: -50,
   linkdistance: 50,
-  // WHILE RENDERING
+  // WHILE RENDERING ----------------------------------------------------------
   //overlays central - displays overal while rendering
   overlay_main: false,
   // true, if a graph is rendered. Used in the HTML to only show buttons if a graph is rendered

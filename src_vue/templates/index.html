@@ -24,7 +24,7 @@
 	<link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap-vue@2.11.0/dist/bootstrap-vue.css" />
 
 	<!-- Necessary for buttons to look good -->
-	<link type="text/css" href="https://unpkg.com/bootstrap/dist/css/bootstrap-theme.min.css" rel="stylesheet">
+	<!-- <link type="text/css" href="https://unpkg.com/bootstrap/dist/css/bootstrap-theme.min.css" rel="stylesheet"> -->
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css"
 		integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous" />
 	<link rel="stylesheet" type="text/css" href=".%% url_for('static', filename='style.css') %%" />
@@ -78,6 +78,7 @@
 					<b-form-radio-group size="m" v-model="left_selected" :options="left_options" buttons
 						button-variant="success" name="radios-btn-default"></b-form-radio-group>
 				</b-form-group>
+				<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR-LEFT CREATE GRAPH XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
 				<div v-if="left_selected === 'graph_data'">
 					<b-overlay :show="overlay_main" :variant="'dark'" rounded="sm" spinner-type="border"
 						spinner-variant="success">
@@ -127,14 +128,16 @@
 							Create and Cluster Graph</b-button>
 						<!-- <b-button id="update_button" size="sm" class="lrmargin_button" variant="success" >Update Graph</b-button> -->
 						<hr style="border: 1px solid gray;" />
-						<!-- Save and Load Graph buttons -->
-						<b-button :disabled="time_diff == 1" class="lmmargin_button" size="sm" variant="success"
-							v-on:click="saveGraph()" download="graph.json" href=""><i class="fas fa-download"></i>
+						<!-- Save and Load Graph buttons :disabled="time_diff == 1" -->
+						<b-button class="lmmargin_button" size="sm" variant="success" v-on:click="saveGraph()"
+							download="graph.json" href=""><i class="fas fa-download"></i>
 							Save Graph</b-button>
 						<b-button size="sm" class="lmmargin_button" variant="success" v-on:click="displayForm()"> <i
 								class="fas fa-upload"></i> Load Graph</b-button>
 					</b-overlay>
 				</div>
+
+				<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR-LEFT VIEW XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
 				<div v-if="left_selected === 'graph_view'">
 					<div>
 						<b-button-group>
@@ -170,6 +173,7 @@
 							type="range" min="-10" max="200"></b-form-input>
 					</b-form-group>
 				</div>
+				<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR-LEFT HELP XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
 				<div v-if="left_selected === 'graph_help'">
 					<!--<hr>-->
 					<p>
@@ -185,7 +189,7 @@
 					</div>
 				</div>
 			</b-sidebar>
-			<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR Left 2 - Cluster CONTEXT ANALYSIS VIEW XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
+			<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR LEFT 2 - Cluster CONTEXT ANALYSIS VIEW XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
 			<b-sidebar v-show="context_mode2" id="sidebar-right2" title="Cluster Shared Words" width="20%"
 				bg-variant="secondary" text-variant="light" style="opacity: 0.9;" no-header left shadow>
 				<template>
@@ -213,7 +217,7 @@
 					</b-table>
 				</div>
 			</b-sidebar>
-			<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR Left 3 - document CONTEXT ANALYSIS VIEW XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
+			<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR LEFT 3 - document CONTEXT ANALYSIS VIEW XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
 			<b-sidebar v-show="context_mode4" id="sidebar-right4" title="Example Sentences" width="20%"
 				bg-variant="secondary" text-variant="light" style="opacity: 0.9;" left shadow>
 				<template>
@@ -255,6 +259,8 @@
 						button-variant="success" name="radios-btn-default" @change="toggle_time_diff()">
 					</b-form-radio-group>
 				</b-form-group>
+
+				<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR-RIGHT ANALYSIS CLUSTERING CLUSTER FUNCS XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
 				<div v-if="right_selected === 'cluster_functions'">
 					<br>
 					<!-- Options Drop Down for node options TODO Update Options-->
@@ -467,6 +473,7 @@
 					</div>
 
 				</div>
+				<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR-RIGHT ANALYSIS CLUSTERING XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
 				<div v-if="right_selected === 'cluster_basic'">
 					<!-- list with clusters -->
 					<div class="edit_cluster_textbox">
@@ -863,7 +870,7 @@
 					</b-table>
 				</div>
 			</b-sidebar>
-			<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR RIGHT 3 - Node CONTEXT ANALYSIS VIEW - NOT IMPLEMENTED XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
+			<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR RIGHT 3 - Node CONTEXT ANALYSIS VIEW  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
 			<b-sidebar v-show="context_mode3" id="sidebar-right3" title="Nodes Shared Words" width="23%"
 				bg-variant="secondary" text-variant="light" style="opacity: 0.9;" no-header right shadow>
 				<template>
@@ -931,9 +938,9 @@
 
 	</div>
 	<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX DEPRECATED SETTINGS (MAY BE REACTIVATED) NXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
-	<b-modal style="visibility: hidden;" id="modal-settings-1" scrollable size="xl" title="General Settings"
-		@ok="update_general_settings">
-		<div>
+	<!-- <b-modal style="visibility: hidden;" id="modal-settings-1" scrollable size="xl" title="General Settings"
+		@ok="update_general_settings"> -->
+	<!-- <div>
 			<div style="font-size: 20px; font-weight:bold;">
 				Useful links
 			</div>
@@ -945,8 +952,8 @@
 					User Guide </b-link>
 			</div>
 		</div>
-		<hr>
-		<!-- <div>
+		<hr> -->
+	<!-- <div>
 		<div style="font-size: 20px; font-weight:bold; margin-top:2ex;">
 			Select view port size
 		</div>
@@ -957,7 +964,7 @@
 			<b-form-input size="sm" type="number" v-model="viewport_width"></b-form-input>
 		</b-form-group>
 	</div> -->
-		<hr>
+	<!-- <hr>
 		<div>
 			<div style="font-size: 20px; font-weight:bold; margin-top:2ex;">
 				Select SVG size
@@ -996,7 +1003,7 @@
 				</div>
 			</b-form-group>
 		</div>
-	</b-modal>
+	</b-modal> -->
 
 	<!-- include script vue.js -->
 	<script type="text/javascript" src=".%% url_for('static', filename='vue.js') %%"></script>
