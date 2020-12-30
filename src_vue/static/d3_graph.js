@@ -5,6 +5,12 @@ Functions are triggered by Vue-Components (such as Sidebar-left sense graph etc.
 */
 
 // ########### SIDEBAR-LEFT - GRAPH CREATION ##########################################################
+const delete_graph = function () {
+  // FUNCTION remove
+  // Always remove the svg element before rendering new. Otherwise a new one is appended every time you click the render button
+  d3.select("#graph2").select("svg").remove();
+};
+
 /*
 Renders the graph on the svg element
 Triggered via sidebar left -graph render - then data
@@ -14,10 +20,6 @@ const render_graph = function () {
   let radius = vueApp.radius;
   let target = graph.props.target_word;
   let color = d3.scaleOrdinal(d3.schemePaired);
-
-  // FUNCTION DESTROY
-  // Always remove the svg element. Otherwise a new one is appended every time you click the render button
-  d3.select("#graph2").select("svg").remove();
 
   // FUNCTION CREATE
   // Create the svg element on which you want to render the graph
@@ -309,10 +311,8 @@ const render_graph = function () {
 
   d3Data.simulation.on("tick", ticked);
 
-  // update the cluster information in the Vue data variable after initializing the D3 graph
-  vueApp.get_clusters();
-
-  // release all pinned nodes and restart the simulation
+  /* // release all pinned nodes and restart the simulation
+  // Hardly applicable to a new graph
   d3.select("#restart_button").on("click", function () {
     d3Data.node.each(function (d) {
       //console.log(d)
@@ -320,16 +320,12 @@ const render_graph = function () {
       d.fy = null;
     });
     d3Data.simulation.alphaTarget(0);
-  });
+  }); */
 
-  eventListenerFunc();
+  // deprecated
+  // eventListenerFunc();
 
-  // switch off overlay
-  vueApp.graph_rendered = true;
-  vueApp.overlay_main = false;
-  vueApp.wait_rendering = false;
-
-  console.log(graph);
+  // console.log(graph);
 };
 
 // ############################################# SVG - MAIN ELEMENT FUNCTIONS ########################################
@@ -489,7 +485,7 @@ function mouseOut_d3() {
   //link.style("stroke", "#ddd");
 }
 
-async function delete_cluster_d3(cluster_name, cluster_id, labels) {
+function delete_cluster_d3(cluster_name, cluster_id, labels) {
   // get all the text labels
   let text_labels = [];
   for (var i = 0; i < labels.length; i++) {
@@ -549,7 +545,7 @@ async function delete_cluster_d3(cluster_name, cluster_id, labels) {
   vueApp.senses = vueApp.senses - number_of_nodes;
 
   // recalculate the cluster information
-  await vueApp.get_clusters();
+  vueApp.get_clusters();
 }
 
 // update the connected nodes
@@ -838,7 +834,7 @@ function linkdistance_change_d3() {
   d3Data.simulation.alpha(1).restart();
 }
 
-// ########################## CLUSTER ANALYSIS RIGHT SIDEBAR FUNCTIONS #############################################################
+// ########################## CLUSTER ANALYSIS - RIGHT SIDEBAR - FUNCTIONS #############################################################
 function check_cluster_node_connection_d3(link_endpoint) {
   let is_connected = false;
   let nodes = d3.selectAll(".node").selectAll("g");
@@ -854,7 +850,7 @@ function check_cluster_node_connection_d3(link_endpoint) {
   return is_connected;
 }
 
-// check if a cluster node exists for a specific cluster
+// check if a cluster node - aka LABEL exists for a specific cluster
 // return exists and current name
 function cluster_node_exists(cluster_id) {
   let nodes = d3.selectAll(".node");

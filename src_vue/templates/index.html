@@ -56,9 +56,10 @@
 							<b-form-input size="sm" v-model="searchterm" @change="search_node()" type="text"
 								placeholder="Search node in graph" style="margin-left: 5px"> </b-form-input>
 							<b-input-group-append>
-								<b-button size="sm" @click="search_node()"><i class="fas fa-search"></i></b-button>
-								<b-button size="sm" variant="danger" @click="unsearch_nodes()"><i
-										class="fas fa-times"></i></i></b-button>
+								<b-button size="sm" @click="search_node()"><em class="fas fa-search"></em></b-button>
+								<b-button size="sm" variant="danger" @click="unsearch_nodes()">
+									<em class="fas fa-times"></em>
+								</b-button>
 							</b-input-group-append>
 						</b-input-group>
 					</b-nav-form>
@@ -97,7 +98,7 @@
 						<b-form-group class="input" label="End of last interval">
 							<b-form-select v-model="end_year" :options="end_years" size="sm"></b-form-select>
 						</b-form-group>
-						i: {{intervalnumber}} intervals
+						i: {{number_of_intervals}} intervals
 						<hr style="border: 1px solid gray;" />
 						<h5>Graph parameters</h5>
 						<!-- Enter target word -->
@@ -107,13 +108,13 @@
 						</b-form-group>
 						<!-- Enter number of neighbouring nodes -->
 						<b-form-group class="input">n: number of nearest neighbour nodes
-							<b-form-input type="number" v-model="senses" min="0" placeholder="number of neighbours"
+							<b-form-input type="number" v-model="n_nodes" min="0" placeholder="number of neighbours"
 								size="sm"></b-form-input>
 						</b-form-group>
 						<!-- Enter factor that determines number of edges per graph -->
 						<b-form-group class="input"> d: density in %: [{{edges}} of {{max_dir_edges}} dir.
 							links]
-							<b-form-input type="number" v-model="edge_max_ratio" min="0" max="100"
+							<b-form-input type="number" v-model="density" min="0" max="100"
 								placeholder="number of edges" size="sm"></b-form-input>
 						</b-form-group>
 						<!-- Enter a graph type -->
@@ -124,7 +125,8 @@
 						<!-- Render button -->
 						<hr style="border: 1px solid gray;" />
 						<h5></h5>
-						<b-button class="lmmargin_button" size="sm" variant="success" v-on:click="render_graph_vue()">
+						<b-button class="lmmargin_button" size="sm" variant="success"
+							v-on:click="getDataAndRenderNew()">
 							Create and Cluster Graph</b-button>
 						<!-- <b-button id="update_button" size="sm" class="lrmargin_button" variant="success" >Update Graph</b-button> -->
 						<hr style="border: 1px solid gray;" />
@@ -132,8 +134,8 @@
 						<b-button class="lmmargin_button" size="sm" variant="success" v-on:click="saveGraph()"
 							download="graph.json" href=""><i class="fas fa-download"></i>
 							Save Graph</b-button>
-						<b-button size="sm" class="lmmargin_button" variant="success" v-on:click="displayForm()"> <i
-								class="fas fa-upload"></i> Load Graph</b-button>
+						<b-button size="sm" class="lmmargin_button" variant="success" v-on:click="displayForm()"> <em
+								class="fas fa-upload"></em> Load Graph</b-button>
 					</b-overlay>
 				</div>
 
@@ -356,14 +358,16 @@
 						<!-- Node options -->
 						<!-- only available for non cluster nodes -->
 						<b-dropdown-item
-							v-on:click="highlightCentralNodes(centrality_threshold_s, centrality_threshold_m)"> <i
-								class="fas fa-highlighter"></i> Highlight central nodes in graph </b-dropdown-item>
-						<b-dropdown-item v-on:click="calculateCentralityDistribution()" v-b-modal.modal-centrality-1> <i
-								class="fas fa-cogs"></i> Customize highlighting thresholds </b-dropdown-item>
-						<b-dropdown-item v-on:click="resetCentralityHighlighting()"> <i class="fas fa-times"></i> Reset
+							v-on:click="highlightCentralNodes(centrality_threshold_s, centrality_threshold_m)"> <em
+								class="fas fa-highlighter"></em> Highlight central nodes in graph </b-dropdown-item>
+						<b-dropdown-item v-on:click="calculateCentralityDistribution()" v-b-modal.modal-centrality-1>
+							<em class="fas fa-cogs"></em> Customize highlighting thresholds
+						</b-dropdown-item>
+						<b-dropdown-item v-on:click="resetCentralityHighlighting()"> <em class="fas fa-times"></em>
+							Reset
 							highlighting </b-dropdown-item>
-						<b-dropdown-item v-on:click="getCentralityScores()" v-b-modal.modal-centrality-2> <i
-								class="fas fa-bars"></i> List centrality node scores </b-dropdown-item>
+						<b-dropdown-item v-on:click="getCentralityScores()" v-b-modal.modal-centrality-2> <em
+								class="fas fa-bars"></em> List centrality node scores </b-dropdown-item>
 					</b-dropdown>
 					<!-- Modal listing the centrality scores of nodes-->
 					<b-modal id="modal-centrality-2" scrollable ok-only ok-title="Close"
@@ -390,19 +394,21 @@
 					<!-- Nodes with balanced neighbourhood of clusters id="wobblyCandidatesCC" -->
 					<b-dropdown type="dark" variant="secondary" text="Nodes linking multiple clusters"
 						aria-expanded=true>
-						<b-dropdown-item v-on:click="highlightWobblyCandidates()"> <i class="fas fa-highlighter"></i>
+						<b-dropdown-item v-on:click="highlightWobblyCandidates()"> <em class="fas fa-highlighter"></em>
 							Highlight nodes between clusters </b-dropdown-item>
-						<b-dropdown-item v-on:click="resetCentralityHighlighting()"> <i class="fas fa-times"></i> Reset
+						<b-dropdown-item v-on:click="resetCentralityHighlighting()"> <em class="fas fa-times"></em>
+							Reset
 							highlighting </b-dropdown-item>
-						<b-dropdown-item v-on:click="findWobblyCandidates()" v-b-modal.modal-wobbly-1> <i
-								class="fas fa-bars"></i> List nodes </b-dropdown-item>
+						<b-dropdown-item v-on:click="findWobblyCandidates()" v-b-modal.modal-wobbly-1> <em
+								class="fas fa-bars"></em> List nodes </b-dropdown-item>
 					</b-dropdown>
 
 					<b-modal id="modal-wobbly-1" size="xl" scrollable title="List of Nodes between Clusters" ok-only
 						ok-title="Close">
 						<div>
 							<b-button size="sm" style="margin-bottom: 15px;" v-b-toggle.collapse-heuristic-1
-								aria-expanded="false"> <i class="fas fa-info-circle"></i> Infos on heuristic </b-button>
+								aria-expanded="false"> <em class="fas fa-info-circle"></em> Infos on heuristic
+							</b-button>
 							<b-collapse :id="'collapse-heuristic-1'">
 								<b-card>
 									The neighbourhood of a node is balanced, if there are at least two clusters in the

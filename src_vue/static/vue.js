@@ -17,7 +17,7 @@ let vueApp = new Vue({
     /**
      * Return number of interval selected
      */
-    intervalnumber() {
+    number_of_intervals() {
       let starts = [];
       let ends = [];
 
@@ -40,18 +40,19 @@ let vueApp = new Vue({
      * Returns number of directed global data links that is sent to backend for querying data
      */
     edges() {
-      return Math.round((this.edge_max_ratio / 100) * this.max_dir_edges);
+      this.e_edges = Math.round((this.density / 100) * this.max_dir_edges);
+      return this.e_edges;
     },
     max_dir_edges() {
       // Scot dynamically scales the number of edges with the number of intervals selected
 
       if (
-        this.graph_type_keys[this.graph_type] === "scot" ||
+        this.graph_type_keys[this.graph_type] === "scot_scaled" ||
         this.graph_type_keys[this.graph_type] === "ngot_global"
       ) {
-        return this.senses * (this.senses - 1) * this.intervalnumber;
+        return this.n_nodes * (this.n_nodes - 1) * this.number_of_intervals;
       } else {
-        return this.senses * (this.senses - 1);
+        return this.n_nodes * (this.n_nodes - 1);
       }
     },
 
@@ -147,13 +148,71 @@ let vueApp = new Vue({
     },
     /*
 		/ ############ SIDEBAR LEFT GRAPH CREATION -----------------------------------------------------------------------------------------------------
-		*/
+    */
+    updateGraphPropsBasedonUserInput() {
+      // user input: interval data props - basis of graph
+      graph.props["collection_key"] = vueApp.collection_key;
+      graph.props["start_year"] = vueApp.start_year;
+      graph.props["end_year"] = vueApp.end_year;
+
+      // user input: graph props
+      graph.props["target_word"] = vueApp.target_word;
+      graph.props["graph_type"] = vueApp.graph_type_keys[vueApp.graph_type];
+      graph.props["n_nodes"] = vueApp.n_nodes;
+      graph.props["density"] = vueApp.density;
+
+      // resolved by frontend via computed properties
+      graph.props["e_edges"] = vueApp.e_edges;
+      graph.props["number_of_intervals"] = vueApp.number_of_intervals;
+
+      // derived props
+      if (graph.props.graph_type == "ngot_interval") {
+        graph.props["number_of_static_nodes_per_interval"] = vueApp.n_nodes;
+        graph.props["number_of_static_directed_edges_per_interval"] =
+          vueApp.e_edges;
+        graph.props["number_of_static_nodes_global"] =
+          vueApp.n_nodes * vueApp.number_of_intervals;
+        graph.props["number_of_static_directed_edges_global"] =
+          vueApp.e_edges * vueApp.number_of_intervals;
+        // the ngot nodes need to be determined once the graph has been calculated
+      } else if (graph.props.graph_type == "ngot_overlay") {
+        graph.props["number_of_ngot_nodes"] = vueApp.n_nodes;
+        graph.props["number_of_ngot_edges"] = vueApp.e_edges;
+        // the global static and interval static nodes need to be determined once graph has been calc.
+      } else if (graph.props.graph_type == "scot_scaled") {
+        // scot scaled uses the overlay method mixed with a global scaled approach
+        graph.props["number_of_ngot_nodes"] = vueApp.n_nodes;
+        // => interval and global static need to be determined from graph
+        // has been scaled already!
+        graph.props["number_of_static_directed_edges_global"] = vueApp.e_edges;
+        // => static edges per interval and ngot edges need to be determined from graph
+      } else if (graph.props.graph_type == "ngot_global") {
+        graph.props["number_of_static_nodes_global"] = vueApp.n_nodes;
+        graph.props["number_of_static_directed_edges_global"] = vueApp.e_edges;
+
+        // => static edges and nodes need to be determined from graph
+      }
+
+      // calculation for interval-mode later - irrelevant here but was included at thsi point in v1
+      vueApp.start_years.forEach(function (d, i) {
+        if (d.value === vueApp.start_year) {
+          vueApp.min_time_id = i + 1;
+        }
+      });
+
+      vueApp.end_years.forEach(function (d, i) {
+        if (d.value === vueApp.end_year) {
+          vueApp.max_time_id = i + 1;
+        }
+      });
+    },
+
     // on change database in frontend - update function
     onChangeDb() {
       this.collection_key = this.collections[this.collection_name]["key"];
       this.target_word = this.collections[this.collection_name]["target"];
-      this.senses = this.collections[this.collection_name]["p"];
-      this.edge_max_ratio = this.collections[this.collection_name]["d"];
+      this.n_nodes = this.collections[this.collection_name]["p"];
+      this.density = this.collections[this.collection_name]["d"];
       this.collection_info = this.collections[this.collection_name]["info"];
       console.log("in onchange db" + this.collection_key);
       console.log("in onchange db" + this.collection_name);
@@ -180,20 +239,34 @@ let vueApp = new Vue({
       this.end_years = this.collections[this.collection_name]["end_years"];
       this.end_year = this.end_years[this.end_years.length - 1]["value"];
     },
-    render_graph_vue() {
-      this.overlay_main = true;
-      this.graph_rendered = false;
-      this.wait_rendering = true;
-      console.log("wait rendering", this.wait_rendering);
-      this.getData();
-      // deleted async from function and nextTick
-      //await this.$nextTick()
-    },
+
     /*
 		Get the data from the BE according to the parameters entered in the FE and render the graph
 		*/
-    getData() {
-      getData_io();
+    getDataAndRenderNew: async function () {
+      // async start overlay with spinner
+      vueApp.overlay_main = true;
+      vueApp.graph_rendered = false;
+      vueApp.wait_rendering = true;
+
+      vueApp.updateGraphPropsBasedonUserInput();
+
+      await getData_io();
+
+      // Call D3 function to render new graph
+      delete_graph();
+      render_graph();
+
+      // update the cluster information in the Vue data variable after initializing the D3 graph
+      vueApp.get_clusters();
+      // switch off overlay
+      vueApp.graph_rendered = true;
+      vueApp.overlay_main = false;
+      vueApp.wait_rendering = false;
+
+      console.log(vueApp.clusters);
+      // returns Promis.resolve("ok")
+      return "ok";
     },
     /*
 		/ ############ SIDEBAR LEFT Graph-Menu - VIEW Functions ---------------------------------------------------------------------------------------------------
@@ -778,8 +851,10 @@ let vueApp = new Vue({
 		@return Array of objects with cluster information
 		// commment by CH: This looks circular - data is pushed on the graph, modified there and then re-read from the graph
     // Better: data is changed on the datastructure - and only displayed on the graph
+    // Better: cluster nodes are seperated from main graph nodes more clearly into own sub-data-structure as rectangular labels perhaps
     // TODO WHAT IS GOING ON HERE ???????? 
-		*/
+    */
+
     get_clusters() {
       function compare_clusters(a, b) {
         if (a.labels.length < b.labels.length) {

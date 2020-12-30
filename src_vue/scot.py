@@ -7,10 +7,13 @@ from flask import Flask, jsonify, render_template, request, Response
 from flask_cors import CORS
 from pathlib import Path
 from typing import Dict, List
+from dataclasses_json import dataclass_json
+from dataclasses import dataclass
 
 from services.cluster import chinese_whispers
 from services.graphs import get_graph
 from services.info import collections_info, get_edge_info, simbim, cluster_information, documents
+from model.ngot_model import NGOT, NGOTCluster, NGOTLink, NGOTProperties, NGOTNode, NGOTSingletons, NGOTTransitLinks
 
 
 class CustomFlask(Flask):
@@ -54,27 +57,22 @@ def info():
 
 
 @app.route('/api/collections/<string:collection>/sense_graph', methods=['POST'])
-# calls main graph projection and clustering algorithms
+# calls main algorithms for building a neighbour graph over time (NGOT)
 def get_clustered_graph(collection):
+    ngot = NGOT()
     if request.method == 'POST':
-        data = json.loads(request.data)
-        target_word = str(data["target_word"])
-        start_year = int(data["start_year"])
-        end_year = int(data["end_year"])
-        paradigms = int(data["senses"])
-        density = int(data["edges"])
-        graph_type = str(data["graph_type"])
+        ngot.properties = NGOTProperties.from_json(request.data)
+    props = ngot.properties
+    print(props)
+    # TODO: use ngot as main parameter and keep working on it
     remove_singletons = False
-    # get ngot graph
     edges, nodes, singletons = get_graph(
-        get_config(), collection, target_word, start_year, end_year, paradigms, density, graph_type, remove_singletons)
-    # cluster graph
+        get_config(), collection, props.target_word, props.start_year, props.end_year, props.n_nodes, props.e_edges, props.graph_type, remove_singletons)
     clustered_graph = chinese_whispers(nodes, edges)
-    # convert to datastructure format
-    c_graph = json.dumps([clustered_graph, {'target_word': target_word}, {
+    # TODO update NGOT datastructure with all information and return
+    c_graph = json.dumps([clustered_graph, {'target_word': props.target_word}, {
                          'singletons': singletons}], sort_keys=False, indent=4)
-    # return
-    print(c_graph)
+
     return c_graph
 
 

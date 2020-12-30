@@ -50,7 +50,7 @@ function update_io() {
   let end_year = vueApp.end_year;
   let senses = vueApp.update_senses;
   let edges = vueApp.update_edges;
-  let time_diff = vueApp.time_diff;
+  // let time_diff = vueApp.time_diff;
 
   vueApp.time_diff = false;
   let url =
@@ -119,33 +119,13 @@ function getSimBims_io() {
     });
 }
 
-function getData_io() {
-  graph.props["target_word"] = vueApp.target_word;
-  graph.props["start_year"] = vueApp.start_year;
-  graph.props["end_year"] = vueApp.end_year;
-  graph.props["senses"] = vueApp.senses;
-  graph.props["edges"] = vueApp.edges;
-  graph.props["graph_type"] = vueApp.graph_type_keys[vueApp.graph_type];
-  graph.props["collection_key"] = vueApp.collection_key;
-  // deprecated
-  // graph.props["time_diff"] = vueApp.time_diff;
-
-  vueApp.start_years.forEach(function (d, i) {
-    if (d.value === vueApp.start_year) {
-      vueApp.min_time_id = i + 1;
-    }
-  });
-
-  vueApp.end_years.forEach(function (d, i) {
-    if (d.value === vueApp.end_year) {
-      vueApp.max_time_id = i + 1;
-    }
-  });
+async function getData_io() {
+  console.log("graph props before sending", graph.props);
 
   const url =
     "./api/collections/" + graph.props.collection_key + "/sense_graph";
 
-  axios
+  const promise = axios
     .post(url, graph.props)
     .then((res) => {
       let data_from_db = res.data;
@@ -155,8 +135,7 @@ function getData_io() {
       graph.singletons = data_from_db[2].singletons;
       // Send copy to vueApp for Display
       vueApp.singletons = data_from_db[2].singletons;
-      // Call D3 function to render graph
-      render_graph();
+      console.log("end of getData_io");
     })
     .catch((error) => {
       console.log(error);
@@ -164,6 +143,7 @@ function getData_io() {
         alert(error + "\nPlease try a different target word.");
       }
     });
+  return promise;
 }
 
 function saveGraph_io() {

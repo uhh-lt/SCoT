@@ -1,4 +1,4 @@
-// STATE MANAGEMENT ##################################################
+// DATA ##################################################
 // (1) graph: The application works on a graph as the main datastructure
 // (1) vueData: it needs some duplicate parts of the graph for view-manipulation (while not changing the original ones)
 // (3) d3Data: it derives from this main-graph-datastructure a d3-graph model for display in the DOM
@@ -7,6 +7,8 @@
 // "A complex network is a graph in which a set of elements is associated with a set of entities, and in which the relation
 // between the elements represents a relationship between the corresponding entities".
 // Links = edges , nodes = vertices
+// the words ngot and static are used as antidotes - a static edge - one single edge in one interval
+// ngot-node = dynamic edge aggreggated from various static
 
 let graph = {
   /**
@@ -21,13 +23,46 @@ let graph = {
   singletons: [],
   clusters: [],
   props: {
+    // DEFINITIONS
+    // ngot/dynamic refers to the ngot - overlay/merging methods [an edge with several time-ids]
+    // static refers to the static graph per interval [one static edge = in one interval]
+    // For dynamic vs static, see Rossetti et. al. Community Discovery in Dynmic Networks 2018
+
+    // Interval-Data-Parameters
     collection_key: "",
     start_year: "",
     end_year: "",
+
+    // Graph-Parameter
     target_word: "",
-    senses: 0,
-    edges: 0,
+    // parameter d
+    density: null,
+    // parameter n
+    n_nodes: null,
+    // parameter graph type - determines which kind of edges are needed
     graph_type: "",
+
+    // ---------------------- DERIVED FROM ABOVE USER-INPUT, Graph-type AND GRAPH
+    // resolved from graph-type by frontend
+    e_edges: null,
+    // resolved by frontend
+    intervalnumber: null,
+    selected_time_ids: [],
+    // parameter n - only one is set depending on graph-type
+    number_of_static_nodes_per_interval: null,
+    // scaled with i [ie this refers to the global total]
+    number_of_static_nodes_global: null,
+    // number
+    number_of_ngot_nodes: null,
+    // only one parameter is set depending on graph-type
+    number_of_static_directed_edges_per_interval: null,
+    // scaled with i [ie this refers to the global total]
+    number_of_static_directed_edges_global: null,
+    // attention we count directed overlaid edges here -> they are later overlaid/simplified to an undirected graph
+    number_of_ngot_directed_edges: null,
+    // number of edges in different intervals [for ngot-global derived from actual graph]
+    number_of_interval_edges: [],
+    number_of_interval_links: [],
   },
 };
 
@@ -74,15 +109,17 @@ let vueData = {
   graph_type_keys: {
     "INTERVAL[n&d per i] (best for overview and time-diff)": "ngot_interval",
     "OVERLAY[n&d] (best for comparison)": "ngot_overlay",
-    "OVERLAY[n] & GLOBAL[d total] (edge manipulation)": "scot",
+    "OVERLAY[n] & GLOBAL[d total] (edge manipulation)": "scot_scaled",
     "GLOBAL[n*i] & GLOBAL[d total] (node & edge manipulation)": "ngot_global",
   },
   // User Values - Input
   target_word: "",
   // n - number of nearest neighbour nodes [as defined by graph algo]
-  senses: 0,
+  n_nodes: 0,
   // d: density - [as defined by graph algo]
-  edge_max_ratio: 0,
+  density: 0,
+  // derived from density
+  e_edges: null,
   // --------------------------
   // DUPLICATES OF MAIN-NETWORK-GRAPH-DATA FOR DISPLAY & MANIPULATION ---------------------
   // For display
