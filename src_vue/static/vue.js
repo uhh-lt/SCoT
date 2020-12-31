@@ -37,7 +37,7 @@ let vueApp = new Vue({
       return end - start + 1;
     },
     /**
-     * Returns number of directed global data links that is sent to backend for querying data
+     * Returns number of edges [type is determined by graph type]
      */
     edges() {
       this.e_edges = Math.round((this.density / 100) * this.max_dir_edges);
@@ -129,6 +129,41 @@ let vueApp = new Vue({
 
       return start + " - " + end;
     },
+    node_info() {
+      let grapht = this.graph_type_keys[this.graph_type];
+
+      if (grapht == "ngot_interval") {
+        return "N [number of static nodes per interval]";
+      } else if (grapht == "ngot_overlay") {
+        return "N [number of dynamic nodes]";
+      } else if (grapht == "scot_scaled") {
+        return "N [number of dynamic nodes]";
+      } else if (grapht == "ngot_global") {
+        return "N [number of static nodes globally - multiplied by I]";
+      } else {
+        return "N [number of nearest neighbour nodes]";
+      }
+    },
+
+    density_edge_info() {
+      let grapht = this.graph_type_keys[this.graph_type];
+      // derived props
+      if (grapht == "ngot_interval") {
+        return "static directed edges per interval";
+      } else if (grapht == "ngot_overlay") {
+        return "dynamic directed edges";
+      } else if (grapht == "scot_scaled") {
+        return "static directed edges globally";
+      } else if (grapht == "ngot_global") {
+        return "static directed edges globally";
+
+        // => static edges and nodes need to be determined from graph
+      } else {
+        return "density";
+      }
+
+      // ("density in %: [{{edges}} of {{max_dir_edges}} dir");
+    },
   },
   methods: {
     /*
@@ -149,6 +184,7 @@ let vueApp = new Vue({
     /*
 		/ ############ SIDEBAR LEFT GRAPH CREATION -----------------------------------------------------------------------------------------------------
     */
+
     updateGraphPropsBasedonUserInput() {
       // user input: interval data props - basis of graph
       graph.props["collection_key"] = vueApp.collection_key;

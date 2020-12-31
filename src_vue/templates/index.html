@@ -98,27 +98,28 @@
 						<b-form-group class="input" label="End of last interval">
 							<b-form-select v-model="end_year" :options="end_years" size="sm"></b-form-select>
 						</b-form-group>
-						i: {{number_of_intervals}} intervals
+						I = {{number_of_intervals}} {{number_of_intervals > 1 ? "intervals" : "interval"}}
 						<hr style="border: 1px solid gray;" />
-						<h5>Graph parameters</h5>
+						<h5>Parameters of dynamic graph</h5>
 						<!-- Enter target word -->
-						<b-form-group class="input" label="t: target word">
+						<b-form-group class="input" label="Target word">
 							<b-form-input v-model="target_word" placeholder="target word" size="sm">
 							</b-form-input>
 						</b-form-group>
 						<!-- Enter number of neighbouring nodes -->
-						<b-form-group class="input">n: number of nearest neighbour nodes
+						{{node_info}}
+						<b-form-group class="input">
 							<b-form-input type="number" v-model="n_nodes" min="0" placeholder="number of neighbours"
 								size="sm"></b-form-input>
 						</b-form-group>
 						<!-- Enter factor that determines number of edges per graph -->
-						<b-form-group class="input"> d: density in %: [{{edges}} of {{max_dir_edges}} dir.
-							links]
+						Density in % [E = {{edges}} of max. {{max_dir_edges}} {{density_edge_info}} ]
+						<b-form-group class="input">
 							<b-form-input type="number" v-model="density" min="0" max="100"
 								placeholder="number of edges" size="sm"></b-form-input>
 						</b-form-group>
 						<!-- Enter a graph type -->
-						<b-form-group class="input" label="Graph type">
+						<b-form-group class="input" label="Type of graph">
 							<b-form-select v-model="graph_type" :options="graph_types" size="sm">
 							</b-form-select>
 						</b-form-group>

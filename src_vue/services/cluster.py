@@ -47,7 +47,7 @@ def chinese_whispers_algo(graph, iterations=15):
                     maxclass = c
             graph.node[node]['class'] = maxclass
 
-    return nx.readwrite.json_graph.node_link_data(graph)
+    return graph
 
 # Construct a networkx graph from the nodes and edges
 # precondition: nodes_set typed, edges types - all scores in float
@@ -70,11 +70,12 @@ def construct_graph(nodes_set, edges):
 
 
 # call chineses whispers and calc centrality
-def chinese_whispers(nodes, edges, iterations=15):
+def chinese_whispers(nodes, edges, ngot, iterations=15):
     graph = construct_graph(nodes, edges)
 
     centrality_nodes = nx.betweenness_centrality(graph)
     for node, centrality_score in centrality_nodes.items():
         graph.node[node]['centrality_score'] = centrality_score
+    graph = chinese_whispers_algo(graph, iterations)
 
-    return chinese_whispers_algo(graph, iterations)
+    return nx.readwrite.json_graph.node_link_data(graph)

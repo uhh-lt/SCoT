@@ -1,6 +1,8 @@
 from persistence.documentdb import Documentdb
 from persistence.db import Database, get_db
+from model.ngot_model import NGOTLink, NGOTNode
 import json
+import uuid
 
 
 def ngot_interval(db, target_word, time_ids, paradigms, density, remove_singletons):
@@ -57,34 +59,63 @@ def ngot_global(db, target_word, time_ids, paradigms, density, remove_singletons
     return edges, nodes, singletons
 
 
-def get_graph(config, collection, target_word, start_year, end_year, paradigms, density, graph_type, remove_singletons):
+def map_nodes(nodes, ngot):
+    ngot_nodes = []
+    for node in nodes:
+        ngot_node = NGOTNode()
+        ngot_node.id = node[0]
+        ngot_node.weight = max(node[1]['weights'])
+        ngot_node.weights = node[1]['weights']
+        ngot_node.time_ids = node[1]['time_ids']
+        ngot_nodes.append(ngot_node)
+    return ngot_nodes
+
+
+def map_edges(edges, ngot):
+    ngot_edges = []
+    for edge in edges:
+        ngot_edge = NGOTLink()
+        ngot_edge.id = str(uuid.uuid1())
+        ngot_edge.source = edge[0]
+        ngot_edge.target = edge[1]
+        ngot_edge.weight = edge[2]['weight']
+        ngot_edge.weights = edge[2]['weights']
+        ngot_edge.time_ids = edge[2]['time_ids']
+        ngot_edges.append(ngot_edge)
+    return ngot_edges
+
+
+def get_graph(config, ngot):
     # offers various projections and clustering-algos depending on graph-type
     # Retrieves the clustered graph data according to the input parameters of the user and return it as json
-    # Param: target word: user selected target word out of all possible target words
-    # Param: selected_start_year: user selected start year out of all possible start years
-    # Param: selected_end_year: user selected end year out of all possible end years
-    # Param: max number of cumulated paradigms over time - the global graph will have paradigms up to this number
-    # Param: max_ed
-    # Param: collection
+    # Param: ngot - model
+    # Param: config with db setting
     # Precondition: selected_start_year < selected_end_year
     # Precondition: All Params not null
     # Precondition: All Params valid (target word validity cannot be guaranteed by frontend?)
     # Postcondition: valid graph in valid json-format
     # Resolve start and end year -> time-ids
-    db = Database(get_db(config, collection))
-    time_ids = db.get_time_ids(start_year, end_year)
+    props = ngot.properties
+    db = Database(get_db(config, props.collection_key))
+    props.selected_time_ids.extend(
+        db.get_time_ids(props.start_year, props.end_year))
     # build neighbourhood graph over time
-    if str(graph_type) == "ngot_interval":
+    if props.graph_type == "ngot_interval":
         edges, nodes, singletons = ngot_interval(
-            db, target_word, time_ids, paradigms, density, remove_singletons)
-    elif str(graph_type) == "ngot_overlay":
+            db, props.target_word, props.selected_time_ids, props.n_nodes, props.density, props.remove_singletons)
+    elif props.graph_type == "ngot_overlay":
         edges, nodes, singletons = ngot_overlay(
-            db, target_word, time_ids, paradigms, density, remove_singletons)
-    elif str(graph_type) == "ngot_global":
+            db, props.target_word, props.selected_time_ids, props.n_nodes, props.density, props.remove_singletons)
+    elif props.graph_type == "ngot_global":
         edges, nodes, singletons = ngot_global(
-            db, target_word, time_ids, paradigms, density, remove_singletons)
+            db, props.target_word, props.selected_time_ids, props.n_nodes, props.density, props.remove_singletons)
     # as default calls overlay_global (dynamic version of first SCoT-algorithm)
     else:
         edges, nodes, singletons = ngot_overlay_global(
-            db, target_word, time_ids, paradigms, density, remove_singletons)
-    return edges, nodes, singletons
+            db, props.target_word, props.selected_time_ids, props.n_nodes, props.density, props.remove_singletons)
+    # build graph ngot
+    ngot.nodes = map_nodes(nodes, ngot)
+    ngot.links = map_edges(edges, ngot)
+    ngot.singletons = singletons
+
+    return edges, nodes,  ngot

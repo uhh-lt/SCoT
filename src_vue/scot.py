@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from services.cluster import chinese_whispers
 from services.graphs import get_graph
 from services.info import collections_info, get_edge_info, simbim, cluster_information, documents
-from model.ngot_model import NGOT, NGOTCluster, NGOTLink, NGOTProperties, NGOTNode, NGOTSingletons, NGOTTransitLinks
+from model.ngot_model import NGOT, NGOTCluster, NGOTLink, NGOTProperties, NGOTNode
 
 
 class CustomFlask(Flask):
@@ -56,22 +56,17 @@ def info():
 # Endpoints 2: GET CLUSTERED GRAPH
 
 
-@app.route('/api/collections/<string:collection>/sense_graph', methods=['POST'])
-# calls main algorithms for building a neighbour graph over time (NGOT)
-def get_clustered_graph(collection):
+@app.route('/api/collections/sense_graph', methods=['POST'])
+# calls main algorithms for building a clustered neighbourhood graph over time (NGOT)
+def get_clustered_graph():
     ngot = NGOT()
     if request.method == 'POST':
         ngot.properties = NGOTProperties.from_json(request.data)
-    props = ngot.properties
-    print(props)
-    # TODO: use ngot as main parameter and keep working on it
-    remove_singletons = False
-    edges, nodes, singletons = get_graph(
-        get_config(), collection, props.target_word, props.start_year, props.end_year, props.n_nodes, props.e_edges, props.graph_type, remove_singletons)
-    clustered_graph = chinese_whispers(nodes, edges)
-    # TODO update NGOT datastructure with all information and return
-    c_graph = json.dumps([clustered_graph, {'target_word': props.target_word}, {
-                         'singletons': singletons}], sort_keys=False, indent=4)
+    edges, nodes, ngot = get_graph(get_config(), ngot)
+    # TODO return NGOT datastructure and update cluster in it...
+    clustered_graph = chinese_whispers(nodes, edges, ngot)
+    c_graph = json.dumps([clustered_graph, {'target_word': ngot.properties.target_word}, {
+                         'singletons': ngot.singletons}], sort_keys=False, indent=4)
 
     return c_graph
 

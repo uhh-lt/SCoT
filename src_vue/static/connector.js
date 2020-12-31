@@ -122,8 +122,7 @@ function getSimBims_io() {
 async function getData_io() {
   console.log("graph props before sending", graph.props);
 
-  const url =
-    "./api/collections/" + graph.props.collection_key + "/sense_graph";
+  const url = "./api/collections/sense_graph";
 
   const promise = axios
     .post(url, graph.props)

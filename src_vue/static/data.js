@@ -46,7 +46,7 @@ let graph = {
     // resolved from graph-type by frontend
     e_edges: null,
     // resolved by frontend
-    intervalnumber: null,
+    number_of_intervals: null,
     selected_time_ids: [],
     // parameter n - only one is set depending on graph-type
     number_of_static_nodes_per_interval: null,
@@ -63,6 +63,7 @@ let graph = {
     // number of edges in different intervals [for ngot-global derived from actual graph]
     number_of_interval_edges: [],
     number_of_interval_links: [],
+    remove_singletons: false,
   },
 };
 
@@ -105,12 +106,12 @@ let vueData = {
   // all possible graph types displays dropdown listin frontend
   graph_types: ["fetching data..."],
   //  keys used for querying specific graph from backend
-  // not used : "n & d Global Static (absolute nodes and dir. edges)" : "ngot_global",
+  // not used : "GLOBAL N*I & GLOBAL E scaled by I (node & edge manipulation)":
+  // "ngot_global",
   graph_type_keys: {
-    "INTERVAL[n&d per i] (best for overview and time-diff)": "ngot_interval",
-    "OVERLAY[n&d] (best for comparison)": "ngot_overlay",
-    "OVERLAY[n] & GLOBAL[d total] (edge manipulation)": "scot_scaled",
-    "GLOBAL[n*i] & GLOBAL[d total] (node & edge manipulation)": "ngot_global",
+    "INTERVAL (best for overview and time-diff)": "ngot_interval",
+    "DYNAMIC (best for comparison)": "ngot_overlay",
+    "DYNAMIC N & GLOBAL E scaled by I (edge manipulation)": "scot_scaled",
   },
   // User Values - Input
   target_word: "",

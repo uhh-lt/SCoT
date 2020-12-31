@@ -5,8 +5,8 @@ from flask_sqlalchemy import SQLAlchemy
 
 """  
 This defines the model of the clustered neighbourhood graph over time
+It dynamically merges a number of static nodes and edges
 The same model is used in the fronted
-It is send back and forth and thereby updated
 The transfer-format is JSON - dataclass-json decorators are used for serialization and deserialization
 """
 
@@ -14,76 +14,66 @@ The transfer-format is JSON - dataclass-json decorators are used for serializati
 @dataclass_json
 @dataclass()
 class NGOTNode:
-    id: str = None
+    id: Optional[str] = None
+    text: Optional[str] = None
     # max weight as main derived from weights
-    weight: int = None
+    weight: Optional[int] = None
     # overlay data information
-    time_ids: List[int] = field(default_factory=[None])
-    weights: List[float] = field(default_factory=[None])
+    time_ids: List[int] = None
+    weights: List[float] = None
     # calculated scores and clusters
-    centrality_score: float = None
-    cluster_id: int = None
+    centrality_score: Optional[float] = None
+    cluster_id: Optional[int] = None
     # display - values can be tweaked in frontend
-    x: float = None
-    y: float = None
-    hidden: bool = None
+    x: Optional[float] = None
+    y: Optional[float] = None
     # fixed x and y
-    fx: float = None
-    fy: float = None
+    fx: Optional[float] = None
+    fy: Optional[float] = None
     # color and opacity can change during various interactions
-    color: float = None
-    opacity: float = None
+    color: Optional[float] = None
+    opacity: Optional[float] = None
+    hidden: Optional[bool] = None
 
 
 @dataclass_json
 @dataclass()
 class NGOTLink():
-    id: str = None
-    # restraint - the time-ids of an edge must be within the time-ids of the nodes
-    source: NGOTNode = None
-    target: NGOTNode = None
+    # id is uuid - string
+    id: Optional[str] = None
+    # node is von source und target
+    source: Optional[str] = None
+    target: Optional[str] = None
     # max weight
-    weight: float = None
+    weight: Optional[float] = None
     # time ids and weights
-    time_ids: List[int] = field(default_factory=[None])
-    weights: List[float] = field(default_factory=[None])
+    time_ids: List[int] = None
+    weights: List[float] = None
     # color and opacity can change during various interactions
-    color: float = None
-    opacity: float = None
-    hidden: bool = None
+    color: Optional[float] = None
+    opacity: Optional[float] = None
+    hidden: Optional[bool] = None
     # No Positional data as these depend on nodes
 
 
 @dataclass_json
 @dataclass()
 class NGOTCluster:
-    id: int = None
+    id: Optional[int] = None
     # changeable by user
-    name: str = None
+    name: Optional[str] = None
     # Display
-    color: int = None
-    # Display - special cluster node for displaying cluster - IT IS STORED ONLY HERE!!!!
-    cluster_node: NGOTNode = None
+    color: Optional[int] = None
     # data information with IDs [-> can be used as labels]
-    nodes: List[NGOTNode] = field(default_factory=[None])
+    cluster_nodes: List[str] = None
     # edges between cluster nodes with IDs [-> for coloring]
-    edges: List[NGOTLink] = field(default_factory=[None])
-    # edges that do not belong to a cluster can then also be specifically colored
-    #
-
-
-@dataclass_json
-@dataclass()
-class NGOTSingletons:
-    # data information IDs only
-    nodes: List[NGOTNode] = field(default_factory=[None])
-
-
-@dataclass_json
-@dataclass()
-class NGOTTransitLinks:
-    # data information IDs only
-    edges: List[NGOTLink] = field(default_factory=[None])
+    cluster_links: List[str] = None
+    # default: special cluster node for displaying cluster - IT IS STORED ONLY HERE!!!!
+    label_node: Optional[NGOTNode] = None
+    # connecting edges from the label_node to all cluster_nodes
+    edges_label_node: List[NGOTLink] = None
+    # show yes no
+    show_label_node: bool = False
 
 
 @dataclass_json
@@ -128,6 +118,8 @@ class NGOTProperties:
     # derived props for global and overlay [numbers can vary per interval...]
     number_of_interval_edges: List[int] = field(default_factory=[None])
     number_of_interval_links: List[int] = field(default_factory=[None])
+    # Do not change if not necessary
+    remove_singletons: bool = False
 
 
 @dataclass_json
@@ -137,5 +129,7 @@ class NGOT():
     nodes: List[NGOTNode] = None
     links: List[NGOTLink] = None
     clusters: List[NGOTCluster] = None
-    singletons: NGOTSingletons = None
-    transit_links: NGOTTransitLinks = None
+    # list with ids of singleton nodes [they are part of nodes]
+    singletons: List[str] = None
+    # list with ids of transitlinks [they are part of links]
+    transit_links: List[str] = None
