@@ -2,10 +2,8 @@
   "flask_host": "0.0.0.0",
 
   "collections_info_backend": {
-    "default": "mysql://root:root@127.0.0.1:3377/scot",
-    "en_books": "mysql://root:root@127.0.0.1:3377/scot",
-    "fi_news": "mysql://root:root@127.0.0.1:3306/DT_finnews_dependency",
-    "de70": "mysql://root:root@127.0.0.1:3306/DT_de70mlcc_dependency"
+    "default": "mysql://root:root@127.0.0.1:3306/scot",
+    "en_books": "mysql://root:root@127.0.0.1:3306/scot"
   },
 
   "collections_info_elastic": {
@@ -24,20 +22,6 @@
       "p": 10,
       "d": 20,
       "info": "English Google Books, 1520-2008"
-    },
-    "German News 70m Dep": {
-      "key": "de70",
-      "target": "Krise#NN",
-      "p": 10,
-      "d": 8,
-      "info": "German Online News - 70 Million Random Sentences, 1995-2010 "
-    },
-    "Finnish News Dep": {
-      "key": "fi_news",
-      "target": "Yksi#NUM",
-      "p": 10,
-      "d": 8,
-      "info": "Various Finnish Online News - 14 Million Sentences"
     }
   }
 }

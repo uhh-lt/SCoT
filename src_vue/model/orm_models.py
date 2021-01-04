@@ -3,7 +3,6 @@ from typing import List, Dict
 from flask_sqlalchemy import SQLAlchemy
 
 """  
-NOT IMPLEMENTED BUT STILL HELFPUL TO UNDERSTAND THE DB-COMPONENT
 This dataclass defines SQL-ORM for the raw Graph, ie the one consisting of directed and not overlaid edges and node-information 
 [A node in the network is really an edge between the target-word and the node]
 If further defines the ORM for features-data

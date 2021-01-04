@@ -22,6 +22,7 @@ let graph = {
   links: [],
   singletons: [],
   clusters: [],
+  transit_links: [],
   props: {
     // DEFINITIONS
     // ngot/dynamic refers to the ngot - overlay/merging methods [an edge with several time-ids]
@@ -36,30 +37,30 @@ let graph = {
     // Graph-Parameter
     target_word: "",
     // parameter d
-    density: null,
+    density: 0,
     // parameter n
-    n_nodes: null,
+    n_nodes: 0,
     // parameter graph type - determines which kind of edges are needed
     graph_type: "",
 
     // ---------------------- DERIVED FROM ABOVE USER-INPUT, Graph-type AND GRAPH
     // resolved from graph-type by frontend
-    e_edges: null,
+    e_edges: 0,
     // resolved by frontend
-    number_of_intervals: null,
+    number_of_intervals: 0,
     selected_time_ids: [],
     // parameter n - only one is set depending on graph-type
-    number_of_static_nodes_per_interval: null,
+    number_of_static_nodes_per_interval: 0,
     // scaled with i [ie this refers to the global total]
-    number_of_static_nodes_global: null,
+    number_of_static_nodes_global: 0,
     // number
-    number_of_ngot_nodes: null,
+    number_of_ngot_nodes: 0,
     // only one parameter is set depending on graph-type
-    number_of_static_directed_edges_per_interval: null,
+    number_of_static_directed_edges_per_interval: 0,
     // scaled with i [ie this refers to the global total]
-    number_of_static_directed_edges_global: null,
+    number_of_static_directed_edges_global: 0,
     // attention we count directed overlaid edges here -> they are later overlaid/simplified to an undirected graph
-    number_of_ngot_directed_edges: null,
+    number_of_ngot_directed_edges: 0,
     // number of edges in different intervals [for ngot-global derived from actual graph]
     number_of_interval_edges: [],
     number_of_interval_links: [],
@@ -109,9 +110,9 @@ let vueData = {
   // not used : "GLOBAL N*I & GLOBAL E scaled by I (node & edge manipulation)":
   // "ngot_global",
   graph_type_keys: {
-    "INTERVAL (best for overview and time-diff)": "ngot_interval",
-    "DYNAMIC (best for comparison)": "ngot_overlay",
-    "DYNAMIC N & GLOBAL E scaled by I (edge manipulation)": "scot_scaled",
+    "Interval Fixed (best for overview and time-diff)": "ngot_interval",
+    "NGoT Fixed (best for comparison)": "ngot_overlay",
+    "NGoT nodes & GLOBAL edges (for manipulation)": "scot_scaled",
   },
   // User Values - Input
   target_word: "",
@@ -120,7 +121,7 @@ let vueData = {
   // d: density - [as defined by graph algo]
   density: 0,
   // derived from density
-  e_edges: null,
+  e_edges: 0,
   // --------------------------
   // DUPLICATES OF MAIN-NETWORK-GRAPH-DATA FOR DISPLAY & MANIPULATION ---------------------
   // For display
@@ -135,12 +136,7 @@ let vueData = {
   linkedByIndex: {},
 
   // GENERAL SVG VIEW SETTINGS -----------------------------------------------------------------------------------------
-  // for setting the view port size for the graph
-  viewport_height: screen.availHeight * 1,
-  viewport_width: screen.availWidth * 1,
-  // for setting the svg size for the graph
-  svg_height: screen.availHeight * 1.5,
-  svg_width: screen.availWidth * 1.5,
+
   // link thickness parameters
   link_thickness_scaled: "false",
   // scaled = "false" -> thickness = sqrt(value)

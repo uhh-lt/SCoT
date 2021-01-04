@@ -13,6 +13,21 @@ let vueApp = new Vue({
    */
   data: vueData,
   computed: {
+    // general svg
+    // for setting the view port size for the graph
+    viewport_height() {
+      return screen.availHeight * 1;
+    },
+    viewport_width() {
+      return screen.availWidth * 1;
+    },
+    // for setting the svg size for the graph
+    svg_height() {
+      return screen.availHeight * 1.5;
+    },
+    svg_width() {
+      return screen.availWidth * 1.5;
+    },
     // ######################   SIDEBAR LEFT GRAPH-CREATION ------------------------------------------------------------------------------
     /**
      * Return number of interval selected
@@ -135,13 +150,13 @@ let vueApp = new Vue({
       if (grapht == "ngot_interval") {
         return "N [number of static nodes per interval]";
       } else if (grapht == "ngot_overlay") {
-        return "N [number of dynamic nodes]";
+        return "N [number of NGoT nodes]";
       } else if (grapht == "scot_scaled") {
-        return "N [number of dynamic nodes]";
+        return "N [number of NGoT nodes]";
       } else if (grapht == "ngot_global") {
         return "N [number of static nodes globally - multiplied by I]";
       } else {
-        return "N [number of nearest neighbour nodes]";
+        return "N [number of NGoT nodes]";
       }
     },
 
@@ -151,7 +166,7 @@ let vueApp = new Vue({
       if (grapht == "ngot_interval") {
         return "static directed edges per interval";
       } else if (grapht == "ngot_overlay") {
-        return "dynamic directed edges";
+        return "NGoT directed edges";
       } else if (grapht == "scot_scaled") {
         return "static directed edges globally";
       } else if (grapht == "ngot_global") {
@@ -645,7 +660,7 @@ let vueApp = new Vue({
             console.log(res.data);
             let ret = [];
             for (let key in res.data) {
-              retObj = {};
+              let retObj = {};
               retObj.wort = key;
               retObj.score = parseFloat(res.data[key]).toFixed(5);
               ret.push(retObj);

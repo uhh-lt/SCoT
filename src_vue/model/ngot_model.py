@@ -14,8 +14,12 @@ The transfer-format is JSON - dataclass-json decorators are used for serializati
 @dataclass_json
 @dataclass()
 class NGOTNode:
+    # new format for nodes - this is compatible to all usages in Python, networkx, Vue, D3
+    # networkx and d3 require a dic-format
+    # mapping to format of dictionary nodes simple:
+    # [[node.id, dataclasses.asdict(node)] for node in ngot_nodes]
     id: Optional[str] = None
-    text: Optional[str] = None
+    target_text: Optional[str] = None
     # max weight as main derived from weights
     weight: Optional[int] = None
     # overlay data information
@@ -39,7 +43,11 @@ class NGOTNode:
 @dataclass_json
 @dataclass()
 class NGOTLink():
-    # id is uuid - string
+    # new format for links - this is compatible to all usages in Python, networkx, Vue, D3
+    # networkx and d3 require a dic-format
+    # mapping to standard link [networkx, d3] puts all these elements into array/dictionary
+    # [link.source, link.target, dataclasses.asdict(link)] for link in ngot_links]
+    # id is source + "-" + target String [diese kombination kann nur einmal pro Graph vorkommen - da ngot links overlaid sind]
     id: Optional[str] = None
     # node is von source und target
     source: Optional[str] = None
@@ -77,47 +85,60 @@ class NGOTCluster:
 
 
 @dataclass_json
-@dataclass(frozen=True)
+@dataclass()
 class NGOTProperties:
-    # ngot/dynamic refers to the ngot - overlay/merging methods[an edge with several time-ids]
+    # NGOT Parameters managed by front- and back-end
+    # All parameters, except those labelled as "result" are managed by the front-end
+    # Result refers to the results of NGoT-building
+    #  Definition:
+    # ngot/dynamic refers to the ngot - merging methods[an edge with several time-ids]
     # static refers to the static graph per interval [one static edge= in one interval]
-    # data Props
-    # parameter intervals= we need
+    # parameter interval-data
     collection_key: Optional[str] = None
     start_year: Optional[int] = None
     end_year: Optional[int] = None
     # graph props
     target_word: Optional[str] = None
     number_of_intervals: Optional[int] = None
-    selected_time_ids: List[int] = field(default_factory=[None])
+    selected_time_ids: List[int] = None
+    # field(default_factory=[None])
     # graph params basic
-    # parameter d
+    # parameter d - only relevant in frontend where it is resolved to e
     density: Optional[float] = None
     # parameter n
     n_nodes: Optional[int] = None
     # parameter e - edges [precalculated from density in frontend according to graph-type]
-    # this is resolved by graph-type to the more precise edge numbers below
+    # e is used in backend
     e_edges: Optional[int] = None
     # parameter graph type - determines what n and d refer to exactly
     graph_type: Optional[str] = None
-    # resolved parameters per graph-type
-    # parameter n - only one is set depending on graph-type
+    # ---------------------------------------------------------------
+    # set and resulting parameters per graph-type
+    # depending on graph-type some parameters are either used as in-param
+    # or out-param
+    # ---------------------------
+    # ngot-interval: set [computed array for global and dynamic - see below]
     number_of_static_nodes_per_interval: Optional[int] = None
+    number_of_static_directed_edges_per_interval: Optional[int] = None
+    # derived props for global and overlay [numbers can vary per interval...]
+    number_of_interval_nodes: List[int] = None
+    number_of_interval_links: List[int] = None
+    # ----------------------------
+    # ngot-global: set, ngot-dynamic: result, ngot-interval: result
     # scaled with i[ie this refers to the global total]
     number_of_static_nodes_global: Optional[int] = None
-    # number
-    number_of_ngot_nodes: Optional[int] = None
-    # the number of edges is derived from density
-    # only one parameter is set depending on graph-type
-    number_of_static_directed_edges_per_interval: Optional[int] = None
-    # scaled with i[ie this refers to the global total]
     number_of_static_directed_edges_global: Optional[int] = None
-    # attention we count directed overlaid edges here -> they are later overlaid/simplified to an undirected graph
+    # ----------------------------
+    # ngot-dynamic: set, ngot-global: result, ngot-interval: result
+    number_of_ngot_nodes: Optional[int] = None
+    # attention we count directed overlaid edges here!
     number_of_ngot_directed_edges: Optional[int] = None
-    # numbers derived from Graph
-    # derived props for global and overlay [numbers can vary per interval...]
-    number_of_interval_edges: List[int] = field(default_factory=[None])
-    number_of_interval_links: List[int] = field(default_factory=[None])
+    # max and min expected for ngot for testing
+    # if graph = interval then number of static nodes per int. <= number of ngot nodes <= number of static nodes p. int * i
+    # if graph = interval then number of satic edges per int. <= number of ngot edges <= number of static edges p. int * i
+    # if graph = global then number of static nodes global / i <= number of ngot nodes <= number of static nodes global
+    # if graph = global then number of static edges global / i <= number of ngot edges <= number of static edges global
+    # SPECIAL SETTING ------------------------------------------------
     # Do not change if not necessary
     remove_singletons: bool = False
 
@@ -125,11 +146,19 @@ class NGOTProperties:
 @dataclass_json
 @dataclass()
 class NGOT():
-    properties: NGOTProperties = None
+    # the central properties of the graph - managed by Vue and by python
+    props: NGOTProperties = None
+    # the main node list as managed by python and the vue-framework
     nodes: List[NGOTNode] = None
+    # the derived node list for networkx and d3 is a simple conversion into dictionary-form
+    nodes_dic: List[None] = None
+    # the main link list as managed by python and the vue-framework
     links: List[NGOTLink] = None
+    # the derived list for networkx and d3 is a simple conversion into dictionary-form
+    links_dic: List[None] = None
+    # the main datastructure for clusters managed by python and vue
     clusters: List[NGOTCluster] = None
-    # list with ids of singleton nodes [they are part of nodes]
+    # list with ids of singleton nodes [they are part of nodes] managed by python and vue
     singletons: List[str] = None
-    # list with ids of transitlinks [they are part of links]
+    # list with ids of transitlinks [they are part of links] managed by vue, colored grey by d3
     transit_links: List[str] = None
