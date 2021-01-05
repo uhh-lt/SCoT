@@ -63,29 +63,31 @@ def get_clustered_graph():
     if request.method == 'POST':
         ngot.props = NGOTProperties.from_json(request.data)
     ngot = get_graph(get_config(), ngot)
-    clustered_graph, ngot = chinese_whispers(ngot)
-    # print(ngot)
-    # TODO repari Ngot (some values missing, wrong type) - return ngot
-    c_graph = json.dumps([clustered_graph, {'target_word': ngot.props.target_word}, {
-                         'singletons': ngot.singletons}], sort_keys=False, indent=4)
-    return c_graph
+    old_graph, ngot = chinese_whispers(ngot)
+    # delete information that was only used for the backend
+    ngot.nodes_dic = None
+    ngot.links_dic = None
+    # serialize dataclass-structure to json
+    ngot_json = ngot.to_json()
+    return ngot_json
 
 
 @app.route('/api/reclustering', methods=['POST'])
+# TODO NEW DATASTRUCTUREDS NEEDED
 # recluster the existing cumulated graph by running Chinese Whispers on it
 def recluster_graph():
     # extract data
     if request.method == 'POST':
         data = json.loads(request.data)
-    nodes = []
-    links = []
-    nodes = data["nodes"]
+    ngot = NGOT()
+    ngot.links_dic = []
+    ngot.nodes_dic = data["nodes"]
     links_list = data["links"]
     for item in links_list:
-        links.append((str(item["source"]), str(item["target"]), {
-                     'weight': float(item["weight"])}))
+        ngot.links_dic.append((str(item["source"]), str(item["target"]), {
+            'weight': float(item["weight"])}))
     # recluster
-    reclustered_graph = chinese_whispers(nodes, links)
+    reclustered_graph, ngot = chinese_whispers(ngot)
     # return
     return json.dumps(reclustered_graph)
 

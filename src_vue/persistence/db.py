@@ -545,10 +545,6 @@ class Database():
         ngot.props.number_of_interval_links = []
         for time_id in time_ids:
             ngot.props.number_of_interval_links.append(len(con_dic[time_id]))
-        print("result: directed links per interval ",
-              ngot.props.number_of_interval_links)
-        print("result: number of total dir links min ", ngot.props.number_of_static_directed_edges_per_interval,
-              " max ", ngot.props.number_of_static_directed_edges_global)
 
         # ngot-new - convert static to ngot
         ngot_link_dic_temp = {}
@@ -589,10 +585,25 @@ class Database():
         ngot.singletons = singletons
         ngot.links = ngot_links
         ngot.links_dic = links_dic
-        ngot.number_of_ngot_directed_edges = len(links_dic)
         ngot.nodes_dic = nodes_dic_filtered
         ngot.nodes = map_nodes_dic_2_ngot(ngot.nodes_dic)
-        print("result: Anzahl NGOT directed links :", len(links_dic))
+        ########## results: expected
+        # links global
+        print("expected: number of static dir links global min 0 max ",
+              ngot.props.number_of_static_directed_edges_global)
+        print("result static directed links global ",
+              sum(ngot.props.number_of_interval_links))
+        print("result: directed links per interval ",
+              ngot.props.number_of_interval_links)
+        # links ngot were not set
+        print(" expected ngot links - no expectation")
+        ngot.props.number_of_ngot_directed_edges = len(links_dic)
+        print("result: Anzahl NGOT directed links :",
+              ngot.props.number_of_ngot_directed_edges)
+        # nodes ngot were set
+        print("expected NGOT nodes ", ngot.props.number_of_ngot_nodes)
+        print("result: Anzahl NGOT nodes :",
+              len(ngot.nodes))
         # print(ngot_links)
 
         return ngot

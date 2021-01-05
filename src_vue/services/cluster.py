@@ -71,16 +71,21 @@ def construct_graph(nodes_set, edges):
     return graph
 
 
-# call chineses whispers and calc centrality
+# call chinese whispers and calc centrality
 def chinese_whispers(ngot, iterations=15):
-    graph = construct_graph(ngot.nodes_dic, ngot.links_dic)
 
+    # uses networkx graph
+    graph = construct_graph(ngot.nodes_dic, ngot.links_dic)
+    # calculates betweeness centrality with networkx graph
     centrality_nodes = nx.betweenness_centrality(graph)
     for node, centrality_score in centrality_nodes.items():
         graph.node[node]['centrality_score'] = centrality_score
+    # call chinese whispers with network x graph
     graph = chinese_whispers_algo(graph, iterations)
-    # this needs graph.nodes, old edges (graph.edges not useable) and ngot
-    ngot = update_ngot_with_clusters_and_node_infos_from_graph(graph, ngot)
+    # update data structure with results of networkx graph if all elements present
+    if ngot.nodes != None and ngot.links != None and ngot.nodes_dic != None and ngot.links_dic != None:
+        ngot = update_ngot_with_clusters_and_node_infos_from_graph(graph, ngot)
+    # old json_graph used for reclustering - not yet refactored
     json_graph = nx.readwrite.json_graph.node_link_data(graph)
 
     return json_graph, ngot

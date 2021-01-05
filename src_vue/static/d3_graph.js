@@ -282,7 +282,7 @@ const render_graph = function () {
       }
     })
     .attr("stroke", function (d) {
-      if (d.colour !== undefined) {
+      if (d.colour != undefined && d.colour != null) {
         return d.colour;
       } else if (d.source.class === d.target.class) {
         return color(d.source.class);

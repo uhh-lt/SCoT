@@ -35,7 +35,7 @@ class NGOTNode:
     fx: Optional[float] = None
     fy: Optional[float] = None
     # color and opacity can change during various interactions
-    color: Optional[float] = None
+    colour: Optional[float] = None
     opacity: Optional[float] = None
     hidden: Optional[bool] = None
 
@@ -58,7 +58,7 @@ class NGOTLink():
     time_ids: List[int] = None
     weights: List[float] = None
     # color and opacity can change during various interactions
-    color: Optional[float] = None
+    colour: Optional[float] = None
     opacity: Optional[float] = None
     hidden: Optional[bool] = None
     # No Positional data as these depend on nodes
@@ -148,13 +148,13 @@ class NGOTProperties:
 class NGOT():
     # the central properties of the graph - managed by Vue and by python
     props: NGOTProperties = None
-    # the main node list as managed by python and the vue-framework
+    # the main node list as managed by python and the vue-framework and d3 and sent via json
     nodes: List[NGOTNode] = None
-    # the derived node list for networkx and d3 is a simple conversion into dictionary-form
+    # the temporary backend-only node list for input to networkx and some old graph-functions is a simple conversion into dictionary-form
     nodes_dic: List[None] = None
-    # the main link list as managed by python and the vue-framework
+    # the main link list as managed by python and the vue-framework and d3 and sent via json
     links: List[NGOTLink] = None
-    # the derived list for networkx and d3 is a simple conversion into dictionary-form
+    # the temporary backend onlylist for input to networkx and some old graph-functions is a simple conversion into dictionary-form
     links_dic: List[None] = None
     # list with ids of singleton nodes [they are part of nodes] managed by python and vue
     singletons: List[str] = None

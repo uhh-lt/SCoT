@@ -8,26 +8,24 @@ import json
 import uuid
 
 
-def ngot_interval(ngot, db):
+def ngot_interval(db, ngot):
     # creates overlay with interval-graphs per time_id in time-ids
-    # params: from ngot
     print("NGOT interval")
     ngot = db.get_nodes_interval(ngot)
     ngot = db.get_edges_interval(ngot)
-    # STEP 3 RETURN OVERLAY
     return ngot
 
 
-def ngot_overlay(db, ngot):
-    print("NGOT dynamic")
-    # NGOT - Overlay-fixed (expands global nodes dynamically)
+def ngot_dynamic(db, ngot):
+    # NGOT - dynamic-fixed (expands global nodes dynamically)
     # Edges in time, fixed global overlay edges, scaled
+    print("NGOT dynamic")
     ngot = db.get_nodes_overlay(ngot)
     ngot = db.get_edges_overlay(ngot)
     return ngot
 
 
-def ngot_overlay_global(db, ngot):
+def ngot_dynamic_global(db, ngot):
     # dynamic implementation of old scot-algorithm: nodes overlay, edges: global (scales with intervals)
     print("nodes global fixed/edges - global dyn - data fixed")
     ngot = db.get_nodes_overlay(ngot)
@@ -64,10 +62,10 @@ def get_graph(config, ngot):
     # build neighbourhood graph over time
     if props.graph_type == "ngot_interval":
         # ngot mapping included
-        ngot = ngot_interval(ngot, db)
+        ngot = ngot_interval(db, ngot)
     elif props.graph_type == "ngot_overlay":
         # ngot mapping included
-        ngot = ngot_overlay(
+        ngot = ngot_dynamic(
             db, ngot)
     # elif props.graph_type == "ngot_global":
     #     # global is not implemented yet
@@ -79,6 +77,6 @@ def get_graph(config, ngot):
     #     ngot.singletons = singletons
     else:
         # as default calls overlay-nodes-global-edges (dynamic version of first SCoT-algorithm)
-        ngot = ngot_overlay_global(db, ngot)
+        ngot = ngot_dynamic_global(db, ngot)
 
     return ngot

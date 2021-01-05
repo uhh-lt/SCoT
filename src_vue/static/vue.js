@@ -450,7 +450,8 @@ let vueApp = new Vue({
 		*/
     recluster() {
       vueApp.overlay_main = true;
-      if (vueApp.highlightWobblies === true) {
+      // TODO USE NEW DATASTRUCTURE
+      /*   if (vueApp.highlightWobblies === true) {
         vueApp.resetCentralityHighlighting();
         vueApp.highlightWobblies = false;
       }
@@ -506,7 +507,7 @@ let vueApp = new Vue({
       // store all the nodes and links in a data object to be sent to the BE
       data["nodes"] = nodes_array;
       data["links"] = link_array;
-
+ */
       axios
         .post("./api/reclustering", data)
         .then(function (response) {

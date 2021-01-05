@@ -128,12 +128,30 @@ async function getData_io() {
     .post(url, graph.props)
     .then((res) => {
       let data_from_db = res.data;
-      // build Model
-      graph.nodes = data_from_db[0].nodes;
-      graph.links = data_from_db[0].links;
-      graph.singletons = data_from_db[2].singletons;
+      console.log(res.data);
+      // build Model old
+      // graph.nodes = data_from_db[0].nodes;
+      // graph.links = data_from_db[0].links;
+      // graph.singletons = data_from_db[2].singletons;
       // Send copy to vueApp for Display
-      vueApp.singletons = data_from_db[2].singletons;
+      // vueApp.singletons = data_from_db[2].singletons;
+      // build Model new
+      console.log(res.data);
+      graph.nodes = data_from_db.nodes;
+      graph.links = data_from_db.links;
+      graph.singletons = data_from_db.singletons;
+      graph.props = data_from_db.props;
+      // // send copy to vue app
+      vueApp.singletons = data_from_db.singletons;
+      // execute mapping to old node attribute "class" : "cluster_id" -> "class"
+      for (let node of graph.nodes) {
+        node.class = node.cluster_id;
+      }
+      // execute mapping of links
+      for (let link of graph.links) {
+        link.target_text = link.target;
+        link.source_text = link.source;
+      }
       console.log("end of getData_io");
     })
     .catch((error) => {
