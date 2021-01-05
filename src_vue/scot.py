@@ -61,12 +61,11 @@ def info():
 def get_clustered_graph():
     ngot = NGOT()
     if request.method == 'POST':
-        print(request.data)
         ngot.props = NGOTProperties.from_json(request.data)
-    print(ngot.props)
-    edges, nodes, ngot = get_graph(get_config(), ngot)
-    # TODO update cluster info (links) in NGOT-datastructure return NGOT datastructure
-    clustered_graph, ngot = chinese_whispers(nodes, edges, ngot)
+    ngot = get_graph(get_config(), ngot)
+    clustered_graph, ngot = chinese_whispers(ngot)
+    # print(ngot)
+    # TODO repari Ngot (some values missing, wrong type) - return ngot
     c_graph = json.dumps([clustered_graph, {'target_word': ngot.props.target_word}, {
                          'singletons': ngot.singletons}], sort_keys=False, indent=4)
     return c_graph

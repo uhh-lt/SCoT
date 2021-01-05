@@ -45,7 +45,7 @@ class NGOTNode:
 class NGOTLink():
     # new format for links - this is compatible to all usages in Python, networkx, Vue, D3
     # networkx and d3 require a dic-format
-    # mapping to standard link [networkx, d3] puts all these elements into array/dictionary
+    # easy mapping puts all these elements into array/dictionary. use following function
     # [link.source, link.target, dataclasses.asdict(link)] for link in ngot_links]
     # id is source + "-" + target String [diese kombination kann nur einmal pro Graph vorkommen - da ngot links overlaid sind]
     id: Optional[str] = None
@@ -156,9 +156,9 @@ class NGOT():
     links: List[NGOTLink] = None
     # the derived list for networkx and d3 is a simple conversion into dictionary-form
     links_dic: List[None] = None
-    # the main datastructure for clusters managed by python and vue
-    clusters: List[NGOTCluster] = None
     # list with ids of singleton nodes [they are part of nodes] managed by python and vue
     singletons: List[str] = None
+    # the main datastructure for clusters managed by python and vue
+    clusters: List[NGOTCluster] = None
     # list with ids of transitlinks [they are part of links] managed by vue, colored grey by d3
     transit_links: List[str] = None

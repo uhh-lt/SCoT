@@ -1,4 +1,5 @@
 from model.ngot_model import NGOT, NGOTCluster, NGOTLink, NGOTProperties, NGOTNode
+import dataclasses
 
 """ maps old style nodes of form
     [id-string, {'weights': ..., 'Weight':, ...}]
@@ -6,12 +7,15 @@ from model.ngot_model import NGOT, NGOTCluster, NGOTLink, NGOTProperties, NGOTNo
 """
 
 
-def map_ngot_2_dic_nodes(ngot):
-    nodes = [[node.id, dict(node)] for node.id, node in ngot.nodes]
-    return nodes
+def map_ngot_nodes_2_dic(ngot):
+    return [[node.id, dataclasses.asdict(node)] for node in ngot.nodes]
 
 
-def map_nodes(nodes, ngot):
+def map_ngot_links_2_dic(ngot):
+    return [[link.source, link.target, dataclasses.asdict(link)] for link in ngot.links]
+
+
+def map_nodes_dic_2_ngot(nodes):
     # mapsdictionary nodes to ngot nodes
     # this mapping function is used after the graph building process - at this stage
     # the nodes only carry weight and time-id information
@@ -26,7 +30,8 @@ def map_nodes(nodes, ngot):
     return ngot_nodes
 
 
-def map_edges(edges, ngot):
+def map_edges_dic_2_ngot(edges):
+    # maps dictionary edges to ngot edges
     ngot_edges = []
     for edge in edges:
         ngot_edge = NGOTLink()
@@ -40,7 +45,7 @@ def map_edges(edges, ngot):
     return ngot_edges
 
 
-def map_clustered_graph_to_ngot(graph, edges, ngot):
+def update_ngot_with_clusters_and_node_infos_from_graph(graph, ngot):
     # function is used after clustering
     # uses the already mapped NGOT - nodes and adds cluster information from the dictionary-nodes
     # graph consists of nodes  in format array with document egdes = [[s, t, {}], ...], nodes=[[id, {}], ...]
@@ -52,6 +57,7 @@ def map_clustered_graph_to_ngot(graph, edges, ngot):
     # the missing values in properties should have been filled in in the graph-building section...
     graph_nodes = list(graph.nodes(data=True))
     # print(graph_nodes)
+    edges = ngot.links_dic
     cluster_set_id = set()
     cluster_set = []
     for g_node in graph_nodes:
@@ -95,5 +101,6 @@ def map_clustered_graph_to_ngot(graph, edges, ngot):
     inter_links = all_links - intra_links
     ngot.clusters = cluster_set
     ngot.transit_links = list(inter_links)
+    ngot.nodes_dic = map_ngot_nodes_2_dic(ngot)
     # print(ngot)
     return ngot

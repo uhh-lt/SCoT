@@ -2,7 +2,7 @@ import networkx as nx
 import random
 import json
 from model.ngot_model import NGOT, NGOTCluster, NGOTLink, NGOTProperties, NGOTNode
-from model.ngot_mapper import map_clustered_graph_to_ngot
+from model.ngot_mapper import update_ngot_with_clusters_and_node_infos_from_graph
 
 #  For the algorithm see the following paper
 #  Chris Biemann (2006):
@@ -72,15 +72,15 @@ def construct_graph(nodes_set, edges):
 
 
 # call chineses whispers and calc centrality
-def chinese_whispers(nodes, edges, ngot, iterations=15):
-    graph = construct_graph(nodes, edges)
+def chinese_whispers(ngot, iterations=15):
+    graph = construct_graph(ngot.nodes_dic, ngot.links_dic)
 
     centrality_nodes = nx.betweenness_centrality(graph)
     for node, centrality_score in centrality_nodes.items():
         graph.node[node]['centrality_score'] = centrality_score
     graph = chinese_whispers_algo(graph, iterations)
     # this needs graph.nodes, old edges (graph.edges not useable) and ngot
-    ngot = map_clustered_graph_to_ngot(graph, edges, ngot)
+    ngot = update_ngot_with_clusters_and_node_infos_from_graph(graph, ngot)
     json_graph = nx.readwrite.json_graph.node_link_data(graph)
 
     return json_graph, ngot

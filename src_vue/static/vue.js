@@ -218,6 +218,8 @@ let vueApp = new Vue({
 
       // derived props
       if (graph.props.graph_type == "ngot_interval") {
+        graph.props["number_of_ngot_nodes"] = null;
+        graph.props["number_of_ngot_directed_edges"] = null;
         graph.props["number_of_static_nodes_per_interval"] = vueApp.n_nodes;
         graph.props["number_of_static_directed_edges_per_interval"] =
           vueApp.e_edges;
@@ -228,12 +230,20 @@ let vueApp = new Vue({
         // the ngot nodes need to be determined once the graph has been calculated
       } else if (graph.props.graph_type == "ngot_overlay") {
         graph.props["number_of_ngot_nodes"] = vueApp.n_nodes;
-        graph.props["number_of_ngot_edges"] = vueApp.e_edges;
+        graph.props["number_of_ngot_directed_edges"] = vueApp.e_edges;
+        graph.props["number_of_static_nodes_per_interval"] = null;
+        graph.props["number_of_static_directed_edges_per_interval"] = null;
+        graph.props["number_of_static_nodes_global"] = null;
+        graph.props["number_of_static_directed_edges_global"] = null;
         // the global static and interval static nodes need to be determined once graph has been calc.
       } else if (graph.props.graph_type == "scot_scaled") {
         // scot scaled uses the overlay method mixed with a global scaled approach
         graph.props["number_of_ngot_nodes"] = vueApp.n_nodes;
         // => interval and global static need to be determined from graph
+        graph.props["number_of_ngot_directed_edges"] = null;
+        graph.props["number_of_static_nodes_per_interval"] = null;
+        graph.props["number_of_static_directed_edges_per_interval"] = null;
+        graph.props["number_of_static_nodes_global"] = null;
         // has been scaled already!
         graph.props["number_of_static_directed_edges_global"] = vueApp.e_edges;
         // => static edges per interval and ngot edges need to be determined from graph
