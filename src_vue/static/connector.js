@@ -1,13 +1,3 @@
-// data is gathered from these fields (see above methods)
-// JO = WORT1
-// EDGE - WORT1
-// data["word1"] = this.active_edge.source_text
-// data["word2"] = this.active_edge.target_text
-// NODE - WORT1
-// data["word1"] = this.active_node.source_text
-// data["word2"] = this.active_node.target_text
-// data["time_id"] = this.active_edge.time_ids[0]
-// BIM = WORT2
 function getCollections_io() {
   axios
     .get("./api/collections")
@@ -128,31 +118,38 @@ async function getData_io() {
     .post(url, graph.props)
     .then((res) => {
       let data_from_db = res.data;
-      console.log(res.data);
-      // build Model old
-      // graph.nodes = data_from_db[0].nodes;
-      // graph.links = data_from_db[0].links;
-      // graph.singletons = data_from_db[2].singletons;
-      // Send copy to vueApp for Display
-      // vueApp.singletons = data_from_db[2].singletons;
-      // build Model new
-      console.log(res.data);
+      // attach to graph
       graph.nodes = data_from_db.nodes;
       graph.links = data_from_db.links;
       graph.singletons = data_from_db.singletons;
       graph.props = data_from_db.props;
-      // // send copy to vue app
-      vueApp.singletons = data_from_db.singletons;
-      // execute mapping to old node attribute "class" : "cluster_id" -> "class"
+      graph.clusters = data_from_db.clusters;
+      graph.transit_links = data_from_db.transit_links;
+      // clean up of data - python cannot use the reserved word "class"
+      // execute mapping to node attribute "class" : "cluster_id" -> "class"
       for (let node of graph.nodes) {
         node.class = node.cluster_id;
       }
-      // execute mapping of links
+      // copy target and source to source-Text and target-text: d3 is working on them
+      // TODO refactor
       for (let link of graph.links) {
         link.target_text = link.target;
         link.source_text = link.source;
       }
+      // log original data
+      console.log("node data axios received ", graph.nodes);
+      console.log("link data axios received ", graph.links);
+      console.log("prop data axios received ", graph.props);
+      console.log("cluster data axios received ", graph.clusters);
+      console.log("transit links data axios received ", graph.transit_links);
+      console.log("singleton data axios received ", graph.singletons);
       console.log("end of getData_io");
+      // // send reference pointer copy to vue app
+      vueApp.singletons = data_from_db.singletons;
+      // and deep copy to d3 - it works on these data and modifies them
+      d3Data.links = JSON.parse(JSON.stringify(graph.links));
+
+      // execute mapping to node attribute "class" : "cluster_id" -> "class"
     })
     .catch((error) => {
       console.log(error);

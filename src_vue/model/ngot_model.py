@@ -8,6 +8,7 @@ This defines the model of the clustered neighbourhood graph over time
 It dynamically merges a number of static nodes and edges
 The same model is used in the fronted
 The transfer-format is JSON - dataclass-json decorators are used for serialization and deserialization
+Deep copies of the model are provided to different additional frameworks for manipulation (ie d3 and networkx)
 """
 
 
@@ -49,7 +50,7 @@ class NGOTLink():
     # [link.source, link.target, dataclasses.asdict(link)] for link in ngot_links]
     # id is source + "-" + target String [diese kombination kann nur einmal pro Graph vorkommen - da ngot links overlaid sind]
     id: Optional[str] = None
-    # node is von source und target
+    # node is s von source und target
     source: Optional[str] = None
     target: Optional[str] = None
     # max weight
@@ -71,7 +72,7 @@ class NGOTCluster:
     # changeable by user
     name: Optional[str] = None
     # Display
-    color: Optional[int] = None
+    colour: Optional[int] = None
     # data information with IDs [-> can be used as labels]
     cluster_nodes: List[str] = None
     # edges between cluster nodes with IDs [-> for coloring]

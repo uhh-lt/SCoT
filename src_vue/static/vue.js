@@ -15,13 +15,15 @@ let vueApp = new Vue({
   computed: {
     // general svg
     // for setting the view port size for the graph
-    viewport_height() {
+    // TODO is this the Viewbox? -- there may be an error here
+    viewbox_height() {
       return screen.availHeight * 1;
     },
-    viewport_width() {
+    viewbox_width() {
       return screen.availWidth * 1;
     },
     // for setting the svg size for the graph
+    // THIS IS THE VIEWPORT
     svg_height() {
       return screen.availHeight * 1.5;
     },
@@ -69,6 +71,43 @@ let vueApp = new Vue({
       } else {
         return this.n_nodes * (this.n_nodes - 1);
       }
+    },
+    node_info() {
+      // explanation text sidebar left
+      let grapht = this.graph_type_keys[this.graph_type];
+
+      if (grapht == "ngot_interval") {
+        return "N [number of static nodes per interval]";
+      } else if (grapht == "ngot_overlay") {
+        return "N [number of NGoT nodes]";
+      } else if (grapht == "scot_scaled") {
+        return "N [number of NGoT nodes]";
+      } else if (grapht == "ngot_global") {
+        return "N [number of static nodes globally - multiplied by I]";
+      } else {
+        return "N [number of NGoT nodes]";
+      }
+    },
+
+    density_edge_info() {
+      // explanation text sidebar left
+      let grapht = this.graph_type_keys[this.graph_type];
+      // derived props
+      if (grapht == "ngot_interval") {
+        return "static directed edges per interval";
+      } else if (grapht == "ngot_overlay") {
+        return "NGoT directed edges";
+      } else if (grapht == "scot_scaled") {
+        return "static directed edges globally";
+      } else if (grapht == "ngot_global") {
+        return "static directed edges globally";
+
+        // => static edges and nodes need to be determined from graph
+      } else {
+        return "density";
+      }
+
+      // ("density in %: [{{edges}} of {{max_dir_edges}} dir");
     },
 
     // ############### RIGHT_SIDEBAR CLUSTER ANALYSIS -----------------------------------------------------------------------------------------
@@ -143,41 +182,6 @@ let vueApp = new Vue({
       }
 
       return start + " - " + end;
-    },
-    node_info() {
-      let grapht = this.graph_type_keys[this.graph_type];
-
-      if (grapht == "ngot_interval") {
-        return "N [number of static nodes per interval]";
-      } else if (grapht == "ngot_overlay") {
-        return "N [number of NGoT nodes]";
-      } else if (grapht == "scot_scaled") {
-        return "N [number of NGoT nodes]";
-      } else if (grapht == "ngot_global") {
-        return "N [number of static nodes globally - multiplied by I]";
-      } else {
-        return "N [number of NGoT nodes]";
-      }
-    },
-
-    density_edge_info() {
-      let grapht = this.graph_type_keys[this.graph_type];
-      // derived props
-      if (grapht == "ngot_interval") {
-        return "static directed edges per interval";
-      } else if (grapht == "ngot_overlay") {
-        return "NGoT directed edges";
-      } else if (grapht == "scot_scaled") {
-        return "static directed edges globally";
-      } else if (grapht == "ngot_global") {
-        return "static directed edges globally";
-
-        // => static edges and nodes need to be determined from graph
-      } else {
-        return "density";
-      }
-
-      // ("density in %: [{{edges}} of {{max_dir_edges}} dir");
     },
   },
   methods: {
@@ -450,12 +454,12 @@ let vueApp = new Vue({
 		*/
     recluster() {
       vueApp.overlay_main = true;
-      // TODO USE NEW DATASTRUCTURE
-      /*   if (vueApp.highlightWobblies === true) {
+      if (vueApp.highlightWobblies === true) {
         vueApp.resetCentralityHighlighting();
         vueApp.highlightWobblies = false;
       }
-      //document.getElementById("edit_clusters_popup").style.display = "none";
+      // TODO USE NEW DATASTRUCTURE
+      document.getElementById("edit_clusters_popup").style.display = "none";
 
       let svg = d3.select("#svg");
       let nodes = svg.selectAll(".node");
@@ -507,7 +511,7 @@ let vueApp = new Vue({
       // store all the nodes and links in a data object to be sent to the BE
       data["nodes"] = nodes_array;
       data["links"] = link_array;
- */
+
       axios
         .post("./api/reclustering", data)
         .then(function (response) {
@@ -1031,9 +1035,12 @@ let vueApp = new Vue({
       delete_selected_nodes_d3();
     },
     /*
-		Delete a node from the data
+		Delete a node from the model
 		*/
     deletenode(node_id) {
+      console.log("in vueApp.deleteNode node_id = ", node_id);
+
+      // deletes the node
       for (let i = 0; i < graph.nodes.length; i++) {
         if (graph.nodes[i]["id"] === node_id) {
           graph.nodes.splice(i, 1);

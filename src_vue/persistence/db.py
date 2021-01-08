@@ -208,7 +208,7 @@ class Database():
                 # count per interval
                 con_dic[int(row['time_id'])].append("1")
 
-                # create tmp static NGOT edges from one time-id
+                # create tmp static NGOT links from one time-id
                 ngot_link = NGOTLink()
                 ngot_link.id = str(row['word1']) + "-" + str(
                     row['word2'])
@@ -266,7 +266,7 @@ class Database():
         ngot.singletons = singletons
         ngot.links = ngot_links
         ngot.links_dic = links_dic
-        ngot.number_of_ngot_directed_edges = len(links_dic)
+        ngot.props.number_of_ngot_directed_edges = len(links_dic)
         ngot.nodes_dic = nodes_dic_filtered
         ngot.nodes = map_nodes_dic_2_ngot(ngot.nodes_dic)
         print("result: Anzahl NGOT directed links :", len(links_dic))
@@ -342,13 +342,12 @@ class Database():
     def get_edges_overlay(self, ngot):
         # EDGE ALGORITHM FOR NGOT-Overlay
         # achieves fixed ngot-overlay by allocating static edges until ngot-threshold reached
-        # uses the maximal possible number of edges to fulfil requirement (last one before threshold+1)
+        # uses the maximal possible number of static directed edges to fulfil requirement
         # ------------------
         # params
         nodes = ngot.nodes_dic
         max_edges = ngot.props.number_of_ngot_directed_edges
         time_ids = ngot.props.selected_time_ids
-        remove_singletons = ngot.props.remove_singletons
         # Hilfsvariablen
         edges = []
         connections = []
@@ -371,7 +370,7 @@ class Database():
             nodes=node_list,
             time_ids=time_ids
         )
-        # get all // alternativ restrict already here: to  global_max = max_edges * i
+        # put all into connections-array
         for row in con:
             if not str(row['word1']) == str(row['word2']) and int(row['time_id']) in time_ids:
                 # and len(connections)<int(global_max):
@@ -379,7 +378,7 @@ class Database():
                     row['word2']), float(row['score']), int(row['time_id'])])
         print("ngot overlay all possible directed edges", len(connections))
 
-        # filter global max-set of edges by those which correspond to the more specific time-ids of teh nodes
+        # FILTER 1: filter global max-set of edges by those which correspond to the more specific time-ids of the nodes
         # REDUCTION1: begin time overlay process of edges
         potential_edges = {}
         singletons = []
@@ -396,7 +395,7 @@ class Database():
                 continue
         print("potential directed time-overlayd edges", len(potential_edges))
 
-        # REDUCTION2: reduce max undirected edges to the number of global overlay undirected edges = max_edges in total
+        # REDUCTION: transform directed potential edges to "undirected" edges (just keep one of two corresponding ones)
         overlay = []
         for key in potential_edges.keys():
             if ((key[0], key[1]) in overlay or (key[1], key[0]) in overlay):
@@ -404,14 +403,15 @@ class Database():
             else:
                 overlay.append((key[0], key[1]))
 
-        # shorten overlay to max global (time-overlaid) length
+        # REDUCTION 3: Choose Top max global "undirected" edges from overlay.array
         undirected = int((max_edges+1)/2)
-        # check that is not larger than all potential edges (check macht klarer)
+        # define top max - check that is not larger than all potential undirected edges (check macht klarer)
         if undirected > int((len(potential_edges)+1)/2):
             undirected = int((len(potential_edges)+1)/2)
         overlay = overlay[:undirected]
         print("overlay UNDIRECTED laenge adated to available edges", len(overlay))
-        # trim potential edges to values in overlay (which is shortened already)
+
+        # TRIM potential DIRECTED edges to values in overlay array (which is shortened already)
         potential_edges_new = {}
         for key, value in potential_edges.items():
             if (key[0], key[1]) in overlay or (key[1], key[0]) in overlay:
@@ -419,12 +419,12 @@ class Database():
 
         print("new time-overlaid directed edges", len(potential_edges_new))
 
-        # map to edge format
+        # MAP to final edge format
         for k, v in potential_edges_new.items():
             edges.append((k[0], k[1], {'weight': max(
                 v[0]), 'weights': v[0], 'time_ids': v[1], 'source_text': k[0], 'target_text': k[1]}))
 
-        # find the singletons (ie those nodes that have no connecting edge)
+        # FIND the singletons (ie those nodes that have no connecting edge)
         for n in node_list:
             exists = False
             for k, v in potential_edges_new.items():

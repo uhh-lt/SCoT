@@ -36,7 +36,7 @@ const render_graph = function () {
     .attr("height", vueApp.svg_height)
     .attr(
       "viewBox",
-      " 0 0 " + vueApp.viewport_width + " " + vueApp.viewport_height
+      " 0 0 " + vueApp.viewbox_width + " " + vueApp.viewbox_height
     )
     .attr("preserveAspectRatio", "xMidYMid meet")
     .classed("svg-content", true)
@@ -62,8 +62,8 @@ const render_graph = function () {
 
   t.append("text")
     .attr("class", "target")
-    .attr("x", vueApp.viewport_width / 3)
-    .attr("y", vueApp.viewport_height / 3)
+    .attr("x", vueApp.viewbox_width / 3)
+    .attr("y", vueApp.viewbox_height / 3)
     .style("font-family", "helvetica, arial, sans-serif")
     .style("font-size", "25px")
     .style("font-weight", "bold")
@@ -78,7 +78,7 @@ const render_graph = function () {
     .force(
       "link",
       d3
-        .forceLink(graph.links)
+        .forceLink(d3Data.links)
         .id(function (d) {
           return d.id;
         })
@@ -97,7 +97,7 @@ const render_graph = function () {
     .force("collide", d3.forceCollide().radius(10))
     .force(
       "center",
-      d3.forceCenter(vueApp.viewport_width / 3, vueApp.viewport_height / 3)
+      d3.forceCenter(vueApp.viewbox_width / 3, vueApp.viewbox_height / 3)
     )
     .on("tick", ticked);
 
@@ -248,7 +248,7 @@ const render_graph = function () {
     .attr("stroke-opacity", vueApp.base_link_opacity)
     .attr("class", "link")
     .selectAll("line")
-    .data(graph.links)
+    .data(d3Data.links)
     .enter()
     .append("line")
     .attr("source", function (d) {
@@ -310,6 +310,8 @@ const render_graph = function () {
     .on("mouseout", d3Data.time_diff_tip_link.hide);
 
   d3Data.simulation.on("tick", ticked);
+
+  console.log("graph construct node", d3Data.node);
 
   /* // release all pinned nodes and restart the simulation
   // Hardly applicable to a new graph
@@ -526,14 +528,14 @@ function delete_cluster_d3(cluster_name, cluster_id, labels) {
     .exit()
     .remove();
   d3Data.link
-    .data(graph.links, function (d) {
+    .data(d3Data.links, function (d) {
       return d.source.id + "-" + d.target.id;
     })
     .exit()
     .remove();
 
   d3Data.simulation.nodes(graph.nodes);
-  d3Data.simulation.force("link").links(graph.links);
+  d3Data.simulation.force("link").links(d3Data.links);
   d3Data.simulation.alpha(1).restart();
 
   // Update the number of updated senses for when saving the file the name will be correct
@@ -550,34 +552,6 @@ function delete_cluster_d3(cluster_name, cluster_id, labels) {
 
 // update the connected nodes
 // vueApp.calc_linkedByIndex();
-
-function findSelectedNodes_d3() {
-  let list = [];
-  let selected_nodes = d3.select(".selected");
-
-  selected_nodes.each(function (d, i) {
-    let node_characteristics = {};
-    let childnodes = this.childNodes;
-
-    childnodes.forEach(function (d) {
-      if (d.tagName === "circle") {
-        // cluster nodes should not be considered
-        if (d.getAttribute("cluster_node") === "false") {
-          node_characteristics["colour"] = d.getAttribute("fill");
-          vueApp.created_cluster_colour = node_characteristics["colour"];
-          node_characteristics["cluster_id"] = d.getAttribute("cluster_id");
-          node_characteristics["cluster_name"] = d.getAttribute("cluster");
-        }
-      }
-
-      if (d.tagName === "text") {
-        node_characteristics["id"] = d.getAttribute("text");
-      }
-    });
-    list.push(node_characteristics);
-  });
-  vueApp.clicked_nodes = list;
-}
 
 function findColour_d3(node_id) {
   let nodes = d3.selectAll(".node").selectAll("g");
@@ -940,7 +914,7 @@ function restart() {
   d3Data.node = node.merge(g);
 
   // Apply the general update pattern to the links.
-  let link = d3Data.link.data(graph.links, function (d) {
+  let link = d3Data.link.data(d3Data.links, function (d) {
     return d.source.id + "-" + d.target.id;
   });
   link.exit().remove();
@@ -961,7 +935,7 @@ function restart() {
 
   // Update and restart the d3Data.simulation.
   d3Data.simulation.nodes(graph.nodes);
-  d3Data.simulation.force("link").links(graph.links);
+  d3Data.simulation.force("link").links(d3Data.links);
   ticked();
   d3Data.simulation.alpha(1).restart();
 
@@ -971,7 +945,7 @@ function restart() {
 
 function addlink(source, target) {
   if (source !== undefined && target !== undefined) {
-    graph.links.push({ source: source, target: target });
+    d3Data.links.push({ source: source, target: target });
     restart();
   }
 }
@@ -1045,14 +1019,14 @@ function delete_multiple_nodes_d3(labels) {
     .exit()
     .remove();
   d3Data.link
-    .data(graph.links, function (d) {
+    .data(d3Data.links, function (d) {
       return d.source.id + "-" + d.target.id;
     })
     .exit()
     .remove();
 
   d3Data.simulation.nodes(graph.nodes);
-  d3Data.simulation.force("link").links(graph.links);
+  d3Data.simulation.force("link").links(d3Data.links);
   d3Data.simulation.alpha(1).restart();
 }
 
@@ -1318,7 +1292,7 @@ function reset_time_diff_colours_d3() {
   d3Data.node.on("mouseout", mouseOut);
 }
 
-// ########################## CLUSTER ANALYSIS FUNCTIONS #############################################################
+// ########################## CLUSTER ANALYSIS - FUNCTIONS #############################################################
 
 function findWobblyCandidates_d3() {
   vueApp.wobblyCandidates = [];
@@ -1366,8 +1340,38 @@ function findWobblyCandidates_d3() {
   });
 }
 
+// ## READ AND DELETE -------------------------------------------
+
+function findSelectedNodes_d3() {
+  let list = [];
+  let selected_nodes = d3.select(".selected");
+
+  selected_nodes.each(function (d, i) {
+    let node_characteristics = {};
+    let childnodes = this.childNodes;
+
+    childnodes.forEach(function (d) {
+      if (d.tagName === "circle") {
+        // cluster nodes should not be considered
+        if (d.getAttribute("cluster_node") === "false") {
+          node_characteristics["colour"] = d.getAttribute("fill");
+          vueApp.created_cluster_colour = node_characteristics["colour"];
+          node_characteristics["cluster_id"] = d.getAttribute("cluster_id");
+          node_characteristics["cluster_name"] = d.getAttribute("cluster");
+        }
+      }
+
+      if (d.tagName === "text") {
+        node_characteristics["id"] = d.getAttribute("text");
+      }
+    });
+    list.push(node_characteristics);
+  });
+  vueApp.clicked_nodes = list;
+}
+
 function delete_selected_nodes_d3() {
-  vueApp.findSelectedNodes();
+  vueApp.findSelectedNodes_d3();
   vueApp.clicked_nodes.forEach(function (d) {
     vueApp.deletenode(d.id);
     vueApp.deletelinks(d.id);
@@ -1379,7 +1383,7 @@ function delete_selected_nodes_d3() {
   node.exit().remove();
   d3Data.node = node.enter().append("g").merge(node);
 
-  var link = d3Data.link.data(graph.links, function (d) {
+  var link = d3Data.link.data(d3Data.links, function (d) {
     return d.source.id + "-" + d.target.id;
   });
   link.exit().remove();
@@ -1393,7 +1397,7 @@ function delete_selected_nodes_d3() {
 
   // update simulation
   d3Data.simulation.nodes(graph.nodes);
-  d3Data.simulation.force("link").links(graph.links);
+  d3Data.simulation.force("link").links(d3Data.links);
 
   d3Data.simulation.alpha(1).restart();
 
@@ -1402,24 +1406,26 @@ function delete_selected_nodes_d3() {
 }
 
 function deletelinks_d3(node_id) {
-  var allLinks = d3.select(".link").selectAll("line");
+  let allLinks = d3.select(".link").selectAll("line");
 
   allLinks.each(function (d) {
     if (
       this.getAttribute("target") === node_id ||
       this.getAttribute("source") === node_id
     ) {
-      for (var i = 0; i < graph.links.length; i++) {
+      for (let i = 0; i < d3Data.links.length; i++) {
         if (
-          graph.links[i].target.id === node_id ||
-          graph.links[i].source.id === node_id
+          d3Data.links[i].target.id === node_id ||
+          d3Data.links[i].source.id === node_id
         ) {
-          graph.links.splice(i, 1);
+          d3Data.links.splice(i, 1);
         }
       }
     }
   });
 }
+
+// ########### NODE SIZE ---------------------------------------------------------
 
 function resetCentralityHighlighting_d3() {
   let circles = d3.selectAll(".node").selectAll("g").select("circle");
@@ -1695,16 +1701,16 @@ function eventListenerFunc() {
         var target = vueApp.updated_links[i].target;
         var found = false;
 
-        for (var j = 0; j < graph.links.length; j++) {
+        for (var j = 0; j < d3Data.links.length; j++) {
           if (
-            graph.links[j].source.id === source &&
-            graph.links[j].target.id === target
+            d3Data.links[j].source.id === source &&
+            d3Data.links[j].target.id === target
           ) {
             found = true;
           }
         }
         if (found === false) {
-          graph.links.push(vueApp.updated_links[i]);
+          d3Data.links.push(vueApp.updated_links[i]);
         }
       }
       update_graph();
@@ -1802,7 +1808,7 @@ function update_graph() {
   d3Data.node = node.merge(g);
 
   // Apply the general update pattern to the links.
-  let link = d3Data.link.data(graph.links, function (d) {
+  let link = d3Data.link.data(d3Data.links, function (d) {
     return d.source.id + "-" + d.target.id;
   });
   link.exit().remove();
@@ -1829,7 +1835,7 @@ function update_graph() {
 
   // Update and restart the d3Data.simulation.
   d3Data.simulation.nodes(graph.nodes);
-  d3Data.simulation.force("link").links(graph.links);
+  d3Data.simulation.force("link").links(d3Data.links);
   ticked();
 
   // colour the links
@@ -1863,7 +1869,7 @@ function update_graph() {
   // keep track of the connected nodes
   vueApp.calc_linkedByIndex();
   // linkedByIndex = {};
-  // graph.links.forEach(function(d) {
+  // d3Data.links.forEach(function(d) {
   // 	linkedByIndex[d.source.id + "," + d.target.id] = 1;
   // });
 }
@@ -1873,7 +1879,10 @@ function update_general_settings_d3() {
    * TODO WHY IS THIS WORKING ON LOCAL STATE???? [CH]
    */
   let svg = d3.select("svg");
-  svg.attr("viewBox", "0 0 " + vueApp.svg_height + " " + vueApp.svg_width);
+  svg.attr(
+    "viewBox",
+    "0 0 " + vueApp.viewbox_width + " " + vueApp.viewbox_height
+  );
   let links = d3.selectAll(".link");
   links.each(function (d) {
     var children = this.childNodes;

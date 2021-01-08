@@ -62,6 +62,7 @@ def get_clustered_graph():
     ngot = NGOT()
     if request.method == 'POST':
         ngot.props = NGOTProperties.from_json(request.data)
+        # print(request.data)
     ngot = get_graph(get_config(), ngot)
     old_graph, ngot = chinese_whispers(ngot)
     # delete information that was only used for the backend
@@ -69,6 +70,7 @@ def get_clustered_graph():
     ngot.links_dic = None
     # serialize dataclass-structure to json
     ngot_json = ngot.to_json()
+    # print(ngot_json)
     return ngot_json
 
 

@@ -1,9 +1,13 @@
 // DATA ##################################################
-// (1) graph: The application works on a graph as the main datastructure
-// (1) vueData: it needs some duplicate parts of the graph for view-manipulation (while not changing the original ones)
-// (3) d3Data: it derives from this main-graph-datastructure a d3-graph model for display in the DOM
+// (1) graph: The whole application works on a graph as the main datastructure - this should be immutable - unless explicitly changes by a setter function
+// THIS MAIN MODEL IS GIVEN TO THREE FRAMEWORKS AS (DEEP) COPIES AS THESE MANIPULATE THE DATA
+// (1) Backend: networkX - requires a certain format and works on this
+// (2) Frontend: vueData: it needs some duplicate parts of the graph for view-manipulation (while not changing the original ones)
+// (3) Frontend: d3Data: it needs deep copies of the graph links as it changes the objects (ie resolves target and source to actual nodes)
+//  (§) D3: AND it creates additional nodes and links vars with even more view information - thus D3 has TWO link arrays on its own seperate to the model!
 //
-// The naming scheme of the application uses graph and network-terminology interchangeable
+
+// The naming scheme uses graph and network-terminology interchangeable
 // "A complex network is a graph in which a set of elements is associated with a set of entities, and in which the relation
 // between the elements represents a relationship between the corresponding entities".
 // Links = edges , nodes = vertices
@@ -12,8 +16,8 @@
 
 let graph = {
   /**
-   * This is the BASE-MODEL on which the two frameworks work
-   * Some props also exist as duplicates in the VueAPP (where they can be changed)
+   * This is the BASE-MODEL -
+   * Some props also exist as deep copies in the VueAPP and d3 for manipulation
    * for example: target-word here is immutable for this graph
    * BUT target-word in the vue-app can be changed by user (it is committed by create graph to this model)
    */
@@ -24,11 +28,6 @@ let graph = {
   clusters: [],
   transit_links: [],
   props: {
-    // DEFINITIONS
-    // ngot/dynamic refers to the ngot - overlay/merging methods [an edge with several time-ids]
-    // static refers to the static graph per interval [one static edge = in one interval]
-    // For dynamic vs static, see Rossetti et. al. Community Discovery in Dynmic Networks 2018
-
     // Interval-Data-Parameters
     collection_key: "",
     start_year: "",
@@ -69,9 +68,15 @@ let graph = {
 };
 
 let d3Data = {
+  // d3 changes the graph data by resolving
+  // link ids to nodes - it thus needs it own data
+  // link data to work on - these are the base links
+  links: [],
+  // in addition it creates further representations of the nodes and links - so called view nodes, view links
   node: "",
   circles: [],
   link: "",
+  // further vars that need to be shared among the various functions
   svg: null,
   brush: null,
   drag_node: null,
@@ -83,6 +88,7 @@ let d3Data = {
 
 let vueData = {
   // (1) GRAPH PARAMETERS DISPLAYED IN SLIDER LEFT ------------------------------------------
+  // ATTENTION THESE PROPS ARE SEPARATE TO THE GRAPH MODEL - They can be changed here, but need to be consistent in model
   // all possible collection info queried from database via rest-api
   collections: {},
   //Selected User Values for frontend- suggestions from collections
