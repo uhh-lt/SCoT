@@ -14,6 +14,7 @@ from services.cluster import chinese_whispers
 from services.graphs import get_graph
 from services.info import collections_info, get_edge_info, simbim, cluster_information, documents
 from model.ngot_model import NGOT, NGOTCluster, NGOTLink, NGOTProperties, NGOTNode
+from model.ngot_mapper import map_ngot_links_2_dic, map_ngot_nodes_2_dic
 
 
 class CustomFlask(Flask):
@@ -79,19 +80,20 @@ def get_clustered_graph():
 # recluster the existing cumulated graph by running Chinese Whispers on it
 def recluster_graph():
     # extract data
-    if request.method == 'POST':
-        data = json.loads(request.data)
     ngot = NGOT()
-    ngot.links_dic = []
-    ngot.nodes_dic = data["nodes"]
-    links_list = data["links"]
-    for item in links_list:
-        ngot.links_dic.append((str(item["source"]), str(item["target"]), {
-            'weight': float(item["weight"])}))
+    if request.method == 'POST':
+        ngot = NGOT.from_json(request.data)
+    # create links dic and nodes dic
+    ngot.nodes_dic = map_ngot_nodes_2_dic(ngot)
+    ngot.links_dic = map_ngot_links_2_dic(ngot)
     # recluster
     reclustered_graph, ngot = chinese_whispers(ngot)
-    # return
-    return json.dumps(reclustered_graph)
+    # delete information that was only used for the backend
+    ngot.nodes_dic = None
+    ngot.links_dic = None
+    # serialize dataclass-structure to json
+    ngot_json = ngot.to_json()
+    return ngot_json
 
 
 # ENDPOINTS3: ADDITIONAL INFORMATION ---------------------------------------------------

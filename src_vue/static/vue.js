@@ -16,19 +16,46 @@ let vueApp = new Vue({
     // general svg
     // for setting the view port size for the graph
     // TODO is this the Viewbox? -- there may be an error here
+    clusters_no_singleton() {
+      let ret = this.clusters.filter((d) => d.labels.length > 1);
+      let map_nodes = {};
+      for (let node of graph.nodes) {
+        map_nodes[node.id] = node;
+      }
+      for (let cluster of this.clusters) {
+        for (let label of cluster["labels"]) {
+          label.text2 =
+            label.text + "  [" + map_nodes[label.text].time_ids + "]";
+        }
+      }
+
+      return ret;
+    },
+    singletons_with_time() {
+      let map_nodes = {};
+      for (let node of graph.nodes) {
+        map_nodes[node.id] = node;
+      }
+      let ret = [];
+      for (let singleton of this.singletons) {
+        ret.push(singleton + "  [" + map_nodes[singleton].time_ids + "]");
+      }
+      return ret;
+    },
+
     viewbox_height() {
-      return screen.availHeight * 1;
+      return screen.height * 1;
     },
     viewbox_width() {
-      return screen.availWidth * 1;
+      return screen.width * 1;
     },
     // for setting the svg size for the graph
     // THIS IS THE VIEWPORT
     svg_height() {
-      return screen.availHeight * 1.5;
+      return screen.height * 1;
     },
     svg_width() {
-      return screen.availWidth * 1.5;
+      return screen.width * 1.3;
     },
     // ######################   SIDEBAR LEFT GRAPH-CREATION ------------------------------------------------------------------------------
     /**
@@ -319,9 +346,10 @@ let vueApp = new Vue({
       await getData_io();
 
       // Call D3 function to render new graph
-      delete_graph();
-      render_graph();
-
+      //delete_graph();
+      //render_graph();
+      await graph_init();
+      await graph_crud(graph.nodes, d3Data.links);
       // update the cluster information in the Vue data variable after initializing the D3 graph
       vueApp.get_clusters();
       // switch off overlay
@@ -450,162 +478,22 @@ let vueApp = new Vue({
       });
     },
     /*
-		Send all the nodes and edges to the backend, recluster them and change the nodes in the graph accordingly (cluster id, cluster name, colour)
+		Send all the nodes and edges to the backend, recluster them, delete and restart graph
 		*/
-    recluster() {
+    recluster: async function () {
       vueApp.overlay_main = true;
-      if (vueApp.highlightWobblies === true) {
-        vueApp.resetCentralityHighlighting();
-        vueApp.highlightWobblies = false;
-      }
-      // TODO USE NEW DATASTRUCTURE
-      document.getElementById("edit_clusters_popup").style.display = "none";
-
-      let svg = d3.select("#svg");
-      let nodes = svg.selectAll(".node");
-      let links = svg.selectAll(".link");
-
-      let data = {};
-
-      // accumulate all the graph nodes
-      let nodes_array = [];
-      nodes.selectAll("g").each(function (d, i) {
-        let childnodes = this.childNodes;
-
-        let is_cluster_node;
-        childnodes.forEach(function (d, i) {
-          if (d.tagName === "circle") {
-            is_cluster_node = d.getAttribute("cluster_node");
-          }
-        });
-
-        if (is_cluster_node === "false") {
-          childnodes.forEach(function (d, i) {
-            if (d.tagName === "text") {
-              nodes_array.push(d.getAttribute("text"));
-            }
-          });
-        }
-      });
-
-      // accumulate all the links
-      let link_array = [];
-
-      links.each(function (d, i) {
-        let childnodes = this.childNodes;
-        childnodes.forEach(function (d, i) {
-          let link = {};
-          let source = d.getAttribute("source");
-          let target = d.getAttribute("target");
-
-          if (nodes_array.includes(source) && nodes_array.includes(target)) {
-            link["source"] = source;
-            link["target"] = target;
-            link["weight"] = d.getAttribute("weight");
-
-            link_array.push(link);
-          }
-        });
-      });
-
-      // store all the nodes and links in a data object to be sent to the BE
-      data["nodes"] = nodes_array;
-      data["links"] = link_array;
-
-      axios
-        .post("./api/reclustering", data)
-        .then(function (response) {
-          this.newclusters = response.data;
-
-          let colour = d3.scaleOrdinal(d3.schemePaired);
-
-          let newClusteredNodes = this.newclusters.nodes;
-
-          let texts = nodes.selectAll("g").select("text");
-          let circles = nodes.selectAll("g").select("circle");
-
-          for (let i = 0; i < newClusteredNodes.length; i++) {
-            let node_id = newClusteredNodes[i].id;
-            let node_new_cluster = newClusteredNodes[i].class;
-            //let node_centr_score = newClusteredNodes[i].centrality_score;
-            // assign the updated attributes to the nodes
-            // Careful, data is not bound to DOM!
-            texts.each(function (d, i) {
-              let t = d3.select(this);
-              if (t.attr("text") === node_id) {
-                let circle = d3.select(circles.nodes()[i]);
-                //circle.attr("centrality_score", node_centr_score)
-                circle.attr("cluster", node_new_cluster);
-                circle.attr("fill", function () {
-                  return colour(node_new_cluster);
-                });
-                circle.attr("cluster_id", node_new_cluster);
-                circle.attr("cluster_node", false);
-              }
-            });
-          }
-          // update the data letiable clusters
-          vueApp.get_clusters();
-
-          //let links = d3.selectAll(".link");
-
-          links.each(function () {
-            let children = this.childNodes;
-            children.forEach(function (d, i) {
-              let is_in_cluster = false;
-              let link = {};
-              let source = d.getAttribute("source");
-              let target = d.getAttribute("target");
-              let weight = d.getAttribute("weight");
-              link["source"] = source;
-              link["target"] = target;
-              link["weight"] = weight;
-              if (vueApp.includes(link_array, link)) {
-                console.log("includes");
-                for (let i = 0; i < vueApp.clusters.length; i++) {
-                  let node_ids = [];
-                  vueApp.clusters[i].labels.forEach(function (p) {
-                    node_ids.push(p.text);
-                  });
-                  if (node_ids.includes(source) && node_ids.includes(target)) {
-                    let cluster_colour = vueApp.clusters[i].colour;
-                    console.log(
-                      source,
-                      target,
-                      d.getAttribute("stroke"),
-                      cluster_colour
-                    );
-                    d.setAttribute("stroke", cluster_colour);
-                    console.log(d.getAttribute("stroke"));
-                    is_in_cluster = true;
-                  }
-                }
-                if (!is_in_cluster) {
-                  d.setAttribute("stroke", "#999");
-                }
-              }
-            });
-          });
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
-      console.log("in recluster ende");
-      this.overlay_main = false;
-    },
-
-    includes(array, obj) {
-      let found = false;
-      array.forEach((d) => {
-        if (
-          d.source === obj.source &&
-          d.target === obj.target &&
-          d.weight === obj.weight
-        ) {
-          found = true;
-        }
-      });
-      return found;
+      vueApp.graph_rendered = false;
+      vueApp.wait_rendering = true;
+      d_simulation.stop();
+      await recluster_io();
+      //delete_graph();
+      //render_graph();
+      await graph_crud(graph.nodes, d3Data.links);
+      d_simulation.restart();
+      vueApp.get_clusters();
+      vueApp.graph_rendered = true;
+      vueApp.overlay_main = false;
+      vueApp.wait_rendering = false;
     },
 
     /*
@@ -751,6 +639,8 @@ let vueApp = new Vue({
 		Data Changes---
 		*/
     applyClusterSettings() {
+      // this.toggle_time_diff();
+
       let svg = d3.select("#svg");
       let nodes = svg.selectAll(".node");
       let links = svg.selectAll(".link");
@@ -763,6 +653,7 @@ let vueApp = new Vue({
         let cluster_id = vueApp.clusters[i].cluster_id;
         let cluster_name = vueApp.clusters[i].cluster_name;
         let colour = vueApp.clusters[i].colour;
+
         //let add_cluster_node = vueApp.clusters[i].add_cluster_node;
         let labels = vueApp.clusters[i].labels;
         let text_labels = [];
@@ -821,12 +712,13 @@ let vueApp = new Vue({
             source = p.getAttribute("source");
             target = p.getAttribute("target");
             if (text_labels.includes(source) && text_labels.includes(target)) {
+              console.log("hier");
               p.setAttribute("stroke", colour);
             }
           });
         });
       }
-
+      // this.get_clusters();
       console.log(
         "++++++++++++in graph apply settings button +++++++++++++++++++++"
       );
@@ -934,7 +826,7 @@ let vueApp = new Vue({
       // Refactoring this distinguishes between basic data-structure and clusters managed by Vue
       // Works on local clusters before assigning it
       vueApp.clusters = [];
-      graph.clusters = [];
+      //graph.clusters = [];
       let clusters = [];
 
       // Rectoring: This is where things get a bit funky
@@ -998,13 +890,13 @@ let vueApp = new Vue({
           }
         }
         clusters.sort(compare_clusters);
-        //console.log(clusters)
       });
 
       /* for (let i = 0; i < clusters.length; i++) {
         Vue.set(vueApp.clusters, i, clusters[i]);
       } */
-      graph.clusters = clusters;
+      //graph.clusters = clusters;
+      console.log("in get clusters", clusters);
       vueApp.clusters = clusters;
     },
 
@@ -1566,7 +1458,7 @@ let vueApp = new Vue({
                 time_ids = time_ids.split(",");
                 time_ids = time_ids.map((x) => parseInt(x));
                 console.log("in time ids", time_ids, node_text);
-                node_text = node_text; //+ " [" + time_ids.sort() + "]"
+                node_text = node_text + " [" + time_ids.sort() + "]";
                 let in_interval = false;
                 let before_interval = false;
                 let after_interval = false;

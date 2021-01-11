@@ -18,7 +18,7 @@
   "collections_info_frontend": {
     "English Books": {
       "key": "en_books",
-      "target": "crisis/NN",
+      "target": "bar/NN",
       "p": 10,
       "d": 20,
       "info": "English Google Books, 1520-2008"

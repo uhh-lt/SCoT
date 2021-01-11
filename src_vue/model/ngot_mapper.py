@@ -98,6 +98,7 @@ def update_ngot_with_clusters_and_node_infos_from_graph(graph, ngot):
             if link[0] in cluster.cluster_nodes and link[1] in cluster.cluster_nodes:
                 cluster.cluster_links.append(link[0]+"-"+link[1])
                 intra_links.add(link[0]+"-"+link[1])
+                link[2]["cluster_id"] = cluster.id
     inter_links = all_links - intra_links
     ngot.clusters = cluster_set
     ngot.transit_links = list(inter_links)

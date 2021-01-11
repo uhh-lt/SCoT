@@ -100,7 +100,7 @@
 						</b-form-group>
 						I = {{number_of_intervals}} {{number_of_intervals > 1 ? "intervals" : "interval"}}
 						<hr style="border: 1px solid gray;" />
-						<h5>Neighbourhood graph over time [NGoT]</h5>
+						<h5>Graph over time</h5>
 						<!-- Enter target word -->
 						<b-form-group class="input" label="Target word">
 							<b-form-input v-model="target_word" placeholder="target word" size="sm">
@@ -484,7 +484,7 @@
 				<div v-if="right_selected === 'cluster_basic'">
 					<!-- list with clusters -->
 					<div class="edit_cluster_textbox">
-						<b-list-group v-for="(cluster, index) in clusters" :key="index">
+						<b-list-group v-for="(cluster, index) in clusters_no_singleton" :key="index">
 							<b-list-group-item style="background-color: #6c757d;">
 								<div>
 									<!-- Display coloured circle, cluster name and number of nodes in cluster @click="select_cluster(cluster)" -->
@@ -565,7 +565,7 @@
 									<div>
 										<b-collapse :id="'collapse-nodes-' + index">
 											<b-card style="background-color:  #6c757d; color:white">
-												<div v-for="label in cluster.labels"> {{ label.text }}</div>
+												<div v-for="label in cluster.labels"> {{ label.text2 }}</div>
 											</b-card>
 										</b-collapse>
 									</div>
@@ -583,7 +583,7 @@
 								<div>
 									<b-collapse :id="'collapse-singletons-1'">
 										<b-card style="background-color:  #6c757d; color: white; ">
-											<div v-for="node in singletons">{{node}}</div>
+											<div v-for="node in singletons_with_time">{{node}}</div>
 										</b-card>
 									</b-collapse>
 								</div>
@@ -802,7 +802,7 @@
 											<b-button size="sm" v-b-toggle.collapse-normal-1
 												style="background-color: #343a41;width: 70%; margin-bottom: 3px; "
 												v-on:mouseover="fade_in_nodes('#343a41')"
-												v-on:mouseout="reset_opacity()">Occurs throughout
+												v-on:mouseout="reset_opacity()">Occurs before & during & after
 												<span class="when-opened"><i class="fa fa-chevron-down"
 														aria-hidden="true"></i></span>
 												<span class="when-closed"><i class="fa fa-chevron-up"
@@ -921,7 +921,8 @@
 					<!-- div to render the svg with the graph in (see render_sense_graph.js) -->
 					<b-overlay :show="overlay_main" rounded="sm" spinner-type="border" spinner-variant="dark">
 
-						<!-- for some weird reason it did not work with id="graph", but with id="graph2"... don't ask me why -->
+						<!-- for some weird reason it did not work with id="graph", but with id="graph2"... don't ask me why 
+						-->
 						<div id="graph2" class="svg-container"></div>
 					</b-overlay>
 				</b-col>

@@ -64,10 +64,10 @@ def construct_graph(nodes_set, edges):
     for v, n in enumerate(graph.nodes):
         graph.node[n]['class'] = v
     graph.add_edges_from(edges)
-    """ print("---------- start -----------")
-	print(graph.edges.data())
-	print(graph.nodes.data())
-	print("---------- end---------") """
+    # print("---------- start ----------- before cw")
+    # print(graph.edges.data())
+    # print(graph.nodes.data())
+    # print("---------- end--------- before cw")
     return graph
 
 

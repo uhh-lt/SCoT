@@ -109,8 +109,67 @@ function getSimBims_io() {
     });
 }
 
+async function recluster_io() {
+  if (vueApp.highlightWobblies === true) {
+    vueApp.resetCentralityHighlighting();
+    vueApp.highlightWobblies = false;
+  }
+  // Refactored from here: USE NEW DATASTRUCTURE TO READ GRAPH_DATA AND TO RECLUSTER ----------------------
+  graph.links = JSON.parse(JSON.stringify(d3Data.links));
+
+  // Repair d3 changes
+  for (let link of graph.links) {
+    link.target = link.target_text;
+    link.source = link.source_text;
+    link.colour = null;
+  }
+  for (let node of graph.nodes) {
+    node.class = null;
+    node.cluster_id = null;
+    node.colour = null;
+  }
+
+  // prepare data to send
+  let data = {};
+  data["nodes"] = graph.nodes;
+  data["links"] = graph.links;
+  data["singletons"] = graph.singletons;
+  data["props"] = graph.props;
+
+  const promise = axios
+    .post("./api/reclustering", data)
+    .then(function (response) {
+      // NEW REFACTORED
+      let data_from_db = response.data;
+      // attach to graph updates relevant for clusters
+      // nodes contain new cluster ids
+      // console.log("-----------in recevied reclustering----------------");
+      for (let node of data_from_db.nodes) {
+        node.class = node.cluster_id;
+      }
+
+      graph.nodes = data_from_db.nodes;
+      graph.links = data_from_db.links;
+      graph.clusters = data_from_db.clusters;
+      graph.transit_links = data_from_db.transit_links;
+      console.log(graph.clusters);
+      // rescue target and source
+      for (let link of graph.links) {
+        link.target_text = link.target;
+        link.source_text = link.source;
+      }
+      // update links
+      d3Data.links = JSON.parse(JSON.stringify(graph.links));
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+  console.log("in recluster ende");
+  return promise;
+}
+
 async function getData_io() {
-  console.log("graph props before sending", graph.props);
+  //console.log("graph props before sending", graph.props);
 
   const url = "./api/collections/sense_graph";
 
@@ -145,11 +204,10 @@ async function getData_io() {
       console.log("singleton data axios received ", graph.singletons);
       console.log("end of getData_io");
       // // send reference pointer copy to vue app
-      vueApp.singletons = data_from_db.singletons;
+      vueApp.singletons = JSON.parse(JSON.stringify(data_from_db.singletons));
       // and deep copy to d3 - it works on these data and modifies them
       d3Data.links = JSON.parse(JSON.stringify(graph.links));
-
-      // execute mapping to node attribute "class" : "cluster_id" -> "class"
+      d3Data.nodes = JSON.parse(JSON.stringify(graph.nodes));
     })
     .catch((error) => {
       console.log(error);

@@ -2,28 +2,28 @@
 /*
 Works on the d3Data [see data.js], the vueData managed by VueApp and the globalGraph
 Functions are triggered by Vue-Components (such as Sidebar-left sense graph etc.)
+This version 1 of the component written by inga k.
+it uses - even if hardly recognizable at times - the "general update pattern" of d3 (google for it if you dont know it)
 */
+/* 
+let svg = d3.select("#graph2").select("#svg").select("g");
+let brush = svg.select("g");
+let 
 
-// ########### SIDEBAR-LEFT - GRAPH CREATION ##########################################################
-const delete_graph = function () {
-  // FUNCTION remove
-  // Always remove the svg element before rendering new. Otherwise a new one is appended every time you click the render button
-  d3.select("#graph2").select("svg").remove();
-};
+ */ // ########### SIDEBAR-LEFT - GRAPH CREATION ##########################################################
 
-/*
-Renders the graph on the svg element
-Triggered via sidebar left -graph render - then data
-*/
-const render_graph = function () {
-  // Set local parameters for ease of use
-  let radius = vueApp.radius;
-  let target = graph.props.target_word;
-  let color = d3.scaleOrdinal(d3.schemePaired);
+let color = d3.scaleOrdinal(d3.schemePaired);
+// Refactoring new graph crud function
 
-  // FUNCTION CREATE
-  // Create the svg element on which you want to render the graph
-  d3Data.svg = d3
+let d_svg;
+let d_linkG;
+let d_nodeG;
+let d_link;
+let d_node;
+let d_simulation;
+
+async function graph_init() {
+  d_svg = d3
     .select("#graph2")
     .on("keydown.brush", keydowned)
     .on("keyup.brush", keyupped)
@@ -42,25 +42,57 @@ const render_graph = function () {
     .classed("svg-content", true)
     .call(
       d3.zoom().on("zoom", function () {
-        d3Data.svg.attr("transform", d3.event.transform);
+        d_svg.attr("transform", d3.event.transform);
       })
     )
     .append("g");
 
-  // append the brush to the svg for dragging multiple nodes at the same time
-  d3Data.brush = d3Data.svg.append("g").attr("class", "brush");
+  d_linkG = d_svg.append("g").attr("class", "link");
 
-  // initialize the class attributes selected and previouslySelected for each node
-  // this works on GRAPH-DATA-STRUCTURE [CORRECT ???]
-  /* graph.nodes.forEach(function (d) {
-    d.selected = false;
-    d.previouslySelected = false;
-  }); */
+  d_nodeG = d_svg.append("g").attr("class", "node");
+
+  d_simulation = d3
+    .forceSimulation()
+    .force(
+      "link",
+      d3
+        .forceLink()
+        .id(function (d) {
+          return d.id;
+        })
+        .distance(function (d) {
+          return vueApp.linkdistance;
+        })
+    )
+    .force("charge", d3.forceManyBody(vueApp.charge))
+    .force(
+      "center",
+      d3.forceCenter(vueApp.viewbox_width / 3, vueApp.viewbox_height / 3)
+    );
+
+  return "promise";
+}
+
+async function graph_crud(dnodes, dlinks) {
+  // remove unused lines
+  let linesx = d3.selectAll(".link").selectAll("line").remove();
+
+  // remove unused nodes
+  let nodesx = d3.selectAll(".node").selectAll("g").remove();
+
+  // remove target workd
+  let targetx = d3.selectAll(".target").remove();
+
+  // remove brush
+  let brushx = d3.selectAll(".brush").remove();
+
+  // append the brush to the svg for dragging multiple nodes at the same time
+  // there are various attributes etc in this group in the DOM when enables
+  const brush = d_svg.append("g").attr("class", "brush");
 
   // append the target word to the center of the svg
-  let t = d3Data.svg.append("g").data(target);
-
-  t.append("text")
+  const t = d_svg
+    .append("text")
     .attr("class", "target")
     .attr("x", vueApp.viewbox_width / 3)
     .attr("y", vueApp.viewbox_height / 3)
@@ -68,11 +100,186 @@ const render_graph = function () {
     .style("font-size", "25px")
     .style("font-weight", "bold")
     .style("opacity", 0.2)
-    .text(function (d) {
-      return d.target_word;
+    .text(graph.props.target_word);
+
+  // initialize the tooltip for nodes
+  d3Data.time_diff_tip = d3
+    .tip()
+    .attr("class", "d3-tip")
+    .html(function (d) {
+      return toolTipNode(d.time_ids, d.target_text, d.weights);
     });
 
-  // create the force simulation
+  // initialize the tooltip for edges
+  d3Data.time_diff_tip_link = d3
+    .tip()
+    .attr("class", "d3-tip")
+    .html(function (d) {
+      return toolTipLink(d.time_ids, d.weights, d.target_text, d.source_text);
+    });
+
+  // call the time diff tooltip from the svg
+  d_svg.call(d3Data.time_diff_tip);
+  d_svg.call(d3Data.time_diff_tip_link);
+
+  // creategraph
+
+  d_node = d_nodeG
+    .selectAll("g")
+    .data(dnodes)
+    .enter()
+    .append("g")
+    .on("click", function (d) {
+      if (this.getAttribute("class") === "selected") {
+        vueApp.node_selected = true;
+      } else {
+        vueApp.node_selected = false;
+      }
+      console.log(d.target_text);
+      console.log(d.time_ids);
+      vueApp.active_node = {
+        time_ids: d.time_ids,
+        weights: d.weights,
+        source_text: vueApp.target_word,
+        target_text: d.target_text,
+      };
+      vueApp.getSimBimsNodes();
+      console.log("in nodeclick ", vueApp.active_node);
+      // set fields
+      vueApp.fields_nodes[0]["label"] = vueApp.target_word;
+      vueApp.fields_nodes[2]["label"] = d.target_text;
+      // switch on view
+      vueApp.context_mode3 = true;
+      vueApp.context_mode = false;
+      console.log(vueApp.context_mode3);
+      // vueApp.select_node_is_no_cluster_node = vueApp.is_normal_node();
+      showContextMenu(this);
+    });
+
+  let circles = d_node
+    .append("circle")
+    .attr("r", 5)
+    .attr("centrality_score", function (d) {
+      if (!d.centrality_score.isNaN) {
+        return d.centrality_score;
+      } else {
+        return null;
+      }
+    })
+    .attr("time_ids", function (d) {
+      return d.time_ids;
+    })
+    .attr("cluster", function (d) {
+      if (d.cluster_name) {
+        return d.cluster_name;
+      } else {
+        return d.class;
+      }
+    })
+    .attr("cluster_id", function (d) {
+      return d.class;
+    })
+    .attr("cluster_node", function (d) {
+      // check if the node is a cluster node and make that information known for later
+      return Boolean(d.cluster_node);
+    })
+    .attr("stroke", "#999")
+    .attr("stroke-opacity", 0.6)
+    .attr("fill", function (d) {
+      return color(d.cluster_id);
+    })
+    .call(
+      d3
+        .drag()
+        .on("start", d_dragstarted)
+        .on("drag", d_dragged)
+        .on("end", d_dragended)
+    );
+
+  let labels = d_node
+    .append("text")
+    .text(function (d) {
+      return d.id;
+    })
+    .attr("text", function (d) {
+      return d.id;
+    })
+    .attr("x", 6)
+    .attr("y", 3);
+
+  d_node.append("title").text(function (d) {
+    return d.id;
+  });
+
+  d_link = d_linkG
+    .selectAll("line")
+    .data(dlinks)
+    .enter()
+    .append("line")
+    .attr("stroke-width", "0.5px")
+    .attr("stroke", "#999")
+    .attr("stroke-opacity", 0.6);
+
+  d_simulation.nodes(dnodes).on("tick", d_ticked);
+
+  d_simulation.force("link").links(dlinks);
+
+  return "promise";
+}
+
+function d_ticked() {
+  //d_node.attr("transform", positionNode);
+  d_link
+    .attr("x1", function (d) {
+      return d.source.x;
+    })
+    .attr("y1", function (d) {
+      return d.source.y;
+    })
+    .attr("x2", function (d) {
+      return d.target.x;
+    })
+    .attr("y2", function (d) {
+      return d.target.y;
+    });
+
+  d_node.attr("transform", function (d) {
+    return "translate(" + d.x + "," + d.y + ")";
+  });
+}
+
+function d_dragstarted(d) {
+  if (!d3.event.active) d_simulation.alphaTarget(0.3).restart();
+  d.fx = d.x;
+  d.fy = d.y;
+}
+
+function d_dragged(d) {
+  d.fx = d3.event.x;
+  d.fy = d3.event.y;
+}
+
+function d_dragended(d) {
+  if (!d3.event.active) d_simulation.alphaTarget(0);
+  d.fx = null;
+  d.fy = null;
+}
+
+// ------------------------ OLD
+const delete_graph = function () {
+  // FUNCTION remove
+  // Always remove the svg element before rendering new. Otherwise a new one is appended every time you click the render button
+  d3.select("#graph2").select("svg").remove();
+};
+
+/*
+Renders the graph on the svg element
+Triggered via sidebar left -graph render - then data
+*/
+const render_graph = function () {
+  // FUNCTION CREATE
+  // GLOBAL VAR create the force simulation -- Keep global setting
+
   d3Data.simulation = d3
     .forceSimulation(graph.nodes)
     .force(
@@ -97,9 +304,51 @@ const render_graph = function () {
     .force("collide", d3.forceCollide().radius(10))
     .force(
       "center",
-      d3.forceCenter(vueApp.viewbox_width / 3, vueApp.viewbox_height / 3)
+      d3.forceCenter(vueApp.viewbox_width / 1.5, vueApp.viewbox_height / 2)
     )
     .on("tick", ticked);
+
+  //-----------------------------------------------------------------
+  // Create the svg element on which you want to render the graph
+  const svg = d3
+    .select("#graph2")
+    .on("keydown.brush", keydowned)
+    .on("keyup.brush", keyupped)
+    .each(function () {
+      this.focus();
+    })
+    .append("svg")
+    .attr("id", "svg")
+    .attr("width", vueApp.svg_width)
+    .attr("height", vueApp.svg_height)
+    .attr(
+      "viewBox",
+      " 0 0 " + vueApp.viewbox_width + " " + vueApp.viewbox_height
+    )
+    .attr("preserveAspectRatio", "xMidYMid meet")
+    .classed("svg-content", true)
+    .call(
+      d3.zoom().on("zoom", function () {
+        svg.attr("transform", d3.event.transform);
+      })
+    )
+    .append("g");
+
+  // append the brush to the svg for dragging multiple nodes at the same time
+  // there are various attributes etc in this group in the DOM when enables
+  const brush = svg.append("g").attr("class", "brush");
+
+  // append the target word to the center of the svg
+  const t = svg
+    .append("text")
+    .attr("class", "target")
+    .attr("x", vueApp.viewbox_width / 3)
+    .attr("y", vueApp.viewbox_height / 3)
+    .style("font-family", "helvetica, arial, sans-serif")
+    .style("font-size", "25px")
+    .style("font-weight", "bold")
+    .style("opacity", 0.2)
+    .text(graph.props.target_word);
 
   //var forceLinkDistance = d3Data.simulation.force("link");
 
@@ -123,11 +372,11 @@ const render_graph = function () {
     });
 
   // call the time diff tooltip from the svg
-  d3Data.svg.call(d3Data.time_diff_tip);
-  d3Data.svg.call(d3Data.time_diff_tip_link);
+  svg.call(d3Data.time_diff_tip);
+  svg.call(d3Data.time_diff_tip_link);
 
   // create the nodes
-  d3Data.node = d3Data.svg
+  d3Data.node = svg
     .append("g")
     .attr("stroke", "#fff")
     .attr("stroke-width", 1.5)
@@ -171,21 +420,22 @@ const render_graph = function () {
   // this is the way the nodes are displayed in the graph
   d3Data.circles = d3Data.node
     .append("circle")
+    .attr("id", (d) => d.id)
     .attr("r", function (d) {
       if (d.cluster_node === "true") {
         // if the node is a cluster node make it twice as big
-        return radius * 5;
+        return vueApp.radius * 5;
       } else {
         // experimental - nodes bigger according to similarity
         // console.log(d.target_text, Math.max(...d.weights));
         // if (isNaN(Math.max(...d.weights))) {
-        //   return radius;
+        //   return vueApp.radius;
         // } else if (Math.max(...d.weights) <= 1000) {
         //   return Math.sqrt(Math.max(...d.weights));
         // } else {
-        //   return radius;
+        //   return vueApp.radius;
         // }
-        return radius;
+        return vueApp.radius;
       }
     })
     .attr("centrality_score", function (d) {
@@ -224,6 +474,7 @@ const render_graph = function () {
         return color(d.class);
       }
     })
+    .attr("fill-opacity", 0.6)
     .on("mouseover", d3Data.time_diff_tip.show)
     .on("mouseout", d3Data.time_diff_tip.hide);
 
@@ -235,6 +486,7 @@ const render_graph = function () {
     })
     .style("fill", "black")
     .style("stroke", "black")
+    .style("font-size", "14px")
     .attr("x", 6)
     .attr("y", 3)
     .attr("text", function (d) {
@@ -242,15 +494,16 @@ const render_graph = function () {
     });
 
   // create the graph links
-  d3Data.link = d3Data.svg
+  d3Data.link = svg
     .append("g")
     .attr("stroke", "#999")
     .attr("stroke-opacity", vueApp.base_link_opacity)
     .attr("class", "link")
     .selectAll("line")
-    .data(d3Data.links)
+    .data(d3Data.links, (d) => d.id)
     .enter()
     .append("line")
+    //.attr("id", (d) => d.id)
     .attr("source", function (d) {
       return d.source.id;
     })
@@ -273,7 +526,7 @@ const render_graph = function () {
       return d.time_ids;
     })
     // set the stroke with in dependence to the weight attribute of the link
-    // TODO: sort the weights into three categories and only use three different thicknesses for links according to the category
+    // enables access to node class
     .attr("stroke-width", function (d) {
       if (vueApp.link_thickness_scaled === "true") {
         return Math.sqrt(d.weight / vueApp.link_thickness_factor);
@@ -311,6 +564,8 @@ const render_graph = function () {
 
   d3Data.simulation.on("tick", ticked);
 
+  sticky_change_d3();
+
   console.log("graph construct node", d3Data.node);
 
   /* // release all pinned nodes and restart the simulation
@@ -331,10 +586,46 @@ const render_graph = function () {
 };
 
 // ############################################# SVG - MAIN ELEMENT FUNCTIONS ########################################
+// Calculates x and y positions for dynamic graph
+// update node and link positions
+function ticked() {
+  d3Data.node.attr("transform", positionNode);
+  d3Data.link
+    .attr("x1", function (d) {
+      return d.source.x;
+    })
+    .attr("y1", function (d) {
+      return d.source.y;
+    })
+    .attr("x2", function (d) {
+      return d.target.x;
+    })
+    .attr("y2", function (d) {
+      return d.target.y;
+    });
+}
 
+function positionNode(d) {
+  // keep the node within the boundaries of the svg
+  //console.log(d.x, d.y);
+  if (d.x < 0) {
+    d.x = d.x / 2;
+  }
+  if (d.y < 0) {
+    d.y = d.y / 2;
+  }
+  if (d.x > vueApp.svg_width) {
+    d.x = (d.x - vueApp.svg_width) / 2 + vueApp.svg_width;
+  }
+  if (d.y > vueApp.svg_height) {
+    d.y = (d.y - vueApp.svg_height) / 2 + vueApp.svg_height;
+  }
+  return "translate(" + d.x + "," + d.y + ")";
+}
 /*
 		Returns all the time ids of a node as a string of start year and end year to be displayed in the tooltip on a node in the time diff mode
-		*/
+    */
+
 function toolTipLink(time_ids, weights, targetA, targetB) {
   let stringRet = "Edge: " + targetA + " - " + targetB + "<br>" + "<br>";
   stringRet += "Max. similarity:" + "<br>";
@@ -380,41 +671,6 @@ function mousedowned(d) {
     d3.select(this).classed("selected", (d.selected = !d.selected));
     //d3.event.stopImmediatePropagation();
   }
-}
-
-// update node and link positions
-function ticked() {
-  d3Data.node.attr("transform", positionNode);
-  d3Data.link
-    .attr("x1", function (d) {
-      return d.source.x;
-    })
-    .attr("y1", function (d) {
-      return d.source.y;
-    })
-    .attr("x2", function (d) {
-      return d.target.x;
-    })
-    .attr("y2", function (d) {
-      return d.target.y;
-    });
-}
-
-function positionNode(d) {
-  // keep the node within the boundaries of the svg
-  if (d.x < 0) {
-    d.x = 0;
-  }
-  if (d.y < 0) {
-    d.y = 0;
-  }
-  if (d.x > vueApp.svg_width) {
-    d.x = vueApp.svg_width - 50;
-  }
-  if (d.y > vueApp.svg_height) {
-    d.y = vueApp.svg_height - 50;
-  }
-  return "translate(" + d.x + "," + d.y + ")";
 }
 
 // fade nodes on hover
@@ -485,69 +741,6 @@ function mouseOut_d3() {
   d3Data.node.style("fill-opacity", 1);
   d3Data.link.style("stroke-opacity", this.base_link_opacity);
   //link.style("stroke", "#ddd");
-}
-
-function delete_cluster_d3(cluster_name, cluster_id, labels) {
-  // get all the text labels
-  let text_labels = [];
-  for (var i = 0; i < labels.length; i++) {
-    text_labels.push(labels[i].text);
-  }
-
-  // see how many nodes are in the cluster
-  var number_of_nodes = text_labels.length;
-
-  // find the correct nodes and delete them and the links connecting to them
-  var nodes = d3.selectAll(".node").selectAll("g");
-  nodes.each(function (d) {
-    let childnodes = this.childNodes;
-    var node_id;
-    var id;
-
-    childnodes.forEach(function (d, i) {
-      if (d.tagName === "circle") {
-        id = d.getAttribute("cluster_id");
-      }
-      if (d.tagName === "text") {
-        node_id = d.getAttribute("text");
-      }
-    });
-
-    // if they belong to the cluster, that is to be deleted, ...
-    if (id === cluster_id) {
-      vueApp.deletenode(node_id);
-      vueApp.deletelinks(node_id);
-    }
-  });
-
-  // remove nodes from DOM with D3 and update the simulation
-  d3Data.node
-    .data(graph.nodes, function (d) {
-      return d.id;
-    })
-    .exit()
-    .remove();
-  d3Data.link
-    .data(d3Data.links, function (d) {
-      return d.source.id + "-" + d.target.id;
-    })
-    .exit()
-    .remove();
-
-  d3Data.simulation.nodes(graph.nodes);
-  d3Data.simulation.force("link").links(d3Data.links);
-  d3Data.simulation.alpha(1).restart();
-
-  // Update the number of updated senses for when saving the file the name will be correct
-  if (vueApp.updated_nodes != null) {
-    vueApp.update_senses = vueApp.update_senses - number_of_nodes;
-  }
-
-  // update number of senses
-  vueApp.senses = vueApp.senses - number_of_nodes;
-
-  // recalculate the cluster information
-  vueApp.get_clusters();
 }
 
 // update the connected nodes
@@ -645,10 +838,11 @@ function fade_in_nodes_d3(colour) {
 
 function sticky_change_d3() {
   console.log("sticky_change triggered", vueApp.sticky_mode);
+  const brush = d3.select("#graph2").select("#svg").select("g").select("g");
 
   if (vueApp.sticky_mode === "false") {
-    d3Data.brush.style("display", "inline");
-    d3Data.brush.call(
+    brush.style("display", "inline");
+    brush.call(
       d3
         .brush()
         .extent([
@@ -671,8 +865,8 @@ function sticky_change_d3() {
         d3.selectAll(".selected").each(dragend);
       });
   } else if (vueApp.sticky_mode === "true") {
-    // tidy up after d3Data.brush and unselect all selected nodes
-    d3Data.brush.style("display", "none");
+    // tidy up after brush and unselect all selected nodes
+    brush.style("display", "none");
 
     d3Data.node.classed("selected", function (d) {
       if (d.selected) {
@@ -771,6 +965,7 @@ function keyupped() {
 }
 
 function reset_zoom() {
+  let graphC = d3.select("#graph2").select("#svg").select("g");
   let container = d3.select("#svg");
   let zoom = d3
     .zoom()
@@ -779,7 +974,7 @@ function reset_zoom() {
       container.attr("transform", d3.event.transform);
     });
   zoom.transform(container, d3.zoomIdentity.translate(0, 0).scale(1.0));
-  d3Data.svg.attr("transform", "translate(0, 0) scale(1.0)");
+  graphC.attr("transform", "translate(0, 0) scale(1.0)");
   console.log("in reset_zoom d3");
 }
 
@@ -809,6 +1004,69 @@ function linkdistance_change_d3() {
 }
 
 // ########################## CLUSTER ANALYSIS - RIGHT SIDEBAR - FUNCTIONS #############################################################
+function delete_cluster_d3(cluster_name, cluster_id, labels) {
+  // get all the text labels
+  let text_labels = [];
+  for (var i = 0; i < labels.length; i++) {
+    text_labels.push(labels[i].text);
+  }
+
+  // see how many nodes are in the cluster
+  var number_of_nodes = text_labels.length;
+
+  // find the correct nodes and delete them and the links connecting to them
+  var nodes = d3.selectAll(".node").selectAll("g");
+  nodes.each(function (d) {
+    let childnodes = this.childNodes;
+    var node_id;
+    var id;
+
+    childnodes.forEach(function (d, i) {
+      if (d.tagName === "circle") {
+        id = d.getAttribute("cluster_id");
+      }
+      if (d.tagName === "text") {
+        node_id = d.getAttribute("text");
+      }
+    });
+
+    // if they belong to the cluster, that is to be deleted, ...
+    if (id === cluster_id) {
+      vueApp.deletenode(node_id);
+      vueApp.deletelinks(node_id);
+    }
+  });
+
+  // remove nodes from DOM with D3 and update the simulation
+  d3Data.node
+    .data(graph.nodes, function (d) {
+      return d.id;
+    })
+    .exit()
+    .remove();
+  d3Data.link
+    .data(d3Data.links, function (d) {
+      return d.source.id + "-" + d.target.id;
+    })
+    .exit()
+    .remove();
+
+  d3Data.simulation.nodes(graph.nodes);
+  d3Data.simulation.force("link").links(d3Data.links);
+  d3Data.simulation.alpha(1).restart();
+
+  // Update the number of updated senses for when saving the file the name will be correct
+  if (vueApp.updated_nodes != null) {
+    vueApp.update_senses = vueApp.update_senses - number_of_nodes;
+  }
+
+  // update number of senses
+  vueApp.senses = vueApp.senses - number_of_nodes;
+
+  // recalculate the cluster information
+  vueApp.get_clusters();
+}
+
 function check_cluster_node_connection_d3(link_endpoint) {
   let is_connected = false;
   let nodes = d3.selectAll(".node").selectAll("g");
@@ -918,11 +1176,13 @@ function restart() {
     return d.source.id + "-" + d.target.id;
   });
   link.exit().remove();
+
   d3Data.link = link
     .enter()
     .append("line")
     //.attr("class", "link")
-    .attr("weight", 10)
+    .attr("stroke-opacity", vueApp.base_link_opacity)
+    //.attr("weight", 10)
     .attr("source", function (d) {
       return d.source;
     })
@@ -1268,17 +1528,17 @@ function skip_through_time_slices_d3() {
 
 function reset_time_diff_colours_d3() {
   d3Data.circles.style("stroke-opacity", 1);
-  vueApp.link.style("stroke-opacity", this.base_link_opacity);
+  d3Data.link.style("stroke-opacity", vueApp.base_link_opacity);
 
   let circleChilds = d3.selectAll(".node").selectAll("g").selectAll("circle");
 
   circleChilds.each(function (d) {
     let node_cluster_id = this.getAttribute("cluster_id");
-    console.log("in reset color vue.js ", graph.clusters);
-    for (let i = 0; i < graph.clusters.length; i++) {
+    console.log("in reset color vue.js ", vueApp.clusters);
+    for (let i = 0; i < vueApp.clusters.length; i++) {
       // set the colour of the nodes back to the cluster colours
-      if (node_cluster_id === graph.clusters[i].cluster_id) {
-        this.setAttribute("fill", graph.clusters[i].colour);
+      if (node_cluster_id === vueApp.clusters[i].cluster_id) {
+        this.setAttribute("fill", vueApp.clusters[i].colour);
       }
     }
   });
@@ -1721,6 +1981,7 @@ function eventListenerFunc() {
 
 // update the graph with the additional nodes and links
 function update_graph() {
+  let graphC = d3.select("#graph2").select("#svg").select("g");
   // Apply the general update pattern to the nodes.
   let node = d3Data.node.data(graph.nodes, function (d) {
     return d.id;
@@ -1839,7 +2100,7 @@ function update_graph() {
   ticked();
 
   // colour the links
-  let all_links = d3Data.svg.selectAll("line");
+  let all_links = graphC.selectAll("line");
   all_links.each(function () {
     // check if link is connected to cluster node
     var is_connected_to_cluster_node = false;

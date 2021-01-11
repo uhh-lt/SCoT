@@ -132,7 +132,7 @@ let vueData = {
   // DUPLICATES OF MAIN-NETWORK-GRAPH-DATA FOR DISPLAY & MANIPULATION ---------------------
   // For display
   singletons: [],
-  // is created in the frontend [is that useful?]
+  // is created in the frontend
   clusters: [],
   // ADDITIONAL FIELDS FOR WORKING ON GRAPH
   // new clusters calculated by reclustering the graph
@@ -146,21 +146,21 @@ let vueData = {
   // link thickness parameters
   link_thickness_scaled: "false",
   // scaled = "false" -> thickness = sqrt(value)
-  link_thickness_value: 1,
+  link_thickness_value: 3,
   // scaled = "true" -> thickness = sqrt(weight * factor)
   link_thickness_factor: 0.003,
   // opacity of links base and reduced (for many functions)
-  base_link_opacity: 0.2,
+  base_link_opacity: 0.1,
   reduced_link_opacity: 0.05,
   // radius of nodes
-  radius: 5,
+  radius: 15,
   // radius of cluter nodes
   clusterNodeRadius: 20,
   // dragging behaviour sticky_mode === "true" -> force, sticky_mode === "false" -> brush
   sticky_mode: "true",
   // simulation parameters
-  charge: -50,
-  linkdistance: 50,
+  charge: -40,
+  linkdistance: 60,
   // WHILE RENDERING ----------------------------------------------------------
   //overlays central - displays overal while rendering
   overlay_main: false,
@@ -232,8 +232,8 @@ let vueData = {
   ],
 
   // user input
-  centrality_threshold_s: "0.01",
-  centrality_threshold_m: "0.02",
+  centrality_threshold_s: "0.1",
+  centrality_threshold_m: "0.2",
   centrality_score_distribution: [],
   // toggling the edit column
   edit_column_open: false,

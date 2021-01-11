@@ -24,8 +24,8 @@ class NGOTNode:
     # max weight as main derived from weights
     weight: Optional[int] = None
     # overlay data information
-    time_ids: List[int] = None
-    weights: List[float] = None
+    time_ids: Optional[List[int]] = None
+    weights: Optional[List[float]] = None
     # calculated scores and clusters
     centrality_score: Optional[float] = None
     cluster_id: Optional[int] = None
@@ -39,6 +39,7 @@ class NGOTNode:
     colour: Optional[float] = None
     opacity: Optional[float] = None
     hidden: Optional[bool] = None
+    # deprecated but still somewhere in use (from version )
 
 
 @dataclass_json
@@ -56,8 +57,10 @@ class NGOTLink():
     # max weight
     weight: Optional[float] = None
     # time ids and weights
-    time_ids: List[int] = None
-    weights: List[float] = None
+    time_ids: Optional[List[int]] = None
+    weights: Optional[List[float]] = None
+    # belongs to cluster [if none = transitlink , ansonsten id]
+    cluster_id: Optional[int] = None
     # color and opacity can change during various interactions
     colour: Optional[float] = None
     opacity: Optional[float] = None
@@ -74,13 +77,13 @@ class NGOTCluster:
     # Display
     colour: Optional[int] = None
     # data information with IDs [-> can be used as labels]
-    cluster_nodes: List[str] = None
+    cluster_nodes: Optional[List[str]] = None
     # edges between cluster nodes with IDs [-> for coloring]
-    cluster_links: List[str] = None
+    cluster_links: Optional[List[str]] = None
     # default: special cluster node for displaying cluster - IT IS STORED ONLY HERE!!!!
     label_node: Optional[NGOTNode] = None
     # connecting edges from the label_node to all cluster_nodes
-    edges_label_node: List[NGOTLink] = None
+    edges_label_node: Optional[List[NGOTLink]] = None
     # show yes no
     show_label_node: bool = False
 
@@ -101,7 +104,7 @@ class NGOTProperties:
     # graph props
     target_word: Optional[str] = None
     number_of_intervals: Optional[int] = None
-    selected_time_ids: List[int] = None
+    selected_time_ids: Optional[List[int]] = None
     # field(default_factory=[None])
     # graph params basic
     # parameter d - only relevant in frontend where it is resolved to e
@@ -122,8 +125,8 @@ class NGOTProperties:
     number_of_static_nodes_per_interval: Optional[int] = None
     number_of_static_directed_edges_per_interval: Optional[int] = None
     # derived props for global and overlay [numbers can vary per interval...]
-    number_of_interval_nodes: List[int] = None
-    number_of_interval_links: List[int] = None
+    number_of_interval_nodes: Optional[List[int]] = None
+    number_of_interval_links: Optional[List[int]] = None
     # ----------------------------
     # ngot-global: set, ngot-dynamic: result, ngot-interval: result
     # scaled with i[ie this refers to the global total]
@@ -148,18 +151,18 @@ class NGOTProperties:
 @dataclass()
 class NGOT():
     # the central properties of the graph - managed by Vue and by python
-    props: NGOTProperties = None
+    props: Optional[NGOTProperties] = None
     # the main node list as managed by python and the vue-framework and d3 and sent via json
-    nodes: List[NGOTNode] = None
+    nodes: Optional[List[NGOTNode]] = None
     # the temporary backend-only node list for input to networkx and some old graph-functions is a simple conversion into dictionary-form
-    nodes_dic: List[None] = None
+    nodes_dic: Optional[List[None]] = None
     # the main link list as managed by python and the vue-framework and d3 and sent via json
-    links: List[NGOTLink] = None
+    links: Optional[List[NGOTLink]] = None
     # the temporary backend onlylist for input to networkx and some old graph-functions is a simple conversion into dictionary-form
-    links_dic: List[None] = None
+    links_dic: Optional[List[None]] = None
     # list with ids of singleton nodes [they are part of nodes] managed by python and vue
-    singletons: List[str] = None
+    singletons: Optional[List[str]] = None
     # the main datastructure for clusters managed by python and vue
-    clusters: List[NGOTCluster] = None
+    clusters: Optional[List[NGOTCluster]] = None
     # list with ids of transitlinks [they are part of links] managed by vue, colored grey by d3
-    transit_links: List[str] = None
+    transit_links: Optional[List[str]] = None
