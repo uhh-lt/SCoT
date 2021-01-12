@@ -95,6 +95,7 @@ def simbim(config, collection, data, word1, word2, time_id):
 
 
 def cluster_information(config, data):
+    # calculates the cluster shared context words per time-id
     # use all occurrences of node in selected time-id [max strength time id]
     # calculate score by adding all significances + dividing by number of nodes
     # Params: nodes with time-ids
@@ -102,7 +103,7 @@ def cluster_information(config, data):
     # Precondition: data not null and valid
     # Postcondition: the response is limited to max 200
     # measure execution time of db-queries
-    print(data['collection'])
+    print("in cluster information", data)
     import time
     start_time = time.time()
     # algo
@@ -114,7 +115,6 @@ def cluster_information(config, data):
     print("-------------------------------------------------------")
     print("in cluster info (1) anzahl unique nodes - alle nodes ", len(nodes))
     # get features (ie context word2 and score) for all unique nodes in all time-ids
-    # print("collection", data["collection"])
     db = Database(get_db(config, data["collection"]))
     feature_dic = {}
     for node in nodes:
@@ -122,13 +122,15 @@ def cluster_information(config, data):
     print("-------------------------------------------------------")
     print(" in cluster info (2) after db query --- %s seconds ---" %
           (time.time() - start_time))
-    # print("feature_dic", feature_dic)
     res_dic_all = defaultdict(int)
+    # cumulate the feature scores over all nodes and time-ids [does not look right]
+    # feature dic {{word,timeid}:{feature: score}}
     for k, v in feature_dic.items():
-        for k, v2 in v.items():
-            res_dic_all[k] += v2
+        # items: {feature: score}
+        for k2, v2 in v.items():
+            res_dic_all[k2] += v2
     print("-------------------------------------------------------")
-    # print("res_dic_all", res_dic_all)
+    print("res_dic_all", list(res_dic_all.values())[:100])
     # normalize and sort significance values
     res_dic_all = {k: v for k, v in sorted(
         res_dic_all.items(), key=lambda x: x[1], reverse=True)}

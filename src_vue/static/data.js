@@ -63,6 +63,7 @@ let graph = {
     // number of edges in different intervals [for ngot-global derived from actual graph]
     number_of_interval_edges: [],
     number_of_interval_links: [],
+    // removes singleton information in backend
     remove_singletons: false,
   },
 };
@@ -130,38 +131,53 @@ let vueData = {
   e_edges: 0,
   // --------------------------
   // DUPLICATES OF MAIN-NETWORK-GRAPH-DATA FOR DISPLAY & MANIPULATION ---------------------
-  // For display
+  // For display from main datastructure
   singletons: [],
-  // is created in the frontend
+  graph_clusters: [],
+  // LEGACY : is created in the frontend
   clusters: [],
-  // ADDITIONAL FIELDS FOR WORKING ON GRAPH
-  // new clusters calculated by reclustering the graph
+  // LEGACY: used to store backend json
   newclusters: {},
   // -----------------------
   // An object for remembering which nodes are connected. The key is of the form "source, target"
   linkedByIndex: {},
 
   // GENERAL SVG VIEW SETTINGS -----------------------------------------------------------------------------------------
-
+  // ------------- target
+  svg_target_text_opacity: 0.2,
+  svg_target_text_font_size: "25px",
+  // -----------------------------------------------------------
   // link thickness parameters
   link_thickness_scaled: "false",
-  // scaled = "false" -> thickness = sqrt(value)
-  link_thickness_value: 3,
+  // scaled = "false" -> thickness = value
+  link_thickness_value: 4,
   // scaled = "true" -> thickness = sqrt(weight * factor)
   link_thickness_factor: 0.003,
   // opacity of links base and reduced (for many functions)
-  base_link_opacity: 0.1,
+  base_link_opacity: 0.2,
   reduced_link_opacity: 0.05,
-  // radius of nodes
-  radius: 15,
+  // ---------------------------------------------------------
+  // opacity of nodes
+  node_stroke_opacity: 0.2,
+  node_fill_opacity: 1,
+  // node stroke width
+  node_stroke_width: 1.5,
+  // base opacity node
+  // reduced opacity for hovering over node
+  node_reduced_opacity: 0.2,
+  // font-size of displayed node text
+  node_text_font_size: 14,
   // radius of cluter nodes
   clusterNodeRadius: 20,
-  // dragging behaviour sticky_mode === "true" -> force, sticky_mode === "false" -> brush
+  // radius of nodes
+  radius: 10,
+  // ------------------ SIMULATION ------------------------------------
+  // dragging behaviour sticky-mode === "true" -> single-drag, sticky_mode === "false" -> multi-drag
   sticky_mode: "true",
   // simulation parameters
   charge: -40,
   linkdistance: 60,
-  // WHILE RENDERING ----------------------------------------------------------
+  // SIDEBAR LOGIC MAIN FRAME VUE ----------------------------------------------------------
   //overlays central - displays overal while rendering
   overlay_main: false,
   // true, if a graph is rendered. Used in the HTML to only show buttons if a graph is rendered
@@ -232,8 +248,8 @@ let vueData = {
   ],
 
   // user input
-  centrality_threshold_s: "0.1",
-  centrality_threshold_m: "0.2",
+  centrality_threshold_s: "0.01",
+  centrality_threshold_m: "0.02",
   centrality_score_distribution: [],
   // toggling the edit column
   edit_column_open: false,

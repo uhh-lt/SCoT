@@ -114,8 +114,12 @@ async function recluster_io() {
     vueApp.resetCentralityHighlighting();
     vueApp.highlightWobblies = false;
   }
-  // Refactored from here: USE NEW DATASTRUCTURE TO READ GRAPH_DATA AND TO RECLUSTER ----------------------
-  graph.links = JSON.parse(JSON.stringify(d3Data.links));
+  // remove cluster links and cluster nodes
+  let newLinks = d3Data.links.filter((d) => d.cluster_link == false);
+  graph.links = JSON.parse(JSON.stringify(newLinks));
+
+  let newnodes = graph.nodes.filter((d) => d.cluster_node == false);
+  graph.nodes = newnodes;
 
   // Repair d3 changes
   for (let link of graph.links) {
@@ -147,7 +151,6 @@ async function recluster_io() {
       for (let node of data_from_db.nodes) {
         node.class = node.cluster_id;
       }
-
       graph.nodes = data_from_db.nodes;
       graph.links = data_from_db.links;
       graph.clusters = data_from_db.clusters;
@@ -160,6 +163,13 @@ async function recluster_io() {
       }
       // update links
       d3Data.links = JSON.parse(JSON.stringify(graph.links));
+      // update cluster data
+      vueApp.graph_clusters = data_from_db.clusters;
+      // prep cluster data
+      for (let cluster of vueApp.graph_clusters) {
+        cluster.colour = color(cluster.cluster_id);
+        cluster.opacity = vueApp.node_fill_opacity;
+      }
     })
     .catch(function (error) {
       console.log(error);
@@ -185,12 +195,12 @@ async function getData_io() {
       graph.clusters = data_from_db.clusters;
       graph.transit_links = data_from_db.transit_links;
       // clean up of data - python cannot use the reserved word "class"
+      // legacy feature
       // execute mapping to node attribute "class" : "cluster_id" -> "class"
       for (let node of graph.nodes) {
         node.class = node.cluster_id;
       }
-      // copy target and source to source-Text and target-text: d3 is working on them
-      // TODO refactor
+      // copy target and source to source-Text and target-text: d3 force is working on them
       for (let link of graph.links) {
         link.target_text = link.target;
         link.source_text = link.source;
@@ -203,11 +213,17 @@ async function getData_io() {
       console.log("transit links data axios received ", graph.transit_links);
       console.log("singleton data axios received ", graph.singletons);
       console.log("end of getData_io");
-      // // send reference pointer copy to vue app
-      vueApp.singletons = JSON.parse(JSON.stringify(data_from_db.singletons));
-      // and deep copy to d3 - it works on these data and modifies them
+      // // link graph.singletons to app
+      vueApp.singletons = data_from_db.singletons;
+      vueApp.graph_clusters = data_from_db.clusters;
+      // prep cluster data
+
+      for (let cluster of vueApp.graph_clusters) {
+        cluster.colour = color(cluster.cluster_id);
+        cluster.opacity = vueApp.node_fill_opacity;
+      }
+      // and deep copy of links to d3 - it works on these data and modifies them
       d3Data.links = JSON.parse(JSON.stringify(graph.links));
-      d3Data.nodes = JSON.parse(JSON.stringify(graph.nodes));
     })
     .catch((error) => {
       console.log(error);

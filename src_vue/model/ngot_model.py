@@ -29,17 +29,22 @@ class NGOTNode:
     # calculated scores and clusters
     centrality_score: Optional[float] = None
     cluster_id: Optional[int] = None
-    # display - values can be tweaked in frontend
+    # display - values are set and tweaked in frontend by D3 force
+    # crucial for memorizing position - for recluster etc. pp.
     x: Optional[float] = None
     y: Optional[float] = None
-    # fixed x and y
+    # fixed x and y - are fixed by user drag + fix
     fx: Optional[float] = None
     fy: Optional[float] = None
     # color and opacity can change during various interactions
-    colour: Optional[float] = None
+    # colore relates in the frontend to the dom svg-circle element only
+    colour: Optional[str] = None
+    # opacity however relates to the dom svg g ".node", with the svg-els circle and text [and circle's stroke]
     opacity: Optional[float] = None
-    hidden: Optional[bool] = None
-    # deprecated but still somewhere in use (from version )
+    # ngot nodes can be used as well as nodes for cluster info
+    # then they may be hidden
+    cluster_node: bool = False
+    hidden: bool = False
 
 
 @dataclass_json
@@ -62,30 +67,40 @@ class NGOTLink():
     # belongs to cluster [if none = transitlink , ansonsten id]
     cluster_id: Optional[int] = None
     # color and opacity can change during various interactions
-    colour: Optional[float] = None
+    colour: Optional[str] = None
     opacity: Optional[float] = None
-    hidden: Optional[bool] = None
+    # ngot links can be used as well as links for cluster info
+    # then they may be hidden
+    cluster_link: bool = False
+    hidden: bool = False
     # No Positional data as these depend on nodes
 
 
 @dataclass_json
 @dataclass()
 class NGOTCluster:
-    id: Optional[int] = None
+    cluster_id: Optional[int] = None
     # changeable by user
-    name: Optional[str] = None
+    cluster_name: Optional[str] = None
     # Display
-    colour: Optional[int] = None
+    colour: Optional[str] = None
+    opacity: Optional[float] = None
     # data information with IDs [-> can be used as labels]
     cluster_nodes: Optional[List[str]] = None
     # edges between cluster nodes with IDs [-> for coloring]
     cluster_links: Optional[List[str]] = None
     # default: special cluster node for displaying cluster - IT IS STORED ONLY HERE!!!!
-    label_node: Optional[NGOTNode] = None
+    cluster_info_node: Optional[NGOTNode] = None
     # connecting edges from the label_node to all cluster_nodes
-    edges_label_node: Optional[List[NGOTLink]] = None
+    cluster_info_links: Optional[List[NGOTLink]] = None
     # show yes no
-    show_label_node: bool = False
+    add_cluster_node: bool = False
+    # frontend -display - liste of objects of the form
+    # nested structure of every label object
+    # cluster_nodes = add
+    # text = cluster_node id
+    # text2 = cluster_node id + time_ids
+    labels: Optional[List[None]] = None
 
 
 @dataclass_json

@@ -2,8 +2,8 @@
   "flask_host": "0.0.0.0",
 
   "collections_info_backend": {
-    "default": "mysql://root:root@127.0.0.1:3306/scot",
-    "en_books": "mysql://root:root@127.0.0.1:3306/scot"
+    "default": "mysql://root:root@127.0.0.1:3377/scot",
+    "en_books": "mysql://root:root@127.0.0.1:3377/scot"
   },
 
   "collections_info_elastic": {

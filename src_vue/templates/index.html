@@ -152,16 +152,16 @@
 					</div>
 					<hr style="border: 1px solid gray;" />
 					<!-- Set dragging behaviour -->
-					<b-form-group id="sticky" class="input" label="Dragging">
+					<b-form-group id="sticky" class="input" label="Drag to Fixed-Position">
 						<b-form-radio name="sticky_mode" value="false" v-model="sticky_mode"
-							v-on:change="stickyChange('false')"> Enable brush</b-form-radio>
+							v-on:change="stickyChange('false')">Multi-Drag</b-form-radio>
 						<b-form-radio name="sticky_mode" value="true" v-model="sticky_mode"
-							v-on:change="stickyChange('true')"> Use force</b-form-radio>
+							v-on:change="stickyChange('true')">Single-Drag</b-form-radio>
 					</b-form-group>
 					<!-- Button to restart simulation with all the nodes -->
 					<p>
 						<b-button id="restart_button" variant="success" size="sm" class="lrmargin_button"
-							v-on:click="restart_change()"> Restart Simulation
+							v-on:click="restart_change()"> Release All Fixed
 						</b-button>
 					</p>
 					<!-- Set charge strength for simulation -->
@@ -197,16 +197,19 @@
 				bg-variant="secondary" text-variant="light" style="opacity: 0.9;" no-header left shadow>
 				<template>
 					<br>
-					<h4 id="sidebar-no-header-title" style="text-align: left;">&nbsp;&nbsp;&nbsp;&nbsp;<b>Cluster Shared
-							Words</b></h4>
+					<h4 id="sidebar-no-header-title" style="text-align: left;">Cluster:
+						shared words over time
+						</b></h4>
 					<br>
 					<b-button size="sm" variant="danger" @click="toggleSidebarContext2">Close</b-button>
 				</template>
 				<br>
 				<br>
-				<p style="margin-left: 10px;font-size:12px"> Clusters exhibit similarity between multiple paradigms.
-					The following list shows the top 200 context-words among all nodes. The score is the normalized
-					cumulated significance of the word for the cluster.
+				<p style="margin-left: 10px;font-size:12px"> SCoT-clusters exhibit similarity between
+					multiple paradigms over time.
+					The following list shows the top 200 context-words among all nodes in the cluster. The score is the
+					normalized
+					cumulated significance of the syntagmatic context for the cluster over time.
 				</p>
 				<div>
 					<b-table striped-hover :busy="busy_right2" :fields="fields_cluster" :items="cluster_shared_object"
@@ -354,7 +357,7 @@
 					<!-- Centrality Button -->
 					<b-dropdown>
 						<template v-slot:button-content>
-							Centrality
+							Betweenness Centrality
 						</template>
 						<!-- Node options -->
 						<!-- only available for non cluster nodes -->
@@ -393,8 +396,7 @@
 						</b-dropdown>
 					</div>
 					<!-- Nodes with balanced neighbourhood of clusters id="wobblyCandidatesCC" -->
-					<b-dropdown type="dark" variant="secondary" text="Nodes linking multiple clusters"
-						aria-expanded=true>
+					<b-dropdown type="dark" variant="secondary" text="Nodes between clusters" aria-expanded=true>
 						<b-dropdown-item v-on:click="highlightWobblyCandidates()"> <em class="fas fa-highlighter"></em>
 							Highlight nodes between clusters </b-dropdown-item>
 						<b-dropdown-item v-on:click="resetCentralityHighlighting()"> <em class="fas fa-times"></em>
@@ -480,7 +482,10 @@
 					</div>
 
 				</div>
-				<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR-RIGHT ANALYSIS CLUSTERING XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
+				<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR-RIGHT ANALYSIS CLUSTERING XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+				TODO URGENT REFACTOR
+				-->
+
 				<div v-if="right_selected === 'cluster_basic'">
 					<!-- list with clusters -->
 					<div class="edit_cluster_textbox">
@@ -524,7 +529,7 @@
 
 
 									<b-modal :id="'modal-delete-' + index" title="Confirm Deletion"
-										@ok="delete_cluster(cluster.cluster_name, cluster.cluster_id, cluster.labels)">
+										@ok="delete_cluster(cluster.cluster_id)">
 										Are you sure you want to delete the cluster "{{ cluster.cluster_name }}"?
 									</b-modal>
 
@@ -539,8 +544,7 @@
 
 											<!-- Checkbox to add cluster label to graph -->
 											<b-form-group>
-												<b-form-checkbox v-model="cluster.add_cluster_node" value="true"
-													unchecked-value="false">
+												<b-form-checkbox v-model="cluster.add_cluster_node">
 													Show cluster label in graph
 												</b-form-checkbox>
 												<!-- <b-form-checkbox
