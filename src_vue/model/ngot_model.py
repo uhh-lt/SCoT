@@ -1,7 +1,6 @@
 from dataclasses import dataclass, field, asdict
 from dataclasses_json import dataclass_json
 from typing import List, Dict, Optional
-from flask_sqlalchemy import SQLAlchemy
 
 """  
 This defines the model of the clustered neighbourhood graph over time
