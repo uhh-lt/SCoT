@@ -1093,7 +1093,6 @@ let vueApp = new Vue({
       // console.log("in highlight wobbly");
       vueApp.highlightWobblies = true;
       let nodes = d3.selectAll(".node").selectAll("g");
-      let text = d3.selectAll(".node").selectAll("g").select("text");
 
       nodes.each(function (d, i) {
         let children = this.childNodes;
@@ -1545,7 +1544,7 @@ let vueApp = new Vue({
             for (let key in res.data) {
               if (key != "error") {
                 let dati = res.data[key];
-                retObj = {};
+                let retObj = {};
                 retObj.node1 = parseFloat(dati["score"]).toFixed(5);
                 retObj.edge = dati["key"];
                 retObj.node2 = parseFloat(dati["score2"]).toFixed(5);
