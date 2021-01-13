@@ -1,17 +1,14 @@
 let vueApp = new Vue({
   el: "#vue-app",
+
+  data: vueData,
   /**
-   * The app follows a MVVM pattern with two VM frameworks.
-   * There is a global model [the graph and additional information accessed through the connector],
-   * and two MV-frameworks [vue and d3], which link the model to the UI-view
-   * that work on two seperate viewModels [the d3 links and vue VieModel-data]
-   * These 3 contexts, are clearly distinguished in the code
-   * graph.xyz refers to the global graph-model outside of the two frameworks,
-   * d3Data.links to the MV-model - managed by D3-framework which contains ui info etc., and
-   * vueApp.graph_type to the MV-model-data managed by Vue
+   * Note on vueData - vue Data has three sub-data-objects: vue-App, graph and d3
+   * graph.xyz refers to the global graph-model
+   * d3Data.xyz refers to specific data for d3
+   * vueData.xyz to the data specific to the VueApp
    *
    */
-  data: vueData,
   computed: {
     // general svg
     // aim of method
@@ -21,8 +18,9 @@ let vueApp = new Vue({
     // naming scheme - cluster.cluster_nodes = hier cluster.labels
 
     clusters_no_singleton() {
-      // console.log("in clusters no single", this.clusters);
-      let ret = this.graph_clusters.filter((d) => d.labels.length > 1);
+      // console.log("in clusters no single", this.graph_clusters);
+      // SET TO >1 to eleminate single clusters
+      let ret = this.graph_clusters; // .filter((d) => d.labels.length > 1);
       ret.sort(function (a, b) {
         return b.labels.length - a.labels.length;
       });
@@ -148,7 +146,7 @@ let vueApp = new Vue({
         options.push({
           text: vueApp.graph_clusters[i].cluster_name,
           value: {
-            cluster_id: vueApp.graph_clusters[i].id,
+            cluster_id: vueApp.graph_clusters[i].cluster_id,
             cluster_name: vueApp.graph_clusters[i].cluster_name,
             colour: vueApp.graph_clusters[i].colour,
           },
@@ -347,14 +345,13 @@ let vueApp = new Vue({
       delete_graph();
       graph_init();
       graph_crud(graph.nodes, d3Data.links, vueApp.graph_clusters);
+      sticky_change_d3();
       // update the cluster information in the Vue data variable after initializing the D3 graph
       //this.get_clusters();
       // switch off overlay
       vueApp.graph_rendered = true;
       vueApp.overlay_main = false;
       vueApp.wait_rendering = false;
-
-      return "ok";
     },
     /*
 		/ ############ SIDEBAR LEFT Graph-Menu - VIEW Functions ---------------------------------------------------------------------------------------------------
@@ -418,7 +415,7 @@ let vueApp = new Vue({
 		################## SIDEBAR RIGHT CLUSTER-ANALYSIS CLUSTERS -------------------------------------------------------------------------
     */
     /*
-		Set the opacity of nodes and links of a specific cluster.
+		Set the opacity of nodes and links of a specific cluster via d3
 		@param Object cluster: the entry for a specific cluster in the data letiable clusters.
 		@param float opacity: some number between 0.0 and 1.0.
 		@param float link_opacity: some number between 0.0 and 1.0.
@@ -511,8 +508,25 @@ let vueApp = new Vue({
       vueApp.wait_rendering = false;
     },
 
+    manual_recluster: async function () {
+      vueApp.overlay_main = true;
+      vueApp.graph_rendered = false;
+      vueApp.wait_rendering = true;
+      d_simulation.stop();
+      await manual_recluster_io();
+      //delete_graph();
+      //render_graph();
+      graph_crud(graph.nodes, d3Data.links);
+      d_simulation.restart();
+      //vueApp.get_clusters();
+      vueApp.graph_rendered = true;
+      vueApp.overlay_main = false;
+      vueApp.wait_rendering = false;
+    },
+
     /*
     Choose cluster for context analysis and display context information
+    from axios
 		*/
     get_cluster_information(cluster) {
       // console.log("in get cluster information", cluster);
@@ -577,34 +591,33 @@ let vueApp = new Vue({
       }
     },
     /*
-		Generate a new, random cluster id, that differs from the existing ones
+		Generate a new, cluster id, that differs from the existing ones
 		*/
     generate_cluster_id() {
-      let number_of_nodes = d3.selectAll(".node").selectAll("g").size();
-
-      let existing_cluster_ids = [];
-      for (let i = 0; i < vueApp.graph_clusters.length; i++) {
-        let cluster = vueApp.graph_clusters[i];
-        existing_cluster_ids.push(parseInt(cluster.cluster_id));
-      }
-
-      let random_number = Math.floor(
-        Math.random() * Math.floor(number_of_nodes + 10)
-      );
-
-      while (existing_cluster_ids.includes(random_number)) {
-        random_number = Math.floor(
-          Math.random() * Math.floor(number_of_nodes + 10)
-        );
-      }
-
-      return random_number;
+      let allIds = vueApp.graph_clusters.map((d) => Number(d.cluster_id));
+      let maxi = Math.max(...allIds);
+      console.log(maxi, allIds, maxi + 1);
+      return maxi + 1;
     },
     /*
 		Create a new cluster from scratch when using the node options to change the cluster of a node
 		*/
     createNewCluster(event) {
-      createNewCluster_d3(event);
+      let new_cluster_id = vueApp.generate_cluster_id();
+      console.log("in create new cluster d3", new_cluster_id);
+
+      // find node
+      let node_dic = {};
+      for (let node of graph.nodes) {
+        node_dic[node.id] = node;
+      }
+      let move_node = node_dic[vueApp.active_node.target_text];
+
+      // change cluster value of node
+      move_node.cluster_id = new_cluster_id;
+      move_node.class = new_cluster_id;
+      // move
+      vueApp.manual_recluster();
     },
     /*
 		Find the colour of a given node_id
@@ -616,7 +629,25 @@ let vueApp = new Vue({
 		Assigns the newly selected cluster id, cluster name and cluster colour to the selected node node.
 		*/
     assignNewCluster() {
-      assignNewCluster_d3();
+      let new_cluster_id;
+      // find cluster
+      for (let cluster of vueApp.graph_clusters) {
+        if (cluster.cluster_id == vueApp.new_assigned_cluster.cluster_id) {
+          new_cluster_id = cluster.cluster_id;
+        }
+      }
+      // find node
+      let node_dic = {};
+      for (let node of graph.nodes) {
+        node_dic[node.id] = node;
+      }
+      let move_node = node_dic[vueApp.active_node.target_text];
+
+      // change cluster value of node
+      move_node.cluster_id = new_cluster_id;
+      move_node.class = new_cluster_id;
+      // move
+      vueApp.manual_recluster();
     },
     /*
 		Return a list of all selected nodes as a list of objects
@@ -675,6 +706,8 @@ let vueApp = new Vue({
             link.hidden = !cluster.add_cluster_node;
           }
         }
+        console.log(cluster.add_cluster_node, cluster.cluster_id);
+        console.log(d3Data.links);
       }
       // needs applying to
       restart();
@@ -743,7 +776,18 @@ let vueApp = new Vue({
 		Delete one selected node
 		*/
     delete_selected_nodes() {
-      delete_selected_nodes_d3();
+      console.log("in delete selected");
+      graph.nodes = graph.nodes.filter(
+        (d) => d.id != vueApp.active_node.target_text
+      );
+      console.log(graph.nodes);
+      d3Data.links = d3Data.links.filter(
+        (d) =>
+          d.target_text != vueApp.active_node.target_text &&
+          d.source_text != vueApp.active_node.target_text
+      );
+      console.log(d3Data.links);
+      vueApp.manual_recluster();
     },
     /*
 		Delete a node from the model
@@ -1075,7 +1119,7 @@ let vueApp = new Vue({
           if (balanced === true) {
             children.forEach(function (p) {
               if (p.tagName === "circle") {
-                p.setAttribute("r", vueApp.radius * 2);
+                p.setAttribute("r", vueApp.radius * 3);
                 // text.style("font-size", vueApp.node_text_font_size * 2);
               }
             });
@@ -1085,7 +1129,7 @@ let vueApp = new Vue({
           else if (Object.keys(neighbourClusterDistr).length > 1) {
             children.forEach(function (p) {
               if (p.tagName === "circle") {
-                p.setAttribute("r", vueApp.radius);
+                p.setAttribute("r", vueApp.radius * 2);
                 // text.style("font-size", vueApp.node_text_font_size * 1.5);
               }
             });
@@ -1348,11 +1392,12 @@ let vueApp = new Vue({
     // ############################ SVG GENERAL TRIGGERED BY UI ----------------------------------------------------------
 
     /*
-		Fetch the updated amount of nodes and edges as well as the singletons from the BE.
+    Fetch the updated amount of nodes and edges as well as the singletons from the BE.
+    DEPRECATED
 		*/
-    update() {
-      update_io();
-    },
+    // update() {
+    //   update_io();
+    // },
     /*
 		Reset the opacity of all nodes and edges to their original values (nodes: 1.0, edges: 0.6).
 		*/

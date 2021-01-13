@@ -1,5 +1,3 @@
-// global vars
-
 // ########### SIDEBAR-LEFT - GRAPH CREATION ##########################################################
 
 // ------------------------- SVG COMPONENT ---------------------------
@@ -92,7 +90,7 @@ function graph_init() {
       "center",
       d3.forceCenter(vueApp.viewbox_width / 3, vueApp.viewbox_height / 3)
     );
-
+  // initi drag
   d_drag_node = d3.drag();
 
   return "end";
@@ -105,17 +103,17 @@ function delete_graph() {
 /**
  * KEY FUNCTION: BINDS AND UPDATES DATA TO .Node and .Link container elements
  * THIS FUNCTION SHOULD BE CALLED AGAIN WHEN THERE ARE CHANGES TO THE DATA THAT NEED TO BE RENDERED
- * This requires a stopping of simulation (x,y position are bound to simulation)
  * @param {} dnodes // array of nodes -- data is only read and not changed
  * @param {} dlinks // array of graph-links from graph-model -- USE DEEP COPY (force links transforms data)
  */
 
 function graph_crud(dnodes, dlinks, dcluster) {
+  console.log("------------ in graph crud d3 --------------------------");
   d_simulation.stop();
   // remove data information for node and line elements of tree
   // while preserving positions for the same nodes and lines
   // (the positions are bound to the simulation - drag - brush etc. and are not saved here)
-  // NOTE: for the data->dom logic, it would have been better to exit-remove with data-binding here
+  // NOTE: for the logic, it would have been better to exit-remove with data-binding here
   // HOWEVER: it does not work as expected due to implicit force-position-binding of x,y etc.
   // THUS: all elements are deleted here
   // remove all lines
@@ -224,21 +222,27 @@ function graph_crud(dnodes, dlinks, dcluster) {
       showContextMenu(this);
     })
     .on("click", function (d) {
-      console.log("in dblclick onn node g");
-      vueApp.active_node = {
-        time_ids: d.time_ids,
-        weights: d.weights,
-        source_text: vueApp.target_word,
-        target_text: d.target_text,
-      };
-      vueApp.getSimBimsNodes();
-      // set fields for display in node feature element
-      vueApp.fields_nodes[0]["label"] = vueApp.target_word;
-      vueApp.fields_nodes[2]["label"] = d.target_text;
-      // switch on node feature element
-      vueApp.context_mode3 = true;
-      vueApp.context_mode = false;
-      console.log(vueApp.context_mode3);
+      console.log("in click onn node g");
+      if (!d.cluster_node) {
+        vueApp.active_node = {
+          time_ids: d.time_ids,
+          weights: d.weights,
+          source_text: vueApp.target_word,
+          target_text: d.target_text,
+          cluster_id: d.cluster_id,
+          cluster_name: d.cluster_name,
+          colour: d.fill,
+        };
+
+        vueApp.getSimBimsNodes();
+        // set fields for display in node feature element
+        vueApp.fields_nodes[0]["label"] = vueApp.target_word;
+        vueApp.fields_nodes[2]["label"] = d.target_text;
+        // switch on node feature element
+        vueApp.context_mode3 = true;
+        vueApp.context_mode = false;
+        console.log(vueApp.context_mode3);
+      }
     });
   // .call(
   //   d3
@@ -321,14 +325,16 @@ function graph_crud(dnodes, dlinks, dcluster) {
         source_text: d.source_text,
         target_text: d.target_text,
       };
-      vueApp.getSimBims();
-      // set label
-      vueApp.fields_edges[0]["label"] = d.source_text;
-      vueApp.fields_edges[2]["label"] = d.target_text;
+      if (!d.cluster_node) {
+        vueApp.getSimBims();
+        // set label
+        vueApp.fields_edges[0]["label"] = d.source_text;
+        vueApp.fields_edges[2]["label"] = d.target_text;
 
-      // switch on context mode edges, switch off context mode
-      vueApp.context_mode = true;
-      vueApp.context_mode3 = false;
+        // switch on context mode edges, switch off context mode
+        vueApp.context_mode = true;
+        vueApp.context_mode3 = false;
+      }
     })
     .on("mouseover", d3Data.time_diff_tip_link.show)
     .on("mouseout", d3Data.time_diff_tip_link.hide);
@@ -336,10 +342,15 @@ function graph_crud(dnodes, dlinks, dcluster) {
   d_simulation.nodes(dnodes).on("tick", d_ticked);
 
   d_simulation.force("link").links(dlinks);
-  sticky_change_d3();
+
   d_simulation.restart();
   return "end";
 }
+
+// ############################################# SVG - MAIN ELEMENT FUNCTIONS ########################################
+/**
+ * ------------------------------------ D3 SIMULATION FUNCTIONS
+ */
 
 function d_ticked() {
   //d_node.attr("transform", positionNode);
@@ -363,7 +374,7 @@ function d_ticked() {
 }
 
 function d_dragstarted(d) {
-  if (!d3.event.active) d_simulation.alphaTarget(0.3).restart();
+  if (!d3.event.active) d_simulation.restart();
   d.fx = d.x;
   d.fy = d.y;
 }
@@ -374,48 +385,11 @@ function d_dragged(d) {
 }
 
 function d_dragended(d) {
-  if (!d3.event.active) d_simulation.alphaTarget(0);
+  if (!d3.event.active) d_simulation.alphaTarget();
   d.fx = null;
   d.fy = null;
 }
 
-// ############################################# SVG - MAIN ELEMENT FUNCTIONS ########################################
-// Calculates x and y positions for dynamic graph
-// update node and link positions
-function ticked() {
-  d_node.attr("transform", positionNode);
-  d_link
-    .attr("x1", function (d) {
-      return d.source.x;
-    })
-    .attr("y1", function (d) {
-      return d.source.y;
-    })
-    .attr("x2", function (d) {
-      return d.target.x;
-    })
-    .attr("y2", function (d) {
-      return d.target.y;
-    });
-}
-
-function positionNode(d) {
-  // keep the node within the boundaries of the svg
-  //console.log(d.x, d.y);
-  if (d.x < 0) {
-    d.x = d.x / 2;
-  }
-  if (d.y < 0) {
-    d.y = d.y / 2;
-  }
-  if (d.x > vueApp.svg_width) {
-    d.x = d.x - vueApp.svg_width - 50;
-  }
-  if (d.y > vueApp.svg_height) {
-    d.y = d.y - vueApp.svg_height - 50;
-  }
-  return "translate(" + d.x + "," + d.y + ")";
-}
 /*
 		Returns all the time ids of a node as a string of start year and end year to be displayed in the tooltip on a node in the time diff mode
     */
@@ -450,6 +424,20 @@ function showContextMenu(d) {
  * @param {} d
  */
 function mousedowned(d) {
+  if (!d.cluster_node) {
+    vueApp.active_node = {
+      time_ids: d.time_ids,
+      weights: d.weights,
+      source_text: vueApp.target_word,
+      target_text: d.target_text,
+      cluster_id: d.cluster_id,
+      cluster_name: d.cluster_name,
+      colour: d.fill,
+    };
+  }
+
+  console.log(vueApp.active_node);
+
   console.log("in mouse downed sticky mode", vueApp.sticky_mode);
   if (!d.selected) {
     d_node.classed("selected", function (p) {
@@ -489,35 +477,6 @@ function mouseOver(opacity) {
 }
 // fade everything back in
 function mouseOut() {
-  d_node.style("stroke-opacity", 1);
-  d_node.style("fill-opacity", 1);
-  d_link.style("stroke-opacity", this.base_link_opacity);
-  //link.style("stroke", "#ddd");
-}
-
-function mouseOver_d3(opacity) {
-  return function (d) {
-    // check all other nodes to see if they're connected
-    // to this one. if so, keep the opacity, otherwise
-    // fade
-    d_node.style("stroke-opacity", function (o) {
-      let thisOpacity = vueApp.isConnected(d, o) ? 1 : opacity;
-      return thisOpacity;
-    });
-    d_node.style("fill-opacity", function (o) {
-      let thisOpacity = vueApp.isConnected(d, o) ? 1 : opacity;
-      return thisOpacity;
-    });
-    // also style link accordingly
-    d_link.style("stroke-opacity", function (o) {
-      return o.source === d || o.target === d
-        ? this.base_link_opacity
-        : this.reduced_link_opacity;
-    });
-  };
-}
-
-function mouseOut_d3() {
   d_node.style("stroke-opacity", 1);
   d_node.style("fill-opacity", 1);
   d_link.style("stroke-opacity", this.base_link_opacity);
@@ -614,6 +573,11 @@ function fade_in_nodes_d3(colour) {
     });
   });
 }
+function restart() {
+  d_simulation.stop();
+  graph_crud(graph.nodes, d3Data.links, graph.clusters);
+  d_simulation.restart();
+}
 
 // ##############  SIDEBAR LEFT VIEW SETTINGS ############################################################################
 
@@ -647,7 +611,7 @@ function sticky_change_d3() {
       });
   } else if (vueApp.sticky_mode === "true") {
     // tidy up after brush and unselect all selected nodes
-    d_simulation.restart();
+    //d_simulation.restart();
     brush.style("display", "none");
 
     d_node.classed("selected", function (d) {
@@ -790,16 +754,6 @@ function linkdistance_change_d3() {
 
 // ########################## CLUSTER ANALYSIS - RIGHT SIDEBAR - FUNCTIONS #############################################################
 
-function restart() {
-  d_simulation.stop();
-  graph_crud(graph.nodes, d3Data.links, graph.clusters);
-  d_simulation.restart();
-}
-
-function get_colour(c) {
-  return color(c);
-}
-
 function delete_multiple_nodes_d3(labels) {
   // get all the text labels
   console.log(labels);
@@ -844,9 +798,10 @@ function delete_multiple_nodes_d3(labels) {
 }
 
 function select_cluster_d3(cluster) {
+  let cluster_id;
   if (vueApp.cluster_selected === false) {
     vueApp.cluster_selected = true;
-    let cluster_id = cluster.cluster_id;
+    cluster_id = cluster.cluster_id;
     let cluster_nodes = [];
     for (let i = 0; i < cluster.labels.length; i++) {
       cluster_nodes.push(cluster.labels[i].text);
@@ -873,7 +828,7 @@ function select_cluster_d3(cluster) {
     }
   } else {
     vueApp.cluster_selected = false;
-    let cluster_id = cluster.cluster_id;
+    cluster_id = cluster.cluster_id;
     let cluster_nodes = [];
     for (let i = 0; i < cluster.labels.length; i++) {
       cluster_nodes.push(cluster.labels[i].text);
@@ -891,132 +846,9 @@ function select_cluster_d3(cluster) {
   }
 }
 
-function createNewCluster_d3(event) {
-  let selected_nodes = d3.selectAll(".node").selectAll("g");
-  let generated_cluster_id = vueApp.generate_cluster_id().toString();
-
-  selected_nodes.each(function (d, i) {
-    let text = "";
-    let childnodes = this.childNodes;
-
-    childnodes.forEach(function (d, i) {
-      if (d.tagName === "text") {
-        text = d.getAttribute("text");
-      }
-    });
-
-    for (let j = 0; j < vueApp.clicked_nodes.length; j++) {
-      // if the node is one of the selected nodes, assign the new attributes
-      if (vueApp.clicked_nodes[j].id === text) {
-        childnodes.forEach(function (d, k) {
-          if (d.tagName === "circle") {
-            d.setAttribute("cluster_id", generated_cluster_id);
-            d.setAttribute("cluster", vueApp.created_cluster_name);
-            d.setAttribute("fill", vueApp.created_cluster_colour);
-          }
-        });
-      }
-    }
-  });
-
-  // update the information about the clusters in the graph in the data letiable clusters.
-  vueApp.get_clusters();
-
-  vueApp.created_cluster_colour = "";
-  vueApp.created_cluster_name = "";
-
-  // colour the links accordingly
-  let links = d3.selectAll(".link");
-  links.each(function (d) {
-    let children = this.childNodes;
-    children.forEach(function (p) {
-      let source = p.getAttribute("source");
-      let target = p.getAttribute("target");
-      let source_colour = vueApp.findColour(source);
-      let target_colour = vueApp.findColour(target);
-      if (source_colour === target_colour) {
-        p.setAttribute("stroke", source_colour);
-      } else {
-        p.setAttribute("stroke", "#999");
-      }
-    });
-  });
-}
-
-function assignNewCluster_d3() {
-  let selected_nodes = d3.selectAll(".node").selectAll("g");
-  let new_cluster;
-  // find cluster
-  for (let cluster of vueApp.graph_clusters){
-    if (cluster.cluster_id == vueApp.new_assigned_cluster.cluster_id){
-      new_cluster = cluster;
-    }
-  }
-
-  selected_nodes.each(function (d, i) {
-    let text = "";
-    let childnodes = this.childNodes;
-
-    childnodes.forEach(function (d, i) {
-      if (d.tagName === "text") {
-        text = d.getAttribute("text");
-      }
-    });
-
-    for (let j = 0; j < vueApp.clicked_nodes.length; j++) {
-      // if the node is one of the selected nodes, assign the new attributes
-      if (vueApp.clicked_nodes[j].id === text) {
-
-        new_cluster.cluster_nodes.push(text)
-        new_info_link = {
-          id : String(new_cluster.cluster_id + "-" + text),
-          source: String(new_cluster.cluster_id),
-          target: String(text),
-          source_text: String(new_cluster.cluster_id),
-          target_text: String(text),
-          cluster_id:new_cluster.cluster_id,
-          cluster_link: true,
-          hidden: true
-        }
-        
-
-    })
-
-        // childnodes.forEach(function (d, k) {
-        //   if (d.tagName === "circle") {
-        //     d.setAttribute(
-        //       "cluster_id",
-        //       vueApp.new_assigned_cluster.cluster_id
-        //     );
-        //     d.setAttribute("cluster", vueApp.new_assigned_cluster.cluster_name);
-        //     d.setAttribute("fill", vueApp.new_assigned_cluster.colour);
-        //   }
-        // });
-      }
-    }
-  });
-  // update the information about the clusters in the graph in the clusters.
-  vueApp.get_clusters();
-
-  let links = d3.selectAll(".link");
-  links.each(function (d) {
-    let children = this.childNodes;
-    children.forEach(function (p) {
-      let source = p.getAttribute("source");
-      let target = p.getAttribute("target");
-      let source_colour = vueApp.findColour(source);
-      let target_colour = vueApp.findColour(target);
-      if (source_colour === target_colour) {
-        p.setAttribute("style", "stroke:" + source_colour);
-      } else {
-        p.setAttribute("style", "stroke: #999");
-      }
-    });
-  });
-}
-
 // ########################## CLUSTER ANALYSIS RIGHT TIME-DIFF #############################################################
-// Legacy version 1 that works on Dom - but works fine here
+// Legacy version 1 that works on Dom -
+// TODO Refactor at later stage - the colouring of the links is not correct (it is not dependent on the nodes)
 function skip_through_time_slices_d3() {
   let nodes = d3.selectAll(".node").selectAll("g");
 
@@ -1060,7 +892,7 @@ function skip_through_time_slices_d3() {
 
   links.each(function (d, i) {
     // Set the opacity of all links to base_link_opacity initially
-    this.style.strokeOpacity = this.base_link_opacity;
+    this.style.strokeOpacity = vueApp.base_link_opacity;
 
     // select the time ids of the source and the target
     let source_time_ids = d.source.time_ids;
@@ -1097,7 +929,7 @@ function skip_through_time_slices_d3() {
 
     // the link only has opacity 1.0 if both source and target are in the selected time slice
     if (in_source_interval === false || in_target_interval === false) {
-      vueApp.style.strokeOpacity = vueApp.reduced_link_opacity;
+      this.style.strokeOpacity = vueApp.reduced_link_opacity;
     }
   });
 }

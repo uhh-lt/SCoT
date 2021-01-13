@@ -10,7 +10,7 @@ from typing import Dict, List
 from dataclasses_json import dataclass_json
 from dataclasses import dataclass
 
-from services.cluster import chinese_whispers
+from services.cluster import chinese_whispers, manual_recluster
 from services.graphs import get_graph
 from services.info import collections_info, get_edge_info, simbim, cluster_information, documents
 from model.ngot_model import NGOT, NGOTCluster, NGOTLink, NGOTProperties, NGOTNode
@@ -76,9 +76,31 @@ def get_clustered_graph():
 
 
 @app.route('/api/reclustering', methods=['POST'])
-# TODO NEW DATASTRUCTUREDS NEEDED
 # recluster the existing cumulated graph by running Chinese Whispers on it
 def recluster_graph():
+    # extract data
+    ngot = NGOT()
+    if request.method == 'POST':
+        ngot = NGOT.from_json(request.data)
+    print(ngot)
+    # create links dic and nodes dic
+    ngot.nodes_dic = map_ngot_nodes_2_dic(ngot)
+    ngot.links_dic = map_ngot_links_2_dic(ngot)
+    # recluster
+    reclustered_graph, ngot = chinese_whispers(ngot)
+    # delete information that was only used for the backend
+    ngot.nodes_dic = None
+    ngot.links_dic = None
+    # serialize dataclass-structure to json
+    ngot_json = ngot.to_json()
+    return ngot_json
+
+
+@app.route('/api/manualreclustering', methods=['POST'])
+# the graph has been manually reclustered in the frontend
+# however, it needs a new mapping with new values from the be
+# the names of the clusters should be preserved (TODO)
+def manual_recluster_graph():
     # extract data
     ngot = NGOT()
     if request.method == 'POST':
@@ -87,7 +109,7 @@ def recluster_graph():
     ngot.nodes_dic = map_ngot_nodes_2_dic(ngot)
     ngot.links_dic = map_ngot_links_2_dic(ngot)
     # recluster
-    reclustered_graph, ngot = chinese_whispers(ngot)
+    reclustered_graph, ngot = manual_recluster(ngot)
     # delete information that was only used for the backend
     ngot.nodes_dic = None
     ngot.links_dic = None

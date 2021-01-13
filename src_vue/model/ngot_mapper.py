@@ -93,6 +93,8 @@ def update_ngot_with_clusters_and_node_infos_from_graph(graph, ngot):
             node.cluster_id = maxi_id
 
     # create cluster info node and cluster info links (ie those connecting all cluster)
+    # these are also appended to the regular links and nodes (this is done to conform with d3 and
+    # and version 1 of the app) - In pure theory this is not nice
     for cluster in cluster_set:
         cluster.cluster_info_node = NGOTNode()
         cluster.cluster_info_node.id = cluster.cluster_id

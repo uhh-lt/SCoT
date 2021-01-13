@@ -89,9 +89,11 @@ class NGOTCluster:
     cluster_nodes: Optional[List[str]] = None
     # edges between cluster nodes with IDs [-> for coloring]
     cluster_links: Optional[List[str]] = None
-    # default: special cluster node for displaying cluster - IT IS STORED ONLY HERE!!!!
+    # default: special cluster node for displaying cluster
+    # In the FE it needs to be mixed with the other
     cluster_info_node: Optional[NGOTNode] = None
     # connecting edges from the label_node to all cluster_nodes
+    # now stored in normal links
     cluster_info_links: Optional[List[NGOTLink]] = None
     # show yes no
     add_cluster_node: bool = False

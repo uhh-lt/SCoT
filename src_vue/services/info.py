@@ -130,10 +130,10 @@ def cluster_information(config, data):
         for k2, v2 in v.items():
             res_dic_all[k2] += v2
     print("-------------------------------------------------------")
-    print("res_dic_all", list(res_dic_all.values())[:100])
     # normalize and sort significance values
     res_dic_all = {k: v for k, v in sorted(
         res_dic_all.items(), key=lambda x: x[1], reverse=True)}
+    # print("res_dic_all", list(res_dic_all.values())[:100])
     maxi = list(res_dic_all.values())[0]
     for k, v in res_dic_all.items():
         res_dic_all[k] = float(v/maxi)

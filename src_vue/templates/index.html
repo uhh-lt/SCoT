@@ -271,19 +271,21 @@
 					<br>
 					<!-- Options Drop Down for node options TODO Update Options-->
 
-					<!-- Modal to change cluster assignment of a node -->
+					<!-- Modal to change cluster assignment of A node -->
 					<b-modal id="modal-1" title="Change Cluster Assignment" @ok="assignNewCluster()">
-						<div v-for="node in clicked_nodes">
+						<div>
 							<!-- Show selected nodes -->
 							<div>
-								Selected node: {{node.id}}
+								Selected node: {{active_node.target_text}}
 							</div>
 							<br>
 							<!-- Show current cluster -->
 							<div>
 								Current cluster: <span class="dot-sm"
-									v-bind:style="{'background-color': node.colour}"></span>{{ node.cluster_name }},
-								(ID: {{node.cluster_id}})
+									v-bind:style="{'background-color': active_node.colour}"></span>{{
+								active_node.cluster_name
+								}},
+								(ID: {{active_node.cluster_id}})
 							</div>
 							<!-- Choose a new cluster -->
 							<div>
@@ -310,7 +312,7 @@
 							<div>
 								<span style="font-size: 16pt"> Create a new cluster </span>
 								<br>
-								<div>
+								<!-- <div>
 									<b-form-group id="c_name" label="Choose cluster name">
 										<b-form-input v-model="created_cluster_name" placeholder="Enter cluster name">
 										</b-form-input>
@@ -319,7 +321,7 @@
 										<b-form-input class="color-select" v-model="created_cluster_colour"
 											type="color"> </b-form-input>
 									</b-form-group>
-								</div>
+								</div> -->
 							</div>
 						</div>
 					</b-modal>

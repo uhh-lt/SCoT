@@ -309,10 +309,13 @@ let vueData = {
   // --------------------------------- SIDEBAR RIGHT: NODE INFORMATION ----------------------------
   // d3-> Sidebar: node-click information for data-query for sidebar
   active_node: {
-    time_ids: [1],
-    weights: [1],
-    source_text: "happiness/NN",
-    target_text: "gladness/NN",
+    time_ids: [],
+    weights: [],
+    source_text: "",
+    target_text: "",
+    cluster_id: "",
+    cluster_name: "",
+    colour: "",
   },
   // sigebar right: holds node context information (score, key, score2)
   simbim_node_object: [],
