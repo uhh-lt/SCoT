@@ -38,7 +38,14 @@ function graph_init() {
     .attr("height", vueApp.svg_height)
     .attr(
       "viewBox",
-      " 0 0 " + vueApp.viewbox_width + " " + vueApp.viewbox_height
+      " " +
+        vueApp.viewbox_pan_horizontal +
+        " " +
+        vueApp.viewbox_pan_vertical +
+        " " +
+        vueApp.viewbox_width +
+        " " +
+        vueApp.viewbox_height
     )
     .attr("preserveAspectRatio", "xMidYMid meet")
     .call(
@@ -88,8 +95,9 @@ function graph_init() {
     .force("collide", d3.forceCollide().radius(vueApp.radius * 3))
     .force(
       "center",
-      d3.forceCenter(vueApp.viewbox_width / 3, vueApp.viewbox_height / 3)
+      d3.forceCenter(vueApp.viewbox_width / 2, vueApp.viewbox_height / 2)
     );
+
   // initi drag
   d_drag_node = d3.drag();
 
@@ -115,7 +123,7 @@ function graph_crud(dnodes, dlinks, dcluster) {
   // (the positions are bound to the simulation - drag - brush etc. and are not saved here)
   // NOTE: for the logic, it would have been better to exit-remove with data-binding here
   // HOWEVER: it does not work as expected due to implicit force-position-binding of x,y etc.
-  // THUS: all elements are deleted here
+  // THUS: all visible elements are deleted here
   // remove all lines
   d3.selectAll(".link").selectAll("line").remove();
   // remove all nodes
@@ -127,8 +135,8 @@ function graph_crud(dnodes, dlinks, dcluster) {
   d_svg
     .append("text")
     .attr("class", "target")
-    .attr("x", vueApp.viewbox_width / 3)
-    .attr("y", vueApp.viewbox_height / 3)
+    .attr("x", vueApp.viewbox_width / 2)
+    .attr("y", vueApp.viewbox_height / 2)
     .style("font-family", "helvetica, arial, sans-serif")
     .style("font-size", vueApp.svg_target_text_font_size)
     .style("font-weight", "bold")
@@ -187,7 +195,7 @@ function graph_crud(dnodes, dlinks, dcluster) {
       }
     })
     .attr("centrality_score", (d) => d.centrality_score)
-    .attr("cluster", function (d) {
+    .attr("cluster_name", function (d) {
       if (d.cluster_name) {
         return d.cluster_name;
       } else {
@@ -196,7 +204,6 @@ function graph_crud(dnodes, dlinks, dcluster) {
     })
     .attr("cluster_id", (d) => d.cluster_id)
     .attr("cluster_node", (d) => d.cluster_node)
-    .attr("is_cluster_node", (d) => d.cluster_node)
     .attr("time_ids", (d) => d.time_ids)
     .attr("target_text", (d) => d.target_text)
     .attr("fill", function (d) {
@@ -210,7 +217,7 @@ function graph_crud(dnodes, dlinks, dcluster) {
     })
     .on("mousedown", mousedowned)
     .call(d_drag_node)
-    .on("mouseover", mouseOver(vueApp.node_reduced_hover_opacity))
+    .on("mouseover", mouseOver(vueApp.node_reduced_opacity))
     .on("mouseout", mouseOut)
     .on("click", function (d) {
       if (this.getAttribute("class") === "selected") {
@@ -353,7 +360,7 @@ function graph_crud(dnodes, dlinks, dcluster) {
  */
 
 function d_ticked() {
-  //d_node.attr("transform", positionNode);
+  d_node.attr("transform", positionNode);
   d_link
     .attr("x1", function (d) {
       return d.source.x;
@@ -368,9 +375,26 @@ function d_ticked() {
       return d.target.y;
     });
 
-  d_node.attr("transform", function (d) {
-    return "translate(" + d.x + "," + d.y + ")";
-  });
+  // d_node.attr("transform", function (d) {
+  //   return "translate(" + d.x + "," + d.y + ")";
+  // });
+}
+
+function positionNode(d) {
+  // keep the node within the boundaries of the svg
+  if (d.x < 0) {
+    d.x = 0;
+  }
+  if (d.y < 0) {
+    d.y = 0;
+  }
+  if (d.x > vueApp.svg_width) {
+    d.x = vueApp.svg_width - 50;
+  }
+  if (d.y > vueApp.svg_height) {
+    d.y = vueApp.svg_height - 50;
+  }
+  return "translate(" + d.x + "," + d.y + ")";
 }
 
 function d_dragstarted(d) {
@@ -459,19 +483,26 @@ function mouseOver(opacity) {
     // check all other nodes to see if they're connected
     // to this one. if so, keep the opacity, otherwise
     // fade
+
     d_node.style("stroke-opacity", function (o) {
-      let thisOpacity = vueApp.isConnected(d, o) ? 1 : opacity;
+      console.log(
+        "in mouseover stroke opacity with opacity = ",
+        vueApp.node_fill_opacity
+      );
+      let thisOpacity = vueApp.isConnected(d, o)
+        ? 1
+        : vueApp.node_reduced_opacity;
       return thisOpacity;
     });
     d_node.style("fill-opacity", function (o) {
-      let thisOpacity = vueApp.isConnected(d, o) ? 1 : opacity;
+      let thisOpacity = vueApp.isConnected(d, o)
+        ? 1
+        : vueApp.node_reduced_opacity;
       return thisOpacity;
     });
     // also style link accordingly
     d_link.style("stroke-opacity", function (o) {
-      return o.source === d || o.target === d
-        ? this.base_link_opacity
-        : this.reduced_link_opacity;
+      return o.source === d || o.target === d ? 1 : vueApp.reduced_link_opacity;
     });
   };
 }

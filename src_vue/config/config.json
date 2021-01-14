@@ -31,16 +31,18 @@
     "German News 70m Dep": {
       "key": "de70",
       "target": "Krise#NN",
-      "p": 100,
-      "d": 8,
+      "p": 50,
+      "d": 4,
       "info": "German Online News - 70 Million Random Sentences, 1995-2010 "
     },
     "Finnish News Dep": {
       "key": "fi_news",
       "target": "Yksi#NUM",
-      "p": 100,
-      "d": 8,
+      "p": 50,
+      "d": 30,
       "info": "Various Finnish Online News - 14 Million Sentences, "
     }
   }
 }
+
+

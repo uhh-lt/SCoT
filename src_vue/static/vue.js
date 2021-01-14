@@ -38,18 +38,28 @@ let vueApp = new Vue({
       }
       return ret;
     },
-
+    // shift viewbox left/right and up/down
+    // increase -> shift right ()
+    viewbox_pan_horizontal() {
+      return -screen.width * 0.03;
+    },
+    // increase -> down
+    viewbox_pan_vertical() {
+      return -screen.height * 0.1;
+    },
+    // larger viewbox height and width -> zoom out / smaller viewbox - > zoom in
     viewbox_height() {
-      return screen.height * 1;
+      return screen.height * 1.2;
     },
     viewbox_width() {
-      return screen.width * 1;
+      return screen.width * 1.65;
     },
     // for setting the svg size for the graph
     // THIS IS THE VIEWPORT
     svg_height() {
       return screen.height * 1;
     },
+    // it needs to be wider than screen.width - otherwise it does
     svg_width() {
       return screen.width * 1.3;
     },
@@ -206,6 +216,17 @@ let vueApp = new Vue({
 
       return start + " - " + end;
     },
+
+    cluster_name_by_node_id() {
+      //console.log(vueApp.active_node.target_text);
+      let node_id = vueApp.active_node.target_text;
+      // console.log(vueApp.node_dic);
+      let tmpNode = vueApp.node_dic[node_id];
+      console.log(tmpNode);
+      let clusterId = tmpNode.cluster_id;
+      let tmpCluster = vueApp.cluster_dic[clusterId];
+      return tmpCluster.cluster_name;
+    },
   },
   methods: {
     /*
@@ -347,7 +368,7 @@ let vueApp = new Vue({
       graph_crud(graph.nodes, d3Data.links, vueApp.graph_clusters);
       sticky_change_d3();
       // update the cluster information in the Vue data variable after initializing the D3 graph
-      //this.get_clusters();
+
       // switch off overlay
       vueApp.graph_rendered = true;
       vueApp.overlay_main = false;
@@ -707,7 +728,7 @@ let vueApp = new Vue({
           }
         }
         console.log(cluster.add_cluster_node, cluster.cluster_id);
-        console.log(d3Data.links);
+        // console.log(d3Data.links);
       }
       // needs applying to
       restart();
@@ -757,9 +778,10 @@ let vueApp = new Vue({
     },
     // check the dictionary to see if nodes are linked
     isConnected(a, b) {
+      // console.log("in is connected with a.id, b.id", a, b);
       return (
-        vueApp.linkedByIndex[a.id + "," + b.id] ||
-        vueApp.linkedByIndex[b.id + "," + a.id] ||
+        vueApp.link_dic[a.id + "-" + b.id] ||
+        vueApp.link_dic[b.id + "-" + a.id] ||
         a.id == b.id
       );
     },
@@ -786,7 +808,7 @@ let vueApp = new Vue({
           d.target_text != vueApp.active_node.target_text &&
           d.source_text != vueApp.active_node.target_text
       );
-      console.log(d3Data.links);
+      // console.log(d3Data.links);
       vueApp.manual_recluster();
     },
     /*
@@ -1212,7 +1234,9 @@ let vueApp = new Vue({
     },
 
     // ############## SIDEBAR RIGHT CLUSTER-ANALYSIS TIME DIFF -----------------------------------------------------------
-
+    /**
+     * LEGACY V1:
+     */
     time_diff_true() {
       this.time_diff = true;
       // console.log("time diff true");
@@ -1231,7 +1255,7 @@ let vueApp = new Vue({
         this.active_edge.weights
       ).slice(0, -4);
     },
-
+    // TODO: this does not look right
     selectInterval(time_ids, weights) {
       let intervalString = "";
       if (time_ids !== null && typeof time_ids !== "undefined") {

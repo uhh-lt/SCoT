@@ -82,7 +82,7 @@ def recluster_graph():
     ngot = NGOT()
     if request.method == 'POST':
         ngot = NGOT.from_json(request.data)
-    print(ngot)
+    # print(ngot)
     # create links dic and nodes dic
     ngot.nodes_dic = map_ngot_nodes_2_dic(ngot)
     ngot.links_dic = map_ngot_links_2_dic(ngot)

@@ -130,16 +130,22 @@ let vueData = {
   // derived from density
   e_edges: 0,
   // --------------------------
-  // DUPLICATES OF MAIN-NETWORK-GRAPH-DATA FOR DISPLAY & MANIPULATION ---------------------
+  // Deep Copies of MAIN-NETWORK-GRAPH-DATA FOR DISPLAY & MANIPULATION ---------------------
   // For display from main datastructure
   singletons: [],
   graph_clusters: [],
+  // Shallow copies for various calculations node dic and link dic needed
+  // form { id: {all_node/link_data}}
+  node_dic: {},
+  link_dic: {},
+  cluster_dic: {},
+
+  // ----------------------- LEGACY DATASTRUCTURES
   // LEGACY : is created in the frontend
   clusters: [],
   // LEGACY: used to store backend json
   newclusters: {},
-  // -----------------------
-  // An object for remembering which nodes are connected. The key is of the form "source, target"
+  // LEGAcY: An object for remembering which nodes are connected. The key is of the form "source, target"
   linkedByIndex: {},
 
   // GENERAL SVG VIEW SETTINGS -----------------------------------------------------------------------------------------
@@ -286,10 +292,10 @@ let vueData = {
   cluster_search_limit: 1000,
   // d3 -> sidebar : edge-click information for data-query for sidebar
   active_edge: {
-    time_ids: [1],
-    weights: [1],
-    source_text: "happiness/NN",
-    target_text: "gladness/NN",
+    time_ids: ["1"],
+    weights: ["1"],
+    source_text: "0",
+    target_text: "0",
   },
   // sigebar right: holds edge context information (score, key, score2)
   simbim_object: [],
@@ -309,12 +315,12 @@ let vueData = {
   // --------------------------------- SIDEBAR RIGHT: NODE INFORMATION ----------------------------
   // d3-> Sidebar: node-click information for data-query for sidebar
   active_node: {
-    time_ids: [],
-    weights: [],
-    source_text: "",
-    target_text: "",
-    cluster_id: "",
-    cluster_name: "",
+    time_ids: ["1"],
+    weights: ["1"],
+    source_text: "0",
+    target_text: "0",
+    cluster_id: 0,
+    cluster_name: "0",
     colour: "",
   },
   // sigebar right: holds node context information (score, key, score2)

@@ -68,6 +68,20 @@ async function getData_io() {
     }
     // and deep copy of links to d3 - it works on these data and modifies them
     d3Data.links = JSON.parse(JSON.stringify(graph.links));
+    // create node and link dics for calculations
+    vueApp.node_dic = {};
+    for (let node of graph.nodes) {
+      vueApp.node_dic[node.id] = node;
+    }
+    vueApp.link_dic = {};
+    for (let link of graph.links) {
+      vueApp.link_dic[link.id] = link;
+    }
+    vueApp.cluster_dic = {};
+    for (let cluster of graph.clusters) {
+      vueApp.cluster_dic[cluster.cluster_id] = cluster;
+    }
+    // set first active node
   } catch (error) {
     console.log(error);
     if (error.response.status >= 500) {

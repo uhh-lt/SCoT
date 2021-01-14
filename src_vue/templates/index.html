@@ -282,10 +282,8 @@
 							<!-- Show current cluster -->
 							<div>
 								Current cluster: <span class="dot-sm"
-									v-bind:style="{'background-color': active_node.colour}"></span>{{
-								active_node.cluster_name
-								}},
-								(ID: {{active_node.cluster_id}})
+									v-bind:style="{'background-color': active_node.colour}"></span>
+								{{cluster_name_by_node_id}}, (ID: {{active_node.cluster_id}})
 							</div>
 							<!-- Choose a new cluster -->
 							<div>
