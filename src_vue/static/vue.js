@@ -218,14 +218,26 @@ let vueApp = new Vue({
     },
 
     cluster_name_by_node_id() {
-      //console.log(vueApp.active_node.target_text);
-      let node_id = vueApp.active_node.target_text;
-      // console.log(vueApp.node_dic);
-      let tmpNode = vueApp.node_dic[node_id];
-      console.log(tmpNode);
-      let clusterId = tmpNode.cluster_id;
-      let tmpCluster = vueApp.cluster_dic[clusterId];
-      return tmpCluster.cluster_name;
+      let node_id;
+      let tmpNode;
+      let clusterId;
+      let tmpCluster;
+      // optional chaining... mit if
+      node_id = vueApp.active_node.target_text;
+      if (node_id) {
+        tmpNode = vueApp.node_dic[node_id];
+      }
+      if (tmpNode) {
+        clusterId = tmpNode.cluster_id;
+      }
+      if (clusterId) {
+        tmpCluster = vueApp.cluster_dic[clusterId];
+      }
+      if (tmpCluster) {
+        return tmpCluster.cluster_name;
+      } else {
+        return "unknown name";
+      }
     },
   },
   methods: {

@@ -508,6 +508,8 @@
 									<!-- Button for opening edit options of cluster -->
 									<div class="btn btn-sm btn-primary"
 										v-bind:style="{ 'background-color': cluster.colour }"
+										@mouseover="!cluster_selected ? set_cluster_opacity(cluster, 0.2, reduced_link_opacity) : null"
+										@mouseout="!cluster_selected ? set_cluster_opacity(cluster, 1.0, base_link_opacity) : null"
 										v-b-toggle="'collapse-edit-' + index" :disabled="time_diff == 1">Name:
 										{{cluster.cluster_name}} <i class="fas fa-pen"></i> </div>
 
@@ -524,6 +526,8 @@
 									<!-- Button for opening delete options of cluster -->
 									<div class="btn btn-sm btn-primary"
 										v-bind:style="{ 'background-color': cluster.colour }"
+										@mouseover="!cluster_selected ? set_cluster_opacity(cluster, 0.2, reduced_link_opacity) : null"
+										@mouseout="!cluster_selected ? set_cluster_opacity(cluster, 1.0, base_link_opacity) : null"
 										v-b-modal="'modal-delete-' + index" :disabled="time_diff == 1"> <i
 											class="fas fa-trash"></i> </div>
 
