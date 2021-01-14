@@ -41,18 +41,18 @@ let vueApp = new Vue({
     // shift viewbox left/right and up/down
     // increase -> shift right ()
     viewbox_pan_horizontal() {
-      return -screen.width * 0.03;
+      return -screen.width * 0.01;
     },
     // increase -> down
     viewbox_pan_vertical() {
-      return -screen.height * 0.1;
+      return -screen.height * 0.07;
     },
     // larger viewbox height and width -> zoom out / smaller viewbox - > zoom in
     viewbox_height() {
       return screen.height * 1.2;
     },
     viewbox_width() {
-      return screen.width * 1.65;
+      return screen.width * 1.8;
     },
     // for setting the svg size for the graph
     // THIS IS THE VIEWPORT

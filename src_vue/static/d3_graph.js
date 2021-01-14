@@ -95,7 +95,7 @@ function graph_init() {
     .force("collide", d3.forceCollide().radius(vueApp.radius * 3))
     .force(
       "center",
-      d3.forceCenter(vueApp.viewbox_width / 2, vueApp.viewbox_height / 2)
+      d3.forceCenter(vueApp.viewbox_width / 2.2, vueApp.viewbox_height / 2.2)
     );
 
   // initi drag
@@ -135,8 +135,8 @@ function graph_crud(dnodes, dlinks, dcluster) {
   d_svg
     .append("text")
     .attr("class", "target")
-    .attr("x", vueApp.viewbox_width / 2)
-    .attr("y", vueApp.viewbox_height / 2)
+    .attr("x", vueApp.viewbox_width / 2.2)
+    .attr("y", vueApp.viewbox_height / 2.2)
     .style("font-family", "helvetica, arial, sans-serif")
     .style("font-size", vueApp.svg_target_text_font_size)
     .style("font-weight", "bold")
