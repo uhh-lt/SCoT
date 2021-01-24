@@ -387,11 +387,11 @@
 							<!-- Node options -->
 							<!-- only available for non cluster nodes -->
 							<b-dropdown-item v-show="select_node_is_no_cluster_node" v-on:click="findSelectedNodes()"
-								v-b-modal.modal-1> <i class="fas fa-exchange-alt"></i> Assign to different cluster
+								v-b-modal.modal-1> <em class="fas fa-exchange-alt"></em> Assign to different cluster
 							</b-dropdown-item>
 							<b-dropdown-item v-show="select_node_is_no_cluster_node" v-on:click="findSelectedNodes()"
-								v-b-modal.modal-2> <i class="fas fa-plus"></i> Create new cluster </b-dropdown-item>
-							<b-dropdown-item v-on:click="delete_selected_nodes()"> <i class="fas fa-trash"></i> Delete
+								v-b-modal.modal-2> <em class="fas fa-plus"></em> Create new cluster </b-dropdown-item>
+							<b-dropdown-item v-on:click="delete_selected_nodes()"> <em class="fas fa-trash"></em> Delete
 								node </b-dropdown-item>
 						</b-dropdown>
 					</div>

@@ -959,6 +959,7 @@ let vueApp = new Vue({
 		Check if the neighbourhood of a node is balanced 
 		*/
     is_balanced: function (clusterDistr) {
+      console.log("clusterDistro", clusterDistr);
       let balanced = false;
       let b = "no";
 

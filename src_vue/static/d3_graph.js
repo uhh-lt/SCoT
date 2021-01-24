@@ -6,7 +6,6 @@ Works on the d3Data [see data.js], the vueData managed by VueApp and the globalG
 
  */
 let color = d3.scaleOrdinal(d3.schemePaired);
-
 let d_svg;
 let d_linkG;
 let d_nodeG;

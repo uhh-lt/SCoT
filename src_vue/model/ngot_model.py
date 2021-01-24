@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field, asdict
 from dataclasses_json import dataclass_json
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Set
 
 """  
 This defines the model of the clustered neighbourhood graph over time
@@ -22,12 +22,24 @@ class NGOTNode:
     target_text: Optional[str] = None
     # max weight as main derived from weights
     weight: Optional[int] = None
-    # overlay data information
+    # time interval data information
     time_ids: Optional[List[int]] = None
     weights: Optional[List[float]] = None
-    # calculated scores and clusters
+    # Graph score
     centrality_score: Optional[float] = None
+    # clusters ids and scores
     cluster_id: Optional[int] = None
+    # Cluster Metrics are computed
+    # cluster max size is needed for balance score of nodes
+    # A node has a balanced_cluster_connection if at least two clusters in its neigbourhood fulfil the following condition
+    # max_links_to_one_connected_cluster - links_to_connected_cluster_i < mean_links_to_any_cluster /2
+    # [max of number of links from this node to one cluster
+    # number of links to each cluster meansize /2]
+    # metric refers ngot directed links from and to each cluster
+    ngot_dir_links_with_each_cluster_dic: Optional[Dict[str, int]] = None
+    ngot_dir_links_with_each_cluster_max: Optional[int] = None
+    ngot_dir_links_with_each_cluster_mean: Optional[int] = None
+    ngot_dir_links_with_each_cluster_is_balanced: Optional[bool] = None
     # display - values are set and tweaked in frontend by D3 force
     # crucial for memorizing position - for recluster etc. pp.
     x: Optional[float] = None
@@ -41,6 +53,7 @@ class NGOTNode:
     # opacity however relates to the dom svg g ".node", with the svg-els circle and text [and circle's stroke]
     opacity: Optional[float] = None
     # ngot nodes can be used as well as nodes for cluster info
+    # (they should be another type, but since d3 only uses one type of node - they go here)
     # then they may be hidden
     cluster_node: bool = False
     hidden: bool = False
@@ -72,24 +85,23 @@ class NGOTLink():
     # then they may be hidden
     cluster_link: bool = False
     hidden: bool = False
-    # No Positional data as these depend on nodes
 
 
 @dataclass_json
 @dataclass()
 class NGOTCluster:
+    # cluster - id and data -----------------------------
     cluster_id: Optional[int] = None
     # changeable by user
     cluster_name: Optional[str] = None
-    # Display
-    colour: Optional[str] = None
-    opacity: Optional[float] = None
-    # data information with IDs [-> can be used as labels]
+    # data information with IDs [-> can be used as labels] - length = clustersize
     cluster_nodes: Optional[List[str]] = None
     # edges between cluster nodes with IDs [-> for coloring]
     cluster_links: Optional[List[str]] = None
+    # FRONTEND - DISPLAY -------------------------------
+    colour: Optional[str] = None
+    opacity: Optional[float] = None
     # default: special cluster node for displaying cluster
-    # In the FE it needs to be mixed with the other
     cluster_info_node: Optional[NGOTNode] = None
     # connecting edges from the label_node to all cluster_nodes
     # now stored in normal links
@@ -158,6 +170,7 @@ class NGOTProperties:
     # if graph = interval then number of satic edges per int. <= number of ngot edges <= number of static edges p. int * i
     # if graph = global then number of static nodes global / i <= number of ngot nodes <= number of static nodes global
     # if graph = global then number of static edges global / i <= number of ngot edges <= number of static edges global
+
     # SPECIAL SETTING ------------------------------------------------
     # Do not change if not necessary
     remove_singletons: bool = False
@@ -170,15 +183,16 @@ class NGOT():
     props: Optional[NGOTProperties] = None
     # the main node list as managed by python and the vue-framework and d3 and sent via json
     nodes: Optional[List[NGOTNode]] = None
-    # the temporary backend-only node list for input to networkx and some old graph-functions is a simple conversion into dictionary-form
+    # array of dics [node-id, {node-data}, ...] - conversion networkx and python - no frontend use
     nodes_dic: Optional[List[None]] = None
     # the main link list as managed by python and the vue-framework and d3 and sent via json
     links: Optional[List[NGOTLink]] = None
-    # the temporary backend onlylist for input to networkx and some old graph-functions is a simple conversion into dictionary-form
+    # array of dics [link-id, {link-data}, ...] - conversion networkx and python - no frontend use
     links_dic: Optional[List[None]] = None
     # list with ids of singleton nodes [they are part of nodes] managed by python and vue
     singletons: Optional[List[str]] = None
     # the main datastructure for clusters managed by python and vue
     clusters: Optional[List[NGOTCluster]] = None
-    # list with ids of transitlinks [they are part of links] managed by vue, colored grey by d3
+    # list with ids of transitlinks - they connect nodes of different clusters
+    # used for balance score calc - the connected external clusters of any node can be calculated based on transit-links
     transit_links: Optional[List[str]] = None

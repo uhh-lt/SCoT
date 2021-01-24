@@ -1,6 +1,7 @@
 import networkx as nx
 import random
 import json
+import statistics
 from model.ngot_model import NGOT, NGOTCluster, NGOTLink, NGOTProperties, NGOTNode
 from model.ngot_mapper import update_ngot_with_clusters_and_node_infos_from_graph
 
@@ -70,8 +71,70 @@ def construct_graph(nodes_set, edges):
     # print("---------- end--------- before cw")
     return graph
 
+ # Cluster Metrics are computed
+    # cluster max size is needed for balance score of nodes
+    # A node has a balanced_cluster_connection if at least two clusters in its neigbourhood fulfil the following condition
+    # max_links_to_one_connected_cluster - links_to_connected_cluster_i < mean_links_to_any_cluster /2
+    # [max of number of links from this node to one cluster
+    # number of ngot dir links with each cluster meansize /2]
+    # ngot dir links with each cluster = dir links to and from [there may be only one]
+    # no breaking down to time_slices [since clustering is done on NGOT]
+    # ngot_dir_links_with_each_cluster_dic: Optional[Dict[str, int]] = None
+    # ngot_dir_links_with_each_cluster_max: Optional[int] = None
+    # ngot_dir_links_with_each_cluster_mean: Optional[int] = None
+    # ngot_dir_links_with_each_cluster_is_balanced: Optional[bool] = None
 
-# call chinese whispers and calc centrality
+
+def balance_calc(ngot):
+    # create helper dics
+    node_dic = {}
+    for node in ngot.nodes:
+        node_dic[node.id] = node
+    link_dic = {}
+    for link in ngot.links:
+        link_dic[link.id] = link
+    cluster_dic = {}
+    for cluster in ngot.clusters:
+        cluster_dic[cluster.cluster_id] = cluster
+    # now calc for each node in a cluster the link_to_each_cluster_dic
+    for cluster in ngot.clusters:
+        for node in cluster.cluster_nodes:
+            node_dic[node].ngot_dir_links_with_each_cluster_dic = {
+                cluster.cluster_id: 0 for cluster in ngot.clusters}
+            tmp = node_dic[node].ngot_dir_links_with_each_cluster_dic
+            for link in ngot.links:
+                if (not link.cluster_link):
+                    source = link_dic[link.id].source
+                    target = link_dic[link.id].target
+                    if (source == node):
+                        tmp[node_dic[target].cluster_id] += 1
+                    elif (target == node):
+                        tmp[node_dic[source].cluster_id] += 1
+            # print(node, tmp)
+            # determine metrics
+            linkNum = [v for v in tmp.values()]
+            maxi = node_dic[node].ngot_dir_links_with_each_cluster_max = max(
+                linkNum)
+            # print("max", maxi)
+            meani = node_dic[node].ngot_dir_links_with_each_cluster_mean = statistics.mean(
+                linkNum)
+            # print("mean", meani)
+            # determine if balanced
+            counter = 0
+            for k, v in tmp.items():
+                if (maxi - v) < meani / 2:
+                    counter += 1
+            if counter >= 2:
+                balanced = node_dic[node].ngot_dir_links_with_each_cluster_is_balanced = True
+            else:
+                balanced = node_dic[node].ngot_dir_links_with_each_cluster_is_balanced = False
+            # print("is balanced", balanced)
+
+    return ngot
+
+# call chinese whispers and calc centrality and balance score
+
+
 def chinese_whispers(ngot, iterations=15):
 
     # uses networkx graph
@@ -85,6 +148,8 @@ def chinese_whispers(ngot, iterations=15):
     # update data structure with results of networkx graph if all elements present
     if ngot.nodes != None and ngot.links != None and ngot.nodes_dic != None and ngot.links_dic != None:
         ngot = update_ngot_with_clusters_and_node_infos_from_graph(graph, ngot)
+    # insert balance calc here
+    ngot = balance_calc(ngot)
     # old json_graph used for reclustering - not yet refactored
     json_graph = nx.readwrite.json_graph.node_link_data(graph)
 
@@ -92,7 +157,7 @@ def chinese_whispers(ngot, iterations=15):
 
 
 def manual_recluster(ngot):
-    # runs all methods without chinese whispers
+    # runs all methods of the abovve without chinese whispers
     # uses networkx graph
     # print(ngot.nodes_dic)
     graph = construct_graph(ngot.nodes_dic, ngot.links_dic)
@@ -105,6 +170,8 @@ def manual_recluster(ngot):
     # update data structure with results of networkx graph if all elements present
     if ngot.nodes != None and ngot.links != None and ngot.nodes_dic != None and ngot.links_dic != None:
         ngot = update_ngot_with_clusters_and_node_infos_from_graph(graph, ngot)
+    # insert balance calc here
+    ngot = balance_calc(ngot)
     # old json_graph used for reclustering - not yet refactored
     json_graph = nx.readwrite.json_graph.node_link_data(graph)
 
