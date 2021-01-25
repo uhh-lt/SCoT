@@ -291,7 +291,7 @@ let vueData = {
   time_diff: false,
   // -------------------------------- SIDEBAR RIGHT:EDGE INFORMATION --------------------------
   // limits the size of clusters for context-information-search
-  cluster_search_limit: 5,
+  cluster_search_limit: 10,
   // d3 -> sidebar : edge-click information for data-query for sidebar
   active_edge: {
     time_ids: ["1"],

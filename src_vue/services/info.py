@@ -122,41 +122,29 @@ def cluster_information(config, data):
         label = node[0]
         time_id = node[1]
         feature_dic[node] = db.get_features(label, time_id)
-    # target filter (this takes time...)
+    # get target filter set
     if (data["props"]["cluster_target_filter"]):
-        target_dic = {}
         target = data["props"]["target_word"]
-        for time_id in data["props"]["selected_time_ids"]:
-            target_dic[time_id] = db.get_features(target, time_id)
-            print("lenght target feature dic for time id",
-                  time_id, len(target_dic[time_id]))
-    # if target filter then filter feature dic per time id and target
-        filter_dic = {}
-        for node, node_feature_dic in feature_dic.items():
-            print("filtering, node, time-id vs target", node[0], node[1])
-            print("length of node_featur_dic before filtering",
-                  len(node_feature_dic))
-            target_time_id_feature_dic = target_dic[node[1]]
-            print("length of called filter target dic",
-                  len(target_time_id_feature_dic))
-            feature_filter = {}
-            for node_feature, score in node_feature_dic.items():
-                if node_feature in list(target_time_id_feature_dic.keys()):
-                    feature_filter[node_feature] = score
-                    # print("added feature filter value")
-            filter_dic[node] = feature_filter
-            print("length after filtering", len(filter_dic[node]))
-        feature_dic = filter_dic
+        time_ids = data["props"]["selected_time_ids"]
+        target_set = db.get_feature_target_filter_set(target, time_ids)
+        print("len filter target set", len(target_set))
     print("-------------------------------------------------------")
     print(" in cluster info (2) after db query --- %s seconds ---" %
           (time.time() - start_time))
     res_dic_all = defaultdict(int)
     # cumulate the feature scores over all nodes and time-ids [could be changed...]
     # feature dic {{word,timeid}:{feature: score}}
-    for k, v in feature_dic.items():
-        # items: {feature: score}
-        for k2, v2 in v.items():
-            res_dic_all[k2] += v2
+    if (data["props"]["cluster_target_filter"]):
+        for k, v in feature_dic.items():
+            for k2, v2 in v.items():
+                # items: {feature: score}
+                if k2 in target_set:
+                    res_dic_all[k2] += v2
+    else:
+        for k, v in feature_dic.items():
+            for k2, v2 in v.items():
+                # items: {feature: score}
+                res_dic_all[k2] += v2
     print("-------------------------------------------------------")
     # normalize and sort significance values
     res_dic_all = {k: v for k, v in sorted(
@@ -171,11 +159,9 @@ def cluster_information(config, data):
     keys = list(res_dic_all.keys())[:topn]
     for index in range(len(keys)):
         dic_res[keys[index]] = res_dic_all[keys[index]]
-
     print(" cluster info (3) after algo --- %s seconds ---" %
           (time.time() - start_time))
     # print("dictionary cluster ", dic_res)
-
     return dic_res
 
 

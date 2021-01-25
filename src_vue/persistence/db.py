@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Set
 import records
 import json
 import dataclasses
@@ -672,6 +672,18 @@ class Database():
             features[str(row['feature'])] = float(row['score'])
         return features
 
+    def get_feature_target_filter_set(self, word1: str, time_ids: List[int]) -> Set[str]:
+        f = self.db.query(
+            'SELECT feature FROM similar_features '
+            'WHERE word1=:tw and time_id IN :td '
+            'ORDER BY score DESC',
+            tw=word1,
+            td=time_ids
+        )
+        result = set()
+        for row in f:
+            result.add(str(row['feature']))
+        return result
 
 # ----------- DEPRECATED --------------------------------------------------------------------------------
 

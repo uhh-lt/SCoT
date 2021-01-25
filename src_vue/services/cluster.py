@@ -118,23 +118,23 @@ def balance_calc(ngot):
             node.neighbours_by_cluster = tmp_nbc
             # print(node.id, tmp_nbc)
             # determine metrics
-            linkNum = [len(v) for v in tmp_nbc.values()]
+            link_num = [len(v) for v in tmp_nbc.values()]
             # print(linkNum)
             maxi = node_dic[node.id].ngot_undir_links_with_each_cluster_max = max(
-                linkNum)
+                link_num)
             # print("max", maxi)
             meani = node_dic[node.id].ngot_undir_links_with_each_cluster_mean = statistics.mean(
-                linkNum)
+                link_num)
             # print("mean", meani)
             # determine if balanced
             counter = 0
-            for v in linkNum:
+            for v in link_num:
                 if maxi - v < meani / 2:
                     counter += 1
             if counter >= 2:
-                balanced = node_dic[node.id].ngot_undir_links_with_each_cluster_is_balanced = True
+                node_dic[node.id].ngot_undir_links_with_each_cluster_is_balanced = True
             else:
-                balanced = node_dic[node.id].ngot_undir_links_with_each_cluster_is_balanced = False
+                node_dic[node.id].ngot_undir_links_with_each_cluster_is_balanced = False
     return ngot
 
 # call chinese whispers and calc centrality and balance score
