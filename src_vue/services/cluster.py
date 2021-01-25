@@ -98,43 +98,43 @@ def balance_calc(ngot):
     for cluster in ngot.clusters:
         cluster_dic[cluster.cluster_id] = cluster
     # now calc for each node in a cluster the link_to_each_cluster_dic
-    for cluster in ngot.clusters:
-        for nodeid in cluster.cluster_nodes:
-            node_dic[nodeid].neighbours_by_cluster = {
-                cluster.cluster_id: [] for cluster in ngot.clusters}
-            tmp_nbc = node_dic[nodeid].neighbours_by_cluster
+    for node in ngot.nodes:
+        if (not node.cluster_node and node.id not in ngot.singletons):
+            for cluster in ngot.clusters:
+                node.neighbours_by_cluster = {
+                    cluster.cluster_id: [] for cluster in ngot.clusters}
             for link in ngot.links:
                 if (not link.cluster_link):
-                    source = link_dic[link.id].source
-                    target = link_dic[link.id].target
-                    if (source == nodeid):
-                        tmp_nbc[node_dic[target].cluster_id].append(target)
-                    elif (target == nodeid):
-                        tmp_nbc[node_dic[target].cluster_id].append(source)
-            for k, v in tmp_nbc.items():
-                tmp_nbc[k] = list(set(v))
+                    if (link.source == node.id):
+                        node.neighbours_by_cluster[node_dic[link.target].cluster_id].append(
+                            link.target)
+                    elif (link.target == node.id):
+                        node.neighbours_by_cluster[node_dic[link.source].cluster_id].append(
+                            link.source)
+            for k, v in node.neighbours_by_cluster.items():
+                node.neighbours_by_cluster[k] = list(set(v))
             tmp_nbc = {
-                k: v for k, v in tmp_nbc.items() if len(v) != 0}
-            node_dic[nodeid].neighbours_by_cluster = tmp_nbc
-            #print(nodeid, tmp_nbc)
+                k: v for k, v in node.neighbours_by_cluster.items() if len(v) != 0}
+            node.neighbours_by_cluster = tmp_nbc
+            # print(node.id, tmp_nbc)
             # determine metrics
             linkNum = [len(v) for v in tmp_nbc.values()]
             # print(linkNum)
-            maxi = node_dic[nodeid].ngot_undir_links_with_each_cluster_max = max(
+            maxi = node_dic[node.id].ngot_undir_links_with_each_cluster_max = max(
                 linkNum)
-            #print("max", maxi)
-            meani = node_dic[nodeid].ngot_undir_links_with_each_cluster_mean = statistics.mean(
+            # print("max", maxi)
+            meani = node_dic[node.id].ngot_undir_links_with_each_cluster_mean = statistics.mean(
                 linkNum)
-            #print("mean", meani)
+            # print("mean", meani)
             # determine if balanced
             counter = 0
             for v in linkNum:
                 if maxi - v < meani / 2:
                     counter += 1
             if counter >= 2:
-                balanced = node_dic[nodeid].ngot_undir_links_with_each_cluster_is_balanced = True
+                balanced = node_dic[node.id].ngot_undir_links_with_each_cluster_is_balanced = True
             else:
-                balanced = node_dic[nodeid].ngot_undir_links_with_each_cluster_is_balanced = False
+                balanced = node_dic[node.id].ngot_undir_links_with_each_cluster_is_balanced = False
     return ngot
 
 # call chinese whispers and calc centrality and balance score

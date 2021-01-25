@@ -847,29 +847,35 @@ let vueApp = new Vue({
       vueApp.wobblyCandidates = [];
       for (let node of graph.nodes) {
         let tmp = {};
-        if (node.ngot_undir_links_with_each_cluster_is_balanced != null) {
+        tmp["connected_clusters"] = "";
+        tmp["neighbours"] = [];
+        tmp["balanced"] = null;
+        tmp["text"] = "";
+        if (
+          !(node.id in graph.singletons) &&
+          !node.cluster_node &&
+          node.ngot_undir_links_with_each_cluster_is_balanced != null
+        ) {
           tmp["balanced"] = node.ngot_undir_links_with_each_cluster_is_balanced;
-          let tmp_cc = [];
-          let tmp_n = "";
+          console.log(node.neighbours_by_cluster);
           for (let key of Object.keys(node.neighbours_by_cluster)) {
-            tmp_n +=
+            tmp["connected_clusters"] +=
               String(key) +
               " (" +
               node.neighbours_by_cluster[key].length +
               ") ";
           }
-          for (let key of Object.keys(node.neighbours_by_cluster)) {
-            let tmp2 = {};
-            tmp2["cluster_id"] = key;
-            tmp2["neighbours"] = node.neighbours_by_cluster[key];
-            tmp_cc.push(tmp2);
+          for (let key2 of Object.keys(node.neighbours_by_cluster)) {
+            tmp["neighbours"].push({
+              cluster_id: key2,
+              neighbours: node.neighbours_by_cluster[key2],
+            });
           }
-          tmp["connected_clusters"] = tmp_n;
-          tmp["neighbours"] = tmp_cc;
           tmp["text"] = node.id;
           vueApp.wobblyCandidates.push(tmp);
         }
       }
+      console.log("wobblies", vueApp.wobblyCandidates);
     },
 
     /*
