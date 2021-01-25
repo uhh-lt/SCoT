@@ -50,21 +50,12 @@ async function getData_io() {
       link.target_text = link.target;
       link.source_text = link.source;
     }
-    // log original data
-    console.log("node data axios received ", graph.nodes);
-    console.log("link data axios received ", graph.links);
-    console.log("prop data axios received ", graph.props);
-    console.log("cluster data axios received ", graph.clusters);
-    console.log("transit links data axios received ", graph.transit_links);
-    console.log("singleton data axios received ", graph.singletons);
-    console.log("end of getData_io");
     // // link graph.singletons to app
     vueApp.singletons = data_from_db.singletons;
     vueApp.graph_clusters = data_from_db.clusters;
     // prep cluster data
     for (let cluster of graph.clusters) {
       cluster.colour = color(cluster.cluster_id);
-      console.log(cluster.colour);
       cluster.opacity = vueApp.node_fill_opacity;
     }
     // and deep copy of links to d3 - it works on these data and modifies them
@@ -109,6 +100,7 @@ async function manual_recluster_io() {
   let clusters_old = JSON.parse(JSON.stringify(vueApp.graph_clusters));
   let nodes_old = JSON.parse(JSON.stringify(graph.nodes));
   await recluster_with_url(url);
+  // restore old graph parts
   for (let cluster1 of clusters_old) {
     for (let cluster2 of vueApp.graph_clusters) {
       if (cluster1.cluster_id === cluster2.cluster_id) {
@@ -225,14 +217,6 @@ async function recluster_with_url(url) {
       link.target_text = link.target;
       link.source_text = link.source;
     }
-    // log original data
-    console.log("node data received ", graph.nodes);
-    console.log("link data received ", graph.links);
-    console.log("prop data received ", graph.props);
-    console.log("cluster received ", graph.clusters);
-    console.log("transit links data received ", graph.transit_links);
-    console.log("singleton data received ", graph.singletons);
-    console.log("end of getData_io");
     // // link graph.singletons to app
     vueApp.singletons = data_from_db.singletons;
     vueApp.graph_clusters = data_from_db.clusters;
@@ -494,112 +478,13 @@ function saveGraph_io() {
 
 function loadGraph_io() {
   document.getElementById("loadpopup").style.display = "none";
-  vueApp.overlay_main = true;
   const file = vueApp.file;
   const reader = new FileReader();
-  console.log("in load graph");
   let data_from_db;
-
   reader.onload = function (e) {
     data_from_db = JSON.parse(reader.result);
     console.log("in parsed with", data_from_db);
-
-    // attach to graph - assign per nested object
-    graph.nodes = data_from_db.nodes;
-    graph.links = data_from_db.links;
-    graph.singletons = data_from_db.singletons;
-    graph.props = data_from_db.props;
-    graph.clusters = data_from_db.clusters;
-    graph.transit_links = data_from_db.transit_links;
-
-    // new copy back to vue app props
-    vueApp.collection_key = graph.props["collection_key"];
-    vueApp.start_year = graph.props["start_year"];
-    vueApp.end_year = graph.props["end_year"];
-
-    // user input: graph props
-    vueApp.target_word = graph.props["target_word"];
-    vueApp.graph_type_keys[vueApp.graph_type] = graph.props["graph_type"];
-    vueApp.n_nodes = graph.props["n_nodes"];
-    vueApp.density = graph.props["density"];
-
-    // clean up of data - python cannot use the reserved word "class"
-    // execute mapping to node attribute "class" : "cluster_id" -> "class"
-    for (let node of graph.nodes) {
-      node.class = node.cluster_id;
-    }
-    // copy target and source to source-Text and target-text: d3 force is working on them
-    for (let link of graph.links) {
-      link.target_text = link.target;
-      link.source_text = link.source;
-    }
-    // log original data
-    console.log("node data received ", graph.nodes);
-    console.log("link data received ", graph.links);
-    console.log("prop data received ", graph.props);
-    console.log("cluster received ", graph.clusters);
-    console.log("transit links data received ", graph.transit_links);
-    console.log("singleton data received ", graph.singletons);
-    console.log("end of getData_io");
-    // // link graph.singletons to app
-    vueApp.singletons = data_from_db.singletons;
-    vueApp.graph_clusters = data_from_db.clusters;
-    // prep cluster data
-    for (let cluster of vueApp.graph_clusters) {
-      if (!cluster.colour) {
-        cluster.colour = color(cluster.cluster_id);
-      } else {
-        for (let node of graph.nodes) {
-          if (node.cluster_id == cluster.cluster_id) {
-            node.colour = cluster.colour;
-          }
-        }
-      }
-      cluster.opacity = vueApp.node_fill_opacity;
-    }
-    // dictionaries
-    for (let node of graph.nodes) {
-      vueApp.node_dic[node.id] = node;
-    }
-    vueApp.link_dic = {};
-    for (let link of graph.links) {
-      vueApp.link_dic[link.id] = link;
-    }
-    vueApp.cluster_dic = {};
-    // update hidden
-    // update hidden
-    for (let cluster of graph.clusters) {
-      vueApp.cluster_dic[cluster.cluster_id] = cluster;
-      for (let link of graph.links) {
-        if (cluster.add_cluster_node && cluster.cluster_id == link.cluster_id) {
-          link.hidden = false;
-        } else if (
-          !cluster.add_cluster_node &&
-          link.cluster_link &&
-          cluster.cluster_id == link.cluster_id
-        ) {
-          link.hidden = true;
-        }
-      }
-    }
-    // update colour of nodes
-    // update colour of nodes
-    for (let node of graph.nodes) {
-      let tmp = vueApp.cluster_dic[node.cluster_id];
-      if (tmp && tmp.colour) {
-        node["colour"] = tmp.colour;
-      }
-    }
-    // and deep copy of links to d3 - it works on these data and modifies them
-    d3Data.links = JSON.parse(JSON.stringify(graph.links));
-
-    delete_graph();
-    graph_init();
-    graph_crud(graph.nodes, d3Data.links, graph.clusters);
-    sticky_change_d3();
-    vueApp.graph_rendered = true;
-    vueApp.overlay_main = false;
+    vueApp.loadNew(data_from_db);
   };
-  console.log(vueApp.file);
   reader.readAsText(vueApp.file);
 }

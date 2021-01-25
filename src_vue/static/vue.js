@@ -252,7 +252,11 @@ let vueApp = new Vue({
      */
     startExample() {
       let data_from_db = exampleJSON;
-
+      this.loadNew(data_from_db);
+    },
+    loadNew(data_from_db) {
+      this.graph_rendered = false;
+      this.overlay_main = true;
       // nodes and links should be released from d3
       if (d3Data.d_simulation) {
         d3Data.d_simulation.stop();
@@ -276,15 +280,24 @@ let vueApp = new Vue({
       graph.transit_links = data_from_db.transit_links;
 
       // new copy back to vue app props
-      this.collection_key = graph.props["collection_key"];
-      this.start_year = graph.props["start_year"];
-      this.end_year = graph.props["end_year"];
+      for (let collection_name in this.collections) {
+        if (
+          this.collections[collection_name].key == graph.props.collection_key
+        ) {
+          this.collection_name = collection_name;
+          this.collection_key = graph.props.collection_key;
+          break;
+        }
+      }
+      this.onChangeDb();
+      vueApp.start_year = graph.props["start_year"];
+      vueApp.end_year = graph.props["end_year"];
 
       // user input: graph props
-      this.target_word = graph.props["target_word"];
-      this.graph_type_keys[this.graph_type] = graph.props["graph_type"];
-      this.n_nodes = graph.props["n_nodes"];
-      this.density = graph.props["density"];
+      vueApp.target_word = graph.props["target_word"];
+      vueApp.graph_type_keys[this.graph_type] = graph.props["graph_type"];
+      vueApp.n_nodes = graph.props["n_nodes"];
+      vueApp.density = graph.props["density"];
 
       // clean up of data - python cannot use the reserved word "class"
       // execute mapping to node attribute "class" : "cluster_id" -> "class"
