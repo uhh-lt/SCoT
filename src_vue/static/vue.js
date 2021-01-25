@@ -770,7 +770,7 @@ let vueApp = new Vue({
       vueApp.graph_clusters.splice(index, 1);
 
       // restart
-      restart();
+      this.manual_recluster();
     },
     // check the dictionary to see if nodes are linked
     isConnected(a, b) {

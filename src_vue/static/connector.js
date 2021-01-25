@@ -346,7 +346,7 @@ function getSimBimsNodes_io() {
   data["time_id"] = vueApp.active_node.time_ids[0];
   vueApp.node_time_id = vueApp.active_node.time_ids[0];
 
-  let url = "./api/collections/" + this.collection_key + "/simbim";
+  let url = "./api/collections/" + vueApp.collection_key + "/simbim";
   // console.log(url);
   axios
     .post(url, data)
@@ -371,8 +371,8 @@ function getSimBimsNodes_io() {
     .catch((error) => {
       console.error(error);
     });
-  return "ok";
 }
+
 function get_cluster_information_axios(cluster) {
   // console.log("in get cluster information", cluster);
   let jsonReq = {
