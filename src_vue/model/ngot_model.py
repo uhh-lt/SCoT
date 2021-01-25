@@ -15,32 +15,32 @@ Deep copies of the model are provided to different additional frameworks for man
 @dataclass()
 class NGOTNode:
     # new format for nodes - this is compatible to all usages in Python, networkx, Vue, D3
-    # networkx and d3 require a dic-format
-    # mapping to format of dictionary nodes simple:
+    # networkx requires an array-dic-format:mapping->
     # [[node.id, dataclasses.asdict(node)] for node in ngot_nodes]
     id: Optional[str] = None
     target_text: Optional[str] = None
+    # Time Ids and weights over time ---------------------------------------------------
     # max weight as main derived from weights
     weight: Optional[int] = None
     # time interval data information
     time_ids: Optional[List[int]] = None
     weights: Optional[List[float]] = None
-    # Graph score
+    # Graph score ---------------------------------------------------------------------
     centrality_score: Optional[float] = None
-    # clusters ids and scores
+    # clusters ids and scores ----------------------------------------------------------
     cluster_id: Optional[int] = None
     # Cluster Metrics are computed
     # cluster max size is needed for balance score of nodes
     # A node has a balanced_cluster_connection if at least two clusters in its neigbourhood fulfil the following condition
     # max_links_to_one_connected_cluster - links_to_connected_cluster_i < mean_links_to_any_cluster /2
-    # [max of number of links from this node to one cluster
-    # number of links to each cluster meansize /2]
     # metric refers ngot directed links from and to each cluster
-    ngot_dir_links_with_each_cluster_dic: Optional[Dict[str, int]] = None
-    ngot_dir_links_with_each_cluster_max: Optional[int] = None
-    ngot_dir_links_with_each_cluster_mean: Optional[int] = None
-    ngot_dir_links_with_each_cluster_is_balanced: Optional[bool] = None
-    # display - values are set and tweaked in frontend by D3 force
+    # for number of undir links per cluster use neighbours by cluster lenght
+    ngot_undir_links_with_each_cluster_max: Optional[int] = None
+    ngot_undir_links_with_each_cluster_mean: Optional[int] = None
+    ngot_undir_links_with_each_cluster_is_balanced: Optional[bool] = None
+    # dictionary of neighbours by cluster {cluster: [neighbour_id_1, ...]}
+    neighbours_by_cluster: Optional[Dict[int, List[str]]] = None
+    # display - values are set and tweaked in frontend by D3 force -------------------
     # crucial for memorizing position - for recluster etc. pp.
     x: Optional[float] = None
     y: Optional[float] = None
@@ -52,10 +52,11 @@ class NGOTNode:
     colour: Optional[str] = None
     # opacity however relates to the dom svg g ".node", with the svg-els circle and text [and circle's stroke]
     opacity: Optional[float] = None
+    # Feature - Different type ---------------------------------------------------------
     # ngot nodes can be used as well as nodes for cluster info
     # (they should be another type, but since d3 only uses one type of node - they go here)
-    # then they may be hidden
     cluster_node: bool = False
+    # info nodes are usually hidden
     hidden: bool = False
 
 
@@ -71,16 +72,20 @@ class NGOTLink():
     # node is s von source und target
     source: Optional[str] = None
     target: Optional[str] = None
+    # time-ids and weigths over time ---------------------------------------------------------
     # max weight
     weight: Optional[float] = None
     # time ids and weights
     time_ids: Optional[List[int]] = None
     weights: Optional[List[float]] = None
+    # cluster information --------------------------------------------------------------------
     # belongs to cluster [if none = transitlink , ansonsten id]
     cluster_id: Optional[int] = None
+    # frontend display ------------------------------------------------------------------------
     # color and opacity can change during various interactions
     colour: Optional[str] = None
     opacity: Optional[float] = None
+    # feature info type ----------------------------------------------------------------------
     # ngot links can be used as well as links for cluster info
     # then they may be hidden
     cluster_link: bool = False
@@ -144,6 +149,9 @@ class NGOTProperties:
     e_edges: Optional[int] = None
     # parameter graph type - determines what n and d refer to exactly
     graph_type: Optional[str] = None
+    # In addition, both cluster-shared words and the full graph can be target - filtered
+    # this means that all only those features of all nodes and edges are used that are also features of bar
+    cluster_target_filter: Optional[bool] = None
     # ---------------------------------------------------------------
     # set and resulting parameters per graph-type
     # depending on graph-type some parameters are either used as in-param

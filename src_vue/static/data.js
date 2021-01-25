@@ -1,6 +1,6 @@
 // DATA ##################################################
-// (1) graph: The whole application works on a graph as the main datastructure - this should be immutable - unless explicitly changes by a setter function
-// THIS MAIN MODEL IS GIVEN TO THREE FRAMEWORKS AS (DEEP) COPIES AS THESE MANIPULATE THE DATA
+// (1) graph: The whole application works on a graph as the main datastructure
+// THIS MAIN MODEL IS GIVEN TO THE VARIOUS FRAMEWORKS IN THE BACKEND AND FRONTED AS (DEEP) COPIES AS THESE MANIPULATE THE DATA
 // (1) Backend: networkX - requires a certain format and works on this
 // (2) Frontend: vueData: it needs some duplicate parts of the graph for view-manipulation (while not changing the original ones)
 // (3) Frontend: d3Data: it needs deep copies of the graph links as it changes the objects (ie resolves target and source to actual nodes)
@@ -41,7 +41,9 @@ let graph = {
     n_nodes: 0,
     // parameter graph type - determines which kind of edges are needed
     graph_type: "",
-
+    // In addition, both cluster-shared words and the full graph can be target - filtered
+    // this means that all only those features of all nodes and edges are used that are also features of bar
+    cluster_target_filter: true,
     // ---------------------- DERIVED FROM ABOVE USER-INPUT, Graph-type AND GRAPH
     // resolved from graph-type by frontend
     e_edges: 0,
@@ -206,7 +208,7 @@ let vueData = {
   left_options: [
     { text: "Graph", value: "graph_data" },
     { text: "View", value: "graph_view" },
-    { text: "Info", value: "graph_help" },
+    { text: "Help", value: "graph_help" },
   ],
   // --------------------------------- RENDER GRAPH-FUNCTIONS
   // all settings are above
@@ -289,7 +291,7 @@ let vueData = {
   time_diff: false,
   // -------------------------------- SIDEBAR RIGHT:EDGE INFORMATION --------------------------
   // limits the size of clusters for context-information-search
-  cluster_search_limit: 1000,
+  cluster_search_limit: 5,
   // d3 -> sidebar : edge-click information for data-query for sidebar
   active_edge: {
     time_ids: ["1"],

@@ -1,43 +1,29 @@
+/**
+ * See:
+ * Haase, Anwar, Yimam, Friedrich, Biemann (2021):SCoT - Sense Clustering over Time - EACL 2021
+ *
+ * The frontend of the scot-app version 2 [this version] is based on the architectural decision to use two frameworks to manage parts of the dom independently
+ * vue.js -> works on the data (vue App) related to the dom-elements managed by vue [sidebars, navbar and modals]
+ * These functions are part of this file
+ * the d3.graph.js file offers all functions that work on the dom-elements manage by d3 [the graph in the centre] -id"#graph2"
+ * (except for base vars that relate to the container such as viewbox etc.)
+ * d3-functions are recognizable by their name and are called via the global scope from the file d3_graph.js
+ * In the ongoing work on the next iteration of SCoT - d3 will be more strongly integrated into the vue Frameowork and the module system will be used (no global scope)
+ * In addition, all connector functions, ie getting data from the backend with axios, are part of the connector.js file.
+ */
+
 let vueApp = new Vue({
   el: "#vue-app",
-
-  data: vueData,
   /**
-   * Note on vueData - vue Data has three sub-data-objects: vue-App, graph and d3
+   * Note on data- from file data.js - vue Data has three sub-data-objects: vue-App, graph and d3Data
    * graph.xyz refers to the global graph-model
-   * d3Data.xyz refers to specific data for d3
-   * vueData.xyz to the data specific to the VueApp
+   * d3Data.xyz refers to specific data for d3 [mainly a deep copy of the links from the global graph model]
+   * vueData.xyz to the [reactivity] data specific to the VueApp
    *
    */
+  data: vueData,
   computed: {
     // general svg
-    // aim of method
-    // info needed cluster.colour
-    // cluster_opacity = start
-    // naming scheme - datastructure: cluster.id /hier cluster.cluster_id
-    // naming scheme - cluster.cluster_nodes = hier cluster.labels
-
-    clusters_no_singleton() {
-      // console.log("in clusters no single", this.graph_clusters);
-      // SET TO >1 to eleminate single clusters
-      let ret = this.graph_clusters; // .filter((d) => d.labels.length > 1);
-      ret.sort(function (a, b) {
-        return b.labels.length - a.labels.length;
-      });
-
-      return ret;
-    },
-    singletons_with_time() {
-      let map_nodes = {};
-      for (let node of graph.nodes) {
-        map_nodes[node.id] = node;
-      }
-      let ret = [];
-      for (let singleton of this.singletons) {
-        ret.push(singleton + "  [" + map_nodes[singleton].time_ids + "]");
-      }
-      return ret;
-    },
     // shift viewbox left/right and up/down
     // increase -> shift right ()
     viewbox_pan_horizontal() {
@@ -148,7 +134,27 @@ let vueApp = new Vue({
 		Returns all the clusters as an array of objects of the form 
 			{"text": cluster_name}, "value": {"cluster_id": some_id, "cluster_name": some_cluster_name, "colour": some_cluster_colour}
 		to be used as the options when selecting a different cluster for a node.
-		*/
+    */
+    clusters_no_singleton() {
+      // Set filter TO >1 to eleminate single clusters
+      let ret = this.graph_clusters; // .filter((d) => d.labels.length > 1);
+      ret.sort(function (a, b) {
+        return b.labels.length - a.labels.length;
+      });
+
+      return ret;
+    },
+    singletons_with_time() {
+      let map_nodes = {};
+      for (let node of graph.nodes) {
+        map_nodes[node.id] = node;
+      }
+      let ret = [];
+      for (let singleton of this.singletons) {
+        ret.push(singleton + "  [" + map_nodes[singleton].time_ids + "]");
+      }
+      return ret;
+    },
     cluster_options() {
       vueApp.new_assigned_cluster = {};
       let options = [];
@@ -241,6 +247,100 @@ let vueApp = new Vue({
     },
   },
   methods: {
+    /**
+     * start
+     */
+    startExample() {
+      let data_from_db = exampleJSON;
+
+      // attach to graph - assign per nested object
+      graph.nodes = data_from_db.nodes;
+      graph.links = data_from_db.links;
+      graph.singletons = data_from_db.singletons;
+      graph.props = data_from_db.props;
+      graph.clusters = data_from_db.clusters;
+      graph.transit_links = data_from_db.transit_links;
+
+      // new copy back to vue app props
+      this.collection_key = graph.props["collection_key"];
+      this.start_year = graph.props["start_year"];
+      this.end_year = graph.props["end_year"];
+
+      // user input: graph props
+      this.target_word = graph.props["target_word"];
+      this.graph_type_keys[this.graph_type] = graph.props["graph_type"];
+      this.n_nodes = graph.props["n_nodes"];
+      this.density = graph.props["density"];
+
+      // clean up of data - python cannot use the reserved word "class"
+      // execute mapping to node attribute "class" : "cluster_id" -> "class"
+      for (let node of graph.nodes) {
+        node.class = node.cluster_id;
+      }
+      // copy target and source to source-Text and target-text: d3 force is working on them
+      for (let link of graph.links) {
+        link.target_text = link.target;
+        link.source_text = link.source;
+      }
+      // // link graph.singletons to app
+      this.singletons = data_from_db.singletons;
+      this.graph_clusters = data_from_db.clusters;
+      // prep cluster data
+      for (let cluster of this.graph_clusters) {
+        if (!cluster.colour) {
+          cluster.colour = color(cluster.cluster_id);
+        } else {
+          for (let node in graph.nodes) {
+            if (node.cluster_id == cluster.cluster_id) {
+              node.colour = cluster.colour;
+            }
+          }
+        }
+        cluster.opacity = this.node_fill_opacity;
+      }
+
+      // dictionaries
+      for (let node of graph.nodes) {
+        vueApp.node_dic[node.id] = node;
+      }
+      vueApp.link_dic = {};
+      for (let link of graph.links) {
+        vueApp.link_dic[link.id] = link;
+      }
+      vueApp.cluster_dic = {};
+      for (let cluster of graph.clusters) {
+        vueApp.cluster_dic[cluster.cluster_id] = cluster;
+      }
+      // update hidden
+      for (let cluster of graph.clusters) {
+        for (let link of graph.links) {
+          if (
+            cluster.add_cluster_node &&
+            cluster.cluster_id == link.cluster_id
+          ) {
+            link.hidden = false;
+          } else if (
+            !cluster.add_cluster_node &&
+            link.cluster_link &&
+            cluster.cluster_id == link.cluster_id
+          ) {
+            link.hidden = true;
+          }
+        }
+      }
+
+      // and deep copy of links to d3 - it works on these data and modifies them
+      d3Data.links = JSON.parse(JSON.stringify(graph.links));
+      // update hidden of cluster links
+
+      delete_graph();
+      graph_init();
+      graph_crud(graph.nodes, d3Data.links, this.graph_clusters);
+      sticky_change_d3();
+      this.graph_rendered = true;
+      this.overlay_main = false;
+    },
+
     /*
 		/ ############ NAVBAR -----------------------------------------------------------------------------------------------------
 		*/
@@ -453,74 +553,9 @@ let vueApp = new Vue({
 		@param float opacity: some number between 0.0 and 1.0.
 		@param float link_opacity: some number between 0.0 and 1.0.
     */
-    is_normal_node: function () {
-      var normal_node;
-      var selected_node = d3.selectAll(".selected").select("circle");
-
-      selected_node.each(function (d) {
-        var n = d3.select(this);
-        if (n.attr("cluster_node") === "true") {
-          normal_node = false;
-        } else {
-          normal_node = true;
-        }
-      });
-
-      return normal_node;
-    },
 
     set_cluster_opacity(cluster, opacity, link_opacity) {
-      let cluster_id = cluster.cluster_id;
-      let cluster_nodes = [];
-
-      for (let i = 0; i < cluster.labels.length; i++) {
-        cluster_nodes.push(cluster.labels[i].text);
-      }
-      // console.log("cluster opacity point 1", cluster_nodes);
-
-      let svg = d3.select("#svg");
-      let nodes = svg.selectAll(".node");
-      let links = svg.selectAll(".link");
-
-      nodes.selectAll("g").each(function (d, i) {
-        let childnodes = this.childNodes;
-        let node_text;
-        let node_cluster_id;
-        childnodes.forEach(function (d, i) {
-          if (d.tagName === "circle") {
-            node_cluster_id = d.getAttribute("cluster_id");
-          }
-          if (d.tagName === "text") {
-            node_text = d.getAttribute("text");
-          }
-        });
-        if (!cluster_nodes.includes(node_text)) {
-          this.style.strokeOpacity = opacity;
-          this.style.fillOpacity = opacity;
-        }
-      });
-
-      links.each(function (d, i) {
-        let childnodes = this.childNodes;
-        childnodes.forEach(function (d, i) {
-          let source = d.getAttribute("source");
-          let target = d.getAttribute("target");
-          if (
-            !cluster_nodes.includes(source) ||
-            !cluster_nodes.includes(target)
-          ) {
-            //d.setAttribute("style", "stroke-opacity:" + link_opacity);
-            d.style.strokeOpacity = link_opacity;
-          }
-          //if (cluster_nodes.includes(source) && cluster_nodes.includes(target)) {
-          //if (opacity < 1) {
-          //	d.setAttribute("style", "stroke:" + cluster.colour);
-          //} else {
-          //		d.setAttribute("style", "stroke:" + cluster.colour);
-          //}
-          //}
-        });
-      });
+      set_cluster_opacity_d3(cluster, opacity, link_opacity);
     },
     /*
 		Send all the nodes and edges to the backend, recluster them, delete and restart graph
@@ -560,71 +595,19 @@ let vueApp = new Vue({
     /*
     Choose cluster for context analysis and display context information
     from axios
-		*/
-    get_cluster_information(cluster) {
-      // console.log("in get cluster information", cluster);
-      let jsonReq = {
-        nodes: [],
-        collection: this.collection_key,
-      };
-      // node dic
-      // needs node map
-      let node_dic = {};
-      for (let node of graph.nodes) {
-        node_dic[node.id] = node;
-      }
-      // needs link map
-
-      // required: label + single time-id
-      // the function queries the features whcih are stored
-      // per node per time-id
-      // get time-ids for nodes from global
-      // needs to choose a time id from all edges
-      cluster.cluster_nodes.forEach(function (nodeid) {
-        // all time ids
-        node_dic[nodeid]["time_ids"].forEach(function (timeid) {
-          jsonReq["nodes"].push({
-            label: nodeid,
-            time_id: timeid,
-          });
-        });
-      });
-      // console.log(jsonReq);
-
-      if (jsonReq["nodes"].length > this.cluster_search_limit) {
-        alert(
-          "You clicked on cluster-context information. " +
-            "Currently, you can only query clusters with 5 or less nodes. " +
-            "Reason: cluster information is extracted from over 1 billion features which takes long for mysql."
-        );
-      } else {
-        // console.log("cluster info continue with less than six");
-        vueApp.busy_right2 = true;
-        vueApp.context_mode2 = true;
-
-        let url = "./api/cluster_information";
-        axios
-          .post(url, jsonReq)
-          .then((res) => {
-            // console.log(res.data);
-            let ret = [];
-            for (let key in res.data) {
-              let retObj = {};
-              retObj.wort = key;
-              retObj.score = parseFloat(res.data[key]).toFixed(5);
-              ret.push(retObj);
-            }
-            this.cluster_shared_object = ret;
-            //console.log(this.cluster_shared_object)
-            this.busy_right2 = false;
-          })
-          .catch((error) => {
-            console.error(error);
-          });
-      }
+    */
+    get_cluster_information_filtered(cluster) {
+      graph.props.cluster_target_filter = true;
+      get_cluster_information_axios(cluster);
     },
+    get_cluster_information(cluster) {
+      graph.props.cluster_target_filter = false;
+      get_cluster_information_axios(cluster);
+    },
+
     /*
-		Generate a new, cluster id, that differs from the existing ones
+    Generate a new, cluster id, that differs from the existing ones
+    Function: new additional cluster
 		*/
     generate_cluster_id() {
       let allIds = vueApp.graph_clusters.map((d) => Number(d.cluster_id));
@@ -652,12 +635,7 @@ let vueApp = new Vue({
       // move
       vueApp.manual_recluster();
     },
-    /*
-		Find the colour of a given node_id
-		*/
-    findColour(node_id) {
-      findColour_d3(node_id);
-    },
+
     /*
 		Assigns the newly selected cluster id, cluster name and cluster colour to the selected node node.
 		*/
@@ -744,20 +722,6 @@ let vueApp = new Vue({
       }
       // needs applying to
       restart();
-    },
-
-    showEditMask() {
-      if (vueApp.time_diff === "false") {
-        //update clusters before fading in the column, keep the old clusters in time diff mode though, so that the user can still see the information about clusters
-        //vueApp.get_clusters();
-      }
-      if (vueApp.edit_column_open === false) {
-        vueApp.edit_column_open = true;
-        document.getElementById("edit_clusters_popup").style.display = "block";
-      } else if (vueApp.edit_column_open === true) {
-        vueApp.edit_column_open = false;
-        document.getElementById("edit_clusters_popup").style.display = "none";
-      }
     },
 
     delete_cluster(cluster_id) {
@@ -854,322 +818,45 @@ let vueApp = new Vue({
     update_general_settings() {
       update_general_settings_d3();
     },
-    /*
-		Get the name of a cluster via its id
-		*/
-    getClusterNameFromID(id) {
-      let cluster_name;
 
-      for (let i = 0; i < vueApp.graph_clusters.length; i++) {
-        if (id == vueApp.graph_clusters[i].cluster_id) {
-          cluster_name = vueApp.graph_clusters[i].cluster_name;
-        }
-      }
-
-      return cluster_name;
-    },
-    /*
-		Get the id of the cluster that a specific node belongs to
-		*/
-    findClusterId(node_id) {
-      // console.log("in find cluster id mit node id", node_id);
-      var cluster_id;
-      // console.log(vueApp.graph_clusters);
-
-      for (var i = 0; i < vueApp.graph_clusters.length; i++) {
-        var labels = [];
-        var cluster = vueApp.graph_clusters[i];
-
-        for (var j = 0; j < cluster.labels.length; j++) {
-          labels.push(cluster.labels[j].text);
-        }
-
-        if (labels.includes(node_id)) {
-          cluster_id = cluster.cluster_id;
-        }
-      }
-      // console.log("found cluster id", cluster_id);
-      return cluster_id;
-    },
-    /*
-    LEGACY METHODS FROM V1 THAT WORKS ON THE DOM AND TAKES THE STATE FROM THE DOM (oh no ;) has been refactored to work with new datastructure
-    Get the clusters to which a node is connected and the amount of nodes per cluster
-		Returns an object with the {cluster_id : amount of nodes} and a string containing the cluster names and the number of nodes
-		*/
-    findNeighbourhoodClusters: function (node) {
-      // console.log("in find neighbour clusters with node", node);
-      let neighbourhoodClusters = {};
-      let links = d3.selectAll(".link");
-
-      links.each(function (d) {
-        let children = this.childNodes;
-        let neighbour_cluster;
-
-        children.forEach(function (p) {
-          let source = p.getAttribute("source_text");
-          let target = p.getAttribute("target_text");
-          let cluster_info_link = p.getAttribute("cluster_info_link");
-          // console.log("before if", source, target, cluster_info_link);
-          if (cluster_info_link === "false" && source === node) {
-            neighbour_cluster = vueApp.findClusterId(target);
-            if (neighbour_cluster !== undefined) {
-              // if the cluster has been encountered before ...
-              if (
-                neighbourhoodClusters.hasOwnProperty(
-                  neighbour_cluster.toString()
-                )
-              ) {
-                neighbourhoodClusters[neighbour_cluster] += 1;
-              } else {
-                neighbourhoodClusters[neighbour_cluster] = 1;
-              }
-            }
-          }
-          // we are only counting undirected and thus say that s-t and t-s are one
-          // if (cluster_info_link === "false" && target === node) {
-          //   neighbour_cluster = vueApp.findClusterId(source);
-          //   if (neighbour_cluster !== undefined) {
-          //     if (
-          //       neighbourhoodClusters.hasOwnProperty(
-          //         neighbour_cluster.toString()
-          //       )
-          //     ) {
-          //       neighbourhoodClusters[neighbour_cluster] += 1;
-          //     } else {
-          //       neighbourhoodClusters[neighbour_cluster] = 1;
-          //     }
-          //   }
-          // }
-        });
-      });
-
-      let neighbourhoodClusters_str = [];
-      // Get the cluster name to each cluster id in the neighbourhood
-      // console.log("before object keys", neighbourhoodClusters);
-      Object.keys(neighbourhoodClusters).forEach(function (d) {
-        let name = vueApp.getClusterNameFromID(d);
-        // build a list with the cluster names and number of nodes for display in the frontend
-        neighbourhoodClusters_str.push(
-          name + "(" + neighbourhoodClusters[d] + ")"
-        );
-      });
-      return [neighbourhoodClusters, neighbourhoodClusters_str.join(", ")];
-    },
-    /*
-		Check if the neighbourhood of a node is balanced 
-		*/
-    is_balanced: function (clusterDistr) {
-      console.log("clusterDistro", clusterDistr);
-      let balanced = false;
-      let b = "no";
-
-      // only worth checking if there are at least two neighbourhood clusters
-      if (Object.keys(clusterDistr).length > 1) {
-        var max = 0;
-        var mean = 0;
-
-        let clusterDistrValues = Object.values(clusterDistr);
-
-        clusterDistrValues.forEach(function (d) {
-          mean += d;
-        });
-
-        // the mean number of connections per cluster
-        mean = mean / clusterDistrValues.length;
-
-        // the max number of connections to a cluster
-        max = Math.max(...clusterDistrValues);
-
-        // get rid of the cluster with the maximum connections
-        let clusterDistrWithoutMax = clusterDistr;
-        for (let cluster in clusterDistrWithoutMax) {
-          if (clusterDistrWithoutMax[cluster] === max) {
-            delete clusterDistrWithoutMax[cluster];
-            break;
-          }
-        }
-
-        // check if the heuristic holds
-        Object.values(clusterDistrWithoutMax).forEach(function (d) {
-          // heuristic
-          if (max - d < mean / 2) {
-            balanced = true;
-            b = "yes";
-          }
-        });
-      }
-      return [balanced, b];
-    },
-    /*
-    LEGACY METHODS FROM V1 THAT WORKS ON THE DOM
-		For a specific node return an array containg an object for each neighbouring cluster with the cluster id and the neighbouring nodes per cluster
-		*/
-    findNeighboursAndClusters: function (node) {
-      var neighbours = [];
-      var links = d3.selectAll(".link");
-
-      links.each(function (d) {
-        var children = this.childNodes;
-
-        children.forEach(function (p) {
-          var source = p.getAttribute("source_text");
-          var target = p.getAttribute("target_text");
-
-          if (source === node) {
-            var target_cluster_id = vueApp.findClusterId(target);
-            if (target_cluster_id !== undefined) {
-              var exists = false;
-              for (var i = 0; i < neighbours.length; i++) {
-                // if there the cluster exists in neighbours already, just push the target to the array of neighbours
-                if (neighbours[i]["cluster_id"] === target_cluster_id) {
-                  neighbours[i]["neighbours"].push(target);
-                  exists = true;
-                }
-              }
-              if (exists === false) {
-                neighbours.push({
-                  cluster_id: target_cluster_id,
-                  neighbours: [target],
-                });
-              }
-            }
-          }
-          // we remove the duplicate counting (there are nearly always 2 dir edges)
-          //  else if (target === node) {
-          //   var source_cluster_id = vueApp.findClusterId(source);
-          //   if (source_cluster_id !== undefined) {
-          //     var exists = false;
-          //     for (var i = 0; i < neighbours.length; i++) {
-          //       if (neighbours[i]["cluster_id"] === source_cluster_id) {
-          //         neighbours[i]["neighbours"].push(source);
-          //         exists = true;
-          //       }
-          //     }
-          //     if (exists === false) {
-          //       neighbours.push({
-          //         cluster_id: source_cluster_id,
-          //         neighbours: [source],
-          //       });
-          //     }
-          //   }
-          // }
-        });
-      });
-      return neighbours;
-    },
-    // Not quite there yet. Save cluster_selected for every cluster
-    // Otherwise weird behaviour when selecting different cluster
-    select_cluster(cluster) {
-      select_cluster_d3(cluster);
-    },
     // #################### SIDEBAR RIGHT CLUSTER ANALYSIS - ADDITIONAL FUNCTIONS
     /*
-    LEGACY METHODS FROM V1 THAT WORKS ON THE DOM
-		For each node, check if their neighbourhood is balanced and find neighbouring nodes
-		*/
+    Refactored
+    */
     findWobblyCandidates: function () {
       vueApp.wobblyCandidates = [];
-
-      if (vueApp.hightlighInbetweennessCentrality === true) {
-        vueApp.resetCentralityHighlighting();
-        vueApp.hightlighInbetweennessCentrality = false;
+      for (let node of graph.nodes) {
+        let tmp = {};
+        if (node.ngot_undir_links_with_each_cluster_is_balanced != null) {
+          tmp["balanced"] = node.ngot_undir_links_with_each_cluster_is_balanced;
+          let tmp_cc = [];
+          let tmp_n = "";
+          for (let key of Object.keys(node.neighbours_by_cluster)) {
+            tmp_n +=
+              String(key) +
+              " (" +
+              node.neighbours_by_cluster[key].length +
+              ") ";
+          }
+          for (let key of Object.keys(node.neighbours_by_cluster)) {
+            let tmp2 = {};
+            tmp2["cluster_id"] = key;
+            tmp2["neighbours"] = node.neighbours_by_cluster[key];
+            tmp_cc.push(tmp2);
+          }
+          tmp["connected_clusters"] = tmp_n;
+          tmp["neighbours"] = tmp_cc;
+          tmp["text"] = node.id;
+          vueApp.wobblyCandidates.push(tmp);
+        }
       }
-
-      let nodes = d3.selectAll(".node").selectAll("g");
-
-      nodes.each(function (d, i) {
-        let children = this.childNodes;
-        let node_text;
-        let candidate = {};
-        let is_cluster_node;
-        let is_cluster_link;
-
-        children.forEach(function (p) {
-          if (p.tagName === "text") {
-            node_text = p.getAttribute("text");
-          }
-          if (p.tagName === "circle") {
-            is_cluster_node = p.getAttribute("cluster_node");
-          }
-        });
-
-        if (vueApp.singletons.includes(node_text)) {
-          return;
-        }
-
-        if (is_cluster_node === "false") {
-          // console.log("find wobbly in cluster node false");
-          let result = vueApp.findNeighbourhoodClusters(node_text);
-          let neighbourClusterDistr = result[0];
-          let neighbourClusterDistr_string = result[1];
-
-          let b = vueApp.is_balanced(neighbourClusterDistr)[1];
-
-          candidate["text"] = node_text;
-          candidate["connected_clusters"] = neighbourClusterDistr_string;
-          candidate["balanced"] = b;
-          candidate["neighbours"] = vueApp.findNeighboursAndClusters(node_text);
-
-          vueApp.wobblyCandidates.push(candidate);
-
-          // console.log("in find wobbly candidate", candidate);
-        }
-      });
     },
+
     /*
-    LEGACY METHODS FROM V1 THAT WORKS ON THE DOM
-		Highlight the nodes with a balanced neighbourhood in the graph
+  	Highlight the nodes with a balanced neighbourhood in the graph
 		*/
     highlightWobblyCandidates: function () {
-      if (vueApp.hightlighInbetweennessCentrality === true) {
-        vueApp.resetCentralityHighlighting();
-        vueApp.hightlighInbetweennessCentrality = false;
-      }
-      // console.log("in highlight wobbly");
-      vueApp.highlightWobblies = true;
-      let nodes = d3.selectAll(".node").selectAll("g");
-
-      nodes.each(function (d, i) {
-        let children = this.childNodes;
-        let node_text;
-        let is_cluster_node;
-
-        children.forEach(function (p) {
-          if (p.tagName === "text") {
-            node_text = p.getAttribute("text");
-          }
-          if (p.tagName === "circle") {
-            is_cluster_node = p.getAttribute("cluster_node");
-          }
-        });
-
-        if (is_cluster_node != "true") {
-          let neighbourClusterDistr = vueApp.findNeighbourhoodClusters(
-            node_text
-          )[0];
-          let balanced = vueApp.is_balanced(neighbourClusterDistr)[0];
-
-          // if a node has a balanced neighbourhood, make it large
-          if (balanced === true) {
-            children.forEach(function (p) {
-              if (p.tagName === "circle") {
-                p.setAttribute("r", vueApp.radius * 3);
-                // text.style("font-size", vueApp.node_text_font_size * 2);
-              }
-            });
-          }
-
-          // if node is connected to more than one cluster, make it medium-sized
-          else if (Object.keys(neighbourClusterDistr).length > 1) {
-            children.forEach(function (p) {
-              if (p.tagName === "circle") {
-                p.setAttribute("r", vueApp.radius * 2);
-                // text.style("font-size", vueApp.node_text_font_size * 1.5);
-              }
-            });
-          }
-        }
-      });
+      highlightWobblyCandidates_d3();
     },
     /*
     /*
@@ -1268,19 +955,11 @@ let vueApp = new Vue({
         this.active_edge.weights
       ).slice(0, -4);
     },
-    // TODO: this does not look right
+
+    // creates the string of the tooltip
     selectInterval(time_ids, weights) {
       let intervalString = "";
-      if (time_ids !== null && typeof time_ids !== "undefined") {
-        if (typeof time_ids === "string") {
-          time_ids = time_ids.split(",");
-        }
-      }
-      if (weights !== null && typeof weights !== "undefined") {
-        if (typeof weights === "string") {
-          weights = weights.split(",");
-        }
-      }
+
       for (let index = 0; index < time_ids.length; index++) {
         let start = this.start_years[time_ids[index] - 1].text;
         let end = this.end_years[time_ids[index] - 1].text;
@@ -1295,134 +974,7 @@ let vueApp = new Vue({
 		# INTERVAL COUNTING ALWAYS START FIRST ID IN DATABASE WITH 1
 		*/
     show_time_diff() {
-      let big_time_interval = [];
-      let startindex = this.start_years.find(
-        (startindex) => startindex.value === this.start_year
-      )["id"];
-      let endindex = this.end_years.find(
-        (endindex) => endindex.value === this.end_year
-      )["id"];
-
-      for (let ind = startindex; ind <= endindex; ind++) {
-        big_time_interval.push(ind);
-      }
-
-      // console.log("in startindx", vueApp.interval_start, vueApp.interval_end);
-      let small_time_interval = [];
-      let startindex2 = this.start_years.find(
-        (startind) => startind.text === vueApp.interval_start
-      )["id"];
-      // console.log("start id", startindex2);
-      let endindex2 = this.end_years.find(
-        (endind) => endind.text === vueApp.interval_end
-      )["id"];
-
-      for (let ind = startindex2; ind <= endindex2; ind++) {
-        small_time_interval.push(ind);
-      }
-
-      let period_before = [];
-      let period_after = [];
-
-      let small_interval_start_time_id = Math.min(...small_time_interval);
-      let small_interval_end_time_id = Math.max(...small_time_interval);
-      // console.log("nall intervall start time id", small_interval_start_time_id);
-      // console.log("small end time", small_interval_end_time_id);
-      // console.log("big time intervall", big_time_interval);
-
-      for (let i = 0; i < big_time_interval.length; i++) {
-        if (big_time_interval[i] < small_interval_start_time_id) {
-          period_before.push(big_time_interval[i]);
-        } else if (big_time_interval[i] > small_interval_end_time_id) {
-          period_after.push(big_time_interval[i]);
-        }
-        // console.log("big", big_time_interval);
-        // console.log("before", period_before);
-        // console.log("after", period_after);
-      }
-
-      let time_diff_nodes = {
-        born_in_interval: [],
-        deceases_in_interval: [],
-        exists_only_in_interval: [],
-        exists_only_before: [],
-        exists_throughout: [],
-        exists_only_after: [],
-        exists_before_and_after: [],
-      };
-
-      let nodes = d3.selectAll(".node").selectAll("g");
-
-      nodes.each(function (d) {
-        let childnodes = this.childNodes;
-        let node_text;
-
-        childnodes.forEach(function (d) {
-          if (d.tagName === "text") {
-            node_text = d.getAttribute("text");
-          }
-        });
-
-        childnodes.forEach(function (d) {
-          if (d.tagName === "circle") {
-            if (d.getAttribute("cluster_node") === "false") {
-              let time_ids = d.getAttribute("time_ids");
-
-              if (time_ids !== null && typeof time_ids !== "undefined") {
-                time_ids = time_ids.split(",");
-                time_ids = time_ids.map((x) => parseInt(x));
-                // console.log("in time ids", time_ids, node_text);
-                node_text = node_text + " [" + time_ids.sort() + "]";
-                let in_interval = false;
-                let before_interval = false;
-                let after_interval = false;
-
-                for (let i = 0; i < time_ids.length; i++) {
-                  let t = time_ids[i];
-
-                  if (period_before.includes(t)) {
-                    before_interval = true;
-                  }
-                  if (small_time_interval.includes(t)) {
-                    in_interval = true;
-                  }
-                  if (period_after.includes(t)) {
-                    after_interval = true;
-                  }
-                }
-
-                if (!before_interval && in_interval && !after_interval) {
-                  d.setAttribute("fill", "yellow");
-                  time_diff_nodes.exists_only_in_interval.push(node_text);
-                } else if (!before_interval && in_interval && after_interval) {
-                  d.setAttribute("fill", "#28a745");
-                  time_diff_nodes.born_in_interval.push(node_text);
-                } else if (before_interval && in_interval && !after_interval) {
-                  d.setAttribute("fill", "#dc3545");
-                  time_diff_nodes.deceases_in_interval.push(node_text);
-                } else if (before_interval && in_interval && after_interval) {
-                  d.setAttribute("fill", "#343a41");
-                  time_diff_nodes.exists_throughout.push(node_text);
-                  // console.log("pushed throughout");
-                } else if (before_interval && !in_interval && !after_interval) {
-                  d.setAttribute("fill", "#dc3546");
-                  time_diff_nodes.exists_only_before.push(node_text);
-                } else if (!before_interval && !in_interval && after_interval) {
-                  d.setAttribute("fill", "#28a746");
-                  time_diff_nodes.exists_only_after.push(node_text);
-                } else if (before_interval && !in_interval && after_interval) {
-                  d.setAttribute("fill", "#343a40");
-                  time_diff_nodes.exists_before_and_after.push(node_text);
-                }
-              }
-            }
-            // would be good to see exactly the time slices of the respective nodes
-          }
-        });
-      });
-
-      vueApp.time_diff_nodes = time_diff_nodes;
-      // console.log(time_diff_nodes);
+      show_time_diff_d3();
     },
 
     // ############################ SVG GENERAL TRIGGERED BY UI ----------------------------------------------------------
@@ -1563,39 +1115,7 @@ let vueApp = new Vue({
 		Since we are using similarity - bims (ie contexts) - the function is called simbim
 		*/
     getSimBimsNodes() {
-      this.busy_right3 = true;
-      let retArray = [];
-      let data = {};
-      data["word1"] = this.target_word;
-      data["word2"] = this.active_node.target_text;
-      data["time_id"] = this.active_node.time_ids[0];
-      this.node_time_id = this.active_node.time_ids[0];
-
-      let url = "./api/collections/" + this.collection_key + "/simbim";
-      // console.log(url);
-      axios
-        .post(url, data)
-        .then((res) => {
-          let ret = [];
-          if (res.data["error"] == "none") {
-            for (let key in res.data) {
-              if (key != "error") {
-                let dati = res.data[key];
-                let retObj = {};
-                retObj.node1 = parseFloat(dati["score"]).toFixed(5);
-                retObj.edge = dati["key"];
-                retObj.node2 = parseFloat(dati["score2"]).toFixed(5);
-                ret.push(retObj);
-              }
-            }
-          }
-
-          this.simbim_node_object = ret;
-          this.busy_right3 = false;
-        })
-        .catch((error) => {
-          console.error(error);
-        });
+      getSimBimsNodes_io();
     },
 
     /*
@@ -1639,4 +1159,5 @@ let vueApp = new Vue({
   mounted() {
     this.getCollections();
   },
+  created() {},
 });

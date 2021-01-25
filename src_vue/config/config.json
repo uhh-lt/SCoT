@@ -19,7 +19,7 @@
     "English Books": {
       "key": "en_books",
       "target": "bar/NN",
-      "p": 50,
+      "p": 5,
       "d": 20,
       "info": "English Google Books, 1520-2008"
     }

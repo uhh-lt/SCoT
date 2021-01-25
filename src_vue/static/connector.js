@@ -8,7 +8,7 @@
  * (4) the saving and loading of teh graph-model to json local files
  */
 
-// (1) INITIAL PROPS FOR APP
+// (1) INITIAL PROPS FOR APP --------------------------------------------------------------------------
 async function getCollections_io() {
   try {
     const res = await axios.get("./api/collections");
@@ -23,7 +23,7 @@ async function getCollections_io() {
 }
 
 /**
- * (2) GRAPH-CRUD
+ * (2) GRAPH-CRUD --------------------------------------------------------------------------------
  */
 
 // create
@@ -92,7 +92,7 @@ async function getData_io() {
 }
 
 /**
- * UPDATE GRAPH --------------------------------------------
+ * UPDATE GRAPH ------------------------------------------------------------------------------------------------
  */
 async function recluster_io() {
   // chose type of reclustering
@@ -190,7 +190,7 @@ async function recluster_with_url(url) {
 }
 
 /**
- * ADDITIONAL INFORMATION ----------------
+ * FEATURE INFORMATION -----------------------------------------------------------------------------------------------------
  * @param {} wort1
  * @param {*} wort2
  */
@@ -231,6 +231,110 @@ function getSimBims_io() {
     });
 }
 
+function getSimBimsNodes_io() {
+  vueApp.busy_right3 = true;
+  let retArray = [];
+  let data = {};
+  data["word1"] = vueApp.target_word;
+  data["word2"] = vueApp.active_node.target_text;
+  data["time_id"] = vueApp.active_node.time_ids[0];
+  vueApp.node_time_id = vueApp.active_node.time_ids[0];
+
+  let url = "./api/collections/" + this.collection_key + "/simbim";
+  // console.log(url);
+  axios
+    .post(url, data)
+    .then((res) => {
+      let ret = [];
+      if (res.data["error"] == "none") {
+        for (let key in res.data) {
+          if (key != "error") {
+            let dati = res.data[key];
+            let retObj = {};
+            retObj.node1 = parseFloat(dati["score"]).toFixed(5);
+            retObj.edge = dati["key"];
+            retObj.node2 = parseFloat(dati["score2"]).toFixed(5);
+            ret.push(retObj);
+          }
+        }
+      }
+
+      vueApp.simbim_node_object = ret;
+      vueApp.busy_right3 = false;
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+  return "ok";
+}
+function get_cluster_information_axios(cluster) {
+  // console.log("in get cluster information", cluster);
+  let jsonReq = {
+    nodes: [],
+    collection: vueApp.collection_key,
+  };
+  // node dic
+  // needs node map
+  let node_dic = {};
+  for (let node of graph.nodes) {
+    node_dic[node.id] = node;
+  }
+  // needs link map
+
+  // required: label + single time-id
+  // the function queries the features whcih are stored
+  // per node per time-id
+  // get time-ids for nodes from global
+  // needs to choose a time id from all edges
+  cluster.cluster_nodes.forEach(function (nodeid) {
+    // all time ids
+    node_dic[nodeid]["time_ids"].forEach(function (timeid) {
+      jsonReq["nodes"].push({
+        label: nodeid,
+        time_id: timeid,
+      });
+    });
+  });
+  // console.log(jsonReq);
+  // add filter info for cluster
+  jsonReq["props"] = graph.props;
+
+  /* if (jsonReq["nodes"].length > vueApp.cluster_search_limit) {
+    alert(
+      "You clicked on cluster-context information. " +
+        "Currently, you can only query clusters with " +
+        vueApp.cluster_search_limit +
+        " or less nodes. " +
+        "Reason: cluster information is extracted from over 1 billion features which takes long for mysql."
+    );
+  } else { */
+  // console.log("cluster info continue with less than six");
+  vueApp.busy_right2 = true;
+  vueApp.context_mode2 = true;
+
+  let url = "./api/cluster_information";
+  axios
+    .post(url, jsonReq)
+    .then((res) => {
+      // console.log(res.data);
+      let ret = [];
+      for (let key in res.data) {
+        let retObj = {};
+        retObj.wort = key;
+        retObj.score = parseFloat(res.data[key]).toFixed(5);
+        ret.push(retObj);
+      }
+      vueApp.cluster_shared_object = ret;
+      //console.log(this.cluster_shared_object)
+      vueApp.busy_right2 = false;
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+  //}
+  return "ok";
+}
+
 // Example sentences
 function docSearch_io(wort1, wort2) {
   vueApp.context_mode4 = true;
@@ -252,7 +356,7 @@ function docSearch_io(wort1, wort2) {
 }
 
 /**
- * LOAD AND SAVE GRAPH TO JSON
+ * LOAD AND SAVE GRAPH TO JSON --------------------------------------------------------------------------------------
  */
 
 function saveGraph_io() {
@@ -334,14 +438,47 @@ function loadGraph_io() {
     vueApp.graph_clusters = data_from_db.clusters;
     // prep cluster data
     for (let cluster of vueApp.graph_clusters) {
-      cluster.colour = color(cluster.cluster_id);
+      if (!cluster.colour) {
+        cluster.colour = color(cluster.cluster_id);
+      } else {
+        for (let node of graph.nodes) {
+          if (node.cluster_id == cluster.cluster_id) {
+            node.colour = cluster.colour;
+          }
+        }
+      }
       cluster.opacity = vueApp.node_fill_opacity;
+    }
+    // dictionaries
+    for (let node of graph.nodes) {
+      vueApp.node_dic[node.id] = node;
+    }
+    vueApp.link_dic = {};
+    for (let link of graph.links) {
+      vueApp.link_dic[link.id] = link;
+    }
+    vueApp.cluster_dic = {};
+    // update hidden
+    // update hidden
+    for (let cluster of graph.clusters) {
+      for (let link of graph.links) {
+        if (cluster.add_cluster_node && cluster.cluster_id == link.cluster_id) {
+          link.hidden = false;
+        } else if (
+          !cluster.add_cluster_node &&
+          link.cluster_link &&
+          cluster.cluster_id == link.cluster_id
+        ) {
+          link.hidden = true;
+        }
+      }
     }
     // and deep copy of links to d3 - it works on these data and modifies them
     d3Data.links = JSON.parse(JSON.stringify(graph.links));
+
     delete_graph();
     graph_init();
-    graph_crud(graph.nodes, d3Data.links, vueApp.graph_clusters);
+    graph_crud(graph.nodes, d3Data.links, graph.clusters);
     sticky_change_d3();
     vueApp.graph_rendered = true;
     vueApp.overlay_main = false;
