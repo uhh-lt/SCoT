@@ -62,8 +62,9 @@ async function getData_io() {
     vueApp.singletons = data_from_db.singletons;
     vueApp.graph_clusters = data_from_db.clusters;
     // prep cluster data
-    for (let cluster of vueApp.graph_clusters) {
+    for (let cluster of graph.clusters) {
       cluster.colour = color(cluster.cluster_id);
+      console.log(cluster.colour);
       cluster.opacity = vueApp.node_fill_opacity;
     }
     // and deep copy of links to d3 - it works on these data and modifies them
@@ -106,19 +107,57 @@ async function manual_recluster_io() {
   // this api is for an update of the graph after manual reclustering in the frontend
   let url = "./api/manualreclustering";
   let clusters_old = JSON.parse(JSON.stringify(vueApp.graph_clusters));
+  let nodes_old = JSON.parse(JSON.stringify(graph.nodes));
   await recluster_with_url(url);
   for (let cluster1 of clusters_old) {
     for (let cluster2 of vueApp.graph_clusters) {
       if (cluster1.cluster_id === cluster2.cluster_id) {
         cluster2.cluster_name = cluster1.cluster_name;
         cluster2.add_cluster_node = cluster1.add_cluster_node;
+        cluster2.colour = cluster1.colour;
         console.log("cluster2.cluster_name");
       }
     }
   }
+  // prep cluster data
+  for (let cluster of vueApp.graph_clusters) {
+    if (!cluster.colour) {
+      cluster.colour = color(cluster.cluster_id);
+    } else {
+      for (let node of graph.nodes) {
+        if (node.cluster_id == cluster.cluster_id) {
+          node.colour = cluster.colour;
+        }
+      }
+    }
+    cluster.opacity = vueApp.node_fill_opacity;
+  }
+  // update hidden
+  // update hidden
+  for (let cluster of graph.clusters) {
+    vueApp.cluster_dic[cluster.cluster_id] = cluster;
+    for (let link of graph.links) {
+      if (cluster.add_cluster_node && cluster.cluster_id == link.cluster_id) {
+        link.hidden = false;
+      } else if (
+        !cluster.add_cluster_node &&
+        link.cluster_link &&
+        cluster.cluster_id == link.cluster_id
+      ) {
+        link.hidden = true;
+      }
+    }
+  }
+  // update colour of nodes
+  // update colour of nodes
+  for (let node of graph.nodes) {
+    let tmp = vueApp.cluster_dic[node.cluster_id];
+    if (tmp && tmp.colour) {
+      node["colour"] = tmp.colour;
+    }
+  }
   console.log(clusters_old, vueApp.graph_clusters);
   graph.clusters = JSON.parse(JSON.stringify(vueApp.graph_clusters));
-  vueApp.applyClusterSettings();
 }
 
 async function recluster_with_url(url) {
@@ -157,31 +196,98 @@ async function recluster_with_url(url) {
 
     // NEW REFACTORED
     let data_from_db = response.data;
-    // attach to graph updates relevant for clusters
-    // nodes contain new cluster ids
-    console.log("-----------in recevied reclustering----------------");
-    for (let node of data_from_db.nodes) {
-      node.class = node.cluster_id;
-    }
+    // attach to graph - assign per nested object
     graph.nodes = data_from_db.nodes;
     graph.links = data_from_db.links;
+    graph.singletons = data_from_db.singletons;
+    graph.props = data_from_db.props;
     graph.clusters = data_from_db.clusters;
     graph.transit_links = data_from_db.transit_links;
-    console.log(graph.clusters);
-    // rescue target and source
+
+    // new copy back to vue app props
+    vueApp.collection_key = graph.props["collection_key"];
+    vueApp.start_year = graph.props["start_year"];
+    vueApp.end_year = graph.props["end_year"];
+
+    // user input: graph props
+    vueApp.target_word = graph.props["target_word"];
+    vueApp.graph_type_keys[vueApp.graph_type] = graph.props["graph_type"];
+    vueApp.n_nodes = graph.props["n_nodes"];
+    vueApp.density = graph.props["density"];
+
+    // clean up of data - python cannot use the reserved word "class"
+    // execute mapping to node attribute "class" : "cluster_id" -> "class"
+    for (let node of graph.nodes) {
+      node.class = node.cluster_id;
+    }
+    // copy target and source to source-Text and target-text: d3 force is working on them
     for (let link of graph.links) {
       link.target_text = link.target;
       link.source_text = link.source;
     }
-    // update links
-    d3Data.links = JSON.parse(JSON.stringify(graph.links));
-    // update cluster data
+    // log original data
+    console.log("node data received ", graph.nodes);
+    console.log("link data received ", graph.links);
+    console.log("prop data received ", graph.props);
+    console.log("cluster received ", graph.clusters);
+    console.log("transit links data received ", graph.transit_links);
+    console.log("singleton data received ", graph.singletons);
+    console.log("end of getData_io");
+    // // link graph.singletons to app
+    vueApp.singletons = data_from_db.singletons;
     vueApp.graph_clusters = data_from_db.clusters;
     // prep cluster data
     for (let cluster of vueApp.graph_clusters) {
-      cluster.colour = color(cluster.cluster_id);
+      if (!cluster.colour) {
+        cluster.colour = color(cluster.cluster_id);
+      } else {
+        for (let node of graph.nodes) {
+          if (node.cluster_id == cluster.cluster_id) {
+            node.colour = cluster.colour;
+          }
+        }
+      }
       cluster.opacity = vueApp.node_fill_opacity;
     }
+    // dictionaries
+    for (let node of graph.nodes) {
+      vueApp.node_dic[node.id] = node;
+    }
+    vueApp.link_dic = {};
+    for (let link of graph.links) {
+      vueApp.link_dic[link.id] = link;
+    }
+    vueApp.cluster_dic = {};
+    // update hidden
+    // update hidden
+    for (let cluster of graph.clusters) {
+      vueApp.cluster_dic[cluster.cluster_id] = cluster;
+      for (let link of graph.links) {
+        if (cluster.add_cluster_node && cluster.cluster_id == link.cluster_id) {
+          link.hidden = false;
+        } else if (
+          !cluster.add_cluster_node &&
+          link.cluster_link &&
+          cluster.cluster_id == link.cluster_id
+        ) {
+          link.hidden = true;
+        }
+      }
+    }
+    // update colour of nodes
+    // update colour of nodes
+    for (let node of graph.nodes) {
+      let tmp = vueApp.cluster_dic[node.cluster_id];
+      if (tmp && tmp.colour) {
+        node["colour"] = tmp.colour;
+      }
+    }
+    // and deep copy of links to d3 - it works on these data and modifies them
+    d3Data.links = JSON.parse(JSON.stringify(graph.links));
+    delete_graph();
+    graph_init();
+    graph_crud(graph.nodes, d3Data.links, graph.clusters);
+    sticky_change_d3();
   } catch (error) {
     console.log(error);
   }
@@ -360,6 +466,8 @@ function docSearch_io(wort1, wort2) {
  */
 
 function saveGraph_io() {
+  // harmonize all cluster colors
+
   let data = JSON.stringify(graph, null, 2);
   let blob = new Blob([data], { type: "text/plain" });
   console.log(blob);
@@ -461,6 +569,7 @@ function loadGraph_io() {
     // update hidden
     // update hidden
     for (let cluster of graph.clusters) {
+      vueApp.cluster_dic[cluster.cluster_id] = cluster;
       for (let link of graph.links) {
         if (cluster.add_cluster_node && cluster.cluster_id == link.cluster_id) {
           link.hidden = false;
@@ -471,6 +580,14 @@ function loadGraph_io() {
         ) {
           link.hidden = true;
         }
+      }
+    }
+    // update colour of nodes
+    // update colour of nodes
+    for (let node of graph.nodes) {
+      let tmp = vueApp.cluster_dic[node.cluster_id];
+      if (tmp && tmp.colour) {
+        node["colour"] = tmp.colour;
       }
     }
     // and deep copy of links to d3 - it works on these data and modifies them

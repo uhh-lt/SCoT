@@ -253,6 +253,20 @@ let vueApp = new Vue({
     startExample() {
       let data_from_db = exampleJSON;
 
+      // nodes and links should be released from d3
+      if (d3Data.d_simulation) {
+        d3Data.d_simulation.stop();
+      }
+      delete_graph();
+      // delete everything ...
+      graph.nodes = [];
+      graph.links = [];
+      graph.singletons = [];
+      graph.props = {};
+      graph.clusters = [];
+      graph.transit_links = [];
+      vueApp.graph_clusters = [];
+      d3Data.links = [];
       // attach to graph - assign per nested object
       graph.nodes = data_from_db.nodes;
       graph.links = data_from_db.links;
@@ -328,14 +342,20 @@ let vueApp = new Vue({
           }
         }
       }
+      // update colour of nodes
+      for (let node of graph.nodes) {
+        let tmp = vueApp.cluster_dic[node.cluster_id];
+        if (tmp && tmp.colour) {
+          node["colour"] = tmp.colour;
+        }
+      }
 
       // and deep copy of links to d3 - it works on these data and modifies them
       d3Data.links = JSON.parse(JSON.stringify(graph.links));
       // update hidden of cluster links
-
-      delete_graph();
       graph_init();
-      graph_crud(graph.nodes, d3Data.links, this.graph_clusters);
+      graph_crud(graph.nodes, d3Data.links, graph.clusters);
+      this.applyClusterSettings();
       sticky_change_d3();
       this.graph_rendered = true;
       this.overlay_main = false;
@@ -582,9 +602,9 @@ let vueApp = new Vue({
       vueApp.wait_rendering = true;
       d_simulation.stop();
       await manual_recluster_io();
-      //delete_graph();
-      //render_graph();
-      graph_crud(graph.nodes, d3Data.links);
+      graph_crud(graph.nodes, d3Data.links, graph.cluster);
+      // this.restart_change();
+      this.applyClusterSettings();
       d_simulation.restart();
       //vueApp.get_clusters();
       vueApp.graph_rendered = true;
