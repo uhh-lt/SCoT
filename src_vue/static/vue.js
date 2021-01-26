@@ -248,6 +248,12 @@ let vueApp = new Vue({
   },
   methods: {
     /**
+     * helper
+     */
+    getKeyByValue(object, value) {
+      return Object.keys(object).find((key) => object[key] === value);
+    },
+    /**
      * start
      */
     startExample() {
@@ -262,13 +268,7 @@ let vueApp = new Vue({
         d3Data.d_simulation.stop();
       }
       delete_graph();
-      // delete everything ...
-      graph.nodes = [];
-      graph.links = [];
-      graph.singletons = [];
-      graph.props = {};
-      graph.clusters = [];
-      graph.transit_links = [];
+      // delete additional data storage locations
       vueApp.graph_clusters = [];
       d3Data.links = [];
       // attach to graph - assign per nested object
@@ -278,24 +278,36 @@ let vueApp = new Vue({
       graph.props = data_from_db.props;
       graph.clusters = data_from_db.clusters;
       graph.transit_links = data_from_db.transit_links;
-
+      console.log(" new prop ", graph.props.collection_key);
+      console.log(" loaded names in vueApp", vueApp.collections);
       // new copy back to vue app props
-      for (let collection_name in this.collections) {
+      for (let collection_obj_key in vueApp.collections) {
+        console.log("iterating col obj keys", collection_obj_key);
         if (
-          this.collections[collection_name].key == graph.props.collection_key
+          vueApp.collections[collection_obj_key].key ===
+          graph.props.collection_key
         ) {
-          this.collection_name = collection_name;
-          this.collection_key = graph.props.collection_key;
+          vueApp.collection_name = collection_obj_key;
+          vueApp.collection_key = graph.props.collection_key;
           break;
         }
       }
-      this.onChangeDb();
+      console.log("collection name", vueApp.collection_name);
+      vueApp.onChangeDb();
       vueApp.start_year = graph.props["start_year"];
       vueApp.end_year = graph.props["end_year"];
-
       // user input: graph props
+      // here is a naming confusion
+      // in the frontend vueApp the real key is the name - this is stored in vueApp.graph_type
+      // in the graph.props the graph.props.graph_type refers to the string, such as "ngot-interval" that is the value in the FE
+      // Thus - graph_type != graph_type
       vueApp.target_word = graph.props["target_word"];
-      vueApp.graph_type_keys[this.graph_type] = graph.props["graph_type"];
+      vueApp.graph_type = this.getKeyByValue(
+        vueApp.graph_type_keys,
+        graph.props.graph_type
+      );
+      console.log(vueApp.graph_type);
+      vueApp.onChangeDb();
       vueApp.n_nodes = graph.props["n_nodes"];
       vueApp.density = graph.props["density"];
 

@@ -478,10 +478,10 @@ function saveGraph_io() {
 
 function loadGraph_io() {
   document.getElementById("loadpopup").style.display = "none";
-  const file = vueApp.file;
   const reader = new FileReader();
-  let data_from_db;
+
   reader.onload = function (e) {
+    let data_from_db;
     data_from_db = JSON.parse(reader.result);
     console.log("in parsed with", data_from_db);
     vueApp.loadNew(data_from_db);

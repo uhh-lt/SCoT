@@ -39,7 +39,7 @@ let graph = {
     density: 0,
     // parameter n
     n_nodes: 0,
-    // parameter graph type - determines which kind of edges are needed
+    // parameter graph type - determines which kind of edges are needed -this is the value in the key-value list of vue
     graph_type: "",
     // In addition, both cluster-shared words and the full graph can be target - filtered
     // this means that all only those features of all nodes and edges are used that are also features of bar
@@ -112,12 +112,12 @@ let vueData = {
   // dropdown_list all possible end years per selected collection queried from the database after selection of collection
   end_years: [{ id: 1, text: "fetching data...", value: 0 }],
   // The Graph-algos use the two key parameters n and d differently
+  // this refers to the KEYS of the dropdown
   graph_type: "fetching data...",
-  // all possible graph types displays dropdown listin frontend
+  // all possible graph type KEYS displays dropdown listin frontend
   graph_types: ["fetching data..."],
-  //  keys used for querying specific graph from backend
-  // not used : "GLOBAL N*I & GLOBAL E scaled by I (node & edge manipulation)":
-  // "ngot_global",
+  //  KEY_VALUE used for querying specific graph from backend (in the backend and graph.props the VALUE is stored)
+  // not used : "GLOBAL N*I & GLOBAL E scaled by I (node & edge manipulation)": "ngot_global",
   graph_type_keys: {
     "Interval Fixed (best for overview and time-diff)": "ngot_interval",
     "NGoT Fixed (best for comparison)": "ngot_overlay",
