@@ -387,7 +387,7 @@ Vue.component("frame-sidebarright", {
 		  */
     calculateCentralityDistribution() {
       vueApp.centrality_score_distribution = [];
-      vueApp.getCentralityScores();
+      this.getCentralityScores();
 
       let group0 = 0;
       let group1 = 0;
@@ -695,7 +695,7 @@ Vue.component("frame-sidebarright", {
 						<!-- <b-button v-on:click="resetCentralityHighlighting()"> <em class="fas fa-times"></em>
 							Reset
 							highlighting </b-button> -->
-						<b-button class="lrmargin_button" size="sm" variant="success" v-on:click="getCentralityScores()"
+						<b-button class="lrmargin_button" size="sm" variant="success" v-on:click="getCentralityScores"
 							v-b-modal.modal-centrality-2> <em class="fas fa-bars"></em> List centrality node scores
 						</b-button>
 						<br>
