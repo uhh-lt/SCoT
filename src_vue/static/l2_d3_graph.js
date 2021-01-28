@@ -1,8 +1,6 @@
-// ########### SIDEBAR-LEFT - GRAPH CREATION ##########################################################
-
 // ------------------------- SVG COMPONENT ---------------------------
 /*
-Works on the d3Data [see data.js], the vueData managed by VueApp and the globalGraph
+Works on the d3Data [see data.js]
 
  */
 let color = d3.scaleOrdinal(d3.schemePaired);
@@ -14,8 +12,20 @@ let d_node;
 let d_simulation;
 let d_drag_node;
 let brush;
+// general svg
+let viewbox_pan_horizontal = -screen.width * 0.01;
+// increase -> down
+let viewbox_pan_vertical = -screen.height * 0.07;
+// larger viewbox height and width -> zoom out / smaller viewbox - > zoom in
+let viewbox_height = screen.height * 1.2;
+let viewbox_width = screen.width * 1.8;
+// for setting the svg size for the graph
+// THIS IS THE VIEWPORT
+let svg_height = screen.height * 1;
+// it needs to be wider than screen.width - otherwise it does
+let svg_width = screen.width * 1.3;
 
-function graph_init() {
+async function graph_init() {
   /**
    * graph init prepares the svg-dom-graph before the data is bound to it in graph-crud
    */
@@ -33,18 +43,18 @@ function graph_init() {
     .append("svg")
     .classed("svg-content", true)
     .attr("id", "svg")
-    .attr("width", vueApp.svg_width)
-    .attr("height", vueApp.svg_height)
+    .attr("width", svg_width)
+    .attr("height", svg_height)
     .attr(
       "viewBox",
       " " +
-        vueApp.viewbox_pan_horizontal +
+        viewbox_pan_horizontal +
         " " +
-        vueApp.viewbox_pan_vertical +
+        viewbox_pan_vertical +
         " " +
-        vueApp.viewbox_width +
+        viewbox_width +
         " " +
-        vueApp.viewbox_height
+        viewbox_height
     )
     .attr("preserveAspectRatio", "xMidYMid meet")
     .call(
@@ -68,7 +78,7 @@ function graph_init() {
     .append("g")
     .attr("class", "node")
     .attr("stroke", "#fff")
-    .attr("stroke-width", vueApp.node_stroke_width);
+    .attr("stroke-width", vueData.node_stroke_width);
 
   /**
    * define simulation with data-binding
@@ -78,24 +88,21 @@ function graph_init() {
    * force link : binds links to node-data (they are also moving)
    */
   d_simulation = d3
-    .forceSimulation(graph.nodes)
+    .forceSimulation()
     .force(
       "link",
       d3
-        .forceLink(d3Data.links)
+        .forceLink()
         .id(function (d) {
           return d.id;
         })
         .distance(function (d) {
-          return vueApp.linkdistance;
+          return vueData.linkdistance;
         })
     )
-    .force("charge", d3.forceManyBody(vueApp.charge))
-    .force("collide", d3.forceCollide().radius(vueApp.radius * 3))
-    .force(
-      "center",
-      d3.forceCenter(vueApp.viewbox_width / 2.2, vueApp.viewbox_height / 2.2)
-    );
+    .force("charge", d3.forceManyBody(vueData.charge))
+    .force("collide", d3.forceCollide().radius(vueData.radius * 3))
+    .force("center", d3.forceCenter(viewbox_width / 2.2, viewbox_height / 2.2));
 
   // initi drag
   d_drag_node = d3.drag();
@@ -103,8 +110,9 @@ function graph_init() {
   return "end";
 }
 
-function delete_graph() {
+async function delete_graph() {
   d3.select("#graph2").select("svg").remove();
+  return "ok";
 }
 
 /**
@@ -114,9 +122,9 @@ function delete_graph() {
  * @param {} dlinks // array of graph-links from graph-model -- USE DEEP COPY (force links transforms data)
  */
 
-function graph_crud(dnodes, dlinks, dcluster) {
-  console.log("------------ in graph crud d3 --------------------------");
-  console.log(dnodes, dlinks);
+async function graph_crud(dnodes, dlinks, dcluster) {
+  // console.log("------------ in graph crud d3 --------------------------");
+  // console.log(dnodes, dlinks);
   d_simulation.stop();
   // remove data information for node and line elements of tree
   // while preserving positions for the same nodes and lines
@@ -135,12 +143,12 @@ function graph_crud(dnodes, dlinks, dcluster) {
   d_svg
     .append("text")
     .attr("class", "target")
-    .attr("x", vueApp.viewbox_width / 2.2)
-    .attr("y", vueApp.viewbox_height / 2.2)
+    .attr("x", viewbox_width / 2.2)
+    .attr("y", viewbox_height / 2.2)
     .style("font-family", "helvetica, arial, sans-serif")
-    .style("font-size", vueApp.svg_target_text_font_size)
+    .style("font-size", vueData.svg_target_text_font_size)
     .style("font-weight", "bold")
-    .style("opacity", vueApp.svg_target_text_opacity)
+    .style("opacity", vueData.svg_target_text_opacity)
     .text(graph.props.target_word);
 
   // initialize the tooltip for nodes
@@ -197,9 +205,9 @@ function graph_crud(dnodes, dlinks, dcluster) {
     .append("circle")
     .attr("r", function (d) {
       if (d.cluster_node) {
-        return vueApp.radius * 2;
+        return vueData.radius * 2;
       } else {
-        return vueApp.radius;
+        return vueData.radius;
       }
     })
     .attr("centrality_score", (d) => d.centrality_score)
@@ -237,24 +245,24 @@ function graph_crud(dnodes, dlinks, dcluster) {
     })
     .on("mousedown", mousedowned)
     .call(d_drag_node)
-    .on("mouseover", mouseOver(vueApp.node_reduced_opacity))
+    .on("mouseover", mouseOver(vueData.node_reduced_opacity))
     .on("mouseout", mouseOut)
     .on("click", function (d) {
       if (this.getAttribute("class") === "selected") {
-        vueApp.node_selected = true;
+        vueData.node_selected = true;
       } else {
-        vueApp.node_selected = false;
+        vueData.node_selected = false;
       }
-      vueApp.select_node_is_no_cluster_node = vueApp.is_normal_node();
+      vueData.select_node_is_no_cluster_node = vueApp.is_normal_node();
       showContextMenu(this);
     })
     .on("click", function (d) {
-      console.log("in click onn node g");
+      // console.log("in click onn node g");
       if (!d.cluster_node) {
-        vueApp.active_node = {
+        vueData.active_node = {
           time_ids: d.time_ids,
           weights: d.weights,
-          source_text: vueApp.target_word,
+          source_text: vueData.target_word,
           target_text: d.target_text,
           cluster_id: d.cluster_id,
           cluster_name: d.cluster_name,
@@ -263,12 +271,12 @@ function graph_crud(dnodes, dlinks, dcluster) {
 
         vueApp.getSimBimsNodes();
         // set fields for display in node feature element
-        vueApp.fields_nodes[0]["label"] = vueApp.target_word;
-        vueApp.fields_nodes[2]["label"] = d.target_text;
+        vueData.fields_nodes[0]["label"] = vueData.target_word;
+        vueData.fields_nodes[2]["label"] = d.target_text;
         // switch on node feature element
-        vueApp.context_mode3 = true;
-        vueApp.context_mode = false;
-        console.log(vueApp.context_mode3);
+        vueData.context_mode3 = true;
+        vueData.context_mode = false;
+        // console.log(vueData.context_mode3);
       }
     });
   // .call(
@@ -293,9 +301,9 @@ function graph_crud(dnodes, dlinks, dcluster) {
     .style("stroke", "black")
     .style("font-size", function (d) {
       if (d.cluster_node) {
-        return vueApp.node_text_font_size * 2;
+        return vueData.node_text_font_size * 2;
       } else {
-        return vueApp.node_text_font_size;
+        return vueData.node_text_font_size;
       }
     });
 
@@ -314,14 +322,14 @@ function graph_crud(dnodes, dlinks, dcluster) {
     })
     // enables access to node class
     .attr("stroke-width", function (d) {
-      if (vueApp.link_thickness_scaled === "true") {
-        return Math.sqrt(d.weight / vueApp.link_thickness_factor);
+      if (vueData.link_thickness_scaled === "true") {
+        return Math.sqrt(d.weight / vueData.link_thickness_factor);
       } else {
-        return vueApp.link_thickness_value;
+        return vueData.link_thickness_value;
       }
     })
     .attr("stroke", "#999")
-    .attr("stroke-opacity", vueApp.base_link_opacity)
+    .attr("stroke-opacity", vueData.base_link_opacity)
     .attr("source", function (d) {
       return d.source.id;
     })
@@ -346,21 +354,22 @@ function graph_crud(dnodes, dlinks, dcluster) {
     // set the stroke with in dependence to the weight attribute of the link
     // enables access to node class
     .on("click", function (d) {
-      vueApp.active_edge = {
+      vueData.active_edge = {
         time_ids: d.time_ids,
         weights: d.weights,
         source_text: d.source_text,
         target_text: d.target_text,
+        cluster_info_link: d.cluster_link,
       };
-      if (!d.cluster_node) {
+      if (!d.cluster_link) {
         vueApp.getSimBims();
         // set label
-        vueApp.fields_edges[0]["label"] = d.source_text;
-        vueApp.fields_edges[2]["label"] = d.target_text;
+        vueData.fields_edges[0]["label"] = d.source_text;
+        vueData.fields_edges[2]["label"] = d.target_text;
 
         // switch on context mode edges, switch off context mode
-        vueApp.context_mode = true;
-        vueApp.context_mode3 = false;
+        vueData.context_mode = true;
+        vueData.context_mode3 = false;
       }
     })
     .on("mouseover", d3Data.time_diff_tip_link.show)
@@ -408,11 +417,11 @@ function positionNode(d) {
   if (d.y < 0) {
     d.y = 0;
   }
-  if (d.x > vueApp.svg_width) {
-    d.x = vueApp.svg_width - 50;
+  if (d.x > svg_width) {
+    d.x = svg_width - 50;
   }
-  if (d.y > vueApp.svg_height) {
-    d.y = vueApp.svg_height - 50;
+  if (d.y > svg_height) {
+    d.y = svg_height - 50;
   }
   return "translate(" + d.x + "," + d.y + ")";
 }
@@ -448,14 +457,15 @@ function toolTipLink(time_ids, weights, targetA, targetB) {
 
 function toolTipNode(time_ids, target_text, weights) {
   let stringRet = "Node: " + target_text + "<br>" + "<br>";
-  stringRet += "Highest similarities with " + vueApp.target_word + ":" + "<br>";
+  stringRet +=
+    "Highest similarities with " + vueData.target_word + ":" + "<br>";
   stringRet += vueApp.selectInterval(time_ids, weights) + "<br>";
   stringRet += "For context-information - click me!";
   return stringRet;
 }
 
 function showContextMenu(d) {
-  if (vueApp.node_selected) {
+  if (vueData.node_selected) {
     d3.select("#nodeOptionsDD").style("display", "block");
 
     d3.event.preventDefault();
@@ -470,10 +480,10 @@ function showContextMenu(d) {
  */
 function mousedowned(d) {
   if (!d.cluster_node) {
-    vueApp.active_node = {
+    vueData.active_node = {
       time_ids: d.time_ids,
       weights: d.weights,
-      source_text: vueApp.target_word,
+      source_text: vueData.target_word,
       target_text: d.target_text,
       cluster_id: d.cluster_id,
       cluster_name: d.cluster_name,
@@ -481,17 +491,17 @@ function mousedowned(d) {
     };
   }
 
-  console.log(vueApp.active_node);
+  // console.log(vueData.active_node);
 
-  console.log("in mouse downed sticky mode", vueApp.sticky_mode);
+  // console.log("in mouse downed sticky mode", vueData.sticky_mode);
   if (!d.selected) {
     d_node.classed("selected", function (p) {
       return (p.selected = d === p);
     });
-  } else if (d3Data.shiftKey && vueApp.sticky_mode === "true") {
+  } else if (d3Data.shiftKey && vueData.sticky_mode === "true") {
     d3.select(this).classed("selected", (d.selected = !d.selected));
     d3.event.stopImmediatePropagation();
-  } else if (vueApp.sticky_mode === "true") {
+  } else if (vueData.sticky_mode === "true") {
     d3.select(this).classed("selected", (d.selected = !d.selected));
     //d3.event.stopImmediatePropagation();
   }
@@ -506,24 +516,26 @@ function mouseOver(opacity) {
     // fade
 
     d_node.style("stroke-opacity", function (o) {
-      console.log(
-        "in mouseover stroke opacity with opacity = ",
-        vueApp.node_fill_opacity
-      );
+      // console.log(
+      //   "in mouseover stroke opacity with opacity = ",
+      //   vueData.node_fill_opacity
+      // );
       let thisOpacity = vueApp.isConnected(d, o)
         ? 1
-        : vueApp.node_reduced_opacity;
+        : vueData.node_reduced_opacity;
       return thisOpacity;
     });
     d_node.style("fill-opacity", function (o) {
       let thisOpacity = vueApp.isConnected(d, o)
         ? 1
-        : vueApp.node_reduced_opacity;
+        : vueData.node_reduced_opacity;
       return thisOpacity;
     });
     // also style link accordingly
     d_link.style("stroke-opacity", function (o) {
-      return o.source === d || o.target === d ? 1 : vueApp.reduced_link_opacity;
+      return o.source === d || o.target === d
+        ? 1
+        : vueData.reduced_link_opacity;
     });
   };
 }
@@ -607,17 +619,17 @@ function restart() {
 // ##############  SIDEBAR LEFT VIEW SETTINGS ############################################################################
 
 function sticky_change_d3() {
-  console.log("sticky_change triggered", vueApp.sticky_mode);
+  // console.log("sticky_change triggered", vueData.sticky_mode);
   let brush = d3.select("#graph2").select("#svg").select("g").select("g");
 
-  if (vueApp.sticky_mode === "false") {
+  if (vueData.sticky_mode === "false") {
     brush.style("display", "inline");
     brush.call(
       d3
         .brush()
         .extent([
           [0, 0],
-          [vueApp.svg_width, vueApp.svg_height],
+          [svg_width, svg_height],
         ])
         .on("start", brushstarted)
         .on("brush", brushed)
@@ -634,7 +646,7 @@ function sticky_change_d3() {
       .on("end", function () {
         d3.selectAll(".selected").each(dragend);
       });
-  } else if (vueApp.sticky_mode === "true") {
+  } else if (vueData.sticky_mode === "true") {
     // tidy up after brush and unselect all selected nodes
     //d_simulation.restart();
     brush.style("display", "none");
@@ -749,13 +761,13 @@ function reset_zoom() {
   graphC.attr("transform", "translate(0, 0) scale(1.0)");
   // disable zooom dblClick
   container.on("dblclick.zoom", null);
-  console.log("in reset_zoom d3");
+  // console.log("in reset_zoom d3");
 }
 
 function charge_change_d3() {
   d_simulation.force(
     "charge",
-    d3.forceManyBody().strength(vueApp.charge).distanceMin(1).distanceMax(2000)
+    d3.forceManyBody().strength(vueData.charge).distanceMin(1).distanceMax(2000)
   );
   d_simulation.alpha(1).restart();
 }
@@ -771,9 +783,9 @@ function restart_change_d3() {
 }
 
 function linkdistance_change_d3() {
-  console.log("linkdist change");
+  // console.log("linkdist change");
   let forceLinkDistance = d_simulation.force("link");
-  forceLinkDistance.distance(vueApp.linkdistance);
+  forceLinkDistance.distance(vueData.linkdistance);
   d_simulation.alpha(1).restart();
 }
 
@@ -839,7 +851,7 @@ function set_cluster_opacity_d3(cluster, opacity, link_opacity) {
 
 function delete_multiple_nodes_d3(labels) {
   // get all the text labels
-  console.log(labels);
+  // console.log(labels);
 
   // find the correct nodes and delete them and the links connecting to them
   let nodes = d3.selectAll(".node").selectAll("g");
@@ -855,7 +867,7 @@ function delete_multiple_nodes_d3(labels) {
 
     // if they belong to the list, that is to be deleted, ...
     if (labels.includes(node_id)) {
-      console.log("in node del", node_id);
+      // console.log("in node del", node_id);
       vueApp.deletenode(node_id);
       vueApp.deletelinks(node_id);
     }
@@ -889,25 +901,25 @@ function delete_multiple_nodes_d3(labels) {
 		*/
 function show_time_diff_d3() {
   let big_time_interval = [];
-  let startindex = vueApp.start_years.find(
-    (startindex) => startindex.value === vueApp.start_year
+  let startindex = vueData.start_years.find(
+    (startindex) => startindex.value === vueData.start_year
   )["id"];
-  let endindex = vueApp.end_years.find(
-    (endindex) => endindex.value === vueApp.end_year
+  let endindex = vueData.end_years.find(
+    (endindex) => endindex.value === vueData.end_year
   )["id"];
 
   for (let ind = startindex; ind <= endindex; ind++) {
     big_time_interval.push(ind);
   }
 
-  // console.log("in startindx", vueApp.interval_start, vueApp.interval_end);
+  // console.log("in startindx", vueData.interval_start, vueData.interval_end);
   let small_time_interval = [];
-  let startindex2 = vueApp.start_years.find(
-    (startind) => startind.text === vueApp.interval_start
+  let startindex2 = vueData.start_years.find(
+    (startind) => startind.text === vueData.interval_start
   )["id"];
   // console.log("start id", startindex2);
-  let endindex2 = vueApp.end_years.find(
-    (endind) => endind.text === vueApp.interval_end
+  let endindex2 = vueData.end_years.find(
+    (endind) => endind.text === vueData.interval_end
   )["id"];
 
   for (let ind = startindex2; ind <= endindex2; ind++) {
@@ -1014,7 +1026,7 @@ function show_time_diff_d3() {
     });
   });
 
-  vueApp.time_diff_nodes = time_diff_nodes;
+  vueData.time_diff_nodes = time_diff_nodes;
   // console.log(time_diff_nodes);
 }
 
@@ -1040,7 +1052,7 @@ function skip_through_time_slices_d3() {
 
             // check if the time ids of the node include the id of the interval
             time_ids.forEach(function (d, i) {
-              if (d === vueApp.interval_id) {
+              if (d === vueData.interval_id) {
                 // if so, the node occurs in the selected time slice
                 in_interval = true;
               }
@@ -1061,7 +1073,7 @@ function skip_through_time_slices_d3() {
 
   links.each(function (d, i) {
     // Set the opacity of all links to base_link_opacity initially
-    this.style.strokeOpacity = vueApp.base_link_opacity;
+    this.style.strokeOpacity = vueData.base_link_opacity;
 
     // select the time ids of the source and the target
     let source_time_ids = d.source.time_ids;
@@ -1081,7 +1093,7 @@ function skip_through_time_slices_d3() {
     let in_source_interval = false;
     let in_target_interval = false;
 
-    let interval = parseInt(vueApp.interval_id);
+    let interval = parseInt(vueData.interval_id);
 
     // check if source time ids of a link include the time slice id of the selected interval
     if (source_time_ids.includes(interval)) {
@@ -1098,7 +1110,7 @@ function skip_through_time_slices_d3() {
 
     // the link only has opacity 1.0 if both source and target are in the selected time slice
     if (in_source_interval === false || in_target_interval === false) {
-      this.style.strokeOpacity = vueApp.reduced_link_opacity;
+      this.style.strokeOpacity = vueData.reduced_link_opacity;
     }
   });
 }
@@ -1120,7 +1132,7 @@ function findSelectedNodes_d3() {
         // cluster nodes should not be considered
         if (d.getAttribute("cluster_node") === "false") {
           node_characteristics["colour"] = d.getAttribute("fill");
-          vueApp.created_cluster_colour = node_characteristics["colour"];
+          vueData.created_cluster_colour = node_characteristics["colour"];
           node_characteristics["cluster_id"] = d.getAttribute("cluster_id");
           node_characteristics["cluster_name"] = d.getAttribute("cluster");
         }
@@ -1132,17 +1144,17 @@ function findSelectedNodes_d3() {
     });
     list.push(node_characteristics);
   });
-  vueApp.clicked_nodes = list;
+  vueData.clicked_nodes = list;
 }
 
 // ########### NODE SIZE ---------------------------------------------------------
 
 function highlightCentralNodes_d3(threshold_s, threshold_m) {
-  if (vueApp.highlightWobblies === true) {
+  if (vueData.highlightWobblies === true) {
     restart();
-    vueApp.highlightWobblies = false;
+    vueData.highlightWobblies = false;
   }
-  vueApp.hightlighInbetweennessCentrality = true;
+  vueData.hightlighInbetweennessCentrality = true;
   threshold_s = parseFloat(threshold_s);
   threshold_m = parseFloat(threshold_m);
 
@@ -1159,17 +1171,17 @@ function highlightCentralNodes_d3(threshold_s, threshold_m) {
           let centrality_score = parseFloat(d.getAttribute("centrality_score"));
           // three different sizes depending on centrality score
           if (centrality_score <= threshold_s) {
-            d.setAttribute("r", vueApp.radius);
-            text.style("font-size", vueApp.node_text_font_size);
+            d.setAttribute("r", vueData.radius);
+            text.style("font-size", vueData.node_text_font_size);
           } else if (
             centrality_score > threshold_s &&
             centrality_score <= threshold_m
           ) {
-            d.setAttribute("r", vueApp.radius * 2);
-            text.style("font-size", vueApp.node_text_font_size * 2);
+            d.setAttribute("r", vueData.radius * 2);
+            text.style("font-size", vueData.node_text_font_size * 2);
           } else {
-            d.setAttribute("r", vueApp.radius * 3);
-            text.style("font-size", vueApp.node_text_font_size * 3);
+            d.setAttribute("r", vueData.radius * 3);
+            text.style("font-size", vueData.node_text_font_size * 3);
           }
         }
       }
@@ -1181,12 +1193,12 @@ function highlightCentralNodes_d3(threshold_s, threshold_m) {
   	Highlight the nodes with a balanced neighbourhood in the graph
 		*/
 function highlightWobblyCandidates_d3() {
-  if (vueApp.hightlighInbetweennessCentrality === true) {
-    vueApp.resetCentralityHighlighting();
-    vueApp.hightlighInbetweennessCentrality = false;
+  if (vueData.hightlighInbetweennessCentrality === true) {
+    restart();
+    vueData.hightlighInbetweennessCentrality = false;
   }
   // console.log("in highlight wobbly");
-  vueApp.highlightWobblies = true;
+  vueData.highlightWobblies = true;
   let nodes = d3.selectAll(".node").selectAll("g");
 
   nodes.each(function (d, i) {
@@ -1213,8 +1225,8 @@ function highlightWobblyCandidates_d3() {
     if (is_balanced == "true") {
       children.forEach(function (p) {
         if (p.tagName === "circle") {
-          p.setAttribute("r", vueApp.radius * 3);
-          // text.style("font-size", vueApp.node_text_font_size * 2);
+          p.setAttribute("r", vueData.radius * 3);
+          // text.style("font-size", vueData.node_text_font_size * 2);
         }
       });
     }
@@ -1223,8 +1235,8 @@ function highlightWobblyCandidates_d3() {
     else if (connected_clusters > 1) {
       children.forEach(function (p) {
         if (p.tagName === "circle") {
-          p.setAttribute("r", vueApp.radius * 2);
-          // text.style("font-size", vueApp.node_text_font_size * 1.5);
+          p.setAttribute("r", vueData.radius * 2);
+          // text.style("font-size", vueData.node_text_font_size * 1.5);
         }
       });
     }
@@ -1234,7 +1246,7 @@ function highlightWobblyCandidates_d3() {
 // ####  NAVBAR ########### SEARCH NODES ######################################################################################
 
 function unsearch_nodes_d3() {
-  vueApp.highlightWobblies = false;
+  vueData.highlightWobblies = false;
   restart();
 }
 
@@ -1243,7 +1255,7 @@ function search_node_d3() {
   let found_matching_string = false;
 
   // alert if no search term was entered
-  if (vueApp.searchterm === "") {
+  if (vueData.searchterm === "") {
     alert("Please enter a search term.");
   } else {
     let nodes = d3.selectAll(".node").selectAll("g");
@@ -1259,7 +1271,7 @@ function search_node_d3() {
       });
 
       // prefix matching, see if there is a node that matches the search term
-      if (text.lastIndexOf(vueApp.searchterm, 0) === 0) {
+      if (text.lastIndexOf(vueData.searchterm, 0) === 0) {
         found_matching_string = true;
       }
     });
@@ -1277,7 +1289,7 @@ function search_node_d3() {
         });
 
         // prefix matching
-        if (text.lastIndexOf(vueApp.searchterm, 0) === 0) {
+        if (text.lastIndexOf(vueData.searchterm, 0) === 0) {
           this.setAttribute("stroke", "yellow");
           // highlight matching node
           children.forEach(function (d) {
@@ -1285,7 +1297,7 @@ function search_node_d3() {
               d.style.fontSize = "16px";
             }
             if (d.tagName === "circle") {
-              let new_r = vueApp.radius * 2;
+              let new_r = vueData.radius * 2;
               d.setAttribute("r", new_r);
             }
           });
@@ -1294,10 +1306,10 @@ function search_node_d3() {
           // TODO: reduce opacity of links -> coloured links are a bit to strong
           children.forEach(function (d) {
             if (d.tagName === "text") {
-              d.style.opacity = vueApp.node_reduced_opacity;
+              d.style.opacity = vueData.node_reduced_opacity;
             }
             if (d.tagName === "circle") {
-              d.style.opacity = vueApp.node_reduced_opacity;
+              d.style.opacity = vueData.node_reduced_opacity;
             }
           });
         }
@@ -1306,7 +1318,7 @@ function search_node_d3() {
         links.each(function (d) {
           let children = this.childNodes;
           children.forEach(function (p) {
-            p.style.strokeOpacity = vueApp.reduced_link_opacity;
+            p.style.strokeOpacity = vueData.reduced_link_opacity;
           });
         });
       });
@@ -1314,6 +1326,6 @@ function search_node_d3() {
     } else if (found_matching_string === false) {
       alert("No match found. Please try a different search term.");
     }
-    vueApp.searchterm = "";
+    vueData.searchterm = "";
   }
 }

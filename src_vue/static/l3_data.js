@@ -298,6 +298,7 @@ let vueData = {
     weights: ["1"],
     source_text: "0",
     target_text: "0",
+    cluster_info_link: true,
   },
   // sigebar right: holds edge context information (score, key, score2)
   simbim_object: [],

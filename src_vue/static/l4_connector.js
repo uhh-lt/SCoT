@@ -477,7 +477,6 @@ function saveGraph_io() {
 }
 
 function loadGraph_io() {
-  document.getElementById("loadpopup").style.display = "none";
   const reader = new FileReader();
 
   reader.onload = function (e) {
