@@ -95,19 +95,19 @@ def simbim(config, collection, data, word1, word2, time_id):
 
 
 def cluster_information(config, data):
-    # calculates the cluster shared context words per time-id
-    # use all occurrences of node in selected time-id [max strength time id]
-    # calculate score by adding all significances + dividing by number of nodes
+    # calculates a list of the normalized cumulated significance scores
+    # of all syntagmatic context words of all paradigms of a cluster across all time-ids
+    # ALTERNATIVELY (if target-filter set): the cumulated list can be filtered.
+    # This is achieved by creating a set of target features across all time-ids as filter.
     # Params: nodes with time-ids
     # Returns dictionary of words with Score: averaged normalized over all nodes based on max-time-id
     # Precondition: data not null and valid
     # Postcondition: the response is limited to max 200
-    # measure execution time of db-queries
+    # Note:measures execution time of db-queries
     print("in cluster information", data)
     import time
     start_time = time.time()
     # algo
-    print("cluster filter", data["props"]["cluster_target_filter"])
     from collections import defaultdict
     nodes = set()
     for node in data["nodes"]:
