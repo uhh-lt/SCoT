@@ -6,8 +6,8 @@ let vueApp = new Vue({
   <div id="graph2" class="svg-container"></div>
   </b-overlay>
   <frame-navbar></frame-navbar>
-  <frame-sidebarleft></frame-sidebarleft>
-  <frame-sidebarright></frame-sidebarright>
+  <frame-sidebargraph></frame-sidebargraph>
+  <frame-sidebarclustertime></frame-sidebarclustertime>
   <feature-sidebaredge></feature-sidebaredge>
   <feature-sidebarnode></feature-sidebarnode>
   <feature-sidebarcluster></feature-sidebarcluster>
@@ -15,7 +15,7 @@ let vueApp = new Vue({
   </div>
     `,
   /**
-   * vueData is one of three data-objects objects in global scope: vueData, graph and d3Data
+   * vueData is one of three data-objects objects in the global scope: vueData, graph and d3Data
    * vueData is specific to the VueApp - it is included here to make it reactive
    * ( graph refers to the global graph-model, d3Data  refers to specific data for d3)
    */

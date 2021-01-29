@@ -1,4 +1,4 @@
-Vue.component("frame-sidebarright", {
+Vue.component("frame-sidebarclustertime", {
   data: function () {
     return this.$root.$data;
   },

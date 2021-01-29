@@ -8,9 +8,12 @@
 	<link rel="shortcut icon" href=".%% url_for('static', filename='favicon.ico') %%">
 	</link>
 
-	<!-- FRONTEND ARCHITECTURE WITH GLOBAL SCOPE D3/VUE FOR PARALLEL DOM HANDLING WITH BETTER PERFORMANCE -->
-	<!-- [D3 is NOT rendered via the virtual dom]-->
 	<!--- FOR ARCHITECTURAL DESCRIPTION SEE HAASE et. al. (2021):SCOT: EACL-->
+	<!-- FRONTEND ARCHITECTURE FOLLOWS MVVM PATTERN WITH TWO VM FRAMEWORKS, D3 and VUE,
+		THAT MANIPULATE THE VIEW, IE THE DOM, IN PARALLEL AND IN COOPERATION
+		 DUE TO THIS ARCHITECTURE D3/VUE BOTH NEED TO BE IN GLOBAL SCOPE -->
+	<!-- NOTE:[D3 is NOT rendered via the virtual dom]-->
+
 
 	<!-- DEPENDENCIES -->
 	<script src="https://d3js.org/d3.v5.min.js"></script>
@@ -27,28 +30,26 @@
 
 
 	<!--FRONTEND APP -->
-	<!--Layer4 Connector -->
-	<script type="text/javascript" src=".%% url_for('static', filename='l4_connector.js') %%"></script>
-	<!--Layer3 Model -->
+	<!--Layer3 MODEL_ Connector -->
+	<script type="text/javascript" src=".%% url_for('static', filename='l3_connector.js') %%"></script>
+	<!--Layer3 MODEL_ Data -->
 	<script type="text/javascript" src=".%% url_for('static', filename='l3_data.js') %%"></script>
 	<script type="text/javascript" src=".%% url_for('static', filename='l3_example.js') %%"></script>
-	<!--Layer2 View_Model PARALLEL D3/Vue -->
+
+	<!--Layer2 View_Model D3 -->
 	<script type="text/javascript" src=".%% url_for('static', filename='l2_d3_graph.js') %%"></script>
 
-	<!---LAYER 2 View Model vue components -->
-	<script type="text/javascript" src=".%% url_for('static', filename='l2_vue_comp_frame_navbar.js') %%"></script>
-	<script type="text/javascript" src=".%% url_for('static', filename='l2_vue_comp_frame_sidebarleft.js') %%"></script>
+	<!---LAYER 2 VIEW-MODEL vue components -->
+	<script type="text/javascript" src=".%% url_for('static', filename='l2_vue_frame_navbar.js') %%"></script>
+	<script type="text/javascript" src=".%% url_for('static', filename='l2_vue_frame_sidebargraph.js') %%"></script>
 	<script type="text/javascript"
-		src=".%% url_for('static', filename='l2_vue_comp_frame_sidebarright.js') %%"></script>
-	<script type="text/javascript"
-		src=".%% url_for('static', filename='l2_vue_comp_feature_sidebaredge.js') %%"></script>
-	<script type="text/javascript"
-		src=".%% url_for('static', filename='l2_vue_comp_feature_sidebarnode.js') %%"></script>
-	<script type="text/javascript"
-		src=".%% url_for('static', filename='l2_vue_comp_feature_sidebarcluster.js') %%"></script>
-	<script type="text/javascript" src=".%% url_for('static', filename='l2_vue_comp_text_example.js') %%"></script>
+		src=".%% url_for('static', filename='l2_vue_frame_sidebarclustertime.js') %%"></script>
+	<script type="text/javascript" src=".%% url_for('static', filename='l2_vue_feature_sidebaredge.js') %%"></script>
+	<script type="text/javascript" src=".%% url_for('static', filename='l2_vue_feature_sidebarnode.js') %%"></script>
+	<script type="text/javascript" src=".%% url_for('static', filename='l2_vue_feature_sidebarcluster.js') %%"></script>
+	<script type="text/javascript" src=".%% url_for('static', filename='l2_vue_text_example.js') %%"></script>
 
-	<!-- Layer1-Joint DOM-HTML-CSS -->
+	<!-- Layer1-VIEW Joint DOM-HTML-CSS -->
 	<link rel="stylesheet" type="text/css" href=".%% url_for('static', filename='style.css') %%" />
 </head>
 <!--- Joint rendering: vue-app gets rendered by vue components, - this always displays an id tag on which d3 renders-->

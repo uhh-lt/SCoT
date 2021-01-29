@@ -21,26 +21,26 @@
     }
   },
   "collections_info_frontend": {
-    "English Books": {
+    "English Google Books, 1520-2008": {
       "key": "en_books",
       "target": "bar/NN",
       "p": 50,
       "d": 20,
-      "info": "English Google Books, 1520-2008."
+      "info": "English Google Books, 1520-2008"
     },
-    "German News 70m Dep": {
+    "German Online News, 70 Million Sentences, 1995-2010 ": {
       "key": "de70",
       "target": "Krise#NN",
       "p": 50,
-      "d": 4,
-      "info": "German Online News - 70 Million Random Sentences, 1995-2010 "
+      "d": 8,
+      "info": "German Online News, 70 Million Sentences, 1995-2010 "
     },
-    "Finnish News Dep": {
+    "Finnish Online News, 14 Million Sentences, 1999-2015": {
       "key": "fi_news",
       "target": "Yksi#NUM",
       "p": 50,
-      "d": 30,
-      "info": "Various Finnish Online News - 14 Million Sentences, "
+      "d": 8,
+      "info": "Finnish Online News, 14 Million Sentences, 1999-2015"
     }
   }
 }

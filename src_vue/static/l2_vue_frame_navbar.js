@@ -62,9 +62,14 @@ Vue.component("frame-navbar", {
   </b-navbar-nav>
   <b-navbar-nav class="ml-auto">
   <!-- Save and Load Graph buttons :disabled="time_diff == 1" -->
-					<b-button class="lrmargin_button" size="sm" variant="success" v-on:click="startExample"
-						download="graph.json" href=""><em class="fas fa-upload"></em>
-						&nbsp; Example</b-button>
+  <b-button
+  size="sm"
+  class="lrmargin_button"
+  variant="success"
+  v-b-modal.modal-20
+>
+  <em class="fas fa-upload"></em>&nbsp; Example
+</b-button>
 
             <b-button
             size="sm"
@@ -104,6 +109,23 @@ Vue.component("frame-navbar", {
         >
       </b-card>
     </b-modal>
+    <b-modal id="modal-20" title="Example Graph">
+      <b-card>
+        <b-card-text> The example graph shows the senses of the noun "bar/NN".
+          It is based on the corpus English Google Books, 1520-2008, and has been calculated with the settings
+          n = 50, d = 20, ngot-interval. For further explanations of the graph, see our paper (in submission to EACL 2021): <br>
+          <a href="https://www.dropbox.com/s/fqgwatcjhweryqi/Haase_Anwar_Yimam_Friedrich_Biemann_SCoT_2021.pdf?dl=0" style="color:green; text-decoration:underline;">SCoT-Paper-2021</a>
+          <br>
+          See the help section in the left-sidebar for further help on using the graph.
+
+          
+        </b-card-text>
+        <b-button class="lrmargin_button" size="sm" variant="success" v-on:click="startExample"
+        download="graph.json" href="">Render Example-Graph bar/NN</b-button>
+        
+      </b-card>
+    </b-modal>
+
 </div>
   `,
 });

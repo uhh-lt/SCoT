@@ -1,4 +1,4 @@
-Vue.component("frame-sidebarleft", {
+Vue.component("frame-sidebargraph", {
   data: function () {
     return this.$root.$data;
   },
@@ -84,6 +84,14 @@ Vue.component("frame-sidebarleft", {
     },
   },
   methods: {
+    /**
+     Loads examples graph from example.js    
+    */
+    startExample() {
+      let data_from_db = exampleJSON;
+      vueApp.loadNew(data_from_db);
+    },
+
     onChangeDb() {
       vueApp.onChangeDb();
     },
@@ -237,6 +245,7 @@ Vue.component("frame-sidebarleft", {
 							<b-form-select v-on:change="onChangeDb" v-model="collection_name"
 								:options="collections_names" size="sm"></b-form-select>
 						</b-form-group>
+						
 						<!-- Enter an start year -->
 						<b-form-group class="input" label="Start of first interval">
 							<b-form-select v-model="start_year" :options="start_years" size="sm"></b-form-select>
@@ -245,7 +254,7 @@ Vue.component("frame-sidebarleft", {
 						<b-form-group class="input" label="End of last interval">
 							<b-form-select v-model="end_year" :options="end_years" size="sm"></b-form-select>
 						</b-form-group>
-						I = {{number_of_intervals}} {{number_of_intervals > 1 ? "intervals" : "interval"}}
+						You have selected I = {{number_of_intervals}} {{number_of_intervals > 1 ? "intervals" : "interval"}}
 						<hr style="border: 1px solid gray;" />
 						<h5>Graph over time</h5>
 						<!-- Enter target word -->
@@ -320,19 +329,35 @@ Vue.component("frame-sidebarleft", {
 				</div>
 				<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR-LEFT HELP XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
 				<div v-if="left_selected === 'graph_help'">
-					<!--<hr>-->
-					<p>
-						<a href="https://chrishaase.github.io/SCoT/" style="color:white;font-size:140%">User guide</a>
+					<hr style="border: 1px solid gray;" />
+						SCoT (Sense Clustering over Time) is a web application to view the senses of a word and their evolvement over time. 
 						<br>
-						<a href="https://github.com/chrishaase/SCoT" style="color:white;font-size:140%">Source code</a>
+						<hr style="border: 1px solid gray;" />
+						For a detailed explanation, read our paper (in submission to EACL 2021): <br>
+<a href="https://www.dropbox.com/s/fqgwatcjhweryqi/Haase_Anwar_Yimam_Friedrich_Biemann_SCoT_2021.pdf?dl=0" style="color:white; text-decoration:underline; font-size:140%">SCoT-Paper-2021</a>
+<hr style="border: 1px solid gray;" />
+You will find an introductory video here:
+<br>
+<a href="https://youtu.be/SbmfA4hKjvg"  style="color:white;text-decoration:underline;font-size:140%">Demo Video</a>
+<hr style="border: 1px solid gray;" />
+You will find the user guide here:
+					<br>
+					<p>
+						<a href="https://chrishaase.github.io/SCoT/" style="color: white;text-decoration:underline;font-size:140%">User guide</a>
+						
 					</p>
 					<hr style="border: 1px solid gray;" />
-					<h5>Corpus</h5>
-					<!-- Enter database -->
-					<div>
-						{{collection_info}}
-					</div>
+					You will find the source code here:
+					<br>
+					<a href="https://github.com/chrishaase/SCoT" style="color:white; text-decoration:underline;font-size:140%">Source code</a>
+						<hr style="border: 1px solid gray;" />
+						
+						You can click on the top-right button EXAMPLE to see a pre-analysed graph.
+						
+						<hr style="border: 1px solid gray;" />
+					
 				</div>
 			</b-sidebar>
-    `,
+			
+			`,
 });
