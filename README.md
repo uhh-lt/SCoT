@@ -9,11 +9,11 @@ This is the second version of the tool, which has been fundamentally revised fro
 Kempfert, Anwar, Yimam and Biemann. The revisions include:
 - a fully revised and new graph-model of so-called Neighbourhood Graphs over Time, including new graph-building algorithms, stemming from Haase's MA Thesis 
 - a fully new designed frontend
-- a fully revised new architecture of the application, developed by Haase, including a new MVVM-frontend-component-layering (Vue.js) and a three-layer backend (Python) (See paper)
-- the ability to include features from multiple DTs and full text search via SQL and ElasticSearch-Databases, developed by Haase, Anwar, Biemann et.al. (See paper)
+- a fully revised new architecture of the application, including a new MVVM-frontend-component-layering (Vue.js) and a three-layer backend (Python)
+- the ability to include features from multiple DTs and full text search via SQL and ElasticSearch-Databases
 - the ability to connect multiple databases,
-- various improved details in the application, including Docker-deployment details, developed in collaboration with Yimam
-- new examples related to the research on linguistic polysemies and conceptual history, developed by Biemann, Friedrich and Haase (See paper and further publications in paper)
+- various improved details in the application, including Docker-deployment details
+- new examples related to the research on linguistic polysemies and conceptual history (See paper and further publications in paper)
 
 You will find a video demonstrating the functionalities of SCoT here
 https://youtu.be/SbmfA4hKjvg
