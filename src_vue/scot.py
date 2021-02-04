@@ -1,239 +1,164 @@
-from flask import Flask, jsonify, render_template, request, Response
-from flask_cors import CORS
-
-from db import Database
-import chineseWhispers
-import urllib.parse
+import sys
 import json
+import urllib.parse
 import urllib.request
 
-DEBUG = True
-PARAMETERS = {}
+from flask import Flask, jsonify, render_template, request, Response
+from flask_cors import CORS
+from pathlib import Path
+from typing import Dict, List
+from dataclasses_json import dataclass_json
+from dataclasses import dataclass
+
+from services.cluster import chinese_whispers, manual_recluster
+from services.graphs import get_graph
+from services.info import collections_info, get_edge_info, simbim, cluster_information, documents
+from model.ngot_model import NGOT, NGOTCluster, NGOTLink, NGOTProperties, NGOTNode
+from model.ngot_mapper import map_ngot_links_2_dic, map_ngot_nodes_2_dic
+
 
 class CustomFlask(Flask):
     jinja_options = Flask.jinja_options.copy()
     jinja_options.update(dict(
-        variable_start_string='%%',  # Default is '{{', I'm changing this because Vue.js uses '{{' / '}}'
+        # Default is '{{', I'm changing this because Vue.js uses '{{' / '}}'
+        variable_start_string='%%',
         variable_end_string='%%'
     ))
 
-app = CustomFlask(__name__, 
-        static_folder= "./static")  # This replaces your existing "app = Flask(__name__)"
+
+# FLASK PARAMETERS
+DEBUG = True
+PARAMETERS = {}
+app = CustomFlask(__name__,
+                  static_folder="./static")  # This replaces your existing "app = Flask(__name__)"
 app.config.from_object(__name__)
 CORS(app)
 
-def getDbFromRequest(collection):
-	if collection != "" and collection != None:
-		return collection
-	else:
-		return "default"
-	
+
+# App REST-API Controller ---------------------
+
+# Get config
+
+
+def get_config():
+    with open('./config/config.json') as config_file:
+        return json.load(config_file)
+
 
 @app.route('/')
 def index():
-	return render_template('index.html')
+    return render_template('index.html')
 
-@app.route('/api/reclustering', methods=['POST'])
-# recluster the existing graph by running Chinese Whispers on it again
-def recluster():
-	nodes = []
-	links = []
-	if request.method == 'POST':
-		data = json.loads(request.data)
-		nodes = data["nodes"]
-		links_list = data["links"]
-		for item in links_list:
-			links.append((item["source"], item["target"], {'weight': int(item["weight"])}))
+# ENDPOINTS 1: COLLECTION INFORMATION
 
-		reclustered_graph = chineseWhispers.chinese_whispers(nodes, links)
-		return json.dumps(reclustered_graph)
 
 @app.route('/api/collections')
-def databases_info():
-	with open('config.json') as config_file:
-			config = json.load(config_file)
-	return json.dumps(config["collections_info"])
+def info():
+    return collections_info(get_config())
+
+# Endpoints 2: GET CLUSTERED GRAPH
 
 
-@app.route('/api/collections/<string:collection>/interval/<int:start>/<int:end>')
-# retrieve the time id(s) of a certain interval between a specified start and end year
-def interval(start, end, collection):
-	db = Database(getDbFromRequest(collection))
-	interval = db.get_time_ids(start, end)
-	return json.dumps(interval)
+@app.route('/api/collections/sense_graph', methods=['POST'])
+# calls main algorithms for building a clustered neighbourhood graph over time (NGOT)
+def get_clustered_graph():
+    ngot = NGOT()
+    if request.method == 'POST':
+        ngot.props = NGOTProperties.from_json(request.data)
+        # print(request.data)
+    ngot = get_graph(get_config(), ngot)
+    old_graph, ngot = chinese_whispers(ngot)
+    # delete information that was only used for the backend
+    ngot.nodes_dic = None
+    ngot.links_dic = None
+    # serialize dataclass-structure to json
+    ngot_json = ngot.to_json()
+    # print(ngot_json)
+    return ngot_json
 
 
-@app.route('/api/collections/<string:collection>/start_years')
-# retrieve all possible start years from the database
-def get_start_years(collection):
-	db = Database(getDbFromRequest(collection))
-	start_years = db.get_all_years("start_year")
-	return json.dumps(start_years)
+@app.route('/api/reclustering', methods=['POST'])
+# recluster the existing cumulated graph by running Chinese Whispers on it
+def recluster_graph():
+    # extract data
+    ngot = NGOT()
+    if request.method == 'POST':
+        ngot = NGOT.from_json(request.data)
+    # print(ngot)
+    # create links dic and nodes dic
+    ngot.nodes_dic = map_ngot_nodes_2_dic(ngot)
+    ngot.links_dic = map_ngot_links_2_dic(ngot)
+    # recluster
+    reclustered_graph, ngot = chinese_whispers(ngot)
+    # delete information that was only used for the backend
+    ngot.nodes_dic = None
+    ngot.links_dic = None
+    # serialize dataclass-structure to json
+    ngot_json = ngot.to_json()
+    return ngot_json
 
 
-@app.route('/api/collections/<string:collection>/end_years')
-# retrieve all possible end years from the database
-def get_end_years(collection):
-	db = Database(getDbFromRequest(collection))
-	end_years = db.get_all_years("end_year")
-	return json.dumps(end_years)
+@app.route('/api/manualreclustering', methods=['POST'])
+# the graph has been manually reclustered in the frontend
+# however, it needs a new mapping with new values from the be
+# the names of the clusters should be preserved (TODO)
+def manual_recluster_graph():
+    # extract data
+    ngot = NGOT()
+    if request.method == 'POST':
+        ngot = NGOT.from_json(request.data)
+    # create links dic and nodes dic
+    ngot.nodes_dic = map_ngot_nodes_2_dic(ngot)
+    ngot.links_dic = map_ngot_links_2_dic(ngot)
+    # recluster
+    reclustered_graph, ngot = manual_recluster(ngot)
+    # delete information that was only used for the backend
+    ngot.nodes_dic = None
+    ngot.links_dic = None
+    # serialize dataclass-structure to json
+    ngot_json = ngot.to_json()
+    return ngot_json
 
 
-@app.route('/api/collections/<string:collection>/sense_graph/<path:target_word>/<int:start_year>/<int:end_year>/<int:direct_neighbours>/<int:density>')
-# retrieve the clustered graph data according to the input parameters of the user and return it as json
-def get_clustered_graph(
-		collection,
-		target_word,
-		start_year,
-		end_year,
-		direct_neighbours,
-		density):
-	#target_word = str(urllib.parse.unquote(target_word))
-	target_word = str(target_word)
-	paradigms = direct_neighbours
-
-	def clusters(
-		collection, 
-		target_word,
-		start_year,
-		end_year,
-		paradigms,
-		density):
-		db = Database(getDbFromRequest(collection))
-		time_ids = db.get_time_ids(start_year, end_year)
-		nodes = db.get_nodes(target_word, paradigms, time_ids)
-		edges, nodes, singletons = db.get_edges(nodes, density, time_ids)
-		
-		return singletons, chineseWhispers.chinese_whispers(nodes, edges)
-	
-	singletons, clustered_graph = clusters(collection, target_word, start_year, end_year, paradigms, density)
-	c_graph = json.dumps([clustered_graph, {'target_word': target_word}, {'singletons': singletons}], sort_keys=False, indent=4)
-	
-	return c_graph
-
-def get_edge_info_online(collection, word1, word2, time_id):
-	# this function is for development purposes only
-	# it gets the feature vectors (ie bims with sig values)
-	# from the jobim-api
-	word1part1  = word1.split("/")[0]
-	word1part2 = word1.split("/")[1]
-	word2part1 = word2.split("/")[0]
-	word2part2 = word2.split("/")[1]
-	url1 = "http://ltmaggie.informatik.uni-hamburg.de/jobimviz/ws/api/google/jo/bim/score/" + word1part1 + "%23" + word1part2 + "?format=json"
-	url2 = "http://ltmaggie.informatik.uni-hamburg.de/jobimviz/ws/api/google/jo/bim/score/"+ word2part1 + "%23" + word2part2 + "?format=json"
-	#print(url1)
-	
-	with urllib.request.urlopen(url1) as url:
-		data1 = json.loads(url.read().decode())
-		#print(data1)
-	with urllib.request.urlopen(url2) as url:
-		data2 = json.loads(url.read().decode())
-	results1 = data1["results"]
-	results2 = data2["results"]
-	# put results into dictionaries and set
-	res1_dic = {}
-	res2_dic = {}
-	for result in results1:
-		res1_dic[result["key"]] = result["score"]
-	for result in results2:
-		res2_dic[result["key"]] = result["score"]
-	res_set = set(res1_dic.keys()).intersection(set(res1_dic.keys()))
-	
-	#print(res_set)
-	# determine maxima
-	res1_dic = {k: v for k, v in sorted(res1_dic.items(), reverse = True, key=lambda item: item[1])}
-	res2_dic = {k: v for k, v in sorted(res2_dic.items(), reverse = True, key=lambda item: item[1])}
-	max1 = list(res1_dic.values())[0]
-	max2 = list(res2_dic.values())[0]
-	return res1_dic, res2_dic, res_set, max1, max2
-
-def get_edge_info(collection, word1, word2, time_id):
-	# get feature info from database
-	# db returns dictionary {"feature": score}
-	db = Database(getDbFromRequest(collection))
-	res1_dic = db.get_features(word1, time_id)
-	res2_dic = db.get_features(word2, time_id)
-	
-	if len(res1_dic) > 0 and len(res2_dic) > 0:
-		
-		# put results into intersection-set of res1 and res2
-		res_set = set(res1_dic.keys()).intersection(set(res1_dic.keys()))
-		
-		#print(res_set)
-		# determine maxima (sets are ordered by db in desc - thus first is the maximum)
-		max1 = list(res1_dic.values())[0]
-		max2 = list(res2_dic.values())[0]
-		return res1_dic, res2_dic, res_set, max1, max2
-	
-	else:
-		return {},{}, set(),0,0
+# ENDPOINTS3: ADDITIONAL INFORMATION ---------------------------------------------------
 
 
-@app.route('/api/collections/<string:collection>/<int:time_id>/<path:word1>/simbim/<path:word2>')
-def getSimBims(collection="default", word1='liberty/NN', word2='independence/NN', time_id=0):
-# template method for new data-pipeline
-	# setting for test-database - comment out for deployment
-	# word1 = "test/NN"
-	# word2= "test/NN"
-	# time_id = 1
-	print(word1, " ",  word2)
-	res1_dic, res2_dic, res_set, max1, max2 = get_edge_info(collection, word1, word2, time_id)
-	
-	if res1_dic == {} or res2_dic == {}:
-		return {"error":"zero values"}
-	else:
-		# calc return dictionary and normalize values
-		# form dic = {"1": {"score": 34, "key": "wort", "score2": 34}, "2": ...}
-		return_dic = {}
-		index_count = 0
-		for key in res_set:
-			return_dic[str(index_count)] = {"score": res1_dic[key]/max1, "key" : key, "score2": res2_dic[key]/max2 }
-			index_count += 1
-	
-		return_dic["error"] = "none"
-		#print("anzahl same words", len(return_dic)-1)
-		return return_dic
+@app.route('/api/collections/<string:collection>/simbim', methods=['POST'])
+# get information why a certain edge exists - (An edge symbolises SIM ilarity)
+# this requires information on shared syntagmatic contexts which are also called BIMs in JoBim-parlance
+# Thus the method is called simbim
+def simbim_get(collection="default"):
+    if request.method == 'POST':
+        data = json.loads(request.data)
+        word1 = str(data["word1"])
+        word2 = str(data["word2"])
+        time_id = int(data["time_id"])
+
+    return simbim(get_config(), collection, data, word1, word2, time_id)
+
 
 @app.route('/api/cluster_information', methods=['POST'])
-# get_cluster_information on shared contexts of all nodes
-# experimental - not yet implemented
-# aktuelles problem geringer overlap bei einigen clustern - wirkliches ergebnis oder datenfehler?
-def cluster_information():
-	
-	edges = []
-	if request.method == 'POST':
-		data = json.loads(request.data)
-		for edge in data["edges"]:
-			edges.append(edge)
-	
-	edge_arr = []
-	setList = []
-	for edge in edges:
-		res1_dic, res2_dic, res_set, max1, max2 = get_edge_info(data["collection"], edge["source"], edge["target"], edge["time_id"])
-		edge_arr.append({"res1": res1_dic, "res2": res2_dic, "res_set": res_set, "max1": max1, "max2": max2})
-		setList.append(res_set)
-	
-	superset = edge_arr[0]["res_set"]
-	print("anzal sets", len(setList))
-	index = 0
-	for seti in setList:
-		supersetTmp = set()
-		supersetTmp = superset.intersection(seti)
-		if len(supersetTmp) > 10:
-			superset = supersetTmp
-			print("good mit overlap", edges[index])
-		else:
-			print("killer ohne overlap", edges[index] )
-		index+=1
-	print("laenge intersection", len(superset))
-	print(superset)
-	
+# get_cluster_information based on nodes [ie significance of context word for node] -
+def cluster_information_get():
+    if request.method == 'POST':
+        data = json.loads(request.data)
 
-	return {}
+    return cluster_information(get_config(), data)
+
+
+@app.route('/api/collections/<string:collection>/documents', methods=['POST'])
+# get example sentences
+def documents_get(collection="default"):
+    if request.method == 'POST':
+        data = json.loads(request.data)
+
+    return documents(collection, data)
 
 
 if __name__ == '__main__':
-	# use the config file to get host and database parameters
-	with open('config.json') as config_file:
-		config = json.load(config_file)
-	app.run(host=config['host'])
+    # init packaging system parent
+    # this is not permanent (this is why we do it again and again ...)
+    sys.path.append(str(Path(__file__).parent.absolute()))
+    # use the config file to get host and database parameters
+    config = get_config()
+    app.run(host=config['flask_host'])

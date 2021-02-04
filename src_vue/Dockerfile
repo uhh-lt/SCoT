@@ -1,8 +1,8 @@
 # Use an official Python runtime as a parent image
-# FROM python:3.7
+# FROM python:3.8
 
-# Use uwsgi-nginx-flask-python3.7 as parent image
-FROM tiangolo/uwsgi-nginx-flask:python3.7
+# Use uwsgi-nginx-flask-python3.8 as parent image
+FROM tiangolo/uwsgi-nginx-flask:python3.8
 
 # Set the working directory to
 WORKDIR /app
