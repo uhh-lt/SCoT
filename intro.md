@@ -2,31 +2,30 @@
 
 [Back to user guide contents list](userGuide.md)
 
-You can find SCoT at <http://ltdemos.informatik.uni-hamburg.de/scot/>.
 
-SCoT was developed in the context of digital humanities to support a digital history of concepts. The aim is to provide a means to help linguists, philosophers and others interested in diachronic semantics to visualize the different senses of a word over time.
 
-![A clustered graph](./images/graph_for_intro.png "Clustered graph for target word 'happiness/NN', 100 nodes, 30 edges per node, 1520-2008" ){:height="75%" width="75%"}
+SCoT is a scholarly software for the graph-based analysis of distributional semantics over time. There are many use cases. SCoT has been utilized, for example, to unearth the changing meaning of "network" from the medieval ages to the digital era. [Friedrich, Biemann 2016]
 
-The main idea is that users enter a word they are interested in and the different senses of the queried word are displayed in a clustered graph of its paradigms for a selected time interval. Paradigms are words that appear in contexts similar to the contexts of the queried target word. The clusters are visualized via the node colours. An edge is drawn between two nodes if they are paradigms, weighted by their respective context similarity. The clusters are calculated using the Chinese Whispers algorithm and should be understood as only a first automatic hypothesis. The user can edit and correct clusters in different ways. The clustering algorithm is non-deterministic, which means that the system may provide different clusterings for the same graph if the algorithm is executed again.
+![A clustered graph](./images/00appwithgraph.jpg "Clustered graph for target word 'happiness/NN', 100 nodes, 30 edges per node, 1520-2008" )
 
-<!-- Delete notes after indexing of Gbooks is done -->
-**Note**: SCoT currently runs on a reduced database of Google Books ranging from 1520 to 2008. The data is split into eight time slices. This means that no exact years or time periods other than these time slices can be queried.
+The user starts the programm by selecting a precalculated corpus [1] and a target-word [2]. The metrics have been precalculated by the Language Technology Group with the help of the JoBim-Framework [and in the case of Google Books by Google]. The main task of SCoT is to analyse these metrics with a clustered graph[8]. The user can control the size and density of the graph with two parameters, the maximum number of (most) similar words to the main target-word [3] and the density of the interrelations. [4] 
 
-**Note:** Since currently I am working with a reduced database, there are only a limited number of target words available. 
-These include:
-"crisis/NN", "freedom/NN", "happiness/NN", "legitimate/JJ", "revolution/NN", "life/NN", "public/NN", "diversity/NN", "theory/NN", "history/NN", "scandal/NN", "experience/NN", "bank/NN", "sausage/NN", "hate/NN", "elephant/NN", "number/NN", "chain/NN"
+Scot then chooses the most similar words across all time-slices. The key to the analysis is the global threshold of paradigms [nodes] and their interrelations [edges] that is set by the user. This global limit determines which nodes are considered "born" or "dying" across the selected time-slices [5,6]. Each corpus comes with a pre-set of the parameters but it is highly recommended to try out various parameters to get a "feel" for their effect. The graph is created by clicking "Render Graph" [7]. 
+ 
+![The general structure](./images/01workspace_arrow_start.jpg "The general structure of the user interface" )
 
-## General Structure
-![The general structure](./images/updated_general_structure.svg "The general structure of the user interface" )
 The picture above shows the general structure of the web page after a graph was rendered for the query "happiness/NN".
+The resulting graph displays the maximum-values across time-slices. The time-slices can be gathered from the tool-tips of the nodes [4] and edges [5] and can also be visualized in various ways in the time-diff mode. After the initial graph has been calculated by SCoT, the user can edit and correct clusters in different ways. Most of these functions are available via the three main ways of interacting with the application:
 
-At the top, the user finds a navigation bar with different functions. Here the user can save a graph to a local JSON file and upload a previously saved graph again. The user can also view different centrality measures for the graph - one using betweenness centrality, the other highlighting nodes that are connected to more than one cluster in a balanced fashion ("hubs"). Moreover, there is search field available for looking up specific nodes in the graph. In addition, the graph can be reclustered via a navbar function. Should the user have zoomed into the graph, the zoom can be reset via the navbar. The sidebar with editing options for the graph can be toggled via a button in the navbar. [More info on the functions of the navbar](navbar.md).
-
-At the left side, the user finds the options sidebar. The input fields for the graph parameters are located here, as well as the general settings and a function to change the amount of nodes and edges in the graph after it has been rendered. [More info on the options sidebar](renderingGraph.md)
-
-To the right side the graph can be edited via the options in the togglable sidebar. The sidebar can be opened and closed via a button in the navbar. [More info on the editing options](clusters.md)
-
-In the center of the page, the word sense graph is displayed. The user can interact with the graph in different ways.
-
-**Note:** Most of the manipulation functionalities are only available in the sense clustering mode. The buttons to edit the graph are only faded in, if a graph is rendered.
+ [1] The Start-Button slides out the Graph-Menu on the left which enables the shaping of the graph and the editing of the view settings that shape the display of the graph.  
+ [More info on the settings sidebar](renderingGraph.md)  
+ 
+ [2] The Analysis Button - brings up the cluster analysis section with the time-diff mode on the right-hand side.  
+ [More info on the analysis options](clusters.md)  
+ [More info on the time-diff mode](timeDiff.md)
+ 
+ [3] The nodes and edges of the graph provide tooltips, can be dragged, rearranged, deleted and can be clicked for contextual information.  
+ [More info on the interaction with the graph](interacting.md)  
+ [More info on the contextual mode](context.md)
+ 
+ 

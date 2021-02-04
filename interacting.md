@@ -1,17 +1,17 @@
-# Interacting with the Graph
+# Interacting with the Graph-Nodes and Edges
 
 [Back to user guide contents list](userGuide.md)
 
-This section describes how the user can manipulate the graph directly.
+This section describes how the user can manipulate the graph directly and interact with nodes and edges.
 
 ## Contents
 
 * [Hover over Nodes](#hover-over-nodes)
 * [Dragging Nodes](#dragging-nodes)
 * [The Node Options Menu](#the-node-options-menu)
-	* [Assigning a Node to a Different Cluster](#asigning-a-node-to-a-different-cluster)
-	* [Creating a New Cluster for a Node](#creating-a-new-cluster-for-a-node)
-	* [Deleting a Node](#deleting-a-node)
+* [Assigning a Node to a Different Cluster](#asigning-a-node-to-a-different-cluster)
+* [Creating a New Cluster for a Node](#creating-a-new-cluster-for-a-node)
+* [Deleting a Node](#deleting-a-node)
 
 
 ## Hover over Nodes

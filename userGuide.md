@@ -3,8 +3,8 @@
 [Back](index.md)
 
 1. [Introduction](intro.md)
-2. [The Functions in the Navbar](navbar.md)
-3. [Rendering a Graph](renderingGraph.md)
-4. [Interacting With a Graph](interacting.md)
-5. [Editing of Clusters](clusters.md)
-6. [View Difference Over Time (Time Diff)](timeDiff.md)
+2. [Graph-Rendering](renderingGraph.md)
+3. [Graph-Interaction: Nodes and Edges](interacting.md)
+4. [Cluster-Analysis](clusters.md)
+5. [Time-Slice-Analysis](timeDiff.md)
+6. [NEW Context-Mining](context.md)
