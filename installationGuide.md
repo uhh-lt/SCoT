@@ -8,7 +8,10 @@ Just clone the repository from GitHub.
 ```
 $ git clone git@github.com:uhh-lt/SCoT.git
 ```
-
+In the SCoT/src_vue directory type
+```
+$ docker build -t uhhlt/scot .
+```
 In the SCoT/ directory type
 ```
 $ docker-compose up
