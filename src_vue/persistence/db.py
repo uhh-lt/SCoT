@@ -8,23 +8,18 @@ from model.ngot_model import NGOTLink, NGOTNode, NGOT
 from model.ngot_mapper import map_nodes_dic_2_ngot, map_edges_dic_2_ngot
 import time
 
-def get_db(config, collection):
-    if collection != "" and collection != None and collection in config["collections_info_backend"]:
-        return collection
-    else:
-        return "default"
+def get_url(config, collection):
+    # if collection != "" and collection != None and collection in config["collections_info_backend"]:
+    #     return collection
+    # else:
+    #     return "default"
+    return config["collections"][collection]["url"]
 
 class Database():
-    def __init__(self, config, collection, echo=False) -> None:
+    def __init__(self, key, url, echo=False) -> None:
+        # print(f"{key} --> {url}")
         self.db = records.Database(
-            config["collections_info_backend"][collection], echo=echo)
-
-        # if collection in [*config["collections_info_backend"]]:
-        #     self.db = records.Database(
-        #         config["collections_info_backend"][collection], echo=echo)
-        # else:
-        #     self.db = records.Database(
-        #         config["collections_info_backend"]['default'], echo=echo)
+            url, echo=echo)
 
     # --- COLLECTION INFORMATION
 
@@ -126,8 +121,8 @@ class Database():
         ti = int(interval_time_id)
         tw = str(ngot.props.target_word)
         # -------------------------------------------------------------CASE_SENSITIVE? No
-        query = f"""SELECT word2, time_id, score FROM similar_words 
-                    WHERE word1='{tw}' AND word1!=word2 AND time_id={ti} 
+        query = f"""SELECT word2, time_id, score FROM similar_words
+                    WHERE word1='{tw}' AND word1!=word2 AND time_id={ti}
                     ORDER BY score DESC
                     LIMIT {li}
                 """
@@ -181,7 +176,7 @@ class Database():
         # STATIC EDGES over all time-ids ##############################################
         # -------------------------------------------------------------CASE_SENSITIVE?
         query = f"""SELECT word1, word2, score, time_id
-                    FROM similar_words 
+                    FROM similar_words
                     WHERE word1 IN {tuple(node_list)} AND word2 IN {tuple(node_list)} AND time_id IN {tuple(time_ids)}
                     ORDER BY score DESC
                 """
@@ -296,7 +291,6 @@ class Database():
                     WHERE word1='{str(ngot.props.target_word)}' AND word1!=word2
                     ORDER BY score DESC
         """
-
         raw_links = self.db.query(query)
 
         time_dic = {}
@@ -373,7 +367,7 @@ class Database():
         # -------------------------------------------------------------CASE_SENSITIVE?
         # QUERY ALL DIRECTED EDGES THAT FULFIL BASIC CRITERIA (WORD1, WORD2, in Selected Time-ids) in ALL SELECTED TIME-IDS
         query = f"""SELECT word1, word2, score, time_id
-                    FROM similar_words 
+                    FROM similar_words
                     WHERE word1 IN {tuple(node_list)} AND word2 IN {tuple(node_list)} AND time_id IN {tuple(time_ids)}
                     ORDER BY score DESC
         """
@@ -512,7 +506,7 @@ class Database():
         # -------------------------------------------------------------CASE_SENSITIVE?
         # STATIC EDGES over all time-ids ##############################################
         query = f"""SELECT word1, word2, score, time_id
-                    FROM similar_words 
+                    FROM similar_words
                     WHERE word1 IN {tuple(node_list)} AND word2 IN {tuple(node_list)} AND time_id IN {tuple(time_ids)}
                     ORDER BY score DESC
         """
@@ -661,8 +655,8 @@ class Database():
     # -------------------------------------------------------------CASE_SENSITIVE?
     def get_features(self, word1: str, time_id: int) -> Dict[str, float]:
         features: Dict[str, float] = {}
-        query = f"""SELECT feature, score, time_id FROM word_features 
-                    WHERE word1='{word1}' and time_id={time_id} 
+        query = f"""SELECT feature, score, time_id FROM word_features
+                    WHERE word1='{word1}' and time_id={time_id}
                     ORDER by score DESC
                 """
         f = self.db.query(query)
@@ -680,8 +674,8 @@ class Database():
     def get_feature_target_filter_set(self, word1: str, time_ids: List[int]) -> Set[str]:
         # -------------------------------------------------------------CASE_SENSITIVE?
         time_ids = tuple(time_ids)
-        query = f"""SELECT feature FROM word_features 
-                    WHERE word1='{word1}' and time_id IN {time_ids} 
+        query = f"""SELECT feature FROM word_features
+                    WHERE word1='{word1}' and time_id IN {time_ids}
                     ORDER by score DESC
                 """
         f = self.db.query(query)
@@ -724,7 +718,7 @@ class Database():
         for node in nodes:
             node_list.append(node[0])
         # -------------------------------------------------------------CASE_SENSITIVE?
-        query = f"""SELECT word1, word2, score, time_id 
+        query = f"""SELECT word1, word2, score, time_id
                     FROM similar_words
                     WHERE word1 IN {node_list} AND word2 IN {node_list}
                     ORDER by score DESC
@@ -789,4 +783,111 @@ class Database():
         print("--------- end edges ------------- ngot fixed ")
 
         print("max across slices filters out overlay edges!!! -> count of dir edges = overlayd directed edges")
+        return ngot
+
+    def get_word_counts(self, ngot):
+
+        ngot_nodes = ngot.nodes
+        ngot_nlinks = ngot.links
+        target_word = ngot.props.target_word
+        node_list = [target_word] # add target words to extract its word counts as well
+        for node in ngot_nodes:
+            node_list.append(node.id)
+        nodes_dic = {node:{'time_ids':[], 'counts':[]} for node in node_list}
+        query = f"""SELECT word1, freq, ppm, time_id FROM word_counts
+                    WHERE word1 IN {tuple(node_list)}
+                """
+        result = self.db.query(query)
+        for row in result:
+            word1 = str(row['word1'])
+            count = int(row['freq'])
+            ppm = round(float(row['ppm']), 3)
+            time_id = int(row['time_id'])
+            nodes_dic[word1]['time_ids'].append(time_id)
+            nodes_dic[word1]['counts'].append((count,ppm))
+
+        query = f"SELECT * FROM time_slices ORDER BY id ASC"
+        all_time_ids = []
+
+        t = self.db.query(query)
+        for row in t:
+            all_time_ids.append(int(row['id']))
+
+        # sort according to time ids and fill for missing ids
+        for node, data in nodes_dic.items():
+            time_ids, counts = data['time_ids'], data['counts']
+            if len(time_ids) != len(all_time_ids):
+                for t in all_time_ids:
+                    if not t in time_ids: # missing
+                        time_ids.append(t)
+                        counts.append('null')
+
+            time_ids, counts = map(list, zip(*sorted(zip(data['time_ids'], data['counts']), reverse=False)))
+            nodes_dic[node] = {"time_ids": time_ids,
+                               "counts": counts}
+
+            nodes_dic[node] = {"time_ids": time_ids,
+                               "counts": counts}
+        for node in ngot_nodes:
+            # indices = [nodes_dic[node.id]['time_ids'].index(tid) for tid in node.time_ids]
+            # counts = [nodes_dic[node.id]['counts'][idx] for idx in indices]
+            node.counts = nodes_dic[node.id]['counts']
+            node.counts_time_ids = nodes_dic[node.id]['time_ids']
+
+        for link in ngot_nlinks:
+            # indices = [nodes_dic[link.source]['time_ids'].index(tid) for tid in link.time_ids]
+            # counts = [nodes_dic[link.source]['counts'][idx] for idx in indices]
+
+            link.source_counts = nodes_dic[link.source]['counts']
+            link.source_counts_time_ids = nodes_dic[link.source]['time_ids']
+
+            # indices = [nodes_dic[link.target]['time_ids'].index(tid) for tid in link.time_ids]
+            # counts = [nodes_dic[link.target]['counts'][idx] for idx in indices]
+            link.target_counts = nodes_dic[link.target]['counts']
+            link.target_counts_time_ids = nodes_dic[link.target]['time_ids']
+
+        # indices = [nodes_dic[target_word]['time_ids'].index(tid) for tid in ngot.props.selected_time_ids]
+        # counts = [nodes_dic[target_word]['counts'][idx] for idx in indices]
+
+        ngot.props.counts = nodes_dic[target_word]['counts']
+        ngot.props.counts_time_ids = nodes_dic[target_word]['time_ids']
+
+        return ngot
+
+    def get_wordfeature_counts(self, word1: str, feature:str) -> Dict[int, int]:
+        feature_scores: Dict[str, float] = {}
+        query = f"""SELECT freq, score, time_id FROM word_features
+                    WHERE word1='{word1}' and feature='{feature}'
+                    ORDER by time_id ASC
+                """
+        f = self.db.query(query)
+        for row in f:
+            feature_scores[int(row['time_id'])] = int(row['freq'])
+        #     print("--------------------------------------")
+
+        return feature_scores
+
+    def get_words(self, ngot, substr: str,) -> Dict[int, int]:
+        time_ids = ngot.props.selected_time_ids;
+        word_list = []
+        query = f"""SELECT word1 FROM similar_words
+                    WHERE time_id in {time_ids}
+                """
+        f = self.db.query(query)
+        for row in f:
+            word_list.append(str(row['word1']))
+        #     print("--------------------------------------")
+
+        return word_list
+
+    def get_node_stats(self, ngot):
+
+        ngot_nodes = ngot.nodes
+        selected_time_ids = ngot.props.selected_time_ids
+        for node in ngot_nodes:
+            all_scores = node.weights
+            node.weight_max = max(all_scores)
+            node.weight_average = sum(node.weights) // len(all_scores)
+            node.weight_average_all = sum(node.weights) // len(selected_time_ids)
+
         return ngot

@@ -3,7 +3,10 @@ let vueApp = new Vue({
   template: `
   <div class="parentdiv">
   <b-overlay :show="overlay_main" rounded="sm" spinner-type="border" spinner-variant="dark">
-  <div id="graph2" class="svg-container" ></div>
+  <div id="graph2" class="svg-container" style="text-align:right;">
+      <small style="font-size: 10px; font-color:red">
+      SVG and PNG functions are tested for Chrome only.
+      </small></div>
   </b-overlay>
   <frame-navbar></frame-navbar>
   <frame-sidebargraph></frame-sidebargraph>
@@ -243,19 +246,53 @@ let vueApp = new Vue({
         }
         return {'time_ids':ids2, 'weights':weights2};
     },
+
+    sort_timewise2(time_ids, counts1, counts2)
+    {
+        let data = []
+        for(let index = 0; index<time_ids.length; index++){
+            data.push({'id':time_ids[index],
+                              'count1':counts1[index],
+                              'count2':counts2[index]})
+        }
+        data.sort((a,b) => a.id - b.id)
+        let ids2 = []
+        let counts11 = []
+        let counts21 = []
+
+        for(let index = 0; index<time_ids.length; index++){
+            ids2.push(data[index].id)
+            counts11.push(data[index].count1)
+            counts21.push(data[index].count2)
+        }
+        return {'time_ids':ids2, 'counts1':counts11, 'counts2':counts21};
+    },
+
     time_id_text(time_id){
         let start = this.start_years[time_id-1].text;
         let end = this.end_years[time_id-1].text;
         return start + "-" + end
     },
+
     show_similarity_plot(div_id, source='node'){
-        console.log("vueapp.plot_similarity");
-//        console.log(vueData.active_component.source_text, vueData.active_component.target_text);
+
+        console.log("vueapp.plot_similarity for dtype:", source);
+
+        width=400; height = 250; fst=12; fsa=12; fsl=10; fs=8;
+        if (div_id === "line_plot2"){ // reset for modal window
+            console.log(div_id)
+            height=null
+            width=null
+            fst = 18 //title
+            fsa = 15 //axis
+            fsl = 12 //legend
+            fs = 12 //rest
+        }
+
         node1_text= this.active_component.source_text;
         node2_text= this.active_component.target_text;
         time_ids = [...this.active_component.time_ids]; //shallow copy
         weights = [...this.active_component.weights];
-
         weight_stats = graph.props.weight_stats;
 //        check if time_id of min and max score is not present in selected node time_ids
         if(source == 'node'){
@@ -271,13 +308,13 @@ let vueApp = new Vue({
         line_data = vueApp.sort_timewise(time_ids, weights)
         line_data['time_slices'] = line_data['time_ids'].map(vueApp.time_id_text)
 
-
         sim_graph = {
         x: line_data.time_slices,
         y: line_data.weights,
-        name: 'scores over time',
+        name: node2_text,//'score',
         mode: 'lines+markers',
         connectgaps: true,
+        marker: { color: 'rgba(0, 115, 230, 0.9)', size: 8 }
         };
         min_score = {
         x: [vueApp.time_id_text(weight_stats.min_score[1])],
@@ -285,9 +322,10 @@ let vueApp = new Vue({
         name: 'minimum',
         mode: 'markers+text',
         type: 'scatter',
+
         text: [weight_stats.min_score[2]],
         textposition: 'top center',
-        marker: { size: 8 }
+        marker: { color: 'rgba(255, 191, 0,0.75)', symbol:'cross', size: 8 }
         };
         max_score = {
         x: [vueApp.time_id_text(weight_stats.max_score[1])],
@@ -295,9 +333,10 @@ let vueApp = new Vue({
         name: 'maximum',
         mode: 'markers+text',
         type: 'scatter',
+
         text: [weight_stats.max_score[2]],
-        textposition: 'top center',
-        marker: { size: 8 }
+        textposition: 'bottom center',
+        marker: { color: 'rgba(0, 138, 0,0.75)', symbol:'cross', size: 8 }
         };
 
         let data = [sim_graph, min_score, max_score];
@@ -322,44 +361,296 @@ let vueApp = new Vue({
               }
         };
         let layout = {
-            title: 'similarity of ' + node1_text + ' with ' + node2_text,
-            // autosize: true,
-//            width: 500,
-//            height: 400,
-            font: {size: 10},
-            showlegend: true,
 
+            title:{
+                text: 'Similarity over Time of ' + node1_text + ' with ' + node2_text,
+                font: {size:fst},
+            },
+            font:{size:fs},
+            autosize: true,
+//            width: width,
+            height: height,
+            margin: {
+              l: 50,
+              r: 50,
+              b: 50,
+              t: 50,
+              pad: 2},
+
+            showlegend: true,
             legend: {
                 "orientation": "v",
                 x: 1.05,
                 y: 1,
-                font: {size: 8},
+                font: {size: fsl},
             },
             xaxis: {
-                title: 'time slots',
+                title: {
+                        text: 'time slots',
+                        font: {
+                                size: fsa,
+                                }
+                },
                 automargin: true,
                 showline: true,
-                font: {
-                        size: 10,
-                      }
               },
               yaxis: {
-                title: 'scores',
+                title: {
+                        text: 'score',
+                        font: {
+                                size: fsa,
+                                }
+                },
                 automargin: true,
                 showline: true,
-//                tick0: 0,
-//                dtick: 50,
-                font: {
-                        size: 10,
-                      }
               },
         };
+
         Plotly.newPlot(div_id, data, layout, config);
     },
-//    hide_similarity_plot(){
-//     this.show_sim_plot = false;
-//     console.log(this.show_sim_plot)
-//    },
+
+    show_nodefrequency_plot(div_id, source='node'){
+
+        console.log("vueapp.plot_frequency for dtype:", source);
+
+        width=400; height = 275; fst=12; fsa=12; fsl=10; fs=8;
+        if (div_id === "line_plot4"){ // reset for modal window
+            console.log(div_id)
+            height=null
+            width=null
+            fst = 18 //title
+            fsa = 15 //axis
+            fsl = 12 //legend
+            fs = 12 //rest
+        }
+        node1_text = this.active_component.source_text;
+        node2_text = this.active_component.target_text;
+        let time_ids1, time_ids2;
+        let counts1, counts2;
+        if (source == 'node'){
+          counts1 = graph.props.counts;
+          counts2 = [...this.active_component.counts];
+          time_ids1 = graph.props.counts_time_ids;
+        }
+        else{
+//        console.log(this.active_component)
+          counts1 = [...this.active_component.source_counts];
+          counts2 = [...this.active_component.target_counts];
+          time_ids1 = graph.props.counts_time_ids;
+//          time_ids1 = [...this.active_component.source_counts_time_ids];
+//          time_ids2 = [...this.active_component.target_counts_time_ids];
+        }
+        time_ids = time_ids1 //assuming time_ids1 and 2 are same
+        line_data = {'time_ids':time_ids, 'counts1':counts1, 'counts2':counts2};
+        line_data['time_slices'] = line_data['time_ids'].map(vueApp.time_id_text)
+
+        count_graph1 = {
+        x: line_data.time_slices,
+        y: line_data.counts1.map(i => i[1]),
+        text: line_data.counts1.map(i => 'raw freq:' + i[0]),
+        name: node1_text,
+        mode: 'lines+markers',
+        connectgaps: false,
+        marker: { color: 'rgba(0, 115, 230,0.9)', size: 8 }
+        };
+        count_graph2 = {
+        x: line_data.time_slices,
+        y: line_data.counts2.map(i => i[1]),
+        text: line_data.counts2.map(i => 'raw freq:' + i[0]),
+        name: node2_text,
+        mode: 'lines+markers',
+        connectgaps: false,
+        marker: { color: 'rgba(255, 191, 0,0.75)', size: 8 }
+        };
+
+        let data = [count_graph1, count_graph2];
+
+        let config = {
+            responsive: true,
+            scrollZoom: true,
+            displaylogo: false,
+            modeBarButtonsToRemove: ['pan2d','select2d','lasso2d','autoScale2d','zoom2d'],
+            toImageButtonOptions: {
+                format: 'svg', // one of png, svg, jpeg, webp
+                filename: vueApp.collection_name + '--'+
+                node1_text + '_frequency-over-time_with_' +
+                node2_text +
+                "_" + graph.props.start_year + "_" + graph.props.end_year,
+                height: 500,
+                width: 700,
+                scale: 1.5 // Multiply title/legend/axis/canvas sizes by this factor
+              }
+        };
+        let layout = {
+            title:{
+                text: 'Node Frequency over Time',//of ' + node1_text + ' and ' + node2_text,
+                font: {size:fst},
+            },
+            font:{size:fs},
+            autosize: true,
+//            width: width,
+            height: height,
+            margin: {
+              l: 50,
+              r: 50,
+              b: 50,
+              t: 50,
+              pad: 2},
+
+            showlegend: true,
+            legend: {
+                "orientation": "v",
+                x: 1.05,
+                y: 1,
+                font: {size: fsl},
+            },
+            xaxis: {
+                title: {
+                        text: 'time slots',
+                        font: {
+                                size: fsa,
+                                }
+                },
+                automargin: true,
+                showline: true,
+
+              },
+              yaxis: {
+                title: {
+                        text: 'frequency as ppm (log-scaled)',
+                        font: {
+                                size: fsa,
+                                }
+                },
+                type: 'log',
+                automargin: true,
+                showline: true,
+                zeroline: true, //not effective with log-scale
+
+              },
+        };
+
+        Plotly.newPlot(div_id, data, layout, config);
+
+    },
+
+    show_nodecontextfrequency_plot(div_id){
+
+        console.log("vueapp.plot_wordfeature_frequency");
+
+        width=400; height = 275; fst=12; fsa=12; fsl=10; fs=8;
+        if (div_id === "line_plot6"){ // reset for modal window
+            height=null
+            width=null
+            fst = 18 //title
+            fsa = 15 //axis
+            fsl = 12 //legend
+            fs = 12 //rest
+        }
+        counts_data = this.jobim_counts
+
+        node1_text = this.active_component.source_text;
+        node2_text = this.active_component.target_text;
+        feature = this.selected_bim;
+
+        let time_ids1 = counts_data[node1_text]['time_ids']
+        let time_ids2 = counts_data[node2_text]['time_ids']
+        let counts1 = counts_data[node1_text]['counts']
+        let counts2 = counts_data[node2_text]['counts']
+
+        time_ids = time_ids1 //assuming time_ids1 and 2 are same
+        line_data = {'time_ids':time_ids, 'counts1':counts1, 'counts2':counts2};
+        line_data['time_slices'] = line_data['time_ids'].map(vueApp.time_id_text)
+
+        count_graph1 = {
+        x: line_data.time_slices,
+        y: line_data.counts1,
+//        text: line_data.counts1.map(i => 'raw freq:' + i[0]),
+        name: node1_text,
+        mode: 'lines+markers',
+        connectgaps: false,
+        marker: { color: 'rgba(0, 115, 230,0.9)', size: 8 }
+        };
+        count_graph2 = {
+        x: line_data.time_slices,
+        y: line_data.counts2,
+//        text: line_data.counts2.map(i => 'raw freq:' + i[0]),
+        name: node2_text,
+        mode: 'lines+markers',
+        connectgaps: false,
+        marker: { color: 'rgba(255, 191, 0,0.75)', size: 8 }
+        };
+
+        let data = [count_graph1, count_graph2];
+
+        let config = {
+            responsive: true,
+            scrollZoom: true,
+            displaylogo: false,
+            modeBarButtonsToRemove: ['pan2d','select2d','lasso2d','autoScale2d','zoom2d'],
+            toImageButtonOptions: {
+                format: 'svg', // one of png, svg, jpeg, webp
+                filename: vueApp.collection_name + '--'+
+                node1_text  +'_'+ node2_text +'_'+  feature + '_nodecontextfrequency-over-time_with_' +
+                "_" + graph.props.start_year + "_" + graph.props.end_year,
+                height: 500,
+                width: 700,
+                scale: 1.5 // Multiply title/legend/axis/canvas sizes by this factor
+              }
+        };
+        let layout = {
+            title:{
+                text: 'Node-Context Frequency over Time for ' + feature,// + 'with' + node1_text + ' and ' + node2_text,
+                font: {size:fst},
+            },
+            font:{size:fs},
+            autosize: true,
+//            width: width,
+            height: height,
+            margin: {
+              l: 50,
+              r: 50,
+              b: 50,
+              t: 50,
+              pad: 2},
+
+            showlegend: true,
+            legend: {
+                "orientation": "v",
+                x: 1.05,
+                y: 1,
+                font: {size: fsl},
+            },
+            xaxis: {
+                title: {
+                        text: 'time slots',
+                        font: {
+                                size: fsa,
+                                }
+                },
+                automargin: true,
+                showline: true,
+
+              },
+              yaxis: {
+                title: {
+                        text: 'frequency (log-scaled)',
+                        font: {
+                                size: fsa,
+                                }
+                },
+                type: 'log',
+                automargin: true,
+                showline: true,
+                zeroline: true, //not effective with log-scale
+
+              },
+        };
+
+        Plotly.newPlot(div_id, data, layout, config);
+
+    },
+
     // check the dictionary to see if nodes are linked
     isConnected(a, b) {
       // console.log("in is connected with a.id, b.id", a, b);
@@ -441,9 +732,14 @@ let vueApp = new Vue({
     this.$root.$on('bv::modal::shown', (bvEvent, modalId) => {
 //            console.log(modalId)
             if(modalId == "modal-plot"){
-                this.show_similarity_plot("line_plot2")
+                this.show_similarity_plot("line_plot2", this.active_component.dtype)
             }
-
+            if(modalId == "modal-plot-wc"){
+                this.show_nodefrequency_plot("line_plot4", this.active_component.dtype)
+            }
+            if(modalId == "modal-plot-wfc"){
+                this.show_nodecontextfrequency_plot("line_plot6")
+            }
         })
   },
   created() {},

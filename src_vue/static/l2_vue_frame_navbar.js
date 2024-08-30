@@ -46,6 +46,10 @@ Vue.component("frame-navbar", {
         <b-navbar type="dark" variant="secondary" toggleable="lg" fixed="top">
             <b-navbar-brand tag="h1" class="header">{{title}}
             </b-navbar-brand>
+
+            <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
+            <b-collapse id="nav-collapse" is-nav>
+
             <!-- buttons to create graph and analyse clusters -->
             <b-navbar-nav class="ml-auto">
               <b-button size="sm" class="lrmargin_button" v-b-toggle.sidebar-left variant="success">Create Graph
@@ -54,7 +58,7 @@ Vue.component("frame-navbar", {
               </b-button>
             </b-navbar-nav>
             <!-- input node and reset highlight option -->
-            <b-navbar-nav class="mx-auto">
+            <b-navbar-nav class="ml-auto">
                 <b-nav-form v-on:submit.prevent>
                     <b-input-group size="sm">
                         <b-input-group-prepend is-text>
@@ -73,9 +77,9 @@ Vue.component("frame-navbar", {
             <!-- buttons to load and save graph -->
             <b-navbar-nav class="ml-auto">
                 <!-- Save and Load Graph buttons :disabled="time_diff == 1" -->
-                    <b-button size="sm" class="lrmargin_button" variant="success" v-b-modal.modal-20>
-                        <em class="fas fa-upload"></em> Example
-                    </b-button>
+                <b-button size="sm" class="lrmargin_button" variant="success" v-b-modal.modal-20>
+                    <em class="fas fa-upload"></em> Example
+                </b-button>
                 <b-button size="sm" class="lrmargin_button" variant="success" v-b-modal.modal-19>
                     <em class="fas fa-upload"></em> Load Graph
                 </b-button>
@@ -90,7 +94,6 @@ Vue.component("frame-navbar", {
                 </b-button>
 			</b-navbar-nav>
       </b-navbar>
-      
       <b-modal id="modal-19" title="Load">
         <b-card>
             <b-card-text> Select a .json file to render graph from</b-card-text>

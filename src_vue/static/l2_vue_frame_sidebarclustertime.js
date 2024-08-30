@@ -5,7 +5,7 @@ Vue.component("frame-sidebarclustertime", {
   computed: {
     // ############### RIGHT_SIDEBAR CLUSTER ANALYSIS -----------------------------------------------------------------------------------------
     /*
-        Returns all the clusters as an array of objects of the form 
+        Returns all the clusters as an array of objects of the form
           {"text": cluster_name}, "value": {"cluster_id": some_id, "cluster_name": some_cluster_name, "colour": some_cluster_colour}
         to be used as the options when selecting a different cluster for a node.
         */
@@ -25,7 +25,6 @@ Vue.component("frame-sidebarclustertime", {
       }
       let ret = [];
       for (let singleton of this.singletons) {
-        console.log(singleton)
         ret.push(singleton + "  [" + map_nodes[singleton].time_ids + "]");
       }
       return ret;
@@ -306,7 +305,7 @@ Vue.component("frame-sidebarclustertime", {
       );
       // console.log(d3Data.links);
       graph.singletons = graph.singletons.filter((d) => d != vueApp.active_node.target_text);
-      
+
       // check if cluster has become singleton
       // let index = vueApp.graph_clusters.findIndex(
       //   (d) => d.cluster_id == vueApp.active_node.cluster_id
@@ -487,7 +486,7 @@ Vue.component("frame-sidebarclustertime", {
     time_diff_true_and_reset() {
       this.time_diff = true;
       // console.log("time diff true");
-      this.reset_time_diff_colours();
+//      this.reset_time_diff_colours();
     },
 
     /*
@@ -568,6 +567,11 @@ Vue.component("frame-sidebarclustertime", {
     },
     closeSidebar_right(){
         this.showSidebar_right = false;
+    },
+
+    resizeNodes(measure) {
+       resizeNodes_d3(measure);
+
     },
   },
 
@@ -738,10 +742,9 @@ Vue.component("frame-sidebarclustertime", {
 					<b-button class="lrmargin_button" size="sm" variant="success"
 						v-on:click="highlightWobblyCandidates()"> <em class="fas fa-highlighter"></em>
 						Highlight nodes between clusters </b-button>
-					<br>
+
 					<!-- <b-button v-on:click="resetCentralityHighlighting()"> <em class="fas fa-times"></em>
-						Reset
-						highlighting </b-button> -->
+						Reset Highlighting </b-button> -->
 					<b-button class="lrmargin_button" size="sm" variant="success" v-on:click="findWobblyCandidates()"
 						v-b-modal.modal-wobbly-1> <em class="fas fa-bars"></em> List nodes </b-button>
 					</b-dropdown>
@@ -793,6 +796,23 @@ Vue.component("frame-sidebarclustertime", {
 							</b-table>
 						</div>
 					</b-modal>
+
+                    <!-- Resize nodes as per their similarity score-->
+					<hr style="border: 1px solid gray;" />
+					<h6>Resize Nodes as per Similarity</h6>
+					<b-button class="lrmargin_button" size="sm" variant="success"
+						v-on:click="resizeNodes('max')"> <em class="fas fa-highlighter"></em>
+						Maximum</b-button>
+					<b-button class="lrmargin_button" size="sm" variant="success"
+						v-on:click="resizeNodes('avg')"> <em class="fas fa-highlighter"></em>
+						Average</b-button>
+					<b-button class="lrmargin_button" size="sm" variant="success"
+						v-on:click="resizeNodes('avg_all')"> <em class="fas fa-highlighter"></em>
+						Average-AllSlices</b-button>
+
+					<!-- <b-button v-on:click="resetCentralityHighlighting()"> <em class="fas fa-times"></em>
+						Reset Highlighting </b-button> -->
+
 
 					<!-- DISABBLE TODO DELETE AFTER TESTING NEW FRONTEND Update button to add more nodes and edges to graph -->
 					<p>
@@ -1047,9 +1067,9 @@ Vue.component("frame-sidebarclustertime", {
 														aria-hidden="true"></i></span>
 											</b-button>
 											<!-- experimental delete of time-nodes  -->
-											<!-- <b-button size="sm" 
-										style="background-color: #dc3546; margin-bottom: 3px;" 
-										@click="delete_multiple_nodes(time_diff_nodes.exists_only_before)"> 
+											<!-- <b-button size="sm"
+										style="background-color: #dc3546; margin-bottom: 3px;"
+										@click="delete_multiple_nodes(time_diff_nodes.exists_only_before)">
 										<i class="fas fa-trash"></i> </b-button> -->
 
 											<b-collapse id="collapse-deceased-2">
@@ -1070,8 +1090,8 @@ Vue.component("frame-sidebarclustertime", {
 												<span class="when-closed"><i class="fa fa-chevron-up"
 														aria-hidden="true"></i></span>
 											</b-button>
-											<!-- <b-button size="sm" 
-										style="background-color:#dc3545;margin-bottom: 3px;" 
+											<!-- <b-button size="sm"
+										style="background-color:#dc3545;margin-bottom: 3px;"
 										@click="delete_multiple_nodes(time_diff_nodes.deceases_in_interval)"> <i class="fas fa-trash"></i> </b-button> -->
 											<b-collapse id="collapse-deceased-1">
 												<b-card style="background-color:  #6c757d; color: white; ">
@@ -1096,9 +1116,9 @@ Vue.component("frame-sidebarclustertime", {
 												<span class="when-closed"><i class="fa fa-chevron-up"
 														aria-hidden="true"></i></span>
 											</b-button>
-											<!-- <b-button 
-										size="sm" 
-										style="background-color: yellow;margin-bottom: 3px;" 
+											<!-- <b-button
+										size="sm"
+										style="background-color: yellow;margin-bottom: 3px;"
 										@click="delete_multiple_nodes(time_diff_nodes.exists_only_in_interval)"> <i class="fas fa-trash"></i> </b-button> -->
 											<b-collapse id="collapse-shortlived-1">
 												<b-card style="background-color:  #6c757d; color: white; ">
@@ -1121,7 +1141,7 @@ Vue.component("frame-sidebarclustertime", {
 												<span class="when-closed"><i class="fa fa-chevron-up"
 														aria-hidden="true"></i></span>
 											</b-button>
-											<!-- <b-button 
+											<!-- <b-button
 										size="sm"
 										style="background-color: #28a745;margin-bottom: 3px;"
 										@click="delete_multiple_nodes(time_diff_nodes.born_in_interval)"> <i class="fas fa-trash"></i> </b-button> -->
@@ -1144,7 +1164,7 @@ Vue.component("frame-sidebarclustertime", {
 												<span class="when-closed"><i class="fa fa-chevron-up"
 														aria-hidden="true"></i></span>
 											</b-button>
-											<!-- <b-button 
+											<!-- <b-button
 										size="sm"
 										style="background-color: #28a746;margin-bottom: 3px;"
 										@click="delete_multiple_nodes(time_diff_nodes.exists_only_after)"> <i class="fas fa-trash"></i> </b-button> -->
@@ -1170,9 +1190,9 @@ Vue.component("frame-sidebarclustertime", {
 												<span class="when-closed"><i class="fa fa-chevron-up"
 														aria-hidden="true"></i></span>
 											</b-button>
-											<!-- <b-button 
+											<!-- <b-button
 										size="sm"
-										style="background-color: #343a40;margin-bottom: 3px;" 
+										style="background-color: #343a40;margin-bottom: 3px;"
 										@click="delete_multiple_nodes(time_diff_nodes.exists_before_and_after)"> <i class="fas fa-trash"></i> </b-button> -->
 											<b-collapse id="collapse-normal-2">
 												<b-card style="background-color:  #6c757d; color: white; ">
@@ -1192,9 +1212,9 @@ Vue.component("frame-sidebarclustertime", {
 												<span class="when-closed"><i class="fa fa-chevron-up"
 														aria-hidden="true"></i></span>
 											</b-button>
-											<!-- <b-button 
+											<!-- <b-button
 										size="sm"
-										style="background-color: #343a41;margin-bottom: 3px;" 
+										style="background-color: #343a41;margin-bottom: 3px;"
 										@click="delete_multiple_nodes(time_diff_nodes.exists_throughout)"> <i class="fas fa-trash"></i> </b-button> -->
 											<b-collapse id="collapse-normal-1">
 												<b-card style="background-color:  #6c757d; color: white; ">
@@ -1209,7 +1229,7 @@ Vue.component("frame-sidebarclustertime", {
 								</div>
 							</div>
                         </b-collapse>
-                        
+
 
 						<!-- card collapse for skipping through time slice (range input) -->
 						<b-collapse id="collapse-skip-1" accordion="time-diff-accordion">

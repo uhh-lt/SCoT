@@ -76,6 +76,7 @@ async function getData_io() {
     for (let cluster of graph.clusters) {
       vueApp.cluster_dic[cluster.cluster_id] = cluster;
     }
+    vueApp.target_word_counts = graph.props.counts;
     // set first active node
   } catch (error) {
     console.log(error);
@@ -516,14 +517,24 @@ function saveGraphSVG_io() {
         "_" +
         graph.props.start_year + "_" + graph.props.end_year
         ;
-        svgExport.downloadSvg(document.querySelector("#svg"),
-                              filename,
-                              {
-                                width: svg_width,
-                                height: svg_height,
-                                scale: 0.95,
-                              }
-                              );
+//        svgExport.downloadSvg(document.querySelector("#svg"),
+//                              filename,
+//                              {
+//                                width: svg_width,
+//                                height: svg_height,
+//                                scale: 0.95,
+//                              }
+//                              );
+
+         saveSvg(document.querySelector("#svg"), filename + ".svg",
+            {
+              left: viewbox_pan_horizontal,
+              top: viewbox_pan_vertical,
+              height: svg_height,
+              width: svg_width,
+              scale: 0.95,
+              excludeCss: false
+            });
 
 }
 
@@ -539,16 +550,27 @@ function saveGraphPNG_io() {
         "_" +
         graph.props.start_year + "_" + graph.props.end_year
         ;
-        svgExport.downloadPng(document.querySelector("#svg"),
-                              filename,
-                              {
-                                width: svg_width,
-                                height: svg_height,
-                                scale: 5,
-                                transparentBackgroundReplace: 'white',
-                                transparent: false,
-                              }
-                              );
+
+//        svgExport.downloadPng(document.querySelector("#svg"),
+//                              filename,
+//                              {
+//                                width: svg_width,
+//                                height: svg_height,
+//                                scale: 5,
+//                                transparentBackgroundReplace: 'white',
+//                                transparent: false,
+//                              }
+//                              );
+
+        saveSvgAsPng(document.querySelector("#svg"), filename + ".png",
+            {
+              left: viewbox_pan_horizontal,
+              top: viewbox_pan_vertical,
+              height: svg_height,
+              width: svg_width,
+              scale: 5,
+              backgroundColor: 'White'
+            });
 
 }
 
@@ -592,5 +614,32 @@ function saveDocs_io(jo, bim) {
 
   }); // end then
 
-
 }
+
+async function wordFeatureCounts_io(word1, word2, feature) {
+//  vueApp.busy_right_node = true;
+  let retArray = [];
+  let data = {};
+  data["word1"] = word1;
+  data["word2"] = word2;
+  data["feature"] = feature;
+
+  let url = "./api/collections/" + vueApp.collection_key + "/wordfeaturecounts";
+  try
+  {
+      let res = await axios.post(url, data);
+      res_data = res.data;
+      jobim_counts = {}
+      for (key in res_data){
+           jobim_counts[key] = {'time_ids': Object.keys(res_data[key]),
+                        'counts': Object.values(res_data[key])}
+                        ;
+      }
+      vueApp.jobim_counts = jobim_counts
+
+  }
+    catch(error){
+      console.error(error);
+    }
+}
+

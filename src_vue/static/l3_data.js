@@ -66,6 +66,8 @@ let graph = {
     number_of_interval_links: [],
     // removes singleton information in backend
     remove_singletons: false,
+    counts:[],
+    counts_time_ids:[],
 
   },
 };
@@ -142,7 +144,7 @@ let vueData = {
   node_dic: {},
   link_dic: {},
   cluster_dic: {},
-
+  target_word_counts:[],
   // ----------------------- LEGACY DATASTRUCTURES
   // LEGACY : is created in the frontend
   clusters: [],
@@ -154,7 +156,7 @@ let vueData = {
   // GENERAL SVG VIEW SETTINGS -----------------------------------------------------------------------------------------
   // ------------- target
   svg_target_text_opacity: 0.3,
-  svg_target_text_font_size: "35px",
+  svg_target_text_font_size: "25px",
   // -----------------------------------------------------------
   // link thickness parameters
   link_thickness_scaled: "false",
@@ -301,13 +303,17 @@ let vueData = {
     time_ids: ["1"],
     time_slices:["0000"],
     weights: ["1"],
+    source_counts:["1"], target_counts:["1"],
+    source_counts_time_ids:["1"], target_counts_time_ids:["1"],
     source_text: "0",
     target_text: "0",
     cluster_info_link: true,
     colour:"",
+    dtype:"node",
   },
   // sigebar right: holds edge context information (score, key, score2)
   simbim_object: [],
+  jobim_counts:[],
   // row_selected in edge Context
   row_selected_edge: [],
   // edge context sidebar is programmatically controlled
@@ -326,12 +332,15 @@ let vueData = {
   active_node: {
     time_ids: ["1"],
     time_slices:["0000"],
-    weights: ["1"],
+    weights: ["1"], weights_stats: [{weight_max: "1", weight_average:"1", weight_average_all:"1"}],
+    weight_max: "1", weight_average:"1", weight_average_all:"1",
+    counts:["1"], counts_time_ids:["1"],
     source_text: "0",
     target_text: "0",
     cluster_id: 0,
     cluster_name: "0",
     colour: "",
+    dtype:"node",
   },
   // sigebar right: holds node context information (score, key, score2)
   simbim_node_object: [],
@@ -339,6 +348,7 @@ let vueData = {
   node_time_id: 1,
   // row_selected in Node-context
   row_selected: [],
+  feature_selected:false,
   // node context sidebar
 //  context_mode3: false,
   showSidebar_node: false,

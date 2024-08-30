@@ -29,17 +29,13 @@ let viewbox_pan_horizontal = -screen.width * 0.05;
 // increase -> down
 let viewbox_pan_vertical = -screen.height * 0.05;
 // larger viewbox height and width -> zoom out / smaller viewbox - > zoom in
-let viewbox_height = screen.height * 0.825 //* 1.2;
+let viewbox_height = screen.height * 0.8 //* 1.2; or 0.825
 let viewbox_width = screen.width * 0.99 //* 1.2;
 // for setting the svg size for the graph
 // THIS IS THE VIEWPORT
-let svg_height = viewbox_height;
+let svg_height = viewbox_height; // screen.height * 0.8
 // it needs to be wider than screen.width - otherwise it does
-let svg_width = viewbox_width;
-
-//let svg_height = screen.height * 0.8
-//// it needs to be wider than screen.width - otherwise it does
-//let svg_width = screen.width * 0.99
+let svg_width = viewbox_width; //screen.width * 0.99
 
 async function graph_init() {
   /**
@@ -79,16 +75,12 @@ async function graph_init() {
     )
     .append("g");
 
-    // add target text
-    // add target text
+    // ---- add target text, with drag
     let dragTargetText = d3.drag()
-	.on('drag', function(){
-	    e = d3.event;
+  .on('drag', function(){
+      e = d3.event;
         x =  parseFloat(d3.select(this).attr("x"))
         y = parseFloat(d3.select(this).attr("y"))
-        // d3.select(this)
-        // .attr("x", e.x)
-        // .attr("y", e.y)
         d3.select(this)
         .attr("x", ((e.dx) + x))
         .attr("y", ((e.dy) + y))
@@ -106,6 +98,7 @@ async function graph_init() {
     .on("mouseover", function(){
         d3.select(this).style("cursor", "pointer");
     });
+    // -----
   // append the brush to the svg for dragging multiple nodes at the same time
   // there are various attributes etc in this group in the DOM when enables
   brush = d_svg.append("g").attr("class", "brush");
@@ -257,6 +250,7 @@ async function graph_crud(dnodes, dlinks, dcluster) {
         return d.cluster_id;
       }
     })
+    .attr("weight", (d) => d.weight).attr("weight_average", (d) => d.weight_average). attr("weight_average_all", (d) => d.weight_average_all)
     .attr("cluster_id", (d) => d.cluster_id)
     .attr("cluster_node", (d) => d.cluster_node)
     .attr("time_ids", (d) => d.time_ids)
@@ -302,17 +296,18 @@ async function graph_crud(dnodes, dlinks, dcluster) {
       // vueData.node_selected = true;
       // vueData.edge_selected = false;
       console.log("node clicked")
-      console.log(d)
+//      console.log(d)
       if (!d.cluster_node) {
         vueData.active_node = {
           time_ids: d.time_ids,
           time_slices:d.time_ids.map(vueApp.time_id_text),
-          weights: d.weights,
+          weights: d.weights, counts: d.counts,
           source_text: vueData.target_word,
           target_text: d.target_text,
           cluster_id: d.cluster_id,
           cluster_name: d.cluster_name,
           colour: d.fill,
+          dtype:"node",
         };
 
         vueApp.getSimBimsNodes();
@@ -321,8 +316,8 @@ async function graph_crud(dnodes, dlinks, dcluster) {
         vueData.bim_fields[2]["label"] = d.target_text;
         // switch on node feature element
         vueData.active_component = vueData.active_node;
-//        console.log(vueData.active_component.source_text, vueData.active_component.target_text);
         vueApp.show_similarity_plot("line_plot1")
+        vueApp.show_nodefrequency_plot("line_plot3")
        //reset node/edge highlights
         d3.selectAll(".link").selectAll("line").classed('edge_selected', false);
 
@@ -407,9 +402,10 @@ async function graph_crud(dnodes, dlinks, dcluster) {
         time_ids: d.time_ids,
         time_slices:d.time_ids.map(vueApp.time_id_text),
         weights: d.weights,
-        source_text: d.source_text,
-        target_text: d.target_text,
+        source_text: d.source_text, source_counts:d.source_counts,
+        target_text: d.target_text,  target_counts:d.target_counts,
         cluster_info_link: d.cluster_link,
+        dtype:"edge",
       };
 
       if (!d.cluster_link) {
@@ -420,12 +416,13 @@ async function graph_crud(dnodes, dlinks, dcluster) {
 
 //        vueData.bim_fields = vueData.fields_edges;
         vueData.active_component = vueData.active_edge;
-        console.log('edge simlarity plot')
         vueApp.show_similarity_plot("line_plot1", 'edge')
+        vueApp.show_nodefrequency_plot("line_plot3", 'edge')
+
         // switch on context mode edges, switch off context mode
         vueApp.showSidebar_node = true;
         vueApp.showSidebar_right=false;
-        console.log(d);
+//        console.log(d);
         
 //         d_node.classed("selected", false);
         d3.selectAll(".node").selectAll("g").classed("selected", false);
@@ -535,7 +532,7 @@ function d_dragended(d) {
 }
 
 /*
-		Returns all the time ids of a node as a string of start year and end year to be displayed in the tooltip on a node in the time diff mode
+    Returns all the time ids of a node as a string of start year and end year to be displayed in the tooltip on a node in the time diff mode
     */
 
 function toolTipLink(time_ids, weights, targetA, targetB) {
@@ -574,12 +571,13 @@ function mousedowned(d) {
     vueData.active_node = {
       time_ids: d.time_ids,
       time_slices:d.time_ids.map(vueApp.time_id_text),
-      weights: d.weights,
+      weights: d.weights, counts: d.counts,
       source_text: vueData.target_word,
       target_text: d.target_text,
       cluster_id: d.cluster_id,
       cluster_name: d.cluster_name,
       colour: d.fill,
+      dtype:"edge",
     };
   }
 //  vueApp.showSidebar_node = true;
@@ -594,7 +592,6 @@ function mousedowned(d) {
 //  vueApp.show_similarity_plot("line_plot1")
 
   console.log('node mouse downed')
-  // console.log(vueData.active_node);
   d3.selectAll("line").classed('edge_selected', false);
   d_node.selectAll(".node").selectAll("g").classed('selected', false);
 
@@ -947,9 +944,9 @@ function set_cluster_opacity_d3(cluster, opacity, link_opacity) {
       }
       //if (cluster_nodes.includes(source) && cluster_nodes.includes(target)) {
       //if (opacity < 1) {
-      //	d.setAttribute("style", "stroke:" + cluster.colour);
+      //  d.setAttribute("style", "stroke:" + cluster.colour);
       //} else {
-      //		d.setAttribute("style", "stroke:" + cluster.colour);
+      //    d.setAttribute("style", "stroke:" + cluster.colour);
       //}
       //}
     });
@@ -1002,10 +999,10 @@ function delete_multiple_nodes_d3(labels) {
 // ########################## CLUSTER ANALYSIS RIGHT TIME-DIFF #############################################################
 
 /*
-		Color nodes depending on whether they started to occur in the selected small time interval, stopped to occur in said interval, or both.
-		Basically comparing the graph time interval and the small time interval selected by the user.
-		# INTERVAL COUNTING ALWAYS START FIRST ID IN DATABASE WITH 1
-		*/
+    Color nodes depending on whether they started to occur in the selected small time interval, stopped to occur in said interval, or both.
+    Basically comparing the graph time interval and the small time interval selected by the user.
+    # INTERVAL COUNTING ALWAYS START FIRST ID IN DATABASE WITH 1
+    */
 function show_time_diff_d3() {
   let big_time_interval = [];
   let startindex = vueData.start_years.find(
@@ -1284,11 +1281,11 @@ function highlightCentralNodes_d3(threshold_s, threshold_m) {
             centrality_score > threshold_s &&
             centrality_score <= threshold_m
           ) {
-            d.setAttribute("r", vueData.radius * 2);
-            text.style("font-size", vueData.node_text_font_size * 2);
+            d.setAttribute("r", vueData.radius * 1.5);
+            text.style("font-size", vueData.node_text_font_size * 1.5);
           } else {
-            d.setAttribute("r", vueData.radius * 3);
-            text.style("font-size", vueData.node_text_font_size * 3);
+            d.setAttribute("r", vueData.radius * 2);
+            text.style("font-size", vueData.node_text_font_size * 1.75);
           }
         }
       }
@@ -1297,8 +1294,8 @@ function highlightCentralNodes_d3(threshold_s, threshold_m) {
 }
 
 /*
-  	Highlight the nodes with a balanced neighbourhood in the graph
-		*/
+    Highlight the nodes with a balanced neighbourhood in the graph
+    */
 function highlightWobblyCandidates_d3() {
   if (vueData.hightlighInbetweennessCentrality === true) {
     restart();
@@ -1435,4 +1432,34 @@ function search_node_d3() {
     }
     vueData.searchterm = "";
   }
+}
+// ################# Resize NODES ######################################################################################
+function resizeNodes_d3(measure)
+{
+    rmin = 2; rmax = 999;
+    tmin = 5; tmax = 50;
+    attr = {"max": "weight", "avg":"weight_average", "avg_all": "weight_average_all"}[measure]
+
+    console.log(measure, attr)
+    let nodes = d3.selectAll(".node").selectAll("g");
+    let texts = d3.selectAll(".node").selectAll("g").select("text");
+
+  nodes.each(function (d, i) {
+
+    let children = this.childNodes;
+    let text = d3.select(texts.nodes()[i]);
+    children.forEach(function (d, i) {
+
+      if (d.tagName == "circle") {
+
+        let weight = parseInt(d.getAttribute(attr))
+        console.log(measure, weight)
+        if (! isNaN(weight)) {
+            let new_r = (weight-rmin) / (rmax-rmin) * (tmax-tmin) + tmin;
+            d.setAttribute("r", Math.round(new_r));
+            console.log('new r:', d.getAttribute("r"))
+        }
+      }
+    });
+  });
 }

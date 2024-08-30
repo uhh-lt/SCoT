@@ -1,18 +1,17 @@
 import sys
 import json
+from pathlib import Path
 
 from flask import Flask, jsonify, render_template, request, Response
 from flask_cors import CORS
-
-from pathlib import Path
+from flask_session import Session
 
 from services.cluster import chinese_whispers, manual_recluster
 from services.graphs import get_graph
 from services.info import collections_info, get_edge_info, simbim, cluster_information, documents, documents_scroll, \
-    compute_weight_stats
+    compute_weight_stats, wordfeature_counts
 from model.ngot_model import NGOT, NGOTCluster, NGOTLink, NGOTProperties, NGOTNode
 from model.ngot_mapper import map_ngot_links_2_dic, map_ngot_nodes_2_dic
-
 
 class CustomFlask(Flask):
     jinja_options = Flask.jinja_options.copy()
@@ -26,24 +25,24 @@ class CustomFlask(Flask):
 # FLASK PARAMETERS
 DEBUG = True
 PARAMETERS = {}
-app = CustomFlask(__name__,
-                  static_folder="./static")  # This replaces your existing "app = Flask(__name__)"
+app = CustomFlask(__name__, static_folder="./static")  # This replaces your existing "app = Flask(__name__)"
 app.config.from_object(__name__)
 
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
 
 CORS(app)
-
+Session(app)
 
 # App REST-API Controller ---------------------
 
 # Get config
-
-
 @app.route('/api/config')
 def get_config():
-    config_path = './config/config_test.json' # for ltdocker
-    config_path = './config/config_test_small_local.json' # for local machine
-    print(f"Reading configurations form: {config_path}")
+    # config_path = './config/config.json' # for final demo
+    config_path = './config/config_dev.json' # for development/testing
+    config_path = 'config/config_local.json'
+    print(f"Configuration file: {config_path}")
     with open(config_path) as config_file:
         return json.load(config_file)
 
@@ -71,20 +70,19 @@ def get_clustered_graph():
     if request.method == 'POST':
         ngot.props = NGOTProperties.from_json(request.data)
     # print("request.data:",request.data)
+    # print("ngot.props:", ngot.props)
     ngot = get_graph(get_config(), ngot)
     ngot.props.weight_stats = compute_weight_stats(ngot.nodes)
-    # print("*"*100)
-    # print(ngot.props.weight_stats)
-    # for n in ngot.nodes:
-    #     print(n.id, n.weight, n.weights)
+    # print(ngot.nodes_dic)
+    # print(ngot.props)
+    # for n in ngot.nodes[:5]:
+    #     print(n)
     old_graph, ngot = chinese_whispers(ngot)
     # delete information that was only used for the backend
     ngot.nodes_dic = None
     ngot.links_dic = None
     # serialize dataclass-structure to json
     ngot_json = ngot.to_json()
-    # print(ngot_json.keys())
-    # print(ngot_json.props)
     return ngot_json
 
 
@@ -95,7 +93,6 @@ def recluster_graph():
     ngot = NGOT()
     if request.method == 'POST':
         ngot = NGOT.from_json(request.data)
-    # print(ngot)
     # create links dic and nodes dic
     ngot.nodes_dic = map_ngot_nodes_2_dic(ngot)
     ngot.links_dic = map_ngot_links_2_dic(ngot)
@@ -114,7 +111,6 @@ def recluster_graph():
 # however, it needs a new mapping with new values from the be
 # the names of the clusters should be preserved (TODO)
 def manual_recluster_graph():
-    # print(request.data)
     # extract data
     ngot = NGOT()
     if request.method == 'POST':
@@ -141,7 +137,6 @@ def manual_recluster_graph():
 
 
 # ENDPOINTS3: ADDITIONAL INFORMATION ---------------------------------------------------
-
 
 @app.route('/api/collections/<string:collection>/simbim', methods=['POST'])
 # get information why a certain edge exists - (An edge symbolises SIMilarity)
@@ -181,12 +176,20 @@ def documents_scroll_get(collection="default"):
         data = json.loads(request.data)
         return documents_scroll(get_config(), data)
 
+@app.route('/api/collections/<string:collection>/wordfeaturecounts', methods=['POST'])
+# get word feature counts
+def wordfeaturecounts_get(collection="default"):
+    if request.method == 'POST':
+        data = json.loads(request.data)
+        word1 = str(data["word1"])
+        word2 = str(data["word2"])
+        feature = str(data["feature"])
+        return wordfeature_counts(get_config(), collection, word1, word2, feature)
 
 if __name__ == '__main__':
     # init packaging system parent
     # this is not permanent (this is why we do it again and again ...)
     sys.path.append(str(Path(__file__).parent.absolute()))
     # use the config file to get host and database parameters
-    # config = get_config()
-    # app.run(host=config['flask_hostq'])
+    # app.run(host=get_config()['flask_host'])
     app.run(port=5000, debug=True)

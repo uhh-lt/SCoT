@@ -249,7 +249,7 @@ Vue.component("frame-sidebargraph", {
 				<div class="ml-2 mr-2 mb-2" v-if="left_selected === 'graph_data'">
 					<b-overlay :show="overlay_main" :variant="'dark'" rounded="sm" spinner-type="border"
 						spinner-variant="success">
-						<hr style="border: 1px solid gray;" />
+						<hr class="mb-2" style="border: 1px solid gray;" />
 						<!-- Enter database -->
 						<b-form-group class="input" label="Collection">
 							<b-form-select v-on:change="onChangeDb" v-model="collection_name"
@@ -261,11 +261,11 @@ Vue.component("frame-sidebargraph", {
 							<b-form-select v-model="start_year" :options="start_years" size="sm"></b-form-select>
 						</b-form-group>
 						<!-- Enter an end year -->
-						<b-form-group class="input" label="End of last interval">
+						<b-form-group class="mb-0 input" label="End of last interval">
 							<b-form-select v-model="end_year" :options="end_years" size="sm"></b-form-select>
 						</b-form-group>
-						<small>You have selected = {{number_of_intervals}} {{number_of_intervals > 1 ? "intervals" : "interval"}}</small>
-                        <hr style="border: 1px solid gray;" />
+						<small>You have selected: {{number_of_intervals}} {{number_of_intervals > 1 ? "intervals" : "interval"}}</small>
+                        <hr class="mb-2" style="border: 1px solid gray;" />
 						<h5>Graph over Time</h5>
 						<!-- Enter target word -->
 						<b-form-group class="input" label="Target word">
