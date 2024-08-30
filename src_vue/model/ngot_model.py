@@ -10,7 +10,6 @@ The transfer-format is JSON - dataclass-json decorators are used for serializati
 Deep copies of the model are provided to different additional frameworks for manipulation (ie d3 and networkx)
 """
 
-
 @dataclass_json
 @dataclass()
 class NGOTNode:
@@ -25,6 +24,12 @@ class NGOTNode:
     # time interval data information
     time_ids: Optional[List[int]] = None
     weights: Optional[List[float]] = None
+    counts: Optional[List[float]] = None
+    counts_time_ids: Optional[List[int]] = None
+
+    weight_max: Optional[int] = None
+    weight_average: Optional[int] = None
+    weight_average_all: Optional[int] = None
     # Graph score ---------------------------------------------------------------------
     centrality_score: Optional[float] = None
     # clusters ids and scores ----------------------------------------------------------
@@ -78,6 +83,11 @@ class NGOTLink():
     # time ids and weights
     time_ids: Optional[List[int]] = None
     weights: Optional[List[float]] = None
+    source_counts: Optional[List[int]] = None
+    target_counts: Optional[List[int]] = None
+    source_counts_time_ids: Optional[List[int]] = None
+    target_counts_time_ids: Optional[List[int]] = None
+
     # cluster information --------------------------------------------------------------------
     # belongs to cluster [if none = transitlink , ansonsten id]
     cluster_id: Optional[int] = None
@@ -124,15 +134,14 @@ class NGOTCluster:
 @dataclass_json
 @dataclass()
 class NGOTStats:
-    min_score:(float,str)=(0, '0000', 'node')
-    max_score:(float,str)=(0, '0000', 'node')
-    mean_score:float=0
+    min_score: (float, str) = (0, '0000', 'node')
+    max_score: (float, str) = (0, '0000', 'node')
+    mean_score: float = 0
 
     def __init__(self, min_score=None, max_score=None, mean_score=0):
         self.min_score = min_score
         self.max_score = max_score
         self.mean_score = mean_score
-
 
 
 @dataclass_json
@@ -192,7 +201,9 @@ class NGOTProperties:
     # if graph = interval then number of satic edges per int. <= number of ngot edges <= number of static edges p. int * i
     # if graph = global then number of static nodes global / i <= number of ngot nodes <= number of static nodes global
     # if graph = global then number of static edges global / i <= number of ngot edges <= number of static edges global
-    weight_stats:Optional[NGOTStats] = None
+    weight_stats: Optional[NGOTStats] = None
+    counts: Optional[List[int]] = None
+    counts_time_ids: Optional[List[int]] = None
     # SPECIAL SETTING ------------------------------------------------
     # Do not change if not necessary
     remove_singletons: bool = False

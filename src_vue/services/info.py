@@ -1,5 +1,5 @@
 from persistence.documentdb import Documentdb
-from persistence.db import Database, get_db
+from persistence.db import Database, get_url
 from model.ngot_model import NGOTStats
 import pandas as pd
 import json
@@ -7,19 +7,45 @@ import itertools
 
 
 def collections_info(config):
-    print("debug collection info")
     # add information about intervals
     # print(config)
-    config_fe = config["collections_info_frontend"]
-    for collection in config_fe:
-        key = config_fe[collection]["key"]
-        db = Database(config, get_db(config, key))
-        config_fe[collection]['start_years'] = db.get_all_years("start_year")
-        config_fe[collection]['end_years'] = db.get_all_years("end_year")
-        config_fe[collection]['is_ES_available'] = key in config["collections_info_elastic"].keys()
-    # print(config_fe)
-    return json.dumps(config_fe)
 
+    collections = {}
+    for key in config["available_collections"]:
+        print(key)
+        print(config["collections"][key])
+        url = config["collections"][key]["url"]
+        db = Database(key, url)
+        displayname = config["collections"][key]["displayname"]
+
+        collections[displayname] = config["collections"][key]["frontend_info"]
+        collections[displayname]['key'] = key
+        collections[displayname]['start_years'] = db.get_all_years("start_year")
+        collections[displayname]['end_years'] = db.get_all_years("end_year")
+        collections[displayname]['es_info'] = config["collections"][key]["es_info"]
+        collections[displayname]['is_ES_available'] = config["collections"][key]["es_info"]!=None
+
+    return json.dumps(collections)
+
+    # config_fe = config["collections_info_frontend"]
+    #
+    # for collection in config_fe:
+    #     print(collection)
+    #     key = config_fe[collection]["key"]
+    #     print(key)
+    #     db = Database(config, get_url(config, key))
+    #     config_fe[collection]['start_years'] = db.get_all_years("start_year")
+    #     config_fe[collection]['end_years'] = db.get_all_years("end_year")
+    #     config_fe[collection]['is_ES_available'] = key in config["collections_info_elastic"].keys()
+    # # print(config_fe)
+    # return json.dumps(config_fe)
+
+
+def get_es_info (config, collection):
+    es_host = config["collections"][collection]["es_info"]["es_host"]
+    es_port = config["collections"][collection]["es_info"]["es_port"]
+    es_index = config["collections"][collection]["es_info"]["es_index"]
+    return es_host, es_port, es_index
 
 def get_edge_info(config, collection, word1, word2, time_id):
     # See Mitra(2015)
@@ -34,8 +60,8 @@ def get_edge_info(config, collection, word1, word2, time_id):
     # dictionary2 word2: {"feature": score} (nullable - there may not be anay data in this time-id), ordered by score desc
     # intersection set of keys (str) (nullable - there may not be any overlap)
     # max values 1 und 2 (nullable )
-    print(f'word1: {word1}, word2: {word2} time_id {time_id}')
-    db = Database(config, get_db(config, collection))
+    # print(f'word1: {word1}, word2: {word2} time_id {time_id}')
+    db = Database(collection, get_url(config, collection))
     res1_dic = db.get_features(word1, time_id)
     res2_dic = db.get_features(word2, time_id)
 
@@ -46,9 +72,9 @@ def get_edge_info(config, collection, word1, word2, time_id):
         # determine maxima (sets are ordered by db in desc - thus first is the maximum)
         max1 = list(res1_dic.values())[0]
         max2 = list(res2_dic.values())[0]
-        print(f'max1: {max1}, max2:{max2}')
-        print(f'f1: {list(res1_dic.keys())[0]}, f2:{list(res2_dic.keys())[0]}')
-        print(f'f1 N: {len(res1_dic)}, f2 N:{len(res2_dic)} shared f N:{len(res_set)}')
+        # print(f'max1: {max1}, max2:{max2}')
+        # print(f'f1: {list(res1_dic.keys())[0]}, f2:{list(res2_dic.keys())[0]}')
+        # print(f'f1 N: {len(res1_dic)}, f2 N:{len(res2_dic)} shared f N:{len(res_set)}')
 
         return res1_dic, res2_dic, res_set, max1, max2
 
@@ -121,7 +147,7 @@ def cluster_information(config, data):
     print("-------------------------------------------------------")
     print("in cluster_info (1)")# anzahl unique nodes - alle nodes ", len(nodes))
     # get features (ie context word2 and score) for all unique nodes in all time-ids
-    db = Database(config, get_db(config, data["collection"]))
+    db = Database(data["collection"], get_url(config, data["collection"]))
     feature_dic = {}
     for node in nodes:
         label = node[0]
@@ -182,13 +208,8 @@ def documents(config, data):
     time_slices = data["time_slices"]
     print(data)
     collection_key = str(data["collection_key"])
-    # if not collection_key in config["collections_info_elastic"].keys():
-    #     return {"docs": "This collection does not have any example docs."}
     # get host, port and index from config
-    es_host = config["collections_info_elastic"][collection_key]["es_host"]
-    es_port = config["collections_info_elastic"][collection_key]["es_port"]
-    es_index = config["collections_info_elastic"][collection_key]["es_index"]
-
+    es_host, es_port, es_index = get_es_info(config, collection_key)
     # print(es_index, es_host, es_port)
 
     # init with host, port
@@ -230,13 +251,8 @@ def documents_scroll(config, data):
     time_slices = data["time_slices"]
     print(data)
     collection_key = str(data["collection_key"])
-    # if not collection_key in config["collections_info_elastic"].keys():
-    #     return {"docs": "This collection does not have any example docs."}
     # get host, port and index from config
-    es_host = config["collections_info_elastic"][collection_key]["es_host"]
-    es_port = config["collections_info_elastic"][collection_key]["es_port"]
-    es_index = config["collections_info_elastic"][collection_key]["es_index"]
-
+    es_host, es_port, es_index = get_es_info(config, collection_key)
     # print(es_index, es_host, es_port)
 
     # init with host, port
@@ -258,6 +274,18 @@ def documents_scroll(config, data):
     df = pd.DataFrame.from_dict(json_data, orient='columns')
 
     return {"json_docs": df.to_csv(sep='\t', index=False, encoding='utf-8')}
+
+
+def wordfeature_counts(config, collection, word1, word2, feature):
+
+    print(f'word1: {word1}, word2: {word2} feature {feature}')
+    db = Database(collection, config["collections"][collection]["url"])
+
+    res1_dic = db.get_wordfeature_counts(word1, feature)
+    res2_dic = db.get_wordfeature_counts(word2, feature)
+    print(f'word1: {word1}, word-feature counts: {res1_dic}')
+    print(f'word2: {word2}, word-feature counts: {res2_dic}')
+    return {word1: res1_dic, word2: res2_dic}
 
 
 def compute_weight_stats(nodes):

@@ -1,6 +1,6 @@
 import time
 from persistence.documentdb import Documentdb
-from persistence.db import Database, get_db
+from persistence.db import Database, get_url
 from model.ngot_model import NGOTLink, NGOTNode
 from model.ngot_mapper import map_nodes_dic_2_ngot, map_edges_dic_2_ngot
 import dataclasses
@@ -13,9 +13,6 @@ def ngot_interval(db, ngot):
     # creates overlay with interval-graphs per time_id in time-ids
     print("NGOT interval")
     ngot = db.get_nodes_interval(ngot)
-    print('%' * 25)
-    print(time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(time.time())))
-    print('%' * 25)
     ngot = db.get_edges_interval(ngot)
     return ngot
 
@@ -25,9 +22,6 @@ def ngot_dynamic(db, ngot):
     # Edges in time, fixed global overlay edges, scaled
     print("NGOT dynamic")
     ngot = db.get_nodes_overlay(ngot)
-    print('%' * 25)
-    print(time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(time.time())))
-    print('%' * 25)
     ngot = db.get_edges_overlay(ngot)
     return ngot
 
@@ -50,6 +44,17 @@ def ngot_dynamic_global(db, ngot):
 #     return ngot
 
 
+def ngot_add_word_counts(db, ngot):
+    print("getting word counts")
+    ngot = db.get_word_counts(ngot)
+    return ngot
+
+def ngot_add_node_stats(db, ngot):
+    print("getting node stats for max, average scores")
+    ngot = db.get_node_stats(ngot)
+    return ngot
+
+
 def get_graph(config, ngot):
     # offers various projections and clustering-algos depending on graph-type
     # Retrieves the clustered graph data according to the input parameters of the user and return it as json
@@ -61,15 +66,11 @@ def get_graph(config, ngot):
     # Postcondition: valid graph in valid json-format
     # Resolve start and end year -> time-ids
     props = ngot.props
-    db = Database(config, get_db(config, props.collection_key))
+    db = Database(props.collection_key, get_url(config, props.collection_key))
     # derive props time_ids from start and end year
     props.selected_time_ids = []
     props.selected_time_ids.extend(
         db.get_time_ids(props.start_year, props.end_year))
-    start = time.time()
-    print('%'*25)
-    print(time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(start)))
-    print('%' * 25)
     # build neighbourhood graph over time
     if props.graph_type == "ngot_interval":
         # ngot mapping included
@@ -89,7 +90,11 @@ def get_graph(config, ngot):
     else:
         # as default calls overlay-nodes-global-edges (dynamic version of first SCoT-algorithm)
         ngot = ngot_dynamic_global(db, ngot)
-    print('%' * 25)
-    print(time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(time.time())))
-    print('%' * 25)
+    try: ngot = ngot_add_word_counts(db, ngot)
+    except Exception as ex: print(ex);
+    ngot = ngot_add_node_stats(db, ngot)
     return ngot
+
+# print('%' * 25)
+# print(time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(time.time())))
+# print('%' * 25)
