@@ -1,36 +1,22 @@
 {
   "flask_host": "127.0.0.1",
+  "available_collections": ["en_gbooks_42", "de70"]
 
-
-"collections_info_backend": {
-  "default" : "mysql+pymysql://user:pwd@localhost:3306/DT_google_syntactic_ngrams_42",
-  "en_gbooks_42" : "mysql+pymysql://user:pwd@localhost:3306/DT_google_syntactic_ngrams_42",
-  "de70":       "mysql+pymysql://user:pwd@localhost:3306/DT_de70mlcc_dependency"
-
-},
-
-  "collections_info_elastic": {
+  "collections": {
     "de70": {
-      "es_index": "de70",
-      "es_host": "localhost",
-      "es_port": 9200
-    }
-  },
-
-  "collections_info_frontend": {
-    "English-Google Books-Syntactic Ngrams, 1520-2008, 42 Slices": {
-      "key": "en_gbooks_42",
-      "target": "bar/NN",
-      "p": 50,
-      "d": 20,
-      "info": "English Google Books, 1520-2008"
+      "displayname":"German--Online News-Dependency--1995-2010 " ,
+      "url": "mysql+pymysql://user:pwd@localhost:3306/DT_de70mlcc_dependency",
+      "frontend_info":{"target": "Krise#NN", "p": 50, "d": 8},
+      "es_info": {"es_index": "de70", "es_host": "ltdocker", "es_port": 9292},
+      "sentences": "70 Million Sentences"
     },
-    "German-Online News-Dependency, 70 Million Sentences, 1995-2010 ": {
-      "key": "de70",
-      "target": "Krise#NN",
-      "p": 50,
-      "d": 8,
-      "info": "German Online News, 70 Million Sentences, 1995-2010 "
+
+    "en_gbooks_42": {
+      "displayname": "English--Google Books-Syntactic Ngrams, 1520-2008--42 Slices",
+      "url": "mysql+pymysql://user:pwd@localhost:3306/DT_google_syntactic_ngrams_42",
+      "frontend_info": {"target": "bar/NN", "p": 50, "d": 20},
+      "es_info": null
     }
+
   }
 }
