@@ -1,19 +1,23 @@
 from persistence.documentdb import Documentdb
 from persistence.db import Database, get_db
+from model.ngot_model import NGOTStats
+import pandas as pd
 import json
+import itertools
 
 
 def collections_info(config):
     print("debug collection info")
     # add information about intervals
-    print(config)
+    # print(config)
     config_fe = config["collections_info_frontend"]
     for collection in config_fe:
         key = config_fe[collection]["key"]
-        db = Database(get_db(config, key))
+        db = Database(config, get_db(config, key))
         config_fe[collection]['start_years'] = db.get_all_years("start_year")
         config_fe[collection]['end_years'] = db.get_all_years("end_year")
-
+        config_fe[collection]['is_ES_available'] = key in config["collections_info_elastic"].keys()
+    # print(config_fe)
     return json.dumps(config_fe)
 
 
@@ -30,8 +34,8 @@ def get_edge_info(config, collection, word1, word2, time_id):
     # dictionary2 word2: {"feature": score} (nullable - there may not be anay data in this time-id), ordered by score desc
     # intersection set of keys (str) (nullable - there may not be any overlap)
     # max values 1 und 2 (nullable )
-
-    db = Database(get_db(config, collection))
+    print(f'word1: {word1}, word2: {word2} time_id {time_id}')
+    db = Database(config, get_db(config, collection))
     res1_dic = db.get_features(word1, time_id)
     res2_dic = db.get_features(word2, time_id)
 
@@ -39,11 +43,13 @@ def get_edge_info(config, collection, word1, word2, time_id):
 
         # put results into intersection-set of res1 and res2
         res_set = set(res1_dic.keys()).intersection(set(res2_dic.keys()))
-
-        # print(res_set)
         # determine maxima (sets are ordered by db in desc - thus first is the maximum)
         max1 = list(res1_dic.values())[0]
         max2 = list(res2_dic.values())[0]
+        print(f'max1: {max1}, max2:{max2}')
+        print(f'f1: {list(res1_dic.keys())[0]}, f2:{list(res2_dic.keys())[0]}')
+        print(f'f1 N: {len(res1_dic)}, f2 N:{len(res2_dic)} shared f N:{len(res_set)}')
+
         return res1_dic, res2_dic, res_set, max1, max2
 
     else:
@@ -59,7 +65,7 @@ def simbim(config, collection, data, word1, word2, time_id):
     # get intersection of node-contexts (res_set), context-dics and max values
     res1_dic, res2_dic, res_set, max1, max2 = get_edge_info(
         config, collection, word1, word2, time_id)
-
+    # print(f'{word1} features: {res1_dic}')
     if len(res1_dic) == 0 or len(res2_dic) == 0 or len(res_set) == 0:
         # check if zero-error
         return {"error": "zero values"}
@@ -89,7 +95,6 @@ def simbim(config, collection, data, word1, word2, time_id):
             for key in score2key:
                 res_dic_topn[key] = return_dic[key]
             return_dic = res_dic_topn
-
         return_dic["error"] = "none"
         return return_dic
 
@@ -104,7 +109,7 @@ def cluster_information(config, data):
     # Precondition: data not null and valid
     # Postcondition: the response is limited to max 200
     # Note:measures execution time of db-queries
-    print("in cluster information", data)
+    print("in cluster_information")#, data)
     import time
     start_time = time.time()
     # algo
@@ -114,9 +119,9 @@ def cluster_information(config, data):
         nodes.add((node["label"], node["time_id"]))
     # print("nodes", nodes)
     print("-------------------------------------------------------")
-    print("in cluster info (1) anzahl unique nodes - alle nodes ", len(nodes))
+    print("in cluster_info (1)")# anzahl unique nodes - alle nodes ", len(nodes))
     # get features (ie context word2 and score) for all unique nodes in all time-ids
-    db = Database(get_db(config, data["collection"]))
+    db = Database(config, get_db(config, data["collection"]))
     feature_dic = {}
     for node in nodes:
         label = node[0]
@@ -129,7 +134,7 @@ def cluster_information(config, data):
         target_set = db.get_feature_target_filter_set(target, time_ids)
         print("len filter target set", len(target_set))
     print("-------------------------------------------------------")
-    print(" in cluster info (2) after db query --- %s seconds ---" %
+    print(" in cluster_info (2) after db query --- %s seconds ---" %
           (time.time() - start_time))
     res_dic_all = defaultdict(int)
     # cumulate the feature scores over all nodes and time-ids [could be changed...]
@@ -159,45 +164,48 @@ def cluster_information(config, data):
     keys = list(res_dic_all.keys())[:topn]
     for index in range(len(keys)):
         dic_res[keys[index]] = res_dic_all[keys[index]]
-    print(" cluster info (3) after algo --- %s seconds ---" %
+    print("in cluster_info (3) after algo --- %s seconds ---" %
           (time.time() - start_time))
     # print("dictionary cluster ", dic_res)
     return dic_res
 
 
-def documents(collection, data):
+def documents(config, data):
     # retrieves sentences which contain one jo and one bim [also called wort1=jo, wort2=bim]
     # Param: collection_key
     # Param: jo [wort1], bim [wort2]
-    # [Param: time-id - not implemented yet]
+    # Param: time_slices
     # Returns_ elasticsearch response
     # the response_dictionary is limited to max 200
     jo = str(data["jo"])
     bim = str(data["bim"])
-    # time_id = int(data["time_id"])
+    time_slices = data["time_slices"]
+    print(data)
     collection_key = str(data["collection_key"])
-    print(jo, bim, collection_key)
-
+    # if not collection_key in config["collections_info_elastic"].keys():
+    #     return {"docs": "This collection does not have any example docs."}
     # get host, port and index from config
-    with open('./config/config.json') as config_file:
-        config = json.load(config_file)
     es_host = config["collections_info_elastic"][collection_key]["es_host"]
     es_port = config["collections_info_elastic"][collection_key]["es_port"]
     es_index = config["collections_info_elastic"][collection_key]["es_index"]
-    print(es_index, es_host, es_port)
+
+    # print(es_index, es_host, es_port)
 
     # init with host, port
     documentdb = Documentdb(es_host, es_port)
 
     # Todo search with specific index instead of collection_key
     ret = []
-    res = documentdb.search(jo, bim, es_index)
+    res = documentdb.search(jo, bim, time_slices, es_index)
     ret_set = set()
+    # print("hits:"+str(len(res["hits"]["hits"])))
     for hit in res["hits"]["hits"]:
-        text = hit["_source"]["date"][:10] + " [" + str(hit["_source"]["time_slice"]) + "] : " \
-            + hit["_source"]["sentence"] + \
-            " [" + hit["_source"]["source"] + "] "
+        text = hit["_source"]["date"][:10] + ": " \
+               + hit["_source"]["sentence"]   \
+               + "[" + hit["_source"]["source"] + "] "
+
         ret_set.add(text)
+
     ret_list = list(ret_set)
     ret_list.sort()
     # print(ret_list)
@@ -208,3 +216,55 @@ def documents(collection, data):
         ret.append({"doc": "No Results."})
 
     return {"docs": ret}
+
+
+def documents_scroll(config, data):
+    # retrieves sentences which contain one jo and one bim [also called wort1=jo, wort2=bim]
+    # Param: collection_key
+    # Param: jo [wort1], bim [wort2]
+    # Param: time_slices
+    # Returns_ elasticsearch response
+    # the response_dictionary is limited to max 200
+    jo = str(data["jo"])
+    bim = str(data["bim"])
+    time_slices = data["time_slices"]
+    print(data)
+    collection_key = str(data["collection_key"])
+    # if not collection_key in config["collections_info_elastic"].keys():
+    #     return {"docs": "This collection does not have any example docs."}
+    # get host, port and index from config
+    es_host = config["collections_info_elastic"][collection_key]["es_host"]
+    es_port = config["collections_info_elastic"][collection_key]["es_port"]
+    es_index = config["collections_info_elastic"][collection_key]["es_index"]
+
+    # print(es_index, es_host, es_port)
+
+    # init with host, port
+    documentdb = Documentdb(es_host, es_port)
+
+    # Todo search with specific index instead of collection_key
+    ret = []
+    res = documentdb.scroll(jo, bim, time_slices, es_index)
+    json_data = []
+    # print("hits:"+str(len(res["hits"]["hits"])))
+    for hit in res:
+        json_line = {"date": hit["_source"]["date"][:10],
+                     "sentence": hit["_source"]["sentence"],
+                     "source": hit["_source"]["source"]
+                     }
+        json_data.append(json_line)
+
+    json_data = sorted(json_data, key=lambda x: x["date"])
+    df = pd.DataFrame.from_dict(json_data, orient='columns')
+
+    return {"json_docs": df.to_csv(sep='\t', index=False, encoding='utf-8')}
+
+
+def compute_weight_stats(nodes):
+    time_and_scores = [(w, t, n.id) for n in nodes for w,t in zip(n.weights, n.time_ids)]
+    time_and_scores = sorted(time_and_scores, key=lambda t:t[0])
+    # print(time_and_scores[0], time_and_scores[-1])
+    all_scores = list(itertools.chain(*[n.weights for n in nodes]))
+    ngot_stats = NGOTStats(time_and_scores[0], time_and_scores[-1], sum(all_scores)/len(all_scores))
+    # print(sum(scores), len(scores))
+    return ngot_stats

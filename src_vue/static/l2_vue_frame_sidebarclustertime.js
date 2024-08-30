@@ -25,6 +25,7 @@ Vue.component("frame-sidebarclustertime", {
       }
       let ret = [];
       for (let singleton of this.singletons) {
+        console.log(singleton)
         ret.push(singleton + "  [" + map_nodes[singleton].time_ids + "]");
       }
       return ret;
@@ -138,6 +139,7 @@ Vue.component("frame-sidebarclustertime", {
 		  Send all the nodes and edges to the backend, recluster them, delete and restart graph
 		  */
     recluster: async function () {
+    console.log("in recluster")
       vueApp.overlay_main = true;
       vueApp.graph_rendered = false;
       vueApp.wait_rendering = true;
@@ -292,6 +294,7 @@ Vue.component("frame-sidebarclustertime", {
 		  */
     delete_selected_nodes() {
       console.log("in delete selected");
+      console.log(vueApp.active_node.target_text);
       graph.nodes = graph.nodes.filter(
         (d) => d.id != vueApp.active_node.target_text
       );
@@ -302,6 +305,22 @@ Vue.component("frame-sidebarclustertime", {
           d.source_text != vueApp.active_node.target_text
       );
       // console.log(d3Data.links);
+      graph.singletons = graph.singletons.filter((d) => d != vueApp.active_node.target_text);
+      
+      // check if cluster has become singleton
+      // let index = vueApp.graph_clusters.findIndex(
+      //   (d) => d.cluster_id == vueApp.active_node.cluster_id
+      // );
+      // if(index != -1){
+      //   console.log(index)
+      //   console.log(vueApp.graph_clusters[index].cluster_nodes.length)
+      //   if(vueApp.graph_clusters[index].cluster_nodes.length==2){
+      //     graph.singletons.push(vueApp.graph_clusters[index].cluster_nodes[0]);
+      //     vueApp.graph_clusters.splice(index, 1);
+      //     // this.delete_cluster(vueApp.graph_clusters[index].cluster_id);
+      //     // return;
+      //   }
+      // }
       vueApp.manual_recluster();
     },
     /*
@@ -354,7 +373,7 @@ Vue.component("frame-sidebarclustertime", {
           node.ngot_undir_links_with_each_cluster_is_balanced != null
         ) {
           tmp["balanced"] = node.ngot_undir_links_with_each_cluster_is_balanced;
-          console.log(node.neighbours_by_cluster);
+          //console.log(node.neighbours_by_cluster);
           for (let key of Object.keys(node.neighbours_by_cluster)) {
             tmp["connected_clusters"] +=
               String(key) +
@@ -547,53 +566,59 @@ Vue.component("frame-sidebarclustertime", {
     delete_multiple_nodes(labels) {
       delete_multiple_nodes_d3(labels);
     },
+    closeSidebar_right(){
+        this.showSidebar_right = false;
+    },
   },
 
   template: `
     <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR-RIGHT ANALYSIS CLUSTERING XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
-			<b-sidebar width="23%" id="sidebar-right" title="Cluster analysis" bg-variant="secondary"
-				text-variant="light" style="opacity: 0.9;" right shadow>
-				<template v-slot:footer="{ hide }">
-					<div class="d-flex bg-secondary text-light align-items-center px-3 py-2">
-						<!-- Button to apply changes to graph  -->
-						<b-button id="apply_settings_button" size="sm" class="lrmargin_button" variant="success"
-							v-on:click="applyClusterSettings()">Update Clusters</b-button>
-					</div>
-				</template>
-				<br>
-				<h5 class="sidebar-section__title"> </h5>
+		<b-sidebar v-show="showSidebar_right" width="23%" id="sidebar-right" bg-variant="secondary"
+				text-variant="light" style="opacity: 0.9;" no-header right shadow >
+			<template v-slot:footer="{ hide }">
+         <div class="d-flex bg-secondary text-light align-items-center px-3 py-2">
+            <!-- Button to apply changes to graph  -->
+            <b-button v-show="right_selected === 'cluster_basic'" id="apply_settings_button" size="sm" class="lrmargin_button" variant="warning" @click="applyClusterSettings()">Update Clusters</b-button>
+         </div>
+			</template>
+      <div class="mx-2 my-3" >
+           <b-button class="d-inline px-1 py-1" style="text-align:right; height:30px;width:30px; vertical-align: top;" @click="showSidebar_right=false">
+             <b-icon icon="x-lg" class="px-0 py-0"  scale="0.70"></b-icon>
+          </b-button>
+          <h4 class="d-inline px-2" id="sidebar-no-header-title" style="text-align: right" >Cluster Analysis</h4>
+      </div>
+      <div class="px-2 py-2 mt-1">
 				<!-- options buttons-->
-				<b-form-group>
-					<b-form-radio-group size="m" v-model="right_selected" :options="right_options" buttons
-						button-variant="success" name="radios-btn-default" @change="toggle_time_diff()">
+				<b-form-group class="ml-2" variant="info">
+					<b-form-radio-group size="sm" v-model="right_selected" :options="right_options" buttons
+						button-variant="info" name="radios-btn-default" @change="toggle_time_diff()">
 					</b-form-radio-group>
 				</b-form-group>
 
 				<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR-RIGHT ANALYSIS CLUSTERING CLUSTER FUNCS XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
+        <!--div class="px-2 py-2 mt-1"> -->
 				<div v-if="right_selected === 'cluster_functions'">
-					<br>
+
 					<!-- Options Drop Down for node options TODO Update Options-->
 
-					<!-- Modal to change cluster assignment of A node -->
+          <!-- Modal to change cluster assignment of A node -->
 					<b-modal id="modal-1" title="Change Cluster Assignment" @ok="assignNewCluster()">
 						<div>
 							<!-- Show selected nodes -->
-							<div>
-								Selected node: {{active_node.target_text}}
-							</div>
+							<div> Selected node: {{active_node.target_text}} </div>
 							<br>
 							<!-- Show current cluster -->
 							<div>
-								Current cluster: <span class="dot-sm"
-									v-bind:style="{'background-color': active_node.colour}"></span>
+                Current cluster:
+                <span class="dot-sm" v-bind:style="{'background-color': active_node.colour}"></span>
 								{{cluster_name_by_node_id}}, (ID: {{active_node.cluster_id}})
 							</div>
 							<!-- Choose a new cluster -->
 							<div>
 								Select new cluster:
-								<span class="dot-sm"
-									v-bind:style="{'background-color': new_assigned_cluster.colour}"></span>
+								<span class="dot-sm" v-bind:style="{'background-color': new_assigned_cluster.colour}"></span>
 								{{new_assigned_cluster.cluster_name}}
+
 								<b-form-select v-model="new_assigned_cluster" size="sm" class="mt-3">
 									<option :value="{}" disabled> Select a cluster </option>
 									<option v-for="cluster in cluster_options" :value="cluster.value">{{cluster.text}}
@@ -602,13 +627,12 @@ Vue.component("frame-sidebarclustertime", {
 							</div>
 						</div>
 					</b-modal>
+
 					<!-- Modal for creating a new cluster an adding the clicked node to it -->
 					<b-modal id="modal-2" title="Create new cluster" @ok="createNewCluster">
 						<div v-for="node in clicked_nodes">
 							<!-- Show selected node -->
-							<div>
-								Selected node: {{node.id}}
-							</div>
+							<div> Selected node: {{node.id}} </div>
 							<br>
 							<div>
 								<span style="font-size: 16pt"> Create a new cluster </span>
@@ -626,6 +650,7 @@ Vue.component("frame-sidebarclustertime", {
 							</div>
 						</div>
 					</b-modal>
+
 					<!-- Modal to Customize Thresholds-->
 					<b-modal id="modal-centrality-1" title="Customize Highlighting Thresholds"
 						@ok="highlightCentralNodes(centrality_threshold_s, centrality_threshold_m)">
@@ -651,37 +676,31 @@ Vue.component("frame-sidebarclustertime", {
 							</div> -->
 						</div>
 					</b-modal>
-					<hr style="border: 1px solid gray;" />
+
 					<!-- Recluster button id="recluster_button"-->
-					<h4>&nbsp;Recluster </h4>
-					<b-button class="lrmargin_button" size="sm" variant="success" v-on:click="recluster()"><em
-							class="fas fa-cogs"></em>&nbsp;Recluster
-						with
-						Chinese Whispers
-					</b-button>
+          <hr style="border: 1px solid gray;" />
+					<h6>Recluster </h6>
+					<b-button class="lrmargin_button" size="sm" variant="success" v-on:click="recluster()">
+            <em class="fas fa-cogs"></em>&nbsp;Recluster with Chinese Whispers </b-button>
 					<br>
 					<hr style="border: 1px solid gray;" />
-					<h4>&nbsp;Change Cluster-Assignment</h4>
+					<h6>&nbsp;Change Cluster-Assignment</h6>
 					<!-- only available for non cluster nodes -->
-					<b-button class="lrmargin_button" size="sm" variant="success"
-						v-show="select_node_is_no_cluster_node" v-on:click="findSelectedNodes()" v-b-modal.modal-1> <em
-							class="fas fa-exchange-alt"></em> Assign to different cluster
-					</b-button>
-					<br>
+					<b-button class="lrmargin_button" size="sm" variant="success" v-show="select_node_is_no_cluster_node" v-on:click="findSelectedNodes()" v-b-modal.modal-1>
+              <em class="fas fa-exchange-alt"></em> Assign to different cluster </b-button>
+				  <br>
 					<b-button class="lrmargin_button" size="sm" variant="success"
 						v-show="select_node_is_no_cluster_node" v-on:click="findSelectedNodes()" v-b-modal.modal-2> <em
 							class="fas fa-plus"></em> Create new cluster</b-button>
 					<br>
 					<b-button class="lrmargin_button" size="sm" variant="success" v-on:click="delete_selected_nodes()">
-						<em class="fas fa-trash"></em> Delete
-						node
-					</b-button>
+						<em class="fas fa-trash"></em> Delete node </b-button>
 					<br>
 					<!-- Options Drop Down for node options -->
 					<hr style="border: 1px solid gray;" />
 					<!-- Centrality Button -->
 					<div style="background-color:gray-600; color: white;">
-						<h4>&nbsp;Betweenness Centrality</h4>
+						<h6>Betweenness Centrality</h6>
 						<b-button class="lrmargin_button" size="sm" variant="success"
 							v-on:click="highlightCentralNodes(centrality_threshold_s, centrality_threshold_m)">
 							<em class="fas fa-highlighter"></em> Highlight central nodes in graph
@@ -715,7 +734,7 @@ Vue.component("frame-sidebarclustertime", {
 
 					<!-- Nodes with balanced neighbourhood of clusters id="wobblyCandidatesCC" -->
 					<hr style="border: 1px solid gray;" />
-					<h4>&nbsp;Node Cluster Balance</h4>
+					<h6>Node Cluster Balance</h6>
 					<b-button class="lrmargin_button" size="sm" variant="success"
 						v-on:click="highlightWobblyCandidates()"> <em class="fas fa-highlighter"></em>
 						Highlight nodes between clusters </b-button>
@@ -960,10 +979,7 @@ Vue.component("frame-sidebarclustertime", {
 					</div>
 					<!-- Show list of singletons -->
 
-
-
 					<p style="float: left;">
-
 
 						<!-- Button to "close" column -->
 						<!--<b-button class="close_button" variant="danger" v-on:click="closeForm('edit_clusters_popup')">Close</b-button>-->

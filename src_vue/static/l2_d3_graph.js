@@ -12,18 +12,34 @@ let d_node;
 let d_simulation;
 let d_drag_node;
 let brush;
+//// general svg
+//let viewbox_pan_horizontal = -screen.width * 0.01;
+//// increase -> down
+//let viewbox_pan_vertical = -screen.height * 0.07;
+//// larger viewbox height and width -> zoom out / smaller viewbox - > zoom in
+//let viewbox_height = screen.height * 1.2;
+//let viewbox_width = screen.width * 1.8;
+//// for setting the svg size for the graph
+//// THIS IS THE VIEWPORT
+//let svg_height = screen.height * 1;
+//// it needs to be wider than screen.width - otherwise it does
+//let svg_width = screen.width * 1.3;
 // general svg
-let viewbox_pan_horizontal = -screen.width * 0.01;
+let viewbox_pan_horizontal = -screen.width * 0.05;
 // increase -> down
-let viewbox_pan_vertical = -screen.height * 0.07;
+let viewbox_pan_vertical = -screen.height * 0.05;
 // larger viewbox height and width -> zoom out / smaller viewbox - > zoom in
-let viewbox_height = screen.height * 1.2;
-let viewbox_width = screen.width * 1.8;
+let viewbox_height = screen.height * 0.825 //* 1.2;
+let viewbox_width = screen.width * 0.99 //* 1.2;
 // for setting the svg size for the graph
 // THIS IS THE VIEWPORT
-let svg_height = screen.height * 1;
+let svg_height = viewbox_height;
 // it needs to be wider than screen.width - otherwise it does
-let svg_width = screen.width * 1.3;
+let svg_width = viewbox_width;
+
+//let svg_height = screen.height * 0.8
+//// it needs to be wider than screen.width - otherwise it does
+//let svg_width = screen.width * 0.99
 
 async function graph_init() {
   /**
@@ -35,11 +51,11 @@ async function graph_init() {
    */
   d_svg = d3
     .select("#graph2")
-    .on("keydown.brush", keydowned)
-    .on("keyup.brush", keyupped)
-    .each(function () {
-      this.focus();
-    })
+//    .on("keydown.brush", keydowned)
+//    .on("keyup.brush", keyupped)
+//    .each(function () {
+//      this.focus();
+//    })
     .append("svg")
     .classed("svg-content", true)
     .attr("id", "svg")
@@ -47,7 +63,6 @@ async function graph_init() {
     .attr("height", svg_height)
     .attr(
       "viewBox",
-      " " +
         viewbox_pan_horizontal +
         " " +
         viewbox_pan_vertical +
@@ -64,6 +79,33 @@ async function graph_init() {
     )
     .append("g");
 
+    // add target text
+    // add target text
+    let dragTargetText = d3.drag()
+	.on('drag', function(){
+	    e = d3.event;
+        x =  parseFloat(d3.select(this).attr("x"))
+        y = parseFloat(d3.select(this).attr("y"))
+        // d3.select(this)
+        // .attr("x", e.x)
+        // .attr("y", e.y)
+        d3.select(this)
+        .attr("x", ((e.dx) + x))
+        .attr("y", ((e.dy) + y))
+    });
+    d_svg.append("text")
+    .attr("class", "targettext")
+    .attr("x", viewbox_width / 2.5)
+    .attr("y",  0) //viewbox_height
+    .style("font-family", "helvetica, arial, sans-serif")
+    .style("font-size", vueData.svg_target_text_font_size)
+    .style("font-weight", "bold")
+    .style("opacity", vueData.svg_target_text_opacity)
+    .text(graph.props.target_word)
+    .call(dragTargetText)
+    .on("mouseover", function(){
+        d3.select(this).style("cursor", "pointer");
+    });
   // append the brush to the svg for dragging multiple nodes at the same time
   // there are various attributes etc in this group in the DOM when enables
   brush = d_svg.append("g").attr("class", "brush");
@@ -89,11 +131,7 @@ async function graph_init() {
    */
   d_simulation = d3
     .forceSimulation()
-    .force(
-      "link",
-      d3
-        .forceLink()
-        .id(function (d) {
+    .force("link", d3.forceLink().id(function (d) {
           return d.id;
         })
         .distance(function (d) {
@@ -137,19 +175,19 @@ async function graph_crud(dnodes, dlinks, dcluster) {
   // remove all nodes
   d3.selectAll(".node").selectAll("g").remove();
   // remove target workd
-  d3.selectAll(".target").remove();
+//  d3.selectAll(".target").remove();
 
   // append the target word to the center of the svg
-  d_svg
-    .append("text")
-    .attr("class", "target")
-    .attr("x", viewbox_width / 2.2)
-    .attr("y", viewbox_height / 2.2)
-    .style("font-family", "helvetica, arial, sans-serif")
-    .style("font-size", vueData.svg_target_text_font_size)
-    .style("font-weight", "bold")
-    .style("opacity", vueData.svg_target_text_opacity)
-    .text(graph.props.target_word);
+//  d_svg
+//    .append("text")
+//    .attr("class", "target")
+//    .attr("x", viewbox_width / 2.2)
+//    .attr("y", viewbox_height / 2.2)
+//    .style("font-family", "helvetica, arial, sans-serif")
+//    .style("font-size", vueData.svg_target_text_font_size)
+//    .style("font-weight", "bold")
+//    .style("opacity", vueData.svg_target_text_opacity)
+//    .text(graph.props.target_word);
 
   // initialize the tooltip for nodes
   d3Data.time_diff_tip = d3
@@ -206,9 +244,10 @@ async function graph_crud(dnodes, dlinks, dcluster) {
     .attr("r", function (d) {
       if (d.cluster_node) {
         return vueData.radius * 2;
-      } else {
-        return vueData.radius;
       }
+      else{
+            return vueData.radius;
+        }
     })
     .attr("centrality_score", (d) => d.centrality_score)
     .attr("cluster_name", function (d) {
@@ -254,13 +293,20 @@ async function graph_crud(dnodes, dlinks, dcluster) {
         vueData.node_selected = false;
       }
       vueData.select_node_is_no_cluster_node = vueApp.is_normal_node();
-      showContextMenu(this);
+//      showContextMenu(this);
     })
     .on("click", function (d) {
-      // console.log("in click onn node g");
+       if(d3.event.shiftKey == true){
+            return;
+      }
+      // vueData.node_selected = true;
+      // vueData.edge_selected = false;
+      console.log("node clicked")
+      console.log(d)
       if (!d.cluster_node) {
         vueData.active_node = {
           time_ids: d.time_ids,
+          time_slices:d.time_ids.map(vueApp.time_id_text),
           weights: d.weights,
           source_text: vueData.target_word,
           target_text: d.target_text,
@@ -271,21 +317,20 @@ async function graph_crud(dnodes, dlinks, dcluster) {
 
         vueApp.getSimBimsNodes();
         // set fields for display in node feature element
-        vueData.fields_nodes[0]["label"] = vueData.target_word;
-        vueData.fields_nodes[2]["label"] = d.target_text;
+        vueData.bim_fields[0]["label"] = vueData.target_word;
+        vueData.bim_fields[2]["label"] = d.target_text;
         // switch on node feature element
-        vueData.context_mode3 = true;
-        vueData.context_mode = false;
-        // console.log(vueData.context_mode3);
+        vueData.active_component = vueData.active_node;
+//        console.log(vueData.active_component.source_text, vueData.active_component.target_text);
+        vueApp.show_similarity_plot("line_plot1")
+       //reset node/edge highlights
+        d3.selectAll(".link").selectAll("line").classed('edge_selected', false);
+
+        vueApp.showSidebar_node = true;
+        vueApp.showSidebar_right=false;
       }
     });
-  // .call(
-  //   d3
-  //     .drag()
-  //     .on("start", d_dragstarted)
-  //     .on("drag", d_dragged)
-  //     .on("end", d_dragended)
-  // );
+
 
   let labels = d_node
     .append("text")
@@ -308,7 +353,7 @@ async function graph_crud(dnodes, dlinks, dcluster) {
     });
 
   d_link = d_linkG
-    .selectAll("line")
+    .selectAll("g")
     .data(dlinks, (d) => d.id)
     .enter()
     .append("line")
@@ -354,33 +399,73 @@ async function graph_crud(dnodes, dlinks, dcluster) {
     // set the stroke with in dependence to the weight attribute of the link
     // enables access to node class
     .on("click", function (d) {
+      
+      // vueData.edge_selected = true;
+      // vueData.node_selected = false;
+
       vueData.active_edge = {
         time_ids: d.time_ids,
+        time_slices:d.time_ids.map(vueApp.time_id_text),
         weights: d.weights,
         source_text: d.source_text,
         target_text: d.target_text,
         cluster_info_link: d.cluster_link,
       };
+
       if (!d.cluster_link) {
         vueApp.getSimBims();
         // set label
-        vueData.fields_edges[0]["label"] = d.source_text;
-        vueData.fields_edges[2]["label"] = d.target_text;
+        vueData.bim_fields[0]["label"] = d.source_text;
+        vueData.bim_fields[2]["label"] = d.target_text;
 
+//        vueData.bim_fields = vueData.fields_edges;
+        vueData.active_component = vueData.active_edge;
+        console.log('edge simlarity plot')
+        vueApp.show_similarity_plot("line_plot1", 'edge')
         // switch on context mode edges, switch off context mode
-        vueData.context_mode = true;
-        vueData.context_mode3 = false;
+        vueApp.showSidebar_node = true;
+        vueApp.showSidebar_right=false;
+        console.log(d);
+        
+//         d_node.classed("selected", false);
+        d3.selectAll(".node").selectAll("g").classed("selected", false);
+//        d3.selectAll(".node").selectAll("circle").attr("r", vueData.radius);
+        d3.selectAll('line').attr('class', false)
+        d3.select(this).attr('class', 'edge_selected')
+//        lines.classed("edge_selected", function (p) {
+//        if (p.id == d.id){ //'lever/NN-bracket/NN'
+//            console.log("line found")
+//            console.log(p.id);
+//            return true;
+//            }
+//          return false; //d.id == p.id;
+//        });
+//        lines.each(function (p) {
+//        if (p.id == d.id){ //'lever/NN-bracket/NN'
+//            console.log("check line class");
+//            console.log(d3.select(this).attr('class'));
+//            console.log(d3.select(this).attr('stroke'));
+//            d3.select(this).attr('stroke', '#e34234').attr('stroke-opacity', 1);
+//            }
+//        });
+        d_node.classed("selected", function (p) {
+          if(p == d.source || p == d.target){
+            return true;
+          }
+          else{
+            return false;
+          }
+        });
+
       }
     })
     .on("mouseover", d3Data.time_diff_tip_link.show)
     .on("mouseout", d3Data.time_diff_tip_link.hide);
 
-  d_simulation.nodes(dnodes).on("tick", d_ticked);
-
-  d_simulation.force("link").links(dlinks);
-
-  d_simulation.restart();
-  return "end";
+    d_simulation.nodes(dnodes).on("tick", d_ticked);
+    d_simulation.force("link").links(dlinks);
+    d_simulation.restart();
+    return "end";
 }
 
 // ############################################# SVG - MAIN ELEMENT FUNCTIONS ########################################
@@ -389,6 +474,7 @@ async function graph_crud(dnodes, dlinks, dcluster) {
  */
 
 function d_ticked() {
+//  console.log('ticked');
   d_node.attr("transform", positionNode);
   d_link
     .attr("x1", function (d) {
@@ -427,17 +513,22 @@ function positionNode(d) {
 }
 
 function d_dragstarted(d) {
+  console.log('d node drag start');
+
   if (!d3.event.active) d_simulation.restart();
   d.fx = d.x;
   d.fy = d.y;
 }
 
 function d_dragged(d) {
+  console.log('d node dragged');
   d.fx = d3.event.x;
   d.fy = d3.event.y;
 }
 
 function d_dragended(d) {
+  console.log('d node drag end');
+
   if (!d3.event.active) d_simulation.alphaTarget();
   d.fx = null;
   d.fy = null;
@@ -482,6 +573,7 @@ function mousedowned(d) {
   if (!d.cluster_node) {
     vueData.active_node = {
       time_ids: d.time_ids,
+      time_slices:d.time_ids.map(vueApp.time_id_text),
       weights: d.weights,
       source_text: vueData.target_word,
       target_text: d.target_text,
@@ -490,18 +582,33 @@ function mousedowned(d) {
       colour: d.fill,
     };
   }
+//  vueApp.showSidebar_node = true;
+//  vueApp.showSidebar_right=false;
 
+//  vueApp.getSimBimsNodes();
+  // set fields for display in node feature element
+//  vueData.bim_fields[0]["label"] = vueData.target_word;
+//  vueData.bim_fields[2]["label"] = d.target_text;
+  // switch on node feature element
+  vueData.active_component = vueData.active_node;
+//  vueApp.show_similarity_plot("line_plot1")
+
+  console.log('node mouse downed')
   // console.log(vueData.active_node);
+  d3.selectAll("line").classed('edge_selected', false);
+  d_node.selectAll(".node").selectAll("g").classed('selected', false);
 
   // console.log("in mouse downed sticky mode", vueData.sticky_mode);
   if (!d.selected) {
     d_node.classed("selected", function (p) {
       return (p.selected = d === p);
     });
-  } else if (d3Data.shiftKey && vueData.sticky_mode === "true") {
+  }
+  else if (d3Data.shiftKey && vueData.sticky_mode === "true") {
     d3.select(this).classed("selected", (d.selected = !d.selected));
     d3.event.stopImmediatePropagation();
-  } else if (vueData.sticky_mode === "true") {
+  }
+  else if (vueData.sticky_mode === "true") {
     d3.select(this).classed("selected", (d.selected = !d.selected));
     //d3.event.stopImmediatePropagation();
   }

@@ -3,6 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 	<title>SCoT</title>
 	<link rel="shortcut icon" href=".%% url_for('static', filename='favicon.ico') %%">
@@ -17,16 +18,24 @@
 
 	<!-- DEPENDENCIES -->
 	<script src="https://d3js.org/d3.v5.min.js"></script>
+<!--	<script src="https://d3js.org/d3-drag.v1.min.js"></script>-->
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3-tip/0.9.1/d3-tip.js"></script>
 	<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-	<link rel="stylesheet" href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css" />
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"/>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.12/vue.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/vue-clickaway@2.2.2/dist/vue-clickaway.min.js"></script>
 	<link rel="stylesheet" href="https://unpkg.com/bootstrap-vue@2.11.0/dist/bootstrap-vue.css" />
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css"
 		integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous" />
 	<script src="https://unpkg.com/bootstrap-vue@2.11.0/dist/bootstrap-vue.js"></script>
-
+    <script src="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue-icons.min.js"></script>
+	<script src="https://cdn.plot.ly/plotly-2.25.2.min.js" charset="utf-8"></script>
+	<!-- svg-exportJS prerequisite: canvg -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/canvg/3.0.9/umd.min.js" integrity="sha512-uFbOsMTwJI9fB3saQ+aHUcHuhRyxxHonT7AWjFL25AglbRxiG7x3+3jDAA9YGVpgrdKRBTBHdSx9Xnyt7VsDNQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+	<!-- svg-exportJS plugin -->
+<!--	<script src="https://sharonchoong.github.io/svg-exportJS/svg-export.js"></script>-->
+<!--	<script src="https://sharonchoong.github.io/svg-exportJS/svg-export.min.js"></script>-->
+	<script type="text/javascript" src=".%% url_for('static', filename='svg-export.js') %%"></script>
 
 
 	<!--FRONTEND APP -->
@@ -44,7 +53,7 @@
 	<script type="text/javascript" src=".%% url_for('static', filename='l2_vue_frame_sidebargraph.js') %%"></script>
 	<script type="text/javascript"
 		src=".%% url_for('static', filename='l2_vue_frame_sidebarclustertime.js') %%"></script>
-	<script type="text/javascript" src=".%% url_for('static', filename='l2_vue_feature_sidebaredge.js') %%"></script>
+<!--	<script type="text/javascript" src=".%% url_for('static', filename='l2_vue_feature_sidebaredge.js') %%"></script>-->
 	<script type="text/javascript" src=".%% url_for('static', filename='l2_vue_feature_sidebarnode.js') %%"></script>
 	<script type="text/javascript" src=".%% url_for('static', filename='l2_vue_feature_sidebarcluster.js') %%"></script>
 	<script type="text/javascript" src=".%% url_for('static', filename='l2_vue_text_example.js') %%"></script>
@@ -55,7 +64,8 @@
 <!--- Joint rendering: vue-app gets rendered by vue components, - this always displays an id tag on which d3 renders-->
 
 <body style="background-color: white;">
-	<div id="vue-app"></div>
+	<div id="vue-app">
+	</div>
 	<!-- include script vue.js -->
 	<script type="text/javascript" src=".%% url_for('static', filename='l2_vue_app.js') %%"></script>
 </body>

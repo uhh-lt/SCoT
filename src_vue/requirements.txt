@@ -1,7 +1,11 @@
-Flask
-records
+Flask==1.1.2
+SQLAlchemy==1.3.23
+records==0.5.3
+pymysql==1.0.2
+pandas==1.5.0
+numpy==1.22.0
 networkx==2.3
-mysqlclient
-flask_cors
-elasticsearch
-dataclasses-json
+mysql==0.0.3
+Flask-Cors==3.0.10
+elasticsearch==7.13.1
+dataclasses-json==0.5.4

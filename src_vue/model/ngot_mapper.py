@@ -58,6 +58,7 @@ def update_ngot_with_clusters_and_node_infos_from_graph(graph, ngot):
     # edges of networkx-graph not useable - they are undirected!
     # also maps CLUSTERS
     # the missing values in properties should have been filled in in the graph-building section...
+    print("in update_ngot_with_clusters_and_node_infos_from_graph")
     graph_nodes = list(graph.nodes(data=True))
     # print(graph_nodes)
     edges = ngot.links_dic

@@ -123,6 +123,20 @@ class NGOTCluster:
 
 @dataclass_json
 @dataclass()
+class NGOTStats:
+    min_score:(float,str)=(0, '0000', 'node')
+    max_score:(float,str)=(0, '0000', 'node')
+    mean_score:float=0
+
+    def __init__(self, min_score=None, max_score=None, mean_score=0):
+        self.min_score = min_score
+        self.max_score = max_score
+        self.mean_score = mean_score
+
+
+
+@dataclass_json
+@dataclass()
 class NGOTProperties:
     # NGOT Parameters managed by front- and back-end
     # All parameters, except those labelled as "result" are managed by the front-end
@@ -178,7 +192,7 @@ class NGOTProperties:
     # if graph = interval then number of satic edges per int. <= number of ngot edges <= number of static edges p. int * i
     # if graph = global then number of static nodes global / i <= number of ngot nodes <= number of static nodes global
     # if graph = global then number of static edges global / i <= number of ngot edges <= number of static edges global
-
+    weight_stats:Optional[NGOTStats] = None
     # SPECIAL SETTING ------------------------------------------------
     # Do not change if not necessary
     remove_singletons: bool = False

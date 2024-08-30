@@ -94,6 +94,12 @@ Vue.component("frame-sidebargraph", {
 
     onChangeDb() {
       vueApp.onChangeDb();
+      delete_graph();
+      vueApp.overlay_main = false;
+      vueApp.graph_rendered = false;
+      vueApp.showSidebar_node = false;
+      vueApp.showSidebar_right = false;
+
     },
     updateGraphPropsBasedonUserInput() {
       // user input: interval data props - basis of graph
@@ -110,7 +116,6 @@ Vue.component("frame-sidebargraph", {
       // resolved by frontend via computed properties
       graph.props["e_edges"] = vueApp.e_edges;
       graph.props["number_of_intervals"] = vueApp.number_of_intervals;
-
       // derived props
       if (graph.props.graph_type == "ngot_interval") {
         graph.props["number_of_ngot_nodes"] = null;
@@ -168,9 +173,13 @@ Vue.component("frame-sidebargraph", {
         */
     getDataAndRenderNew: async function () {
       // async start overlay with spinner
+//      vueApp.showSidebar_node = false;
       vueApp.overlay_main = true;
       vueApp.graph_rendered = false;
       vueApp.wait_rendering = true;
+
+      vueApp.showSidebar_node = false;
+      vueApp.showSidebar_right = false;
 
       this.updateGraphPropsBasedonUserInput();
 
@@ -191,7 +200,7 @@ Vue.component("frame-sidebargraph", {
     /*
         / ############ SIDEBAR LEFT Graph-Menu - VIEW Functions ---------------------------------------------------------------------------------------------------
         */
-    // these functions mainly act as VUE event handlers (instaed of the d3 ones)
+    // these functions mainly act as VUE event handlers (instead of the d3 ones)
     resetZoom() {
       reset_zoom();
     },
@@ -222,24 +231,25 @@ Vue.component("frame-sidebargraph", {
   template: `
     <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR-LEFT XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
 			<!-- Column with input parameters (left column) -->
-			<b-sidebar id="sidebar-left" title="Sense graph over time" bg-variant="secondary" text-variant="light"
-				style="opacity: 0.9;" width="20%" left shadow>
+//			<b-sidebar id="sidebar-left" title="Sense graph over time" bg-variant="secondary" text-variant="light"
+			<b-sidebar id="sidebar-left" bg-variant="secondary" text-variant="light"
+				style="opacity: 0.9;" width="22%" left shadow title="Graph Properties">
 				<template v-slot:footer="{ hide }">
 					<div class="d-flex bg-secondary text-light align-items-center px-3 py-2">
 					</div>
 				</template>
 				<br>
+
 				<h5 class="sidebar-section__title"> </h5>
-				<b-form-group>
-					<b-form-radio-group size="m" v-model="left_selected" :options="left_options" buttons
-						button-variant="success" name="radios-btn-default"></b-form-radio-group>
+				<b-form-group class="ml-2 mr-2 mb-2">
+					<b-form-radio-group size="sm" v-model="left_selected" :options="left_options" buttons
+						button-variant="info" name="radios-btn-default"></b-form-radio-group>
 				</b-form-group>
 				<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR-LEFT CREATE GRAPH XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
-				<div v-if="left_selected === 'graph_data'">
+				<div class="ml-2 mr-2 mb-2" v-if="left_selected === 'graph_data'">
 					<b-overlay :show="overlay_main" :variant="'dark'" rounded="sm" spinner-type="border"
 						spinner-variant="success">
 						<hr style="border: 1px solid gray;" />
-						<h5>Interval data</h5>
 						<!-- Enter database -->
 						<b-form-group class="input" label="Collection">
 							<b-form-select v-on:change="onChangeDb" v-model="collection_name"
@@ -254,22 +264,22 @@ Vue.component("frame-sidebargraph", {
 						<b-form-group class="input" label="End of last interval">
 							<b-form-select v-model="end_year" :options="end_years" size="sm"></b-form-select>
 						</b-form-group>
-						You have selected I = {{number_of_intervals}} {{number_of_intervals > 1 ? "intervals" : "interval"}}
-						<hr style="border: 1px solid gray;" />
-						<h5>Graph over time</h5>
+						<small>You have selected = {{number_of_intervals}} {{number_of_intervals > 1 ? "intervals" : "interval"}}</small>
+                        <hr style="border: 1px solid gray;" />
+						<h5>Graph over Time</h5>
 						<!-- Enter target word -->
 						<b-form-group class="input" label="Target word">
 							<b-form-input v-model="target_word" placeholder="target word" size="sm">
 							</b-form-input>
 						</b-form-group>
 						<!-- Enter number of neighbouring nodes -->
-						{{node_info}}
+						<small>{{node_info}}</small>
 						<b-form-group class="input">
 							<b-form-input type="number" v-model="n_nodes" min="0" placeholder="number of neighbours"
 								size="sm"></b-form-input>
 						</b-form-group>
 						<!-- Enter factor that determines number of edges per graph -->
-						Density in % [E = {{edges}} of max. {{max_dir_edges}} {{density_edge_info}} ]
+						Density in % <small>[E = {{edges}} of max. {{max_dir_edges}} {{density_edge_info}} ]</small>
 						<b-form-group class="input">
 							<b-form-input type="number" v-model="density" min="0" max="100"
 								placeholder="number of edges" size="sm"></b-form-input>
@@ -292,7 +302,7 @@ Vue.component("frame-sidebargraph", {
 				</div>
 
 				<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR-LEFT VIEW XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
-				<div v-if="left_selected === 'graph_view'">
+				<div class="ml-2 mr-2 mb-2" v-if="left_selected === 'graph_view'">
 					<div>
 						<b-button-group>
 							<!-- Resetz Zoom button -->
@@ -328,7 +338,7 @@ Vue.component("frame-sidebargraph", {
 					</b-form-group>
 				</div>
 				<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR-LEFT HELP XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
-				<div v-if="left_selected === 'graph_help'">
+				<div class="ml-2 mr-2 mb-2" v-if="left_selected === 'graph_help'">
 					<hr style="border: 1px solid gray;" />
 						SCoT (Sense Clustering over Time) is a web application to view the senses of a word and their evolvement over time. 
 						<br>

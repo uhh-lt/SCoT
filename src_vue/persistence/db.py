@@ -2,9 +2,11 @@ from typing import Dict, List, Set
 import records
 import json
 import dataclasses
+# from sqlalchemy import create_engine
+
 from model.ngot_model import NGOTLink, NGOTNode, NGOT
 from model.ngot_mapper import map_nodes_dic_2_ngot, map_edges_dic_2_ngot
-
+import time
 
 def get_db(config, collection):
     if collection != "" and collection != None and collection in config["collections_info_backend"]:
@@ -12,20 +14,19 @@ def get_db(config, collection):
     else:
         return "default"
 
-
 class Database():
-    def __init__(self, collection, configfile='./config/config.json') -> None:
-        with open(configfile) as config_file:
-            config = json.load(config_file)
-        if (collection in [*config["collections_info_backend"]]):
-            self.db = records.Database(
-                config["collections_info_backend"][collection])
-        else:
-            self.db = records.Database(
-                config["collections_info_backend"]['default'])
+    def __init__(self, config, collection, echo=False) -> None:
+        self.db = records.Database(
+            config["collections_info_backend"][collection], echo=echo)
 
+        # if collection in [*config["collections_info_backend"]]:
+        #     self.db = records.Database(
+        #         config["collections_info_backend"][collection], echo=echo)
+        # else:
+        #     self.db = records.Database(
+        #         config["collections_info_backend"]['default'], echo=echo)
 
-# --- COLLECTION INFORMATION
+    # --- COLLECTION INFORMATION
 
     def get_all_years(self, column_name) -> List[Dict[int, str]]:
         """ gets initial information on years and ids for collection
@@ -35,7 +36,8 @@ class Database():
                 List[Dict[int, str]]: [description]
         """
         years = []
-        t = self.db.query('SELECT * FROM time_slices ORDER BY id ASC')
+        query = f"SELECT * FROM time_slices ORDER BY id ASC"
+        t = self.db.query(query)
         for row in t:
             year = {}
             # value and text needed for vue dropdown
@@ -46,7 +48,7 @@ class Database():
             years.append(year)
         return years
 
-# ------------------ GRAPH QUERY YEAR_TIME_ID RESOLVER
+    # ------------------ GRAPH QUERY YEAR_TIME_ID RESOLVER
 
     def get_time_ids(self, start_year, end_year):
         """ frontend queries years - these are resolved to time-ids by this function
@@ -58,12 +60,10 @@ class Database():
         """
         # get the corresponding ids for the start and end_year parameters
         time_ids = []
-        t = self.db.query(
-            'SELECT id FROM time_slices WHERE start_year>=:start AND end_year<=:end ORDER BY id ASC',
-            start=start_year, end=end_year)
-
-        for r in t:
-            time_ids.append(int(r['id']))
+        query = f"SELECT id FROM time_slices WHERE start_year>={start_year} AND end_year<={end_year} ORDER BY id ASC"
+        t = self.db.query(query)
+        for row in t:
+            time_ids.append(int(row['id']))
         return time_ids
 
     # ---------------------- GRAPH ALGORITHM NGOT INTERVAL -------------------------------------------
@@ -101,7 +101,7 @@ class Database():
         # result info
         print("expected static n per interval ",
               ngot.props.n_nodes, " per interval in i ", len(
-                  ngot.props.selected_time_ids), " intervals")
+                ngot.props.selected_time_ids), " intervals")
         print("result n for each interval ",
               ngot.props.number_of_interval_nodes)
         print("expected dynamic n ngot", ngot.props.number_of_static_nodes_per_interval,
@@ -122,16 +122,16 @@ class Database():
         # PARAM ngot.props.number_of_static_nodes_per_interval
         # PARAM interval_time_id is integer and references one of the time-ids
         # RETURNS nodes
-
-        static_nodes_interval = self.db.query(
-            'SELECT word2, time_id, score FROM similar_words '
-            'WHERE word1=:tw AND word1!=word2 AND time_id=:ti '
-            'ORDER BY score DESC '
-            'LIMIT :li',
-            li=int(ngot.props.number_of_static_nodes_per_interval),
-            ti=int(interval_time_id),
-            tw=str(ngot.props.target_word)
-        )
+        li = int(ngot.props.number_of_static_nodes_per_interval)
+        ti = int(interval_time_id)
+        tw = str(ngot.props.target_word)
+        # -------------------------------------------------------------CASE_SENSITIVE? No
+        query = f"""SELECT word2, time_id, score FROM similar_words 
+                    WHERE word1='{tw}' AND word1!=word2 AND time_id={ti} 
+                    ORDER BY score DESC
+                    LIMIT {li}
+                """
+        static_nodes_interval = self.db.query(query)
         # mapping to static ngot nodes
         static_ngot_nodes = []
         for row in static_nodes_interval:
@@ -179,16 +179,16 @@ class Database():
             node_dic[node[0]] = node[1]
 
         # STATIC EDGES over all time-ids ##############################################
-
-        con = self.db.query(
-            'SELECT word1, word2, score, time_id '
-            'FROM similar_words '
-            'WHERE word1 IN :nodes AND word2 IN :nodes AND time_id IN :time_ids '
-            'ORDER BY score DESC',
-            nodes=node_list,
-            time_ids=time_ids
-        )
-
+        # -------------------------------------------------------------CASE_SENSITIVE?
+        query = f"""SELECT word1, word2, score, time_id
+                    FROM similar_words 
+                    WHERE word1 IN {tuple(node_list)} AND word2 IN {tuple(node_list)} AND time_id IN {tuple(time_ids)}
+                    ORDER BY score DESC
+                """
+        result = self.db.query(query)
+        print('%' * 25)
+        print(time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(time.time())))
+        print('%' * 25)
         # prepare var for allocating edges top down up until local max per slice is reached
         con_dic = {}
         for time_id in time_ids:
@@ -196,7 +196,7 @@ class Database():
 
         # allocate static edges to static dic (in descending order until local edge thresholds reached)
 
-        for row in con:
+        for row in result:
             word1 = str(row['word1'])
             word2 = str(row['word2'])
             time_id = int(row['time_id'])
@@ -204,7 +204,6 @@ class Database():
                     and word1 in node_dic and word2 in node_dic \
                     and time_id in node_dic[word1]['time_ids'] and time_id in node_dic[word2]['time_ids'] \
                     and len(con_dic[int(row['time_id'])]) < max_edges:
-
                 # count per interval
                 con_dic[int(row['time_id'])].append("1")
 
@@ -218,7 +217,9 @@ class Database():
                 ngot_link.time_ids = [int(row['time_id'])]
                 tmp_ngot_links.append(ngot_link)
         # extract number of edges per interval
-
+        print('%' * 25)
+        print(time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(time.time())))
+        print('%' * 25)
         ngot.props.number_of_interval_links = []
         for time_id in time_ids:
             ngot.props.number_of_interval_links.append(len(con_dic[time_id]))
@@ -274,7 +275,7 @@ class Database():
 
         return ngot
 
-# ---------------------- GRAPH ALGORITHM NGOT DYNAMIC/OVERLAY -------------------------------------------
+    # ---------------------- GRAPH ALGORITHM NGOT DYNAMIC/OVERLAY -------------------------------------------
 
     def get_nodes_overlay(
             self,
@@ -287,20 +288,24 @@ class Database():
         # PARAM max_paradigms
         # PARAM selected_time_ids is int-array
         # RETURNS nodes
-
+        print("Target word:", str(ngot.props.target_word))
+        print("ngot.props.number_of_ngot_nodes:", ngot.props.number_of_ngot_nodes)
+        # -------------------------------------------------------------CASE_SENSITIVE?
         ngot_nodes = []
-        raw_links = self.db.query(
-            'SELECT word2, time_id, score FROM similar_words '
-            'WHERE word1=:tw AND word1!=word2 '
-            'ORDER BY score DESC',
-            tw=str(ngot.props.target_word)
-        )
+        query = f"""SELECT word2, time_id, score FROM similar_words
+                    WHERE word1='{str(ngot.props.target_word)}' AND word1!=word2
+                    ORDER BY score DESC
+        """
+
+        raw_links = self.db.query(query)
+
         time_dic = {}
         for time_id in ngot.props.selected_time_ids:
             time_dic[time_id] = 0
         for row in raw_links:
             exists = False
-            if int(row['time_id']) in ngot.props.selected_time_ids and len(ngot_nodes) < int(ngot.props.number_of_ngot_nodes):
+            if int(row['time_id']) in ngot.props.selected_time_ids and len(ngot_nodes) < int(
+                    ngot.props.number_of_ngot_nodes):
                 for node in ngot_nodes:
                     if node.id == str(row['word2']):
                         exists = True
@@ -355,23 +360,27 @@ class Database():
         singletons = []
         node_dic = {}
         i = ngot.props.number_of_intervals
-        print("number intervals", i)
-        print("ngot overlay param in max_ed", max_edges)
+        print("number of intervals:", i)
+        print("ngot overlay param in max_ed:", max_edges)
         for node in nodes:
             node_list.append(node[0])
             node_dic[node[0]] = node[1]
 
+
+        print("node_list:", node_list)
+        print("time_ids:", time_ids)
+
+        # -------------------------------------------------------------CASE_SENSITIVE?
         # QUERY ALL DIRECTED EDGES THAT FULFIL BASIC CRITERIA (WORD1, WORD2, in Selected Time-ids) in ALL SELECTED TIME-IDS
-        con = self.db.query(
-            'SELECT word1, word2, score, time_id '
-            'FROM similar_words '
-            'WHERE word1 IN :nodes AND word2 IN :nodes AND time_id IN :time_ids '
-            'ORDER BY score DESC',
-            nodes=node_list,
-            time_ids=time_ids
-        )
+        query = f"""SELECT word1, word2, score, time_id
+                    FROM similar_words 
+                    WHERE word1 IN {tuple(node_list)} AND word2 IN {tuple(node_list)} AND time_id IN {tuple(time_ids)}
+                    ORDER BY score DESC
+        """
+        con = self.db.query(query)
         # put all into connections-array
         for row in con:
+
             if not str(row['word1']) == str(row['word2']) and int(row['time_id']) in time_ids:
                 # and len(connections)<int(global_max):
                 connections.append([str(row['word1']), str(
@@ -404,10 +413,10 @@ class Database():
                 overlay.append((key[0], key[1]))
 
         # REDUCTION 3: Choose Top max global "undirected" edges from overlay.array
-        undirected = int((max_edges+1)/2)
+        undirected = int((max_edges + 1) / 2)
         # define top max - check that is not larger than all potential undirected edges (check macht klarer)
-        if undirected > int((len(potential_edges)+1)/2):
-            undirected = int((len(potential_edges)+1)/2)
+        if undirected > int((len(potential_edges) + 1) / 2):
+            undirected = int((len(potential_edges) + 1) / 2)
         overlay = overlay[:undirected]
         print("overlay UNDIRECTED laenge adated to available edges", len(overlay))
 
@@ -466,7 +475,7 @@ class Database():
         # print(ngot)
         return ngot
 
-# ---------------------------- GLOBAL EDGES -------------------------------------------------------------------
+    # ---------------------------- GLOBAL EDGES -------------------------------------------------------------------
     def get_edges_global_scaled(self, ngot):
         # EDGE Algo for NGOT - Interval
         # Calling method creates an NGoT graph by merging all single graphs in each time-id with the same number of nodes and edges
@@ -500,17 +509,14 @@ class Database():
         for node in nodes:
             node_list.append(node[0])
             node_dic[node[0]] = node[1]
-
+        # -------------------------------------------------------------CASE_SENSITIVE?
         # STATIC EDGES over all time-ids ##############################################
-
-        con = self.db.query(
-            'SELECT word1, word2, score, time_id '
-            'FROM similar_words '
-            'WHERE word1 IN :nodes AND word2 IN :nodes AND time_id IN :time_ids '
-            'ORDER BY score DESC',
-            nodes=node_list,
-            time_ids=time_ids
-        )
+        query = f"""SELECT word1, word2, score, time_id
+                    FROM similar_words 
+                    WHERE word1 IN {tuple(node_list)} AND word2 IN {tuple(node_list)} AND time_id IN {tuple(time_ids)}
+                    ORDER BY score DESC
+        """
+        con = self.db.query(query)
 
         # prepare var for allocating edges top down up until local max per slice is reached
         con_dic = {}
@@ -527,7 +533,6 @@ class Database():
                     and word1 in node_dic and word2 in node_dic \
                     and time_id in node_dic[word1]['time_ids'] and time_id in node_dic[word2]['time_ids'] \
                     and len(tmp_ngot_links) < max_edges:
-
                 # count per interval
                 con_dic[int(row['time_id'])].append("1")
 
@@ -608,9 +613,7 @@ class Database():
 
         return ngot
 
-
-# ---------------------- GRAPH ALGORITHM NGOT GLOBAL -------------------------------------------
-
+    # ---------------------- GRAPH ALGORITHM NGOT GLOBAL -------------------------------------------
 
     def get_nodes_global(
             self,
@@ -626,14 +629,14 @@ class Database():
         # PARAM max_paradigms
         # PARAM selected_time_ids is int-array
         # RETURNS nodes
-
+        # -------------------------------------------------------------CASE_SENSITIVE?
         nodes = []
-        target_word_senses = self.db.query(
-            'SELECT word2, time_id, score FROM similar_words '
-            'WHERE word1=:tw AND word1!=word2 '
-            'ORDER BY score DESC',
-            tw=target_word
-        )
+        query = f"""SELECT word2, time_id, score FROM similar_words
+                    WHERE word1=BINARY '{target_word}' AND word1!=word2
+                    ORDER BY score DESC
+        """
+        target_word_senses = self.db.query(query)
+
         fullNodeCounter = 0
         for row in target_word_senses:
             exists = False
@@ -648,44 +651,47 @@ class Database():
 
                 if not exists:
                     nodes.append([str(row['word2']), {"time_ids": [int(row['time_id'])], "weights": [
-                                 float(row["score"])], "target_text": str(row['word2'])}])
+                        float(row["score"])], "target_text": str(row['word2'])}])
                     fullNodeCounter += 1
         print("ngot global all single nodes ", fullNodeCounter)
         print("ngot global overlaid resulting nodes ", len(nodes))
         return nodes
 
-
-# FEATURES ---------------------------------------------------------------------------------------------
-
-
+    # FEATURES ---------------------------------------------------------------------------------------------
+    # -------------------------------------------------------------CASE_SENSITIVE?
     def get_features(self, word1: str, time_id: int) -> Dict[str, float]:
-
-        features: Dict(str, float) = {}
-        f = self.db.query(
-            'SELECT feature, score FROM similar_features '
-            'WHERE word1=:tw and time_id=:td '
-            'ORDER BY score DESC',
-            tw=str(word1),
-            td=int(time_id)
-        )
+        features: Dict[str, float] = {}
+        query = f"""SELECT feature, score, time_id FROM word_features 
+                    WHERE word1='{word1}' and time_id={time_id} 
+                    ORDER by score DESC
+                """
+        f = self.db.query(query)
         for row in f:
+            # if str(row['feature']) in features.keys():
+            #     print('.....already present.....')
+            #     print(str(row['feature']), features[str(row['feature'])])
+            # print(row)
             features[str(row['feature'])] = float(row['score'])
+        # if len(f) > 0:
+        #     print('most significant feature:\t', list(features.keys())[0], list(features.values())[0])
+        #     print("--------------------------------------")
         return features
 
     def get_feature_target_filter_set(self, word1: str, time_ids: List[int]) -> Set[str]:
-        f = self.db.query(
-            'SELECT feature FROM similar_features '
-            'WHERE word1=:tw and time_id IN :td '
-            'ORDER BY score DESC',
-            tw=word1,
-            td=time_ids
-        )
+        # -------------------------------------------------------------CASE_SENSITIVE?
+        time_ids = tuple(time_ids)
+        query = f"""SELECT feature FROM word_features 
+                    WHERE word1='{word1}' and time_id IN {time_ids} 
+                    ORDER by score DESC
+                """
+        f = self.db.query(query)
+
         result = set()
         for row in f:
             result.add(str(row['feature']))
         return result
 
-# ----------- DEPRECATED --------------------------------------------------------------------------------
+    # ----------- DEPRECATED --------------------------------------------------------------------------------
 
     def get_edges_global_scaled_old(self, ngot):
         # edge function global -scaled for ngot global and ngot overlay-global
@@ -717,15 +723,13 @@ class Database():
 
         for node in nodes:
             node_list.append(node[0])
-
-        con = self.db.query(
-            'SELECT word1, word2, score, time_id '
-            'FROM similar_words '
-            'WHERE word1 IN :nodes AND word2 IN :nodes '
-            'ORDER BY score DESC',
-            nodes=node_list
-        )
-
+        # -------------------------------------------------------------CASE_SENSITIVE?
+        query = f"""SELECT word1, word2, score, time_id 
+                    FROM similar_words
+                    WHERE word1 IN {node_list} AND word2 IN {node_list}
+                    ORDER by score DESC
+                """
+        con = self.db.query(query)
         # get global maximum of edges - max edges
         for row in con:
             if not str(row['word1']) == str(row['word2']) and int(row['time_id']) in time_ids \
@@ -746,7 +750,7 @@ class Database():
         # map to edge format
         for k, v in potential_edges.items():
             edges.append((k[0], k[1], {'weight': v[0], 'weights': [v[0]], 'time_ids': [
-                         v[1]], 'source_text': k[0], 'target_text': k[1]}))
+                v[1]], 'source_text': k[0], 'target_text': k[1]}))
         # filter out the singletons (ie those nodes that have no connecting edge)
         for n in node_list:
             exists = False

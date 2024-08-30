@@ -12,9 +12,9 @@ Vue.component("feature-sidebaredge", {
     */
     // SIDEBAR RIGHT EDGE INFORMATION
     toggleSidebarContext() {
-      this.context_mode3 = false;
-      this.context_mode = !this.context_mode;
-      // console.log("in toggle", this.context_mode);
+      this.showSidebar_node = false;
+      this.showSidebar_edge = !this.showSidebar_edge;
+      // console.log("in toggle", this.showSidebar_edge);
     },
 
     // returns selected row in table node-context information
@@ -76,7 +76,7 @@ Vue.component("feature-sidebaredge", {
   },
   template: `
   <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR RIGHT 1 - EDGE CONTEXT ANALYSIS VIEW XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
-			<b-sidebar v-show="context_mode" id="sidebar-right1" title="Edges Shared Words" width="23%"
+			<b-sidebar v-show="showSidebar_edge" id="sidebar-right1" title="Edges Shared Words" width="23%"
 				bg-variant="secondary" text-variant="light" style="opacity: 0.9;" no-header right shadow>
 				<template>
 					<br>
@@ -98,7 +98,7 @@ Vue.component("feature-sidebaredge", {
 				</p>
 				<div>
 					<b-table selectable :select-mode="'single'" @row-selected="onRowSelectedEdge" striped-hover
-						:busy="busy_right1" :fields="fields_edges" :items="simbim_object" :sort-by="'node1'"
+						:busy="busy_right_edge" :fields="fields_edges" :items="simbim_object" :sort-by="'node1'"
 						:sort-desc="true" style="color: white;font-size:12px">
 						<template v-slot:table-busy>
 							<div class="text-center text-danger my-2">

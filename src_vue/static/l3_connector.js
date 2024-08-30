@@ -15,6 +15,8 @@ async function getCollections_io() {
     vueApp.collections = res.data;
     vueApp.collections_names = Object.keys(vueApp.collections);
     vueApp.collection_name = vueApp.collections_names[0];
+    vueApp.is_ES_available = vueApp.collections[vueApp.collection_name].is_ES_available;
+
     vueApp.getGraphTypes();
     vueApp.onChangeDb();
   } catch (error) {
@@ -38,6 +40,7 @@ async function getData_io() {
     graph.links = data_from_db.links;
     graph.singletons = data_from_db.singletons;
     graph.props = data_from_db.props;
+
     graph.clusters = data_from_db.clusters;
     graph.transit_links = data_from_db.transit_links;
     // clean up of data - python cannot use the reserved word "class"
@@ -287,7 +290,8 @@ async function recluster_with_url(url) {
 // Features
 
 function getSimBims_io() {
-  vueApp.busy_right1 = true;
+  vueApp.busy_right_node = true;
+//  vueApp.busy_right_edge = true;
   let retArray = [];
   let data = {};
   data["word1"] = vueApp.active_edge.source_text;
@@ -295,7 +299,7 @@ function getSimBims_io() {
   data["time_id"] = vueApp.active_edge.time_ids[0];
 
   let url = "./api/collections/" + vueApp.collection_key + "/simbim";
-  console.log(url);
+//  console.log(url);
   axios
     .post(url, data)
     .then((res) => {
@@ -314,7 +318,9 @@ function getSimBims_io() {
       }
 
       vueApp.simbim_object = ret;
-      vueApp.busy_right1 = false;
+      vueApp.bim_objects = vueApp.simbim_object;
+      vueApp.busy_right_node = false;
+//      vueApp.busy_right_edge = false;
     })
     .catch((error) => {
       console.error(error);
@@ -322,7 +328,7 @@ function getSimBims_io() {
 }
 
 function getSimBimsNodes_io() {
-  vueApp.busy_right3 = true;
+  vueApp.busy_right_node = true;
   let retArray = [];
   let data = {};
   data["word1"] = vueApp.target_word;
@@ -350,7 +356,8 @@ function getSimBimsNodes_io() {
       }
 
       vueApp.simbim_node_object = ret;
-      vueApp.busy_right3 = false;
+      vueApp.bim_objects = vueApp.simbim_node_object;
+      vueApp.busy_right_node = false;
     })
     .catch((error) => {
       console.error(error);
@@ -399,9 +406,9 @@ function get_cluster_information_axios(cluster) {
     );
   } else { */
   // console.log("cluster info continue with less than six");
-  vueApp.busy_right2 = true;
-  vueApp.context_mode2 = true;
-
+  vueApp.busy_right_cluster = true;
+  vueApp.showSidebar_cluster = true;
+  vueApp.showSidebar_docs = false;
   let url = "./api/cluster_information";
   axios
     .post(url, jsonReq)
@@ -416,7 +423,7 @@ function get_cluster_information_axios(cluster) {
       }
       vueApp.cluster_shared_object = ret;
       //console.log(this.cluster_shared_object)
-      vueApp.busy_right2 = false;
+      vueApp.busy_right_cluster = false;
     })
     .catch((error) => {
       console.error(error);
@@ -427,21 +434,27 @@ function get_cluster_information_axios(cluster) {
 
 // Example sentences
 function docSearch_io(wort1, wort2) {
-  vueApp.context_mode4 = true;
-  vueApp.busy_right4 = true;
+  if (!vueApp.is_ES_available){
+    alert("Example Docs are not available for this collection...")
+    return;
+  }
+  vueApp.showSidebar_docs = true;
+  vueApp.busy_right_docs = true;
+  vueApp.docs_loaded = false;
   let data = {};
   data["jo"] = wort1;
   data["bim"] = wort2;
   data["collection_key"] = vueApp.collection_key;
-
-  console.log("selected", data["jo"], data["bim"]);
+  data["time_slices"] = graph.props.selected_time_ids.map(vueApp.time_id_text);
+//  console.log("selected", data["jo"], data["bim"]);
   let url = "./api/collections/" + vueApp.collection_key + "/documents";
-  console.log(url);
+//  console.log(url);
   axios.post(url, data).then((res) => {
-    console.log(res);
+//    console.log(res);
     vueApp.documents = res.data["docs"];
-    console.log(vueApp.documents);
-    vueApp.busy_right4 = false;
+//    console.log(vueApp.documents);
+    vueApp.busy_right_docs = false;
+    vueApp.docs_loaded = true;
   }); // end then
 }
 
@@ -459,8 +472,9 @@ function saveGraph_io() {
   const a = document.createElement("a");
   document.body.appendChild(a);
   const url = window.URL.createObjectURL(blob);
+  console.log(url)
   a.href = url;
-  a.download =
+  a.download = vueApp.collection_name + '--'+
     graph.props.target_word +
     "_" +
     graph.props.n_nodes +
@@ -468,6 +482,8 @@ function saveGraph_io() {
     graph.props.density +
     "_" +
     graph.props.graph_type +
+    '_' +
+    graph.props.start_year + "_" + graph.props.end_year +
     ".json";
   a.click();
   setTimeout(() => {
@@ -486,4 +502,95 @@ function loadGraph_io() {
     vueApp.loadNew(data_from_db);
   };
   reader.readAsText(vueApp.file);
+}
+
+function saveGraphSVG_io() {
+        const filename = vueApp.collection_name + '--'+
+        graph.props.target_word +
+        "_" +
+        graph.props.n_nodes +
+        "_" +
+        graph.props.density +
+        "_" +
+        graph.props.graph_type +
+        "_" +
+        graph.props.start_year + "_" + graph.props.end_year
+        ;
+        svgExport.downloadSvg(document.querySelector("#svg"),
+                              filename,
+                              {
+                                width: svg_width,
+                                height: svg_height,
+                                scale: 0.95,
+                              }
+                              );
+
+}
+
+function saveGraphPNG_io() {
+        const filename = vueApp.collection_name + '--'+
+        graph.props.target_word +
+        "_" +
+        graph.props.n_nodes +
+        "_" +
+        graph.props.density +
+        "_" +
+        graph.props.graph_type +
+        "_" +
+        graph.props.start_year + "_" + graph.props.end_year
+        ;
+        svgExport.downloadPng(document.querySelector("#svg"),
+                              filename,
+                              {
+                                width: svg_width,
+                                height: svg_height,
+                                scale: 5,
+                                transparentBackgroundReplace: 'white',
+                                transparent: false,
+                              }
+                              );
+
+}
+
+function saveDocs_io(jo, bim) {
+
+  if (!vueApp.is_ES_available){
+    alert("Example Docs are not available for this collection...")
+    return;
+  }
+
+  let data = {};
+  let json_docs = []
+  data["jo"] = jo;
+  data["bim"] = bim;
+  data["collection_key"] = vueApp.collection_key;
+  data["time_slices"] = graph.props.selected_time_ids.map(vueApp.time_id_text);
+//  console.log("selected", data["jo"], data["bim"]);
+  let url = "./api/collections/" + vueApp.collection_key + "/documents_scroll";
+//  console.log(url);
+  axios.post(url, data).then((res) => {
+    console.log(res);
+    json_docs = res.data["json_docs"];
+    data2 = JSON.stringify(json_docs, null, 2)
+    console.log(json_docs.length);
+    let blob = new Blob([json_docs], { type: "text/csv" });
+//    console.log(blob);
+    const a = document.createElement("a");
+    document.body.appendChild(a);
+    const url2 = window.URL.createObjectURL(blob);
+    a.href = url2;
+    a.download = vueApp.bim_fields[0]["label"] + '_' + bim + '_' + vueApp.bim_fields[2]["label"]
+    + '_'
+    + graph.props.start_year + "_" + graph.props.end_year
+    + ".tsv";
+
+    a.click();
+    setTimeout(() => {
+    window.URL.revokeObjectURL(url2);
+    document.body.removeChild(a);
+    }, 0);
+
+  }); // end then
+
+
 }

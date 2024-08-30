@@ -1,14 +1,14 @@
 let vueApp = new Vue({
   el: "#vue-app",
   template: `
-  <div>
+  <div class="parentdiv">
   <b-overlay :show="overlay_main" rounded="sm" spinner-type="border" spinner-variant="dark">
-  <div id="graph2" class="svg-container"></div>
+  <div id="graph2" class="svg-container" ></div>
   </b-overlay>
   <frame-navbar></frame-navbar>
   <frame-sidebargraph></frame-sidebargraph>
   <frame-sidebarclustertime></frame-sidebarclustertime>
-  <feature-sidebaredge></feature-sidebaredge>
+  <!-- feature-sidebaredge></feature-sidebaredge -->
   <feature-sidebarnode></feature-sidebarnode>
   <feature-sidebarcluster></feature-sidebarcluster>
   <text-example></text-example>
@@ -86,6 +86,7 @@ let vueApp = new Vue({
       // clean up of data - python cannot use the reserved word "class"
       // execute mapping to node attribute "class" : "cluster_id" -> "class"
       for (let node of graph.nodes) {
+//      console.log(node);
         node.class = node.cluster_id;
       }
       // copy target and source to source-Text and target-text: d3 force is working on them
@@ -166,6 +167,7 @@ let vueApp = new Vue({
       this.n_nodes = this.collections[this.collection_name]["p"];
       this.density = this.collections[this.collection_name]["d"];
       this.collection_info = this.collections[this.collection_name]["info"];
+      this.is_ES_available = this.collections[this.collection_name]["is_ES_available"];
       // console.log("in onchange db" + this.collection_key);
       // console.log("in onchange db" + this.collection_name);
 
@@ -225,6 +227,139 @@ let vueApp = new Vue({
       }
       return intervalString;
     },
+    sort_timewise(time_ids, weights)
+    {
+        let data = []
+        for(let index = 0; index<time_ids.length; index++){
+            data.push({'id':time_ids[index],
+                              'weight':weights[index]})
+        }
+        data.sort((a,b) => a.id - b.id)
+        let ids2 = []
+        let weights2 = []
+        for(let index = 0; index<time_ids.length; index++){
+            ids2.push(data[index].id)
+            weights2.push(data[index].weight)
+        }
+        return {'time_ids':ids2, 'weights':weights2};
+    },
+    time_id_text(time_id){
+        let start = this.start_years[time_id-1].text;
+        let end = this.end_years[time_id-1].text;
+        return start + "-" + end
+    },
+    show_similarity_plot(div_id, source='node'){
+        console.log("vueapp.plot_similarity");
+//        console.log(vueData.active_component.source_text, vueData.active_component.target_text);
+        node1_text= this.active_component.source_text;
+        node2_text= this.active_component.target_text;
+        time_ids = [...this.active_component.time_ids]; //shallow copy
+        weights = [...this.active_component.weights];
+
+        weight_stats = graph.props.weight_stats;
+//        check if time_id of min and max score is not present in selected node time_ids
+        if(source == 'node'){
+            if(time_ids.indexOf(weight_stats.min_score[1]) == -1){
+                time_ids.push(weight_stats.min_score[1]);
+                weights.push('null')
+            }
+            if(time_ids.indexOf(weight_stats.max_score[1]) == -1){
+                time_ids.push(weight_stats.max_score[1]);
+                weights.push('null')
+            }
+        }
+        line_data = vueApp.sort_timewise(time_ids, weights)
+        line_data['time_slices'] = line_data['time_ids'].map(vueApp.time_id_text)
+
+
+        sim_graph = {
+        x: line_data.time_slices,
+        y: line_data.weights,
+        name: 'scores over time',
+        mode: 'lines+markers',
+        connectgaps: true,
+        };
+        min_score = {
+        x: [vueApp.time_id_text(weight_stats.min_score[1])],
+        y: [weight_stats.min_score[0]],
+        name: 'minimum',
+        mode: 'markers+text',
+        type: 'scatter',
+        text: [weight_stats.min_score[2]],
+        textposition: 'top center',
+        marker: { size: 8 }
+        };
+        max_score = {
+        x: [vueApp.time_id_text(weight_stats.max_score[1])],
+        y: [weight_stats.max_score[0]],
+        name: 'maximum',
+        mode: 'markers+text',
+        type: 'scatter',
+        text: [weight_stats.max_score[2]],
+        textposition: 'top center',
+        marker: { size: 8 }
+        };
+
+        let data = [sim_graph, min_score, max_score];
+        if(source != 'node'){ //for edge min-max does not make sense
+            data = [sim_graph]
+        }
+
+        let config = {
+            responsive: true,
+            scrollZoom: true,
+            displaylogo: false,
+            modeBarButtonsToRemove: ['pan2d','select2d','lasso2d','autoScale2d','zoom2d'],
+            toImageButtonOptions: {
+                format: 'svg', // one of png, svg, jpeg, webp
+                filename: vueApp.collection_name + '--'+
+                node1_text + '_similarity-over-time_with_' +
+                node2_text +
+                "_" + graph.props.start_year + "_" + graph.props.end_year,
+                height: 500,
+                width: 700,
+                scale: 1.5 // Multiply title/legend/axis/canvas sizes by this factor
+              }
+        };
+        let layout = {
+            title: 'similarity of ' + node1_text + ' with ' + node2_text,
+            // autosize: true,
+//            width: 500,
+//            height: 400,
+            font: {size: 10},
+            showlegend: true,
+
+            legend: {
+                "orientation": "v",
+                x: 1.05,
+                y: 1,
+                font: {size: 8},
+            },
+            xaxis: {
+                title: 'time slots',
+                automargin: true,
+                showline: true,
+                font: {
+                        size: 10,
+                      }
+              },
+              yaxis: {
+                title: 'scores',
+                automargin: true,
+                showline: true,
+//                tick0: 0,
+//                dtick: 50,
+                font: {
+                        size: 10,
+                      }
+              },
+        };
+        Plotly.newPlot(div_id, data, layout, config);
+    },
+//    hide_similarity_plot(){
+//     this.show_sim_plot = false;
+//     console.log(this.show_sim_plot)
+//    },
     // check the dictionary to see if nodes are linked
     isConnected(a, b) {
       // console.log("in is connected with a.id, b.id", a, b);
@@ -250,6 +385,7 @@ let vueApp = new Vue({
       for (let cluster of vueApp.graph_clusters) {
         // apply name changes - name has twoway-binding
         // needs applying to cluster node (which is now in nodes)
+        console.log(cluster);
         cluster.cluster_info_node.target_text = cluster.cluster_name;
         cluster.cluster_info_node.colour = cluster.colour;
         let tmp = node_dic[cluster.cluster_id];
@@ -302,6 +438,14 @@ let vueApp = new Vue({
   // gets collections from backend at startup and inits svg
   mounted() {
     this.getCollections();
+    this.$root.$on('bv::modal::shown', (bvEvent, modalId) => {
+//            console.log(modalId)
+            if(modalId == "modal-plot"){
+                this.show_similarity_plot("line_plot2")
+            }
+
+        })
   },
   created() {},
+
 });

@@ -32,7 +32,6 @@ let graph = {
     collection_key: "",
     start_year: "",
     end_year: "",
-
     // Graph-Parameter
     target_word: "",
     // parameter d
@@ -67,6 +66,7 @@ let graph = {
     number_of_interval_links: [],
     // removes singleton information in backend
     remove_singletons: false,
+
   },
 };
 
@@ -103,6 +103,7 @@ let vueData = {
   collection_info: "0",
   // stored in background: The key is unique identifier of the collection and is used for querying data from the backend
   collection_key: "0",
+  is_ES_available: false,
   // Selected start-year out of all possible start years for the selected collection
   start_year: 0,
   // dropdown list: all possible start years per selected collection queried from the database after selection of collection
@@ -119,8 +120,8 @@ let vueData = {
   //  KEY_VALUE used for querying specific graph from backend (in the backend and graph.props the VALUE is stored)
   // not used : "GLOBAL N*I & GLOBAL E scaled by I (node & edge manipulation)": "ngot_global",
   graph_type_keys: {
+     "NGoT Fixed (best for comparison)": "ngot_overlay",
     "Interval Fixed (best for overview and time-diff)": "ngot_interval",
-    "NGoT Fixed (best for comparison)": "ngot_overlay",
     "NGoT nodes & GLOBAL edges (for manipulation)": "scot_scaled",
   },
   // User Values - Input
@@ -152,8 +153,8 @@ let vueData = {
 
   // GENERAL SVG VIEW SETTINGS -----------------------------------------------------------------------------------------
   // ------------- target
-  svg_target_text_opacity: 0.2,
-  svg_target_text_font_size: "25px",
+  svg_target_text_opacity: 0.3,
+  svg_target_text_font_size: "35px",
   // -----------------------------------------------------------
   // link thickness parameters
   link_thickness_scaled: "false",
@@ -179,6 +180,9 @@ let vueData = {
   clusterNodeRadius: 20,
   // radius of nodes
   radius: 10,
+  activeNodeRadius:20,
+  active_node_text_font_size: 20,
+
   // ------------------ SIMULATION ------------------------------------
   // dragging behaviour sticky-mode === "true" -> single-drag, sticky_mode === "false" -> multi-drag
   sticky_mode: "true",
@@ -295,30 +299,33 @@ let vueData = {
   // d3 -> sidebar : edge-click information for data-query for sidebar
   active_edge: {
     time_ids: ["1"],
+    time_slices:["0000"],
     weights: ["1"],
     source_text: "0",
     target_text: "0",
     cluster_info_link: true,
+    colour:"",
   },
   // sigebar right: holds edge context information (score, key, score2)
   simbim_object: [],
   // row_selected in edge Context
   row_selected_edge: [],
   // edge context sidebar is programmatically controlled
-  context_mode: false,
-  showSidebarRight1: false,
+//  context_mode: false,
+//  showSidebar_edge: false,
   // spinner while loading table data
-  busy_right1: false,
+//  busy_right_edge: false,
   // table information for edge -context view sidebar
-  fields_edges: [
-    { key: "node1", label: "node1", sortable: true },
-    { key: "edge", label: "context-word", sortable: true },
-    { key: "node2", label: "node2", sortable: true },
-  ],
+//  fields_edges: [
+//    { key: "node1", label: "node1", sortable: true },
+//    { key: "edge", label: "context-word", sortable: true },
+//    { key: "node2", label: "node2", sortable: true },
+//  ],
   // --------------------------------- SIDEBAR RIGHT: NODE INFORMATION ----------------------------
   // d3-> Sidebar: node-click information for data-query for sidebar
   active_node: {
     time_ids: ["1"],
+    time_slices:["0000"],
     weights: ["1"],
     source_text: "0",
     target_text: "0",
@@ -333,35 +340,50 @@ let vueData = {
   // row_selected in Node-context
   row_selected: [],
   // node context sidebar
-  context_mode3: false,
-  showSidebarRight3: false,
-  busy_right3: false,
+//  context_mode3: false,
+  showSidebar_node: false,
+  busy_right_node: false,
   // table information for node -context view sidebar
-  fields_nodes: [
+//  fields_nodes: [
+//    { key: "node1", label: "node1", sortable: true },
+//    { key: "edge", label: "context-word", sortable: true },
+//    { key: "node2", label: "node2", sortable: true },
+//  ],
+  bim_objects: [], //will point to either simbim_node_object or simbim_object
+  bim_fields: [
     { key: "node1", label: "node1", sortable: true },
     { key: "edge", label: "context-word", sortable: true },
     { key: "node2", label: "node2", sortable: true },
   ],
-
+  active_component: {source_text:"node1",
+                    target_text:"node2",
+                    time_slices:["0000"]},
+  selected_bim:'',
   // -------------------------------- SIDEBAR left: cluster context --------------------------
+ showSidebar_right:false,
   // cluster context sidebar
-  context_mode2: false,
-  showSidebarRight2: false,
-  busy_right2: true,
+//  context_mode2: false,
+  showSidebar_cluster: false,
+  busy_right_cluster: true,
   // table information for cluster -context view sidebar
   fields_cluster: [
-    { key: "score", sortable: true },
-    { key: "wort", sortable: true },
+    { key: "score", label: "score", sortable: true },
+    { key: "wort", label: "context-word", sortable: true },
   ],
   // doc context sidebar
-  context_mode4: false,
+//  context_mode4: false,
   // show sidebar
-  showSidebarRight4: false,
+  showSidebar_docs: false,
   // spinner
-  busy_right4: false,
+  busy_right_docs: false,
   // table information for cluster -context view sidebar
   documents: [],
   fields_documents: [{ key: "doc", sortable: true }],
+  filter_docs:"",
+  filter_docs_on:["doc"],
+  docs_loaded:false,
+//  show_sim_plot:false,
+//  show_line_plot1:true,
 
   // ############# DEPRECATED #########################
   // Deprecated
