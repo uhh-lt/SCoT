@@ -3,7 +3,7 @@
 
 
 "collections_info_backend": {
-  "default" : "mysql+pymysql://user:pwd@localhost:3306/DB_NAME",
+  "default" : "mysql+pymysql://user:pwd@localhost:3306/DT_google_syntactic_ngrams_42",
   "en_gbooks_42" : "mysql+pymysql://user:pwd@localhost:3306/DT_google_syntactic_ngrams_42",
   "de70":       "mysql+pymysql://user:pwd@localhost:3306/DT_de70mlcc_dependency"
 
