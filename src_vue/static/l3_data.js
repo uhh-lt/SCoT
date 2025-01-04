@@ -66,8 +66,7 @@ let graph = {
     number_of_interval_links: [],
     // removes singleton information in backend
     remove_singletons: false,
-    counts:[],
-    counts_time_ids:[],
+    target_counts_map:{},
 
   },
 };
@@ -144,7 +143,7 @@ let vueData = {
   node_dic: {},
   link_dic: {},
   cluster_dic: {},
-  target_word_counts:[],
+//  target_word_counts:[],
   // ----------------------- LEGACY DATASTRUCTURES
   // LEGACY : is created in the frontend
   clusters: [],
@@ -177,11 +176,11 @@ let vueData = {
   // reduced opacity for hovering over node
   node_reduced_opacity: 0.2,
   // font-size of displayed node text
-  node_text_font_size: 14,
+  node_text_font_size: 12,
   // radius of cluter nodes
   clusterNodeRadius: 20,
   // radius of nodes
-  radius: 10,
+  radius: 8,
   activeNodeRadius:20,
   active_node_text_font_size: 20,
 
@@ -303,8 +302,7 @@ let vueData = {
     time_ids: ["1"],
     time_slices:["0000"],
     weights: ["1"],
-    source_counts:["1"], target_counts:["1"],
-    source_counts_time_ids:["1"], target_counts_time_ids:["1"],
+    source_counts_map:{}, target_counts_map:{},
     source_text: "0",
     target_text: "0",
     cluster_info_link: true,
@@ -332,9 +330,9 @@ let vueData = {
   active_node: {
     time_ids: ["1"],
     time_slices:["0000"],
-    weights: ["1"], weights_stats: [{weight_max: "1", weight_average:"1", weight_average_all:"1"}],
+    weights: ["1"],
     weight_max: "1", weight_average:"1", weight_average_all:"1",
-    counts:["1"], counts_time_ids:["1"],
+    counts_map:{},
     source_text: "0",
     target_text: "0",
     cluster_id: 0,
@@ -369,6 +367,8 @@ let vueData = {
                     target_text:"node2",
                     time_slices:["0000"]},
   selected_bim:'',
+  filter_bims:'',
+  filter_bims_on:["edge"],
   // -------------------------------- SIDEBAR left: cluster context --------------------------
  showSidebar_right:false,
   // cluster context sidebar
@@ -377,9 +377,19 @@ let vueData = {
   busy_right_cluster: true,
   // table information for cluster -context view sidebar
   fields_cluster: [
+    {key:"selected", label:"selected", stickyColumn:true, isRowHeader: true},
     { key: "score", label: "score", sortable: true },
     { key: "wort", label: "context-word", sortable: true },
   ],
+  filter_clusterbims:'',
+  filter_clusterbims_on:["wort"],
+  cluster_contexts_freq:{},
+  selected_contexts_cluster:[],
+  table_records:[],
+  selected_contexts_cluster_all:new Map(),
+  cluster_feature_selected:false,
+  selectAll:false,
+  filter_clusterbims_changed:false,
   // doc context sidebar
 //  context_mode4: false,
   // show sidebar
@@ -392,8 +402,6 @@ let vueData = {
   filter_docs:"",
   filter_docs_on:["doc"],
   docs_loaded:false,
-//  show_sim_plot:false,
-//  show_line_plot1:true,
 
   // ############# DEPRECATED #########################
   // Deprecated
@@ -406,4 +414,10 @@ let vueData = {
   updated_nodes: null,
   // all the links in the updated graph
   updated_links: null,
+  selected_cluster:'', //selected cluster to show graph
+  selected_clusters:[],
+  allClustersSelected:false,
+  clusters_for_graph:[],
+  show_plot:false,
+  show_plot_btn:"Show"
 };

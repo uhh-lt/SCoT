@@ -163,10 +163,12 @@ Vue.component("frame-sidebarclustertime", {
 		  from axios
 		  */
     get_cluster_information_filtered(cluster) {
+        vueApp.selected_cluster = cluster
       graph.props.cluster_target_filter = true;
       get_cluster_information_axios(cluster);
     },
     get_cluster_information(cluster) {
+        vueApp.selected_cluster = cluster
       graph.props.cluster_target_filter = false;
       get_cluster_information_axios(cluster);
     },
@@ -573,24 +575,92 @@ Vue.component("frame-sidebarclustertime", {
        resizeNodes_d3(measure);
 
     },
+
+//    get_cluster_graph(cluster, index, div_id) {
+////       console.log('calling get_cluster_graph', index)
+//      vueApp.selected_cluster = cluster
+//      if(div_id === "cluster_nodes_plot1"){
+//        div_id = div_id + "-" +index
+//      }
+//      if (vueApp.show_plot){
+//        vueApp.show_plot = false
+//        vueApp.show_plot_btn = "Show"
+//        vueApp.show_clusterNodesFrequency_plot(div_id)
+//      }
+//      else {
+//        vueApp.show_plot = true
+//        vueApp.show_plot_btn = "Hide"
+//        vueApp.show_clusterNodesFrequency_plot(div_id)
+//      }
+//      console.log(vueApp.show_plot)
+//
+//    },
+
+    reset_selected_cluster(cluster) {
+      vueApp.selected_cluster = cluster
+      vueApp.selected_cluster.checked = true
+      vueApp.selected_clusters =[]
+      vueApp.selected_clusters.push(cluster.cluster_id)
+      vueApp.clusters_for_graph = this.clusters_no_singleton
+    },
+
+
+    toggle_AllClusters(checked)
+    {
+        if(!checked){
+            this.reset_selected_cluster(vueApp.selected_cluster)
+        }
+        else{
+            for(cluster of this.clusters_no_singleton){
+                if(!vueApp.selected_clusters.includes(cluster.cluster_id)){
+                    vueApp.selected_clusters.push(cluster.cluster_id)
+                }
+            }
+        }
+//        console.log("select all:", checked)
+//        console.log("all clusters selected:", vueApp.allClustersSelected)
+//        console.log("current selected clusters:", vueApp.selected_clusters)
+    }
+
   },
+  watch: {
+       selected_clusters(newValue, oldValue) {
+        // Handle changes in individual checkboxes for selected_clusters
+//        console.log("oldValue:", oldValue)
+//        console.log("newValue:", newValue)
+        if (newValue.length === this.clusters_no_singleton.length-1) {
+          this.allClustersSelected = true
+        }
+        else {
+          this.allClustersSelected = false
+        }
+        if(newValue.length!=1){
+            vueApp.show_clusterNodesFrequency_plot('cluster_nodes_plot2')
+        }
+        else{
+            if(oldValue.length!=0 & oldValue.length!=newValue.length){
+            vueApp.show_clusterNodesFrequency_plot('cluster_nodes_plot2')
+            }
+        }
+      }
+    },
 
   template: `
     <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR-RIGHT ANALYSIS CLUSTERING XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
 		<b-sidebar v-show="showSidebar_right" width="23%" id="sidebar-right" bg-variant="secondary"
 				text-variant="light" style="opacity: 0.9;" no-header right shadow >
 			<template v-slot:footer="{ hide }">
-         <div class="d-flex bg-secondary text-light align-items-center px-3 py-2">
-            <!-- Button to apply changes to graph  -->
-            <b-button v-show="right_selected === 'cluster_basic'" id="apply_settings_button" size="sm" class="lrmargin_button" variant="warning" @click="applyClusterSettings()">Update Clusters</b-button>
-         </div>
+             <div class="d-flex bg-dark align-items-center px-4 py-2">
+                <!-- Button to apply changes to graph  -->
+                <b-button block v-show="right_selected === 'cluster_basic'" id="apply_settings_button" size="sm" class="lrmargin_button" variant="warning" @click="applyClusterSettings()">Update Clusters</b-button>
+             </div>
 			</template>
-      <div class="mx-2 my-3" >
-           <b-button class="d-inline px-1 py-1" style="text-align:right; height:30px;width:30px; vertical-align: top;" @click="showSidebar_right=false">
-             <b-icon icon="x-lg" class="px-0 py-0"  scale="0.70"></b-icon>
-          </b-button>
-          <h4 class="d-inline px-2" id="sidebar-no-header-title" style="text-align: right" >Cluster Analysis</h4>
-      </div>
+          <div class="mx-2 my-3" >
+               <b-button class="d-inline px-1 py-1" style="text-align:right; height:30px;width:30px; vertical-align: top;" @click="showSidebar_right=false">
+                 <b-icon icon="x-lg" class="px-0 py-0"  scale="0.70"></b-icon>
+              </b-button>
+              <h5 class="d-inline px-2" id="sidebar-no-header-title" style="text-align: right" >Cluster Analysis</h5>
+          </div>
       <div class="px-2 py-2 mt-1">
 				<!-- options buttons-->
 				<b-form-group class="ml-2" variant="info">
@@ -801,15 +871,20 @@ Vue.component("frame-sidebarclustertime", {
 					<hr style="border: 1px solid gray;" />
 					<h6>Resize Nodes as per Similarity</h6>
 					<b-button class="lrmargin_button" size="sm" variant="success"
-						v-on:click="resizeNodes('max')"> <em class="fas fa-highlighter"></em>
+						v-on:click="resizeNodes('max')"
+						v-b-tooltip.hover title="The maximum similarity in selected intervals">
+						<em class="fas fa-highlighter"></em>
 						Maximum</b-button>
+					<!-- b-button class="lrmargin_button" size="sm" variant="success"
+						v-on:click="resizeNodes('avg')"
+						v-b-tooltip.hover title="The average similarity in all selected intervals">
+						<em class="fas fa-highlighter"></em>
+						Average</b-button -->
 					<b-button class="lrmargin_button" size="sm" variant="success"
-						v-on:click="resizeNodes('avg')"> <em class="fas fa-highlighter"></em>
+						v-on:click="resizeNodes('avg_all')"
+						v-b-tooltip.hover title="The average similarity across all intervals">
+						<em class="fas fa-highlighter"></em>
 						Average</b-button>
-					<b-button class="lrmargin_button" size="sm" variant="success"
-						v-on:click="resizeNodes('avg_all')"> <em class="fas fa-highlighter"></em>
-						Average-AllSlices</b-button>
-
 					<!-- <b-button v-on:click="resetCentralityHighlighting()"> <em class="fas fa-times"></em>
 						Reset Highlighting </b-button> -->
 
@@ -851,18 +926,30 @@ Vue.component("frame-sidebarclustertime", {
 
 				<div v-if="right_selected === 'cluster_basic'">
 					<!-- list with clusters -->
-					<div class="edit_cluster_textbox">
+					<div class="edit_cluster_textbox" role="tablist">
 						<b-list-group v-for="(cluster, index) in clusters_no_singleton" :key="index">
-							<b-list-group-item style="background-color: #6c757d;">
+							<b-list-group-item class="px-1" style="background-color: #6c757d;">
 								<div>
 
-									<!-- Button for opening list of nodes in cluster -->
+									<!-- Button for opening list of nodes and nodes graph options of cluster -->
 									<div class="btn btn-sm btn-primary"
 										v-bind:style="{ 'background-color': cluster.colour }"
 										v-b-toggle="'collapse-nodes-' + index"
 										@mouseover="!cluster_selected ? set_cluster_opacity(cluster, 0.2, reduced_link_opacity) : null"
 										@mouseout="!cluster_selected ? set_cluster_opacity(cluster, 1.0, base_link_opacity) : null">
 										Nodes [{{cluster.labels.length}}]
+										<span class="when-opened"><i class="fa fa-chevron-down"
+												aria-hidden="true"></i></span>
+										<span class="when-closed"><i class="fa fa-chevron-up"
+												aria-hidden="true"></i></span>
+									</div>
+									<!-- Button for plotting nodes graph of cluster -->
+									<div class="btn btn-sm btn-primary"
+										v-bind:style="{ 'background-color': cluster.colour }"
+										v-b-toggle="'collapse-nodes-plot-' + index"
+										@mouseover="!cluster_selected ? set_cluster_opacity(cluster, 0.2, reduced_link_opacity) : null"
+										@mouseout="!cluster_selected ? set_cluster_opacity(cluster, 1.0, base_link_opacity) : null">
+										Nodes Plot
 										<span class="when-opened"><i class="fa fa-chevron-down"
 												aria-hidden="true"></i></span>
 										<span class="when-closed"><i class="fa fa-chevron-up"
@@ -891,10 +978,111 @@ Vue.component("frame-sidebarclustertime", {
 												aria-hidden="true"></i></span>
 									</div>
 
-									<b-collapse :id="'collapse-cluster-' + index" class="mt-2" aria-expanded="false">
-										<!-- Button for opening context in cluster -->
+									<!-- Button for opening delete options of cluster -->
+									<div class="btn btn-sm btn-primary"
+										v-bind:style="{ 'background-color': cluster.colour }"
+										@mouseover="!cluster_selected ? set_cluster_opacity(cluster, 0.2, reduced_link_opacity) : null"
+										@mouseout="!cluster_selected ? set_cluster_opacity(cluster, 1.0, base_link_opacity) : null"
+										v-b-modal="'modal-delete-' + index" :disabled="time_diff == 1"> <i
+											class="fas fa-trash"></i>
+                                    </div>
+
+									<b-modal :id="'modal-delete-' + index" title="Confirm Deletion"
+										@ok="delete_cluster(cluster.cluster_id)">
+										Are you sure you want to delete the cluster "{{ cluster.cluster_name }}"?
+									</b-modal>
+
+
+									<!-- collapse card to Show list of nodes in cluster -->
+                                    <b-collapse :id="'collapse-nodes-' + index" accordion="my-accordion" role="tabpanel">
+                                            <b-card style="background-color:  #6c757d; color:white">
+                                                <div v-for="label in cluster.labels"> {{ label.text2 }}</div>
+                                            </b-card>
+                                    </b-collapse>
+
+                                    <!-- collapse card to show graph options -->
+                                    <b-collapse :id="'collapse-nodes-plot-' + index" accordion="my-accordion" role="tabpanel">
+                                            <b-card style="background-color:  #6c757d; color:white">
+
+                                                <b-button class="mb-2 mr-0" size="sm"
+                                                    v-bind:style="{ 'background-color': cluster.colour }"
+                                                    @click="reset_selected_cluster(cluster);$bvModal.show('modal-plot-cluster-nf-' + index)">
+                                                    <em class="bi bi-box-arrow-up-left" style="font-size: 15px;"></em>
+                                                    Nodes Plot
+                                               </b-button>
+                                               <br>
+                                               Plot to view aggregated average frequency and similarity of cluster nodes over time.
+                                               <br>
+                                               <b-modal :id="'modal-plot-cluster-nf-' + index" title="Cluster-Nodes" size="xl" scrollable
+                                               >
+                                                    <div id="cluster_nodes_plot2" ></div>
+                                                    <div id="add_clusters">
+                                                    Add other clusters:<br>
+                                                         <b-form-group
+
+                                                            <b-form-checkbox
+                                                                v-for="cluster in clusters_no_singleton"
+                                                                v-model="selected_clusters"
+                                                                :key="cluster.cluster_name"
+                                                                :value="cluster.cluster_id"
+                                                                name="flavour-4a"
+                                                                v-bind:style="{ 'background-color': cluster.colour}"
+                                                                inline
+                                                                :disabled="cluster.cluster_id==selected_cluster.cluster_id">
+                                                                {{ cluster.cluster_name }}
+                                                            </b-form-checkbox>
+                                                            <b-form-checkbox
+                                                                v-model="allClustersSelected"
+                                                                :indeterminate="selected_clusters.length>1 & selected_clusters.length<clusters_no_singleton.length"
+                                                                name="flavour-4a"
+                                                                inline
+                                                                @change="toggle_AllClusters" >
+                                                                {{ allClustersSelected ? 'Un-select All' : 'Select All' }}
+                                                            </b-form-checkbox>
+
+                                                         </b-form-group>
+
+                                                    </div>
+                                                </b-modal
+                                            </b-card>
+                                    </b-collapse>
+
+                                    <!-- collapse card for cluster edit options -->
+									<b-collapse :id="'collapse-edit-' + index" class="mt-2" aria-expanded="false" accordion="my-accordion" role="tabpanel">
+                                        <b-card-body>
+                                            <b-card class="input_cluster ">
+                                                <!-- Input for cluster name edit -->
+                                                <b-form-group label="Change cluster name">
+                                                    <b-form-input v-model="cluster.cluster_name" size="sm"></b-form-input>
+                                                </b-form-group>
+
+                                                <!-- Checkbox to add cluster label to graph -->
+                                                <b-form-group>
+                                                    <b-form-checkbox v-model="cluster.add_cluster_node">
+                                                        Show cluster label in graph
+                                                    </b-form-checkbox>
+                                                    <!-- <b-form-checkbox
+                                                        v-model="cluster.delete_cluster"
+                                                        value="true"
+                                                        unchecked-value="false">
+                                                        Delete cluster
+                                                    </b-form-checkbox> -->
+                                                </b-form-group>
+
+                                                <!-- Change colour of cluster -->
+                                                <b-form-group label="Select cluster colour">
+                                                    <b-form-input class="color-select" v-model="cluster.colour" type="color"
+                                                        :value="cluster.colour"> </b-form-input>
+                                                </b-form-group>
+                                            </b-card>
+                                        </b-card-body>
+									</b-collapse>
+
+									<!-- collapse card for opening context options in cluster -->
+									<b-collapse :id="'collapse-cluster-' + index" class="mt-2" aria-expanded="false" accordion="my-accordion" role="tabpanel">
+
 										<b-card style="background-color: #6c757d; color: white">
-											The context-feature reveals the most significant syntagmatic contexts of the
+											The context-word reveals the most significant syntagmatic contexts of the
 											nodes of a cluster.
 											The results can be filtered against the contexts of the target word.
 											Calculations can take long. It is recommended to query only clusters
@@ -922,65 +1110,10 @@ Vue.component("frame-sidebarclustertime", {
 										</b-card>
 									</b-collapse>
 
-									<!-- Button for opening delete options of cluster -->
-									<div class="btn btn-sm btn-primary"
-										v-bind:style="{ 'background-color': cluster.colour }"
-										@mouseover="!cluster_selected ? set_cluster_opacity(cluster, 0.2, reduced_link_opacity) : null"
-										@mouseout="!cluster_selected ? set_cluster_opacity(cluster, 1.0, base_link_opacity) : null"
-										v-b-modal="'modal-delete-' + index" :disabled="time_diff == 1"> <i
-											class="fas fa-trash"></i> </div>
-
-
-									<b-modal :id="'modal-delete-' + index" title="Confirm Deletion"
-										@ok="delete_cluster(cluster.cluster_id)">
-										Are you sure you want to delete the cluster "{{ cluster.cluster_name }}"?
-									</b-modal>
-
-
-									<!-- collapse card for cluster edit options -->
-									<b-collapse :id="'collapse-edit-' + index" class="mt-2" aria-expanded="false">
-										<b-card class="input_cluster">
-											<!-- Input for cluster name edit -->
-											<b-form-group label="Change cluster name">
-												<b-form-input v-model="cluster.cluster_name" size="sm"></b-form-input>
-											</b-form-group>
-
-											<!-- Checkbox to add cluster label to graph -->
-											<b-form-group>
-												<b-form-checkbox v-model="cluster.add_cluster_node">
-													Show cluster label in graph
-												</b-form-checkbox>
-												<!-- <b-form-checkbox
-									v-model="cluster.delete_cluster"
-									value="true"
-									unchecked-value="false">
-									Delete cluster
-								</b-form-checkbox> -->
-											</b-form-group>
-
-											<!-- Change colour of cluster -->
-											<b-form-group label="Select cluster colour">
-												<b-form-input class="color-select" v-model="cluster.colour" type="color"
-													:value="cluster.colour"> </b-form-input>
-											</b-form-group>
-
-
-										</b-card>
-									</b-collapse>
-
-									<!-- Show list of nodes in cluster -->
-									<div>
-										<b-collapse :id="'collapse-nodes-' + index">
-											<b-card style="background-color:  #6c757d; color:white">
-												<div v-for="label in cluster.labels"> {{ label.text2 }}</div>
-											</b-card>
-										</b-collapse>
-									</div>
-								</div>
 							</b-list-group-item>
 						</b-list-group>
 						<b-list-group>
-							<b-list-group-item style="background-color: #6c757d;">
+							<b-list-group-item  class="px-1" style="background-color: #6c757d;">
 								<div class="btn btn-sm btn-primary" v-b-toggle.collapse-singletons-1>
 									Singletons [{{singletons.length}}]
 									<span class="when-opened"><i class="fa fa-chevron-down"

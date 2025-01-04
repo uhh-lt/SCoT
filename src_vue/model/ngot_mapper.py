@@ -86,6 +86,7 @@ def update_ngot_with_clusters_and_node_infos_from_graph(graph, ngot):
                         for obj in cluster_set:
                             if obj.cluster_id == n_node.cluster_id:
                                 obj.cluster_nodes.append(n_node.id)
+                                # obj.cluster_nodes.append(n_node)
     # remove singletons from clusters (done) and give them new unique ids > max cluster no (done)
     maxi_id = max(cluster_set_id)
     for node in ngot.nodes:

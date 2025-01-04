@@ -1,6 +1,9 @@
 {
   "flask_host": "127.0.0.1",
-  "available_collections": ["de70", "en_gbooks_42"],
+  "available_collections": {
+    "test":["de70", "en_gbooks_42"]
+  },
+
   "collections": {
     "de70": {
       "displayname": "German--Online News-Dependency--1995-2010 ",

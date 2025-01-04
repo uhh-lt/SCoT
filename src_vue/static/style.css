@@ -5,7 +5,7 @@ text {
 }
 svg .selected {
     stroke: #e34234;
-    stroke-width: 10px;
+    stroke-width: 5px;
 }
 svg .edge_selected {
     stroke: #e34234;

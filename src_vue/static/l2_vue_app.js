@@ -2,19 +2,19 @@ let vueApp = new Vue({
   el: "#vue-app",
   template: `
   <div class="parentdiv">
-  <b-overlay :show="overlay_main" rounded="sm" spinner-type="border" spinner-variant="dark">
-  <div id="graph2" class="svg-container" style="text-align:right;">
-      <small style="font-size: 10px; font-color:red">
-      SVG and PNG functions are tested for Chrome only.
-      </small></div>
-  </b-overlay>
-  <frame-navbar></frame-navbar>
-  <frame-sidebargraph></frame-sidebargraph>
-  <frame-sidebarclustertime></frame-sidebarclustertime>
-  <!-- feature-sidebaredge></feature-sidebaredge -->
-  <feature-sidebarnode></feature-sidebarnode>
-  <feature-sidebarcluster></feature-sidebarcluster>
-  <text-example></text-example>
+      <b-overlay :show="overlay_main" rounded="sm" spinner-type="border" spinner-variant="dark">
+          <div id="graph2" class="svg-container" style="text-align:right;">
+              <!--span style="font-size: 10px; color:red">
+              SVG and PNG have been tested for Chrome only.
+              </span--></div>
+      </b-overlay>
+      <frame-navbar></frame-navbar>
+      <frame-sidebargraph></frame-sidebargraph>
+      <frame-sidebarclustertime></frame-sidebarclustertime>
+      <!-- feature-sidebaredge></feature-sidebaredge -->
+      <feature-sidebarnode></feature-sidebarnode>
+      <feature-sidebarcluster></feature-sidebarcluster>
+      <text-example></text-example>
   </div>
     `,
   /**
@@ -274,12 +274,12 @@ let vueApp = new Vue({
         return start + "-" + end
     },
 
-    show_similarity_plot(div_id, source='node'){
+    show_nodeSimilarity_plot(div_id, source='node'){
 
         console.log("vueapp.plot_similarity for dtype:", source);
 
         width=400; height = 250; fst=12; fsa=12; fsl=10; fs=8;
-        if (div_id === "line_plot2"){ // reset for modal window
+        if (div_id === "node_similarity_plot2"){ // reset for modal window
             console.log(div_id)
             height=null
             width=null
@@ -409,13 +409,12 @@ let vueApp = new Vue({
         Plotly.newPlot(div_id, data, layout, config);
     },
 
-    show_nodefrequency_plot(div_id, source='node'){
+    show_nodeFrequency_plot(div_id, source='node'){
 
         console.log("vueapp.plot_frequency for dtype:", source);
 
         width=400; height = 275; fst=12; fsa=12; fsl=10; fs=8;
-        if (div_id === "line_plot4"){ // reset for modal window
-            console.log(div_id)
+        if (div_id === "node_frequency_plot2"){ // reset for modal window
             height=null
             width=null
             fst = 18 //title
@@ -425,22 +424,21 @@ let vueApp = new Vue({
         }
         node1_text = this.active_component.source_text;
         node2_text = this.active_component.target_text;
-        let time_ids1, time_ids2;
-        let counts1, counts2;
+        let time_ids1, time_ids2, counts1, counts2;
         if (source == 'node'){
-          counts1 = graph.props.counts;
-          counts2 = [...this.active_component.counts];
-          time_ids1 = graph.props.counts_time_ids;
+          counts1 = Object.values(graph.props.target_counts_map);
+          counts2 = Object.values(this.active_component.counts_map);
+          time_ids1 = Object.keys(graph.props.target_counts_map); // combined time_ids
+//          time_ids2 = Object.keys(this.active_component.counts_map);
         }
         else{
-//        console.log(this.active_component)
-          counts1 = [...this.active_component.source_counts];
-          counts2 = [...this.active_component.target_counts];
-          time_ids1 = graph.props.counts_time_ids;
-//          time_ids1 = [...this.active_component.source_counts_time_ids];
-//          time_ids2 = [...this.active_component.target_counts_time_ids];
+          counts1 = Object.values(this.active_component.source_counts_map);
+          counts2 = Object.values(this.active_component.target_counts_map);
+          time_ids1 = Object.keys(graph.props.target_counts_map);
+//          time_ids1 = Object.keys(this.active_component.source_counts_map);
+//          time_ids2 = Object.keys(this.active_component.target_counts_map);
         }
-        time_ids = time_ids1 //assuming time_ids1 and 2 are same
+        time_ids = time_ids1
         line_data = {'time_ids':time_ids, 'counts1':counts1, 'counts2':counts2};
         line_data['time_slices'] = line_data['time_ids'].map(vueApp.time_id_text)
 
@@ -534,12 +532,11 @@ let vueApp = new Vue({
 
     },
 
-    show_nodecontextfrequency_plot(div_id){
+    show_nodeContextFrequency_plot(div_id){
 
-        console.log("vueapp.plot_wordfeature_frequency");
-
+//        console.log("vueapp.show_nodeContextFrequency_plot");
         width=400; height = 275; fst=12; fsa=12; fsl=10; fs=8;
-        if (div_id === "line_plot6"){ // reset for modal window
+        if (div_id === "node_context_frequency_plot2"){ // reset for modal window
             height=null
             width=null
             fst = 18 //title
@@ -558,12 +555,12 @@ let vueApp = new Vue({
         let counts1 = counts_data[node1_text]['counts']
         let counts2 = counts_data[node2_text]['counts']
 
-        time_ids = time_ids1 //assuming time_ids1 and 2 are same
-        line_data = {'time_ids':time_ids, 'counts1':counts1, 'counts2':counts2};
-        line_data['time_slices'] = line_data['time_ids'].map(vueApp.time_id_text)
+        line_data = {'time_ids1':time_ids1, 'time_ids2':time_ids2, 'counts1':counts1, 'counts2':counts2};
+        line_data['time_slices1'] = line_data['time_ids1'].map(vueApp.time_id_text)
+        line_data['time_slices2'] = line_data['time_ids2'].map(vueApp.time_id_text)
 
         count_graph1 = {
-        x: line_data.time_slices,
+        x: line_data.time_slices1,
         y: line_data.counts1,
 //        text: line_data.counts1.map(i => 'raw freq:' + i[0]),
         name: node1_text,
@@ -572,7 +569,7 @@ let vueApp = new Vue({
         marker: { color: 'rgba(0, 115, 230,0.9)', size: 8 }
         };
         count_graph2 = {
-        x: line_data.time_slices,
+        x: line_data.time_slices2,
         y: line_data.counts2,
 //        text: line_data.counts2.map(i => 'raw freq:' + i[0]),
         name: node2_text,
@@ -651,6 +648,300 @@ let vueApp = new Vue({
 
     },
 
+    show_clusterNodesFrequency_plot(div_id){
+//        console.log("vueapp.show_clusterNodesFrequency_plot");
+
+        width=400; height = 275; fst=12; fsa=12; fsl=10; fs=8;
+        if (div_id === "cluster_nodes_plot2"){ // reset for modal window
+            console.log(div_id)
+            height=700
+            width=null
+            fst = 16 //title
+            fsa = 12 //axis
+            fsl = 12 //legend
+            fs = 12 //rest
+        }
+        let cluster = this.selected_cluster
+        text = cluster.cluster_name
+
+        let time_ids = graph.props.selected_time_ids;
+
+        graphs_data = {}
+        for(cl of vueApp.clusters_for_graph){
+            graphs_data[cl.cluster_id] = {'time_ids':time_ids,
+                                    'counts':time_ids.map(i=> cl.nodes_counts[i]),
+                                    'weights':time_ids.map(i=> cl.nodes_weights[i]),
+                                    'time_slices':time_ids.map(vueApp.time_id_text)
+                                    }
+        }
+        graphs = {}
+        for(cl of vueApp.clusters_for_graph){
+            line_data = graphs_data[cl.cluster_id]
+            graphs[cl.cluster_id] = {
+                'name': cl.cluster_name,
+                'graph1': {
+                        x: line_data.time_slices,
+                        y: line_data.counts.map(i => i[1]),
+                        text: line_data.counts.map(i => 'raw freq:' + i[0]),
+                        name: 'cluster-'+cl.cluster_name,
+                        mode: 'lines+markers',
+                        showlegend: false,
+                        line: {
+                            dash: 'dot',
+                            width: 2
+                        },
+                        connectgaps: false,
+                        marker: { color: cl.colour, size: 8 },
+
+                },
+                'graph2':{
+                    x: line_data.time_slices,
+                    y: line_data.weights,
+                    name: 'cluster-'+cl.cluster_name,
+                    mode: 'lines+markers',
+                    connectgaps: false,
+                    marker: { color: cl.colour, size: 8 },
+                    xaxis: 'x',
+                    yaxis: 'y2',
+                }
+            }
+        }
+        graph1 = graphs[this.selected_cluster.cluster_id]['graph1']
+        graph2 = graphs[this.selected_cluster.cluster_id]['graph2']
+        let cluster_names = [text]
+        let data = [graph1, graph2];
+        if(this.selected_clusters.length!= 1){
+            data = []
+            cluster_names = []
+            for(cluster_id of this.selected_clusters){
+                data.push(graphs[cluster_id]['graph1'])
+                data.push(graphs[cluster_id]['graph2'])
+                cluster_names.push(graphs[cluster_id]['name'])
+            }
+        }
+
+        let config = {
+            responsive: true,
+            scrollZoom: true,
+            displaylogo: false,
+            editable: true,
+            modeBarButtonsToRemove: ['pan2d','select2d','lasso2d','autoScale2d','zoom2d'],
+            toImageButtonOptions: {
+                format: 'svg', // one of png, svg, jpeg, webp
+                filename: vueApp.collection_name + '--'+
+                + 'cluster_nodes-over-time_for_cluster_' +
+                text +
+                "_" + graph.props.start_year + "_" + graph.props.end_year,
+                height: 700,
+                width: null,
+                scale: 1.5 // Multiply title/legend/axis/canvas sizes by this factor
+              }
+        };
+        let layout = {
+            title:{
+                text: 'Frequency and Similarity of Cluster Nodes over Time',//<br>Cluster(s):' + cluster_names
+                font: {size:fst},
+                subtitle:{ text:'Cluster(s):' + cluster_names, font:{size:fst-2}},
+                 xref: 'paper',
+                //  automargin: false,
+            },
+
+            font:{size:fs},
+            autosize: true,
+//            width: width,
+            height: height,
+            margin: {
+              l: 50,
+              r: 50,
+              b: 50,
+              t: 50,
+              pad: 2},
+
+            showlegend: true,
+            legend: {
+                "orientation": "v",
+                x: 1.05,
+                y: 0.95,
+                font: {size: fsl},
+            },
+            xaxis: {
+                title: {
+                        text: 'time slots',
+                        font: {
+                                size: fsa,
+                                },
+                        standoff: 30,
+
+                },
+                automargin: true,
+                showline: true,
+
+
+              },
+              yaxis: {
+                title: {
+                        text: 'avg ppm frequency (log-scaled)',
+                        font: {
+                                size: fsa,
+                                },
+                        standoff: 30,
+                },
+                type: 'log',
+                domain: [0, .44],
+                automargin: true,
+                showline: true,
+                zeroline: true, //not effective with log-scale
+
+
+              },
+              yaxis2: {
+                title: {
+                        text: 'avg similarity',
+                        font: {
+                                size: fsa,
+                                },
+                        standoff: 30,
+                },
+                domain: [.51, 0.95],
+                autorange: true,
+                automargin: true,
+                showline: true,
+                zeroline: true, //not effective with log-scale
+
+              },
+              grid: {
+                rows: 2,
+                columns: 1,
+                subplots:[['xy'], ['xy2']],
+                roworder:'bottom to top'
+              },
+
+        };
+
+        Plotly.newPlot(div_id, data, layout, config);
+
+    },
+
+    show_clusterContextFrequency_plot(div_id){
+
+//        console.log("vueapp.show_clusterContextFrequency_plot");
+        features = []
+        aggregate_frequency = {}
+        for (tid of graph.props.selected_time_ids){
+            aggregate_frequency[tid] = 0
+        }
+        for (item of vueApp.selected_contexts_cluster_all.keys()){
+            features.push(item)
+            freq_map = vueApp.cluster_contexts_freq[item]
+            for (tid of Object.keys(freq_map)){
+                aggregate_frequency[tid] += freq_map[tid]
+             }
+        }
+
+//        console.log(features)
+//        console.log(aggregate_frequency)
+        let F = features.length
+        width=400; height = 275; fst=12; fsa=12; fsl=10; fs=8;
+        if (div_id === "cluster_context_plot2"){ // reset for modal window
+            height=null
+            width=null
+            fst = 16 //title
+            fsa = 11 //axis
+            fsl = 12 //legend
+            fs = 12 //rest
+        }
+
+        let time_ids = graph.props.selected_time_ids;
+        let counts = Object.values(aggregate_frequency).map(item => item == 0 ? 'null' : item)
+//        time_ids.map(i=> aggregate_frequency[i]);
+        text = this.selected_cluster.cluster_name
+        line_data = {'time_ids':time_ids, 'counts':counts};
+        line_data['time_slices'] = line_data['time_ids'].map(vueApp.time_id_text)
+        count_graph1 = {
+        x: line_data.time_slices,
+        y: line_data.counts,//.map(i => i[1]),
+//        text: line_data.counts.map(i => 'raw freq:' + i[0]),
+        name: 'cluster-'+text,
+        mode: 'lines+markers',
+        connectgaps: false,
+        marker: { color: 'rgba(0, 115, 230,0.9)', size: 8 }
+        };
+
+        let data = [count_graph1];
+
+        let config = {
+            responsive: true,
+            scrollZoom: true,
+            displaylogo: false,
+            modeBarButtonsToRemove: ['pan2d','select2d','lasso2d','autoScale2d','zoom2d'],
+            toImageButtonOptions: {
+                format: 'svg', // one of png, svg, jpeg, webp
+                filename: vueApp.collection_name + '--'+
+                + 'cluster_context-over-time_for_cluster_' +
+                text +
+                "_" + graph.props.start_year + "_" + graph.props.end_year,
+                height: 500,
+                width: 700,
+                scale: 1.5 // Multiply title/legend/axis/canvas sizes by this factor
+              }
+        };
+        let layout = {
+            title:{
+                text: 'Context Frequency over Time for ' + F + ' contexts<br> Cluster:' + text ,//of ' + node1_text + ' and ' + node2_text,
+                font: {size:fst},
+//                yref: 'container',
+//                automargin: true,
+            },
+            font:{size:fs},
+            autosize: true,
+//            width: width,
+            height: height,
+            margin: {
+              l: 50,
+              r: 50,
+              b: 50,
+              t: 50,
+              pad: 2},
+
+            showlegend: true,
+            legend: {
+                "orientation": "v",
+                x: 1.05,
+                y: 1,
+                font: {size: fsl},
+            },
+            xaxis: {
+                title: {
+                        text: 'time slots',
+                        font: {
+                                size: fsa,
+                                },
+
+                },
+                automargin: true,
+                showline: true,
+
+              },
+              yaxis: {
+                title: {
+                        text: 'agg context frequency (log-scaled)',
+                        font: {
+                                size: fsa,
+                                },
+                        standoff: 30,
+                },
+                type: 'log',
+                automargin: true,
+                showline: true,
+                zeroline: true, //not effective with log-scale
+
+              },
+        };
+
+        Plotly.newPlot(div_id, data, layout, config);
+
+    },
+
     // check the dictionary to see if nodes are linked
     isConnected(a, b) {
       // console.log("in is connected with a.id, b.id", a, b);
@@ -676,7 +967,7 @@ let vueApp = new Vue({
       for (let cluster of vueApp.graph_clusters) {
         // apply name changes - name has twoway-binding
         // needs applying to cluster node (which is now in nodes)
-        console.log(cluster);
+//        console.log(cluster);
         cluster.cluster_info_node.target_text = cluster.cluster_name;
         cluster.cluster_info_node.colour = cluster.colour;
         let tmp = node_dic[cluster.cluster_id];
@@ -703,7 +994,7 @@ let vueApp = new Vue({
             link.hidden = !cluster.add_cluster_node;
           }
         }
-        console.log(cluster.add_cluster_node, cluster.cluster_id);
+//        console.log(cluster.add_cluster_node, cluster.cluster_id);
         // console.log(d3Data.links);
       }
       // needs applying to
@@ -731,14 +1022,20 @@ let vueApp = new Vue({
     this.getCollections();
     this.$root.$on('bv::modal::shown', (bvEvent, modalId) => {
 //            console.log(modalId)
-            if(modalId == "modal-plot"){
-                this.show_similarity_plot("line_plot2", this.active_component.dtype)
+            if(modalId == "modal-plot-ns"){
+                this.show_nodeSimilarity_plot("node_similarity_plot2", this.active_component.dtype)
             }
-            if(modalId == "modal-plot-wc"){
-                this.show_nodefrequency_plot("line_plot4", this.active_component.dtype)
+            if(modalId == "modal-plot-nf"){
+                this.show_nodeFrequency_plot("node_frequency_plot2", this.active_component.dtype)
             }
-            if(modalId == "modal-plot-wfc"){
-                this.show_nodecontextfrequency_plot("line_plot6")
+            if(modalId == "modal-plot-ncf"){
+                this.show_nodeContextFrequency_plot("node_context_frequency_plot2")
+            }
+            if(modalId.toString().startsWith("modal-plot-cluster-nf-")){
+                this.show_clusterNodesFrequency_plot("cluster_nodes_plot2")
+            }
+            if(modalId == "modal-plot-cluster-cf"){
+                this.show_clusterContextFrequency_plot("cluster_context_plot2")
             }
         })
   },

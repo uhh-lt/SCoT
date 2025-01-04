@@ -230,144 +230,141 @@ Vue.component("frame-sidebargraph", {
 
   template: `
     <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR-LEFT XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
-			<!-- Column with input parameters (left column) -->
+    <!-- Column with input parameters (left column) -->
 //			<b-sidebar id="sidebar-left" title="Sense graph over time" bg-variant="secondary" text-variant="light"
-			<b-sidebar id="sidebar-left" bg-variant="secondary" text-variant="light"
-				style="opacity: 0.9;" width="22%" left shadow title="Graph Properties">
-				<template v-slot:footer="{ hide }">
-					<div class="d-flex bg-secondary text-light align-items-center px-3 py-2">
-					</div>
-				</template>
-				<br>
+    <b-sidebar id="sidebar-left" bg-variant="secondary" text-variant="light"
+        style="opacity: 0.9;" width="22%" left shadow title="Graph Properties">
+        <template v-slot:footer="{ hide }">
+            <div class="d-flex bg-dark align-items-center px-4 py-2">
+            <b-button block class="lmmargin_button" size="sm" variant="success"
+                    v-on:click="getDataAndRenderNew()">
+                    Create and Cluster Graph</b-button>
+            </div>
+        </template>
+        <br>
 
-				<h5 class="sidebar-section__title"> </h5>
-				<b-form-group class="ml-2 mr-2 mb-2">
-					<b-form-radio-group size="sm" v-model="left_selected" :options="left_options" buttons
-						button-variant="info" name="radios-btn-default"></b-form-radio-group>
-				</b-form-group>
-				<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR-LEFT CREATE GRAPH XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
-				<div class="ml-2 mr-2 mb-2" v-if="left_selected === 'graph_data'">
-					<b-overlay :show="overlay_main" :variant="'dark'" rounded="sm" spinner-type="border"
-						spinner-variant="success">
-						<hr class="mb-2" style="border: 1px solid gray;" />
-						<!-- Enter database -->
-						<b-form-group class="input" label="Collection">
-							<b-form-select v-on:change="onChangeDb" v-model="collection_name"
-								:options="collections_names" size="sm"></b-form-select>
-						</b-form-group>
-						
-						<!-- Enter an start year -->
-						<b-form-group class="input" label="Start of first interval">
-							<b-form-select v-model="start_year" :options="start_years" size="sm"></b-form-select>
-						</b-form-group>
-						<!-- Enter an end year -->
-						<b-form-group class="mb-0 input" label="End of last interval">
-							<b-form-select v-model="end_year" :options="end_years" size="sm"></b-form-select>
-						</b-form-group>
-						<small>You have selected: {{number_of_intervals}} {{number_of_intervals > 1 ? "intervals" : "interval"}}</small>
-                        <hr class="mb-2" style="border: 1px solid gray;" />
-						<h5>Graph over Time</h5>
-						<!-- Enter target word -->
-						<b-form-group class="input" label="Target word">
-							<b-form-input v-model="target_word" placeholder="target word" size="sm">
-							</b-form-input>
-						</b-form-group>
-						<!-- Enter number of neighbouring nodes -->
-						<small>{{node_info}}</small>
-						<b-form-group class="input">
-							<b-form-input type="number" v-model="n_nodes" min="0" placeholder="number of neighbours"
-								size="sm"></b-form-input>
-						</b-form-group>
-						<!-- Enter factor that determines number of edges per graph -->
-						Density in % <small>[E = {{edges}} of max. {{max_dir_edges}} {{density_edge_info}} ]</small>
-						<b-form-group class="input">
-							<b-form-input type="number" v-model="density" min="0" max="100"
-								placeholder="number of edges" size="sm"></b-form-input>
-						</b-form-group>
-						<!-- Enter a graph type -->
-						<b-form-group class="input" label="Type of graph">
-							<b-form-select v-model="graph_type" :options="graph_types" size="sm">
-							</b-form-select>
-						</b-form-group>
-						<!-- Render button -->
-						<hr style="border: 1px solid gray;" />
-						<h5></h5>
-						<b-button class="lmmargin_button" size="sm" variant="success"
-							v-on:click="getDataAndRenderNew()">
-							Create and Cluster Graph</b-button>
-						<!-- <b-button id="update_button" size="sm" class="lrmargin_button" variant="success" >Update Graph</b-button> -->
+        <!-- h5 class="sidebar-section__title"> Hello </h5-->
+        <b-form-group class="ml-2 mr-2 mb-2">
+            <b-form-radio-group size="sm" v-model="left_selected" :options="left_options" buttons
+                button-variant="info" name="radios-btn-default"></b-form-radio-group>
+        </b-form-group>
+        <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR-LEFT CREATE GRAPH XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
+        <div class="ml-2 mr-2 mb-2" v-if="left_selected === 'graph_data'">
+            <b-overlay :show="overlay_main" :variant="'dark'" rounded="sm" spinner-type="border"
+                spinner-variant="success">
+                <hr class="mb-2" style="border: 1px solid gray;" />
+                <!-- Enter database -->
+                <b-form-group class="input" label="Collection">
+                    <b-form-select v-on:change="onChangeDb" v-model="collection_name"
+                        :options="collections_names" size="sm"></b-form-select>
+                </b-form-group>
+
+                <!-- Enter an start year -->
+                <b-form-group class="input" label="Start of first interval">
+                    <b-form-select v-model="start_year" :options="start_years" size="sm"></b-form-select>
+                </b-form-group>
+                <!-- Enter an end year -->
+                <b-form-group class="mb-0 input" label="End of last interval">
+                    <b-form-select v-model="end_year" :options="end_years" size="sm"></b-form-select>
+                </b-form-group>
+                <small>You have selected: {{number_of_intervals}} {{number_of_intervals > 1 ? "intervals" : "interval"}}</small>
+                <hr class="mb-2" style="border: 1px solid gray;" />
+                <h5>Graph over Time</h5>
+                <!-- Enter target word -->
+                <b-form-group class="input" label="Target word">
+                    <b-form-input v-model="target_word" placeholder="target word" size="sm">
+                    </b-form-input>
+                </b-form-group>
+                <!-- Enter number of neighbouring nodes -->
+                <small>{{node_info}}</small>
+                <b-form-group class="input">
+                    <b-form-input type="number" v-model="n_nodes" min="0" placeholder="number of neighbours"
+                        size="sm"></b-form-input>
+                </b-form-group>
+                <!-- Enter factor that determines number of edges per graph -->
+                Density in % <small>[E = {{edges}} of max. {{max_dir_edges}} {{density_edge_info}} ]</small>
+                <b-form-group class="input">
+                    <b-form-input type="number" v-model="density" min="0" max="100"
+                        placeholder="number of edges" size="sm"></b-form-input>
+                </b-form-group>
+                <!-- Enter a graph type -->
+                <b-form-group class="input" label="Type of graph">
+                    <b-form-select v-model="graph_type" :options="graph_types" size="sm">
+                    </b-form-select>
+                </b-form-group>
+                <!-- Render button -->
+                <hr style="border: 1px solid gray;" />
+                <!--b-button class="lmmargin_button" size="sm" variant="success"
+                    v-on:click="getDataAndRenderNew()">
+                    Create and Cluster Graph</b-button-->
+                <!-- <b-button id="update_button" size="sm" class="lrmargin_button" variant="success" >Update Graph</b-button> -->
 
 
-					</b-overlay>
-				</div>
+            </b-overlay>
+        </div>
 
-				<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR-LEFT VIEW XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
-				<div class="ml-2 mr-2 mb-2" v-if="left_selected === 'graph_view'">
-					<div>
-						<b-button-group>
-							<!-- Resetz Zoom button -->
-							<b-button variant="success" size="sm" class="lrmargin_button" v-on:click="resetZoom()">
-								Graph: Reset Zoom</b-button>
-							<!--<b-button v-b-modal.modal-settings-1 id="general_settings_button"> Graph: settings</b-button>-->
-						</b-button-group>
-					</div>
-					<hr style="border: 1px solid gray;" />
-					<!-- Set dragging behaviour -->
-					<b-form-group id="sticky" class="input" label="Drag to Fixed-Position">
-						<b-form-radio name="sticky_mode" value="false" v-model="sticky_mode"
-							v-on:change="stickyChange('false')">Multi-Drag</b-form-radio>
-						<b-form-radio name="sticky_mode" value="true" v-model="sticky_mode"
-							v-on:change="stickyChange('true')">Single-Drag</b-form-radio>
-					</b-form-group>
-					<!-- Button to restart simulation with all the nodes -->
-					<p>
-						<b-button id="restart_button" variant="success" size="sm" class="lrmargin_button"
-							v-on:click="restart_change()"> Release All Fixed
-						</b-button>
-					</p>
-					<!-- Set charge strength for simulation -->
-					<b-form-group> Charge strength: {{charge}}
-						<b-form-input id="range_charge" v-model="charge" v-on:change="charge_change()" type="range"
-							min="-200" max="100">
-						</b-form-input>
-					</b-form-group>
-					<!-- Set link distance for simulation -->
-					<b-form-group> Link distance: {{linkdistance}}
-						<b-form-input id="range_linkdistance" v-model="linkdistance" v-on:change="linkdistance_change()"
-							type="range" min="-10" max="200"></b-form-input>
-					</b-form-group>
-				</div>
-				<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR-LEFT HELP XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
-				<div class="ml-2 mr-2 mb-2" v-if="left_selected === 'graph_help'">
-					<hr style="border: 1px solid gray;" />
-						SCoT (Sense Clustering over Time) is a web application to view the senses of a word and their evolvement over time. 
-						<br>
-						<hr style="border: 1px solid gray;" />
-						For a detailed explanation, read our paper (in submission to EACL 2021): <br>
-<a href="https://www.dropbox.com/s/fqgwatcjhweryqi/Haase_Anwar_Yimam_Friedrich_Biemann_SCoT_2021.pdf?dl=0" style="color:white; text-decoration:underline; font-size:140%">SCoT-Paper-2021</a>
-<hr style="border: 1px solid gray;" />
-You will find an introductory video here:
-<br>
-<a href="https://youtu.be/SbmfA4hKjvg"  style="color:white;text-decoration:underline;font-size:140%">Demo Video</a>
-<hr style="border: 1px solid gray;" />
-You will find the user guide here:
-					<br>
-					<p>
-						<a href="https://chrishaase.github.io/SCoT/" style="color: white;text-decoration:underline;font-size:140%">User guide</a>
-						
-					</p>
-					<hr style="border: 1px solid gray;" />
-					You will find the source code here:
-					<br>
-					<a href="https://github.com/chrishaase/SCoT" style="color:white; text-decoration:underline;font-size:140%">Source code</a>
-						<hr style="border: 1px solid gray;" />
-						
-						You can click on the top-right button EXAMPLE to see a pre-analysed graph.
-						
-						<hr style="border: 1px solid gray;" />
-					
-				</div>
-			</b-sidebar>
-			
-			`,
+        <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR-LEFT VIEW XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
+        <div class="ml-2 mr-2 mb-2" v-if="left_selected === 'graph_view'">
+            <div>
+                <b-button-group>
+                    <!-- Resetz Zoom button -->
+                    <b-button variant="success" size="sm" class="lrmargin_button" v-on:click="resetZoom()">
+                        Graph: Reset Zoom</b-button>
+                    <!--<b-button v-b-modal.modal-settings-1 id="general_settings_button"> Graph: settings</b-button>-->
+                </b-button-group>
+            </div>
+            <hr style="border: 1px solid gray;" />
+            <!-- Set dragging behaviour -->
+            <b-form-group id="sticky" class="input" label="Drag to Fixed-Position">
+                <b-form-radio name="sticky_mode" value="false" v-model="sticky_mode"
+                    v-on:change="stickyChange('false')">Multi-Drag</b-form-radio>
+                <b-form-radio name="sticky_mode" value="true" v-model="sticky_mode"
+                    v-on:change="stickyChange('true')">Single-Drag</b-form-radio>
+            </b-form-group>
+            <!-- Button to restart simulation with all the nodes -->
+            <p>
+                <b-button id="restart_button" variant="success" size="sm" class="lrmargin_button"
+                    v-on:click="restart_change()"> Release All Fixed
+                </b-button>
+            </p>
+            <!-- Set charge strength for simulation -->
+            <b-form-group> Charge strength: {{charge}}
+                <b-form-input id="range_charge" v-model="charge" v-on:change="charge_change()" type="range"
+                    min="-200" max="100">
+                </b-form-input>
+            </b-form-group>
+            <!-- Set link distance for simulation -->
+            <b-form-group> Link distance: {{linkdistance}}
+                <b-form-input id="range_linkdistance" v-model="linkdistance" v-on:change="linkdistance_change()"
+                    type="range" min="-10" max="200"></b-form-input>
+            </b-form-group>
+        </div>
+        <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR-LEFT HELP XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
+        <div class="ml-2 mr-2 mb-2" v-if="left_selected === 'graph_help'">
+            <hr style="border: 1px solid gray;" />
+            SCoT (Sense Clustering over Time) is a web application to view the senses of a word and their evolvement over time.
+            <br>
+            <hr style="border: 1px solid gray;" />
+            For a detailed explanation, read our paper (in submission to EACL 2021): <br>
+            <a href="https://www.dropbox.com/s/fqgwatcjhweryqi/Haase_Anwar_Yimam_Friedrich_Biemann_SCoT_2021.pdf?dl=0" style="color:white; text-decoration:underline; font-size:140%">SCoT-Paper-2021</a>
+            <hr style="border: 1px solid gray;" />
+            You will find an introductory video here:
+            <br>
+            <a href="https://youtu.be/SbmfA4hKjvg"  style="color:white;text-decoration:underline;font-size:140%">Demo Video</a>
+            <hr style="border: 1px solid gray;" />
+            You will find the user guide here:
+            <br>
+            <p> <a href="https://chrishaase.github.io/SCoT/" style="color: white;text-decoration:underline;font-size:140%">User guide</a>
+            </p>
+            <hr style="border: 1px solid gray;" />
+            You will find the source code here:
+            <br>
+            <a href="https://github.com/chrishaase/SCoT" style="color:white; text-decoration:underline;font-size:140%">Source code</a>
+            <hr style="border: 1px solid gray;" />
+            You can click on the top-right button EXAMPLE to see a pre-analysed graph.
+            <hr style="border: 1px solid gray;" />
+        </div>
+    </b-sidebar>
+
+    `,
 });

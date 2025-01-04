@@ -133,7 +133,8 @@ async function graph_init() {
     )
     .force("charge", d3.forceManyBody(vueData.charge))
     .force("collide", d3.forceCollide().radius(vueData.radius * 3))
-    .force("center", d3.forceCenter(viewbox_width / 2.2, viewbox_height / 2.2));
+    .force("center", d3.forceCenter(viewbox_width / 2.2, viewbox_height / 2.2))
+    ;
 
   // initi drag
   d_drag_node = d3.drag();
@@ -167,7 +168,7 @@ async function graph_crud(dnodes, dlinks, dcluster) {
   d3.selectAll(".link").selectAll("line").remove();
   // remove all nodes
   d3.selectAll(".node").selectAll("g").remove();
-  // remove target workd
+  // remove target word
 //  d3.selectAll(".target").remove();
 
   // append the target word to the center of the svg
@@ -301,7 +302,7 @@ async function graph_crud(dnodes, dlinks, dcluster) {
         vueData.active_node = {
           time_ids: d.time_ids,
           time_slices:d.time_ids.map(vueApp.time_id_text),
-          weights: d.weights, counts: d.counts,
+          weights: d.weights, counts_map: d.counts_map,
           source_text: vueData.target_word,
           target_text: d.target_text,
           cluster_id: d.cluster_id,
@@ -316,8 +317,8 @@ async function graph_crud(dnodes, dlinks, dcluster) {
         vueData.bim_fields[2]["label"] = d.target_text;
         // switch on node feature element
         vueData.active_component = vueData.active_node;
-        vueApp.show_similarity_plot("line_plot1")
-        vueApp.show_nodefrequency_plot("line_plot3")
+        vueApp.show_nodeSimilarity_plot("node_similarity_plot1")
+        vueApp.show_nodeFrequency_plot("node_frequency_plot1")
        //reset node/edge highlights
         d3.selectAll(".link").selectAll("line").classed('edge_selected', false);
 
@@ -402,8 +403,8 @@ async function graph_crud(dnodes, dlinks, dcluster) {
         time_ids: d.time_ids,
         time_slices:d.time_ids.map(vueApp.time_id_text),
         weights: d.weights,
-        source_text: d.source_text, source_counts:d.source_counts,
-        target_text: d.target_text,  target_counts:d.target_counts,
+        source_text: d.source_text, source_counts_map:d.source_counts_map,
+        target_text: d.target_text,  target_counts_map:d.target_counts_map,
         cluster_info_link: d.cluster_link,
         dtype:"edge",
       };
@@ -416,35 +417,18 @@ async function graph_crud(dnodes, dlinks, dcluster) {
 
 //        vueData.bim_fields = vueData.fields_edges;
         vueData.active_component = vueData.active_edge;
-        vueApp.show_similarity_plot("line_plot1", 'edge')
-        vueApp.show_nodefrequency_plot("line_plot3", 'edge')
+        vueApp.show_nodeSimilarity_plot("node_similarity_plot1", 'edge')
+        vueApp.show_nodeFrequency_plot("node_frequency_plot1", 'edge')
 
         // switch on context mode edges, switch off context mode
         vueApp.showSidebar_node = true;
         vueApp.showSidebar_right=false;
 //        console.log(d);
         
-//         d_node.classed("selected", false);
         d3.selectAll(".node").selectAll("g").classed("selected", false);
-//        d3.selectAll(".node").selectAll("circle").attr("r", vueData.radius);
         d3.selectAll('line').attr('class', false)
         d3.select(this).attr('class', 'edge_selected')
-//        lines.classed("edge_selected", function (p) {
-//        if (p.id == d.id){ //'lever/NN-bracket/NN'
-//            console.log("line found")
-//            console.log(p.id);
-//            return true;
-//            }
-//          return false; //d.id == p.id;
-//        });
-//        lines.each(function (p) {
-//        if (p.id == d.id){ //'lever/NN-bracket/NN'
-//            console.log("check line class");
-//            console.log(d3.select(this).attr('class'));
-//            console.log(d3.select(this).attr('stroke'));
-//            d3.select(this).attr('stroke', '#e34234').attr('stroke-opacity', 1);
-//            }
-//        });
+
         d_node.classed("selected", function (p) {
           if(p == d.source || p == d.target){
             return true;
@@ -464,7 +448,6 @@ async function graph_crud(dnodes, dlinks, dcluster) {
     d_simulation.restart();
     return "end";
 }
-
 // ############################################# SVG - MAIN ELEMENT FUNCTIONS ########################################
 /**
  * ------------------------------------ D3 SIMULATION FUNCTIONS
@@ -571,7 +554,7 @@ function mousedowned(d) {
     vueData.active_node = {
       time_ids: d.time_ids,
       time_slices:d.time_ids.map(vueApp.time_id_text),
-      weights: d.weights, counts: d.counts,
+      weights: d.weights, counts_map: d.counts_map,
       source_text: vueData.target_word,
       target_text: d.target_text,
       cluster_id: d.cluster_id,
@@ -589,7 +572,6 @@ function mousedowned(d) {
 //  vueData.bim_fields[2]["label"] = d.target_text;
   // switch on node feature element
   vueData.active_component = vueData.active_node;
-//  vueApp.show_similarity_plot("line_plot1")
 
   console.log('node mouse downed')
   d3.selectAll("line").classed('edge_selected', false);
@@ -1282,7 +1264,7 @@ function highlightCentralNodes_d3(threshold_s, threshold_m) {
             centrality_score <= threshold_m
           ) {
             d.setAttribute("r", vueData.radius * 1.5);
-            text.style("font-size", vueData.node_text_font_size * 1.5);
+            text.style("font-size", vueData.node_text_font_size * 1.25);
           } else {
             d.setAttribute("r", vueData.radius * 2);
             text.style("font-size", vueData.node_text_font_size * 1.75);
@@ -1437,7 +1419,7 @@ function search_node_d3() {
 function resizeNodes_d3(measure)
 {
     rmin = 2; rmax = 999;
-    tmin = 5; tmax = 50;
+    tmin = vueData.radius; tmax = 50;
     attr = {"max": "weight", "avg":"weight_average", "avg_all": "weight_average_all"}[measure]
 
     console.log(measure, attr)

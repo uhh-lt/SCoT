@@ -33,7 +33,7 @@ Vue.component("text-example", {
     <div class="mx-2 mb-2">
     <b-input class="mb-2" v-model="filter_docs" placeholder="Filter docs..." type="search"></b-input>
       <b-table striped hov :busy="busy_right_docs" :fields="fields_documents" :items="documents"
-      :filter="filter_docs" :filter-included-fields="filter_docs_on" small responsive="sm"
+      :filter="filter_docs" :filter-included-fields="filter_docs_on" show-empty small responsive="sm"
       head-variant="light" table-variant="dark" fixed
         :sort-by="'docs'" :sort-desc="true" style="color: white;font-size:12px">
         <template v-slot:table-busy>

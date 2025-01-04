@@ -21,8 +21,12 @@ def ngot_dynamic(db, ngot):
     # NGOT - dynamic-fixed (expands global nodes dynamically)
     # Edges in time, fixed global overlay edges, scaled
     print("NGOT dynamic")
+    # start = time.time()
+    # print(time.strftime("%M:%S", time.gmtime(time.time())))
     ngot = db.get_nodes_overlay(ngot)
+    # print(time.strftime("%M:%S", time.gmtime(time.time()-start)))
     ngot = db.get_edges_overlay(ngot)
+    # print(time.strftime("%M:%S", time.gmtime(time.time()-start)))
     return ngot
 
 
@@ -51,7 +55,20 @@ def ngot_add_word_counts(db, ngot):
 
 def ngot_add_node_stats(db, ngot):
     print("getting node stats for max, average scores")
-    ngot = db.get_node_stats(ngot)
+    ngot_nodes = ngot.nodes
+    selected_time_ids = ngot.props.selected_time_ids
+    for node in ngot_nodes:
+        all_scores = node.weights
+        node.weight_max = max(all_scores)
+        node.weight_average = sum(node.weights) // len(all_scores)
+        node.weight_average_all = sum(node.weights) // len(selected_time_ids)
+
+    return ngot
+
+
+def ngot_add_similarities(db, ngot):
+    print("getting node similarities with target node, for all time intervals")
+    ngot = db.get_word_similarities(ngot)
     return ngot
 
 
@@ -90,8 +107,12 @@ def get_graph(config, ngot):
     else:
         # as default calls overlay-nodes-global-edges (dynamic version of first SCoT-algorithm)
         ngot = ngot_dynamic_global(db, ngot)
-    try: ngot = ngot_add_word_counts(db, ngot)
-    except Exception as ex: print(ex);
+    try:
+        ngot = ngot_add_word_counts(db, ngot)
+        ngot = ngot_add_similarities(db, ngot)
+    except Exception as ex:
+        print(ex)
+
     ngot = ngot_add_node_stats(db, ngot)
     return ngot
 

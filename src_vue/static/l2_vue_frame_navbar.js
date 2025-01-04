@@ -77,7 +77,9 @@ Vue.component("frame-navbar", {
             <!-- buttons to load and save graph -->
             <b-navbar-nav class="ml-auto">
                 <!-- Save and Load Graph buttons :disabled="time_diff == 1" -->
-                <b-button size="sm" class="lrmargin_button" variant="success" v-b-modal.modal-20>
+
+                <!--
+                 <b-button size="sm" class="lrmargin_button" variant="success" v-b-modal.modal-20>
                     <em class="fas fa-upload"></em> Example
                 </b-button>
                 <b-button size="sm" class="lrmargin_button" variant="success" v-b-modal.modal-19>
@@ -91,8 +93,23 @@ Vue.component("frame-navbar", {
                 </b-button>
                 <b-button id="savebtn_png" class="lrmargin_button"  size="sm" variant="info" :disabled="!graph_rendered" v-on:click="saveGraphPNG">
                     <em class="fas fa-download"></em> Save PNG
-                </b-button>
+                </b-button> -->
+                <b-nav-item-dropdown text="Load & Save" right >
+                  <b-dropdown-item id="loadbtn_json" variant="success" v-b-modal.modal-20><em class="fas fa-upload"></em> Example</b-dropdown-item>
+                  <b-dropdown-item id="loadbtn_json" variant="success" v-b-modal.modal-19><em class="fas fa-upload"></em> Load as Json</b-dropdown-item>
+                  <b-dropdown-item id="savebtn_json" variant="success" :disabled="!graph_rendered" v-on:click="saveGraph" download="graph.json" href=""><em class="fas fa-download"></em> Save as Json</b-dropdown-item>
+                  <b-dropdown-item id="savebtn_svg" v-b-tooltip.hover title="SVG and PNG have been tested for Chrome only" variant="info" :disabled="!graph_rendered" v-on:click="saveGraphSVG"><em class="fas fa-download"></em>
+                  Save as SVG <sup style="font-size: 8px; color:red">
+                    *</sup></b-dropdown-item>
+                  <b-dropdown-item id="savebtn_png" v-b-tooltip.hover title="SVG and PNG have been tested for Chrome only" variant="info" :disabled="!graph_rendered" v-on:click="saveGraphPNG"><em class="fas fa-download"></em>
+                  Save as PNG<sup style="font-size: 8px; color:red">
+                    *</sup> </b-dropdown-item>
+
+                    <!--span style="font-size: 8px; color:red; text-align: right;">
+                       *tested for Chrome only</span-->
+                </b-nav-item-dropdown>
 			</b-navbar-nav>
+
       </b-navbar>
       <b-modal id="modal-19" title="Load">
         <b-card>

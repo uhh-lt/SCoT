@@ -76,7 +76,6 @@ async function getData_io() {
     for (let cluster of graph.clusters) {
       vueApp.cluster_dic[cluster.cluster_id] = cluster;
     }
-    vueApp.target_word_counts = graph.props.counts;
     // set first active node
   } catch (error) {
     console.log(error);
@@ -416,13 +415,16 @@ function get_cluster_information_axios(cluster) {
     .then((res) => {
       // console.log(res.data);
       let ret = [];
+      let ret2 = {};
       for (let key in res.data) {
         let retObj = {};
         retObj.wort = key;
-        retObj.score = parseFloat(res.data[key]).toFixed(5);
+        retObj.score = parseFloat(res.data[key][0]).toFixed(5);
         ret.push(retObj);
+        ret2[key] = res.data[key][1];
       }
       vueApp.cluster_shared_object = ret;
+      vueApp.cluster_contexts_freq = ret2;
       //console.log(this.cluster_shared_object)
       vueApp.busy_right_cluster = false;
     })
@@ -446,6 +448,7 @@ function docSearch_io(wort1, wort2) {
   data["jo"] = wort1;
   data["bim"] = wort2;
   data["collection_key"] = vueApp.collection_key;
+  data["time_ids"] = graph.props.selected_time_ids;
   data["time_slices"] = graph.props.selected_time_ids.map(vueApp.time_id_text);
 //  console.log("selected", data["jo"], data["bim"]);
   let url = "./api/collections/" + vueApp.collection_key + "/documents";
@@ -632,8 +635,7 @@ async function wordFeatureCounts_io(word1, word2, feature) {
       jobim_counts = {}
       for (key in res_data){
            jobim_counts[key] = {'time_ids': Object.keys(res_data[key]),
-                        'counts': Object.values(res_data[key])}
-                        ;
+                        'counts': Object.values(res_data[key])};
       }
       vueApp.jobim_counts = jobim_counts
 

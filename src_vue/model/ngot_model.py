@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field, asdict
 from dataclasses_json import dataclass_json
-from typing import List, Dict, Optional, Set
+from typing import List, Dict, Optional, Set, Tuple
 
 """  
 This defines the model of the clustered neighbourhood graph over time
@@ -24,9 +24,9 @@ class NGOTNode:
     # time interval data information
     time_ids: Optional[List[int]] = None
     weights: Optional[List[float]] = None
-    counts: Optional[List[float]] = None
-    counts_time_ids: Optional[List[int]] = None
-
+    counts_map: Optional[Dict[int, Tuple[int, float]]] = None
+    weights_map: Optional[Dict[int, float]] = None
+    # based on weights used for clustering
     weight_max: Optional[int] = None
     weight_average: Optional[int] = None
     weight_average_all: Optional[int] = None
@@ -83,10 +83,8 @@ class NGOTLink():
     # time ids and weights
     time_ids: Optional[List[int]] = None
     weights: Optional[List[float]] = None
-    source_counts: Optional[List[int]] = None
-    target_counts: Optional[List[int]] = None
-    source_counts_time_ids: Optional[List[int]] = None
-    target_counts_time_ids: Optional[List[int]] = None
+    source_counts_map: Optional[Dict[int, Tuple[int, float]]] = None
+    target_counts_map: Optional[Dict[int, Tuple[int, float]]] = None
 
     # cluster information --------------------------------------------------------------------
     # belongs to cluster [if none = transitlink , ansonsten id]
@@ -129,6 +127,9 @@ class NGOTCluster:
     # text = cluster_node id
     # text2 = cluster_node id + time_ids
     labels: Optional[List[None]] = None
+    nodes_counts: Optional[Dict[int, Tuple[int, float]]] = None
+    nodes_weights: Optional[Dict[int, Tuple[int, float]]] = None
+    checked: Optional[bool] = False
 
 
 @dataclass_json
@@ -202,8 +203,7 @@ class NGOTProperties:
     # if graph = global then number of static nodes global / i <= number of ngot nodes <= number of static nodes global
     # if graph = global then number of static edges global / i <= number of ngot edges <= number of static edges global
     weight_stats: Optional[NGOTStats] = None
-    counts: Optional[List[int]] = None
-    counts_time_ids: Optional[List[int]] = None
+    target_counts_map: Optional[Dict[int, Tuple[int, float]]] = None #of target word
     # SPECIAL SETTING ------------------------------------------------
     # Do not change if not necessary
     remove_singletons: bool = False

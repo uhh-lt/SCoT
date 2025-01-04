@@ -12,9 +12,10 @@ def collections_info(config):
 
     collections = {}
     for key in config["available_collections"]:
-        print(key)
-        print(config["collections"][key])
+        # print(key)
+        # print(config["collections"][key])
         url = config["collections"][key]["url"]
+        print(f"accessing {key} -- {url}")
         db = Database(key, url)
         displayname = config["collections"][key]["displayname"]
 
@@ -26,19 +27,6 @@ def collections_info(config):
         collections[displayname]['is_ES_available'] = config["collections"][key]["es_info"]!=None
 
     return json.dumps(collections)
-
-    # config_fe = config["collections_info_frontend"]
-    #
-    # for collection in config_fe:
-    #     print(collection)
-    #     key = config_fe[collection]["key"]
-    #     print(key)
-    #     db = Database(config, get_url(config, key))
-    #     config_fe[collection]['start_years'] = db.get_all_years("start_year")
-    #     config_fe[collection]['end_years'] = db.get_all_years("end_year")
-    #     config_fe[collection]['is_ES_available'] = key in config["collections_info_elastic"].keys()
-    # # print(config_fe)
-    # return json.dumps(config_fe)
 
 
 def get_es_info (config, collection):
@@ -92,6 +80,9 @@ def simbim(config, collection, data, word1, word2, time_id):
     res1_dic, res2_dic, res_set, max1, max2 = get_edge_info(
         config, collection, word1, word2, time_id)
     # print(f'{word1} features: {res1_dic}')
+    # print(f'{word2} features: {res2_dic}')
+    # print(f'max1: {max1} max2: {max2}')
+
     if len(res1_dic) == 0 or len(res2_dic) == 0 or len(res_set) == 0:
         # check if zero-error
         return {"error": "zero values"}
@@ -152,7 +143,7 @@ def cluster_information(config, data):
     for node in nodes:
         label = node[0]
         time_id = node[1]
-        feature_dic[node] = db.get_features(label, time_id)
+        feature_dic[node] = db.get_features(label, time_id, is_frequency_required=True)
     # get target filter set
     if (data["props"]["cluster_target_filter"]):
         target = data["props"]["target_word"]
@@ -162,7 +153,9 @@ def cluster_information(config, data):
     print("-------------------------------------------------------")
     print(" in cluster_info (2) after db query --- %s seconds ---" %
           (time.time() - start_time))
+
     res_dic_all = defaultdict(int)
+    res_dic_timewise = defaultdict(lambda: defaultdict(int))
     # cumulate the feature scores over all nodes and time-ids [could be changed...]
     # feature dic {{word,timeid}:{feature: score}}
     if (data["props"]["cluster_target_filter"]):
@@ -170,12 +163,15 @@ def cluster_information(config, data):
             for k2, v2 in v.items():
                 # items: {feature: score}
                 if k2 in target_set:
-                    res_dic_all[k2] += v2
+                    res_dic_all[k2] += v2['score']
+                    res_dic_timewise[k2][k[1]] += v2['freq']
+
     else:
         for k, v in feature_dic.items():
             for k2, v2 in v.items():
                 # items: {feature: score}
-                res_dic_all[k2] += v2
+                res_dic_all[k2] += v2['score']
+                res_dic_timewise[k2][k[1]] += v2['freq']
     print("-------------------------------------------------------")
     # normalize and sort significance values
     res_dic_all = {k: v for k, v in sorted(
@@ -189,10 +185,11 @@ def cluster_information(config, data):
     dic_res = {}
     keys = list(res_dic_all.keys())[:topn]
     for index in range(len(keys)):
-        dic_res[keys[index]] = res_dic_all[keys[index]]
+        dic_res[keys[index]] = [res_dic_all[keys[index]], res_dic_timewise[keys[index]]]
     print("in cluster_info (3) after algo --- %s seconds ---" %
           (time.time() - start_time))
     # print("dictionary cluster ", dic_res)
+
     return dic_res
 
 
@@ -208,6 +205,10 @@ def documents(config, data):
     time_slices = data["time_slices"]
     print(data)
     collection_key = str(data["collection_key"])
+    # filter time_slices to match with word-feature table
+    time_ids = wordfeature_timeids(config, collection_key, jo, bim)
+    time_slices = [data["time_slices"][idx-1] for idx in time_ids]
+    print(f"filtered_timeslices: {time_slices}")
     # get host, port and index from config
     es_host, es_port, es_index = get_es_info(config, collection_key)
     # print(es_index, es_host, es_port)
@@ -251,6 +252,11 @@ def documents_scroll(config, data):
     time_slices = data["time_slices"]
     print(data)
     collection_key = str(data["collection_key"])
+    # filter time_slices to match with word-feature table
+    time_ids = wordfeature_timeids(config, collection_key, jo, bim)
+    time_slices = [data["time_slices"][idx - 1] for idx in time_ids]
+    print(f"filtered_timeslices: {time_slices}")
+
     # get host, port and index from config
     es_host, es_port, es_index = get_es_info(config, collection_key)
     # print(es_index, es_host, es_port)
@@ -276,19 +282,40 @@ def documents_scroll(config, data):
     return {"json_docs": df.to_csv(sep='\t', index=False, encoding='utf-8')}
 
 
+def wordfeature_timeids(config, collection, word, feature):
+
+    print(f'word: {word}, feature {feature}')
+    db = Database(collection, config["collections"][collection]["url"])
+
+    res1_dic = db.get_wordfeature_counts(word, feature)
+    print(f'word1: {word}, word-feature counts: {res1_dic}')
+    return list(res1_dic.keys())
+
 def wordfeature_counts(config, collection, word1, word2, feature):
 
     print(f'word1: {word1}, word2: {word2} feature {feature}')
     db = Database(collection, config["collections"][collection]["url"])
-
     res1_dic = db.get_wordfeature_counts(word1, feature)
     res2_dic = db.get_wordfeature_counts(word2, feature)
+    # combine time_ids, fill the missing ones and then do a final sort
+    time_ids = sorted(set(res1_dic.keys() | res2_dic.keys()))
+    for t in time_ids:
+        if not t in res1_dic.keys():
+            res1_dic[t] = 'null'
+        if not t in res2_dic.keys():
+            res2_dic[t] = 'null'
+
+    res1_dic ={k:v for k,v in sorted(res1_dic.items(), key=lambda item:item[0])}
+    res2_dic = {k: v for k, v in sorted(res2_dic.items(), key=lambda item: item[0])}
+
     print(f'word1: {word1}, word-feature counts: {res1_dic}')
     print(f'word2: {word2}, word-feature counts: {res2_dic}')
+    # print(f'all time_ids: {time_ids}')
+
     return {word1: res1_dic, word2: res2_dic}
 
 
-def compute_weight_stats(nodes):
+def add_target_weight_stats(nodes):
     time_and_scores = [(w, t, n.id) for n in nodes for w,t in zip(n.weights, n.time_ids)]
     time_and_scores = sorted(time_and_scores, key=lambda t:t[0])
     # print(time_and_scores[0], time_and_scores[-1])
@@ -296,3 +323,27 @@ def compute_weight_stats(nodes):
     ngot_stats = NGOTStats(time_and_scores[0], time_and_scores[-1], sum(all_scores)/len(all_scores))
     # print(sum(scores), len(scores))
     return ngot_stats
+
+
+def add_cluster_stats(ngot):
+    print("getting cluster stats")
+    clusters = ngot.clusters
+    ngot_nodes = ngot.nodes
+    selected_time_ids = ngot.props.selected_time_ids
+    for cl in clusters:
+        # print("cluster", cl)
+        cluster_nodes = [node for node in ngot_nodes for node_text in cl.cluster_nodes if node.id==node_text]
+        counts_map = {}
+        weights_map = {}
+        for tid in selected_time_ids:
+            counts = [node.counts_map[tid][0] if node.counts_map[tid][0] != 'null' else 0 for node in cluster_nodes]
+            counts_ppm = [node.counts_map[tid][1] if node.counts_map[tid][1] != 'null' else 0 for node in cluster_nodes]
+            counts_map[tid] = (sum(counts)//len(selected_time_ids), sum(counts_ppm)/len(selected_time_ids))
+
+            scores = [node.weights_map[tid] if node.weights_map[tid] != 'null' else 0 for node in cluster_nodes]
+            weights_map[tid] = sum(scores) // len(selected_time_ids)
+
+        cl.nodes_counts = counts_map
+        cl.nodes_weights = weights_map
+
+    return ngot

@@ -9,7 +9,7 @@ from flask_session import Session
 from services.cluster import chinese_whispers, manual_recluster
 from services.graphs import get_graph
 from services.info import collections_info, get_edge_info, simbim, cluster_information, documents, documents_scroll, \
-    compute_weight_stats, wordfeature_counts
+    add_target_weight_stats, wordfeature_counts, add_cluster_stats
 from model.ngot_model import NGOT, NGOTCluster, NGOTLink, NGOTProperties, NGOTNode
 from model.ngot_mapper import map_ngot_links_2_dic, map_ngot_nodes_2_dic
 
@@ -39,12 +39,20 @@ Session(app)
 # Get config
 @app.route('/api/config')
 def get_config():
-    # config_path = './config/config.json' # for final demo
-    config_path = './config/config_dev.json' # for development/testing
-    config_path = 'config/config_local.json'
+    CONFIG_PATHS = {
+          "ltdocker": './config/config.json', # for development/final demo
+          "local": 'config/config_local.json', # local
+        }
+
+    server = "ltdocker"
+    available_collections = "dev"
+
+    config_path = CONFIG_PATHS[server]
     print(f"Configuration file: {config_path}")
     with open(config_path) as config_file:
-        return json.load(config_file)
+        configs = json.load(config_file)
+        configs["available_collections"] = configs["available_collections"][available_collections]
+        return configs
 
 
 @app.route('/')
@@ -72,17 +80,18 @@ def get_clustered_graph():
     # print("request.data:",request.data)
     # print("ngot.props:", ngot.props)
     ngot = get_graph(get_config(), ngot)
-    ngot.props.weight_stats = compute_weight_stats(ngot.nodes)
-    # print(ngot.nodes_dic)
+    ngot.props.weight_stats = add_target_weight_stats(ngot.nodes)
     # print(ngot.props)
-    # for n in ngot.nodes[:5]:
+    # for n in ngot.nodes:
     #     print(n)
     old_graph, ngot = chinese_whispers(ngot)
+    ngot = add_cluster_stats(ngot)
     # delete information that was only used for the backend
     ngot.nodes_dic = None
     ngot.links_dic = None
     # serialize dataclass-structure to json
     ngot_json = ngot.to_json()
+    # print(ngot_json)
     return ngot_json
 
 
@@ -98,6 +107,7 @@ def recluster_graph():
     ngot.links_dic = map_ngot_links_2_dic(ngot)
     # recluster
     reclustered_graph, ngot = chinese_whispers(ngot)
+    ngot = add_cluster_stats(ngot)
     # delete information that was only used for the backend
     ngot.nodes_dic = None
     ngot.links_dic = None
@@ -123,6 +133,7 @@ def manual_recluster_graph():
     #     print(n)
     # recluster
     reclustered_graph, ngot = manual_recluster(ngot)
+    ngot = add_cluster_stats(ngot)
     # delete information that was only used for the backend
     # print('------------------------------')
     # print("after manual_recluster_graph")
@@ -192,4 +203,4 @@ if __name__ == '__main__':
     sys.path.append(str(Path(__file__).parent.absolute()))
     # use the config file to get host and database parameters
     # app.run(host=get_config()['flask_host'])
-    app.run(port=5000, debug=True)
+    app.run(port=5001, debug=True)

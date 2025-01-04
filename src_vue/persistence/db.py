@@ -61,8 +61,17 @@ class Database():
             time_ids.append(int(row['id']))
         return time_ids
 
-    # ---------------------- GRAPH ALGORITHM NGOT INTERVAL -------------------------------------------
 
+    def get_all_time_ids(self):
+        time_ids = []
+        query = f"SELECT * FROM time_slices ORDER BY id ASC"
+        t = self.db.query(query)
+        for row in t:
+            time_ids.append(int(row['id']))
+        return time_ids
+
+
+    # ---------------------- GRAPH ALGORITHM NGOT INTERVAL -------------------------------------------
     def get_nodes_interval(self, ngot):
         # STEP 1: GET ALL NODES FROM EACH INTERVAl
         # Var and resulting values
@@ -180,6 +189,13 @@ class Database():
                     WHERE word1 IN {tuple(node_list)} AND word2 IN {tuple(node_list)} AND time_id IN {tuple(time_ids)}
                     ORDER BY score DESC
                 """
+        if len(time_ids) == 1:
+            query = f"""SELECT word1, word2, score, time_id
+                                FROM similar_words
+                                WHERE word1 IN {tuple(node_list)} AND word2 IN {tuple(node_list)} AND time_id = {time_ids[0]}
+                                ORDER BY score DESC
+                    """
+
         result = self.db.query(query)
         print('%' * 25)
         print(time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(time.time())))
@@ -308,7 +324,6 @@ class Database():
                             node.time_ids.append(int(row['time_id']))
                             time_dic[int(row['time_id'])] += 1
                             node.weights.append(float(row['score']))
-
                 if not exists:
                     ngot_node = NGOTNode()
                     ngot_node.id = str(row['word2'])
@@ -371,8 +386,15 @@ class Database():
                     WHERE word1 IN {tuple(node_list)} AND word2 IN {tuple(node_list)} AND time_id IN {tuple(time_ids)}
                     ORDER BY score DESC
         """
+        if len(time_ids) == 1:
+            query = f"""SELECT word1, word2, score, time_id
+                                FROM similar_words
+                                WHERE word1 IN {tuple(node_list)} AND word2 IN {tuple(node_list)} AND time_id = {time_ids[0]}
+                                ORDER BY score DESC
+                    """
         con = self.db.query(query)
         # put all into connections-array
+        # print(time.strftime("%M:%S", time.gmtime(time.time())))
         for row in con:
 
             if not str(row['word1']) == str(row['word2']) and int(row['time_id']) in time_ids:
@@ -510,6 +532,13 @@ class Database():
                     WHERE word1 IN {tuple(node_list)} AND word2 IN {tuple(node_list)} AND time_id IN {tuple(time_ids)}
                     ORDER BY score DESC
         """
+        if len(time_ids) == 1:
+            query = f"""SELECT word1, word2, score, time_id
+                                FROM similar_words
+                                WHERE word1 IN {tuple(node_list)} AND word2 IN {tuple(node_list)} AND time_id = {time_ids[0]}
+                                ORDER BY score DESC
+                    """
+
         con = self.db.query(query)
 
         # prepare var for allocating edges top down up until local max per slice is reached
@@ -653,22 +682,22 @@ class Database():
 
     # FEATURES ---------------------------------------------------------------------------------------------
     # -------------------------------------------------------------CASE_SENSITIVE?
-    def get_features(self, word1: str, time_id: int) -> Dict[str, float]:
+    def get_features(self, word1: str, time_id: int, is_frequency_required=False) -> Dict[str, float]:
         features: Dict[str, float] = {}
-        query = f"""SELECT feature, score, time_id FROM word_features
+        query = f"""SELECT feature, score, freq, time_id FROM word_features
                     WHERE word1='{word1}' and time_id={time_id}
                     ORDER by score DESC
                 """
         f = self.db.query(query)
-        for row in f:
-            # if str(row['feature']) in features.keys():
-            #     print('.....already present.....')
-            #     print(str(row['feature']), features[str(row['feature'])])
-            # print(row)
-            features[str(row['feature'])] = float(row['score'])
-        # if len(f) > 0:
-        #     print('most significant feature:\t', list(features.keys())[0], list(features.values())[0])
-        #     print("--------------------------------------")
+        if not is_frequency_required:
+            for row in f:
+                features[str(row['feature'])] = float(row['score'])
+
+        else:
+            for row in f:
+                features[str(row['feature'])] = {'score': float(row['score']),
+                                             'freq': float(row['freq'])}
+
         return features
 
     def get_feature_target_filter_set(self, word1: str, time_ids: List[int]) -> Set[str]:
@@ -679,7 +708,6 @@ class Database():
                     ORDER by score DESC
                 """
         f = self.db.query(query)
-
         result = set()
         for row in f:
             result.add(str(row['feature']))
@@ -790,12 +818,13 @@ class Database():
         ngot_nodes = ngot.nodes
         ngot_nlinks = ngot.links
         target_word = ngot.props.target_word
-        node_list = [target_word] # add target words to extract its word counts as well
-        for node in ngot_nodes:
-            node_list.append(node.id)
-        nodes_dic = {node:{'time_ids':[], 'counts':[]} for node in node_list}
+        node_list = [node.id for node in ngot_nodes]
+        node_list.append(target_word) # add target words to extract its word counts as well
+        all_time_ids = self.get_all_time_ids()
+        nodes_dic = {node: {tid:('null','null') for tid in all_time_ids} for node in node_list}
+
         query = f"""SELECT word1, freq, ppm, time_id FROM word_counts
-                    WHERE word1 IN {tuple(node_list)}
+                    WHERE word1 IN {tuple(node_list)} 
                 """
         result = self.db.query(query)
         for row in result:
@@ -803,61 +832,22 @@ class Database():
             count = int(row['freq'])
             ppm = round(float(row['ppm']), 3)
             time_id = int(row['time_id'])
-            nodes_dic[word1]['time_ids'].append(time_id)
-            nodes_dic[word1]['counts'].append((count,ppm))
+            nodes_dic[word1][time_id] = (count, ppm)
 
-        query = f"SELECT * FROM time_slices ORDER BY id ASC"
-        all_time_ids = []
-
-        t = self.db.query(query)
-        for row in t:
-            all_time_ids.append(int(row['id']))
-
-        # sort according to time ids and fill for missing ids
-        for node, data in nodes_dic.items():
-            time_ids, counts = data['time_ids'], data['counts']
-            if len(time_ids) != len(all_time_ids):
-                for t in all_time_ids:
-                    if not t in time_ids: # missing
-                        time_ids.append(t)
-                        counts.append('null')
-
-            time_ids, counts = map(list, zip(*sorted(zip(data['time_ids'], data['counts']), reverse=False)))
-            nodes_dic[node] = {"time_ids": time_ids,
-                               "counts": counts}
-
-            nodes_dic[node] = {"time_ids": time_ids,
-                               "counts": counts}
         for node in ngot_nodes:
-            # indices = [nodes_dic[node.id]['time_ids'].index(tid) for tid in node.time_ids]
-            # counts = [nodes_dic[node.id]['counts'][idx] for idx in indices]
-            node.counts = nodes_dic[node.id]['counts']
-            node.counts_time_ids = nodes_dic[node.id]['time_ids']
+            node.counts_map = nodes_dic[node.id]
 
         for link in ngot_nlinks:
-            # indices = [nodes_dic[link.source]['time_ids'].index(tid) for tid in link.time_ids]
-            # counts = [nodes_dic[link.source]['counts'][idx] for idx in indices]
+            link.source_counts_map = nodes_dic[link.source]
+            link.target_counts_map = nodes_dic[link.target]
 
-            link.source_counts = nodes_dic[link.source]['counts']
-            link.source_counts_time_ids = nodes_dic[link.source]['time_ids']
-
-            # indices = [nodes_dic[link.target]['time_ids'].index(tid) for tid in link.time_ids]
-            # counts = [nodes_dic[link.target]['counts'][idx] for idx in indices]
-            link.target_counts = nodes_dic[link.target]['counts']
-            link.target_counts_time_ids = nodes_dic[link.target]['time_ids']
-
-        # indices = [nodes_dic[target_word]['time_ids'].index(tid) for tid in ngot.props.selected_time_ids]
-        # counts = [nodes_dic[target_word]['counts'][idx] for idx in indices]
-
-        ngot.props.counts = nodes_dic[target_word]['counts']
-        ngot.props.counts_time_ids = nodes_dic[target_word]['time_ids']
-
+        ngot.props.target_counts_map = nodes_dic[target_word]
         return ngot
 
     def get_wordfeature_counts(self, word1: str, feature:str) -> Dict[int, int]:
         feature_scores: Dict[str, float] = {}
         query = f"""SELECT freq, score, time_id FROM word_features
-                    WHERE word1='{word1}' and feature='{feature}'
+                    WHERE word1='{word1}' AND feature='{feature}'
                     ORDER by time_id ASC
                 """
         f = self.db.query(query)
@@ -866,6 +856,32 @@ class Database():
         #     print("--------------------------------------")
 
         return feature_scores
+
+    def get_word_similarities(self, ngot):
+
+        ngot_nodes = ngot.nodes
+        target_word = ngot.props.target_word
+        all_time_ids = self.get_all_time_ids()
+        nodes_dic = {node.id:{tid:'null' for tid in all_time_ids} for node in ngot_nodes}
+
+        node_list = [node.id for node in ngot_nodes]
+        query = f"""SELECT word2, score, time_id FROM similar_words
+                    WHERE word1='{target_word}' AND word2 IN {tuple(node_list)} 
+                """
+
+        result = self.db.query(query)
+        for row in result:
+            word2 = str(row['word2'])
+            score = float(row['score'])
+            time_id = int(row['time_id'])
+            nodes_dic[word2][time_id] = score
+
+        # update ngot
+        for node in ngot_nodes:
+            node.weights_map = nodes_dic[node.id]
+
+        return ngot
+
 
     def get_words(self, ngot, substr: str,) -> Dict[int, int]:
         time_ids = ngot.props.selected_time_ids;
@@ -880,14 +896,4 @@ class Database():
 
         return word_list
 
-    def get_node_stats(self, ngot):
 
-        ngot_nodes = ngot.nodes
-        selected_time_ids = ngot.props.selected_time_ids
-        for node in ngot_nodes:
-            all_scores = node.weights
-            node.weight_max = max(all_scores)
-            node.weight_average = sum(node.weights) // len(all_scores)
-            node.weight_average_all = sum(node.weights) // len(selected_time_ids)
-
-        return ngot
