@@ -202,5 +202,6 @@ if __name__ == '__main__':
     # this is not permanent (this is why we do it again and again ...)
     sys.path.append(str(Path(__file__).parent.absolute()))
     # use the config file to get host and database parameters
-    app.run(host=get_config()['flask_host'], debug=True)
+    app.run(host=get_config()['flask_host'],
+            debug=True)
     # app.run(port=5001, debug=False)
