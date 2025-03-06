@@ -105,6 +105,8 @@ let vueData = {
   // stored in background: The key is unique identifier of the collection and is used for querying data from the backend
   collection_key: "0",
   is_ES_available: false,
+   // short name for io functions purpose
+  collection_name_short: "",
   // Selected start-year out of all possible start years for the selected collection
   start_year: 0,
   // dropdown list: all possible start years per selected collection queried from the database after selection of collection

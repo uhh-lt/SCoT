@@ -15,6 +15,8 @@ async function getCollections_io() {
     vueApp.collections = res.data;
     vueApp.collections_names = Object.keys(vueApp.collections);
     vueApp.collection_name = vueApp.collections_names[0];
+    vueApp.collection_name_short = vueApp.collection_name.split('--').slice(0,-1).join('--')
+
     vueApp.is_ES_available = vueApp.collections[vueApp.collection_name].is_ES_available;
 
     vueApp.getGraphTypes();
@@ -465,6 +467,37 @@ function docSearch_io(wort1, wort2) {
 /**
  * LOAD AND SAVE GRAPH TO JSON --------------------------------------------------------------------------------------
  */
+function timediff_info(){
+    let interval_timediff_info = ""
+    if (vueApp.interval_start != 0){
+        interval_timediff_info += '-interval-' +
+        vueApp.interval_start + "_" + vueApp.interval_end
+    }
+    if (vueApp.interval_id != 0){
+        interval_timediff_info += '-timeslice-' +
+        vueApp.start_years[vueApp.interval_id-1].text + "_" + vueApp.end_years[vueApp.interval_id-1].text
+    }
+
+    if (interval_timediff_info != ""){
+        interval_timediff_info = '--timediff' + interval_timediff_info
+    }
+    return interval_timediff_info
+}
+
+function base_filename(){
+    const filename = vueApp.collection_name_short + '--' +
+    graph.props.start_year + "-" + graph.props.end_year + '--' +
+    graph.props.target_word +
+    "_" +
+    graph.props.n_nodes +
+    "_" +
+    graph.props.density +
+    "_" +
+    graph.props.graph_type;
+//        "_" +
+//        graph.props.start_year + "_" + graph.props.end_year +
+    return filename;
+}
 
 function saveGraph_io() {
   // harmonize all cluster colors
@@ -478,17 +511,7 @@ function saveGraph_io() {
   const url = window.URL.createObjectURL(blob);
   console.log(url)
   a.href = url;
-  a.download = vueApp.collection_name + '--'+
-    graph.props.target_word +
-    "_" +
-    graph.props.n_nodes +
-    "_" +
-    graph.props.density +
-    "_" +
-    graph.props.graph_type +
-    '_' +
-    graph.props.start_year + "_" + graph.props.end_year +
-    ".json";
+  a.download = base_filename() + ".json";
   a.click();
   setTimeout(() => {
     window.URL.revokeObjectURL(url);
@@ -509,26 +532,8 @@ function loadGraph_io() {
 }
 
 function saveGraphSVG_io() {
-        const filename = vueApp.collection_name + '--'+
-        graph.props.target_word +
-        "_" +
-        graph.props.n_nodes +
-        "_" +
-        graph.props.density +
-        "_" +
-        graph.props.graph_type +
-        "_" +
-        graph.props.start_year + "_" + graph.props.end_year
-        ;
-//        svgExport.downloadSvg(document.querySelector("#svg"),
-//                              filename,
-//                              {
-//                                width: svg_width,
-//                                height: svg_height,
-//                                scale: 0.95,
-//                              }
-//                              );
 
+        const filename = base_filename() +  timediff_info() ;
          saveSvg(document.querySelector("#svg"), filename + ".svg",
             {
               left: viewbox_pan_horizontal,
@@ -542,29 +547,8 @@ function saveGraphSVG_io() {
 }
 
 function saveGraphPNG_io() {
-        const filename = vueApp.collection_name + '--'+
-        graph.props.target_word +
-        "_" +
-        graph.props.n_nodes +
-        "_" +
-        graph.props.density +
-        "_" +
-        graph.props.graph_type +
-        "_" +
-        graph.props.start_year + "_" + graph.props.end_year
-        ;
 
-//        svgExport.downloadPng(document.querySelector("#svg"),
-//                              filename,
-//                              {
-//                                width: svg_width,
-//                                height: svg_height,
-//                                scale: 5,
-//                                transparentBackgroundReplace: 'white',
-//                                transparent: false,
-//                              }
-//                              );
-
+        const filename = base_filename() +  timediff_info() ;
         saveSvgAsPng(document.querySelector("#svg"), filename + ".png",
             {
               left: viewbox_pan_horizontal,
@@ -604,10 +588,11 @@ function saveDocs_io(jo, bim) {
     document.body.appendChild(a);
     const url2 = window.URL.createObjectURL(blob);
     a.href = url2;
-    a.download = vueApp.bim_fields[0]["label"] + '_' + bim + '_' + vueApp.bim_fields[2]["label"]
-    + '_'
-    + graph.props.start_year + "_" + graph.props.end_year
-    + ".tsv";
+    a.download = vueApp.collection_name_short + '--' +
+                graph.props.start_year + "-" + graph.props.end_year + '--' +
+                vueApp.bim_fields[0]["label"] + '_' + bim + '_' + vueApp.bim_fields[2]["label"]
+                + '_' + 'Sentences'
+                + ".tsv";
 
     a.click();
     setTimeout(() => {

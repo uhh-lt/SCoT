@@ -163,12 +163,14 @@ Vue.component("frame-sidebarclustertime", {
 		  from axios
 		  */
     get_cluster_information_filtered(cluster) {
-        vueApp.selected_cluster = cluster
+      vueApp.selected_cluster = cluster
+      vueApp.selected_contexts_cluster_all = new Map()
       graph.props.cluster_target_filter = true;
       get_cluster_information_axios(cluster);
     },
     get_cluster_information(cluster) {
-        vueApp.selected_cluster = cluster
+      vueApp.selected_cluster = cluster
+      vueApp.selected_contexts_cluster_all = new Map()
       graph.props.cluster_target_filter = false;
       get_cluster_information_axios(cluster);
     },

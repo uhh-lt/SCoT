@@ -696,8 +696,9 @@ class Database():
         else:
             for row in f:
                 features[str(row['feature'])] = {'score': float(row['score']),
-                                             'freq': float(row['freq'])}
+                                                'freq': float(row['freq'])}
 
+        # 'norm_freq': float(row['norm_freq'])
         return features
 
     def get_feature_target_filter_set(self, word1: str, time_ids: List[int]) -> Set[str]:
@@ -852,7 +853,7 @@ class Database():
                 """
         f = self.db.query(query)
         for row in f:
-            feature_scores[int(row['time_id'])] = int(row['freq'])
+            feature_scores[int(row['time_id'])] = float(row['freq'])
         #     print("--------------------------------------")
 
         return feature_scores

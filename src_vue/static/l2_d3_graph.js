@@ -1180,18 +1180,17 @@ function skip_through_time_slices_d3() {
     let in_target_interval = false;
 
     let interval = parseInt(vueData.interval_id);
-
     // check if source time ids of a link include the time slice id of the selected interval
-    if (source_time_ids.includes(interval)) {
-      in_source_interval = true;
-    }
+    if (!(source_time_ids === null || typeof source_time_ids === "undefined") &&
+         source_time_ids.includes(interval)) {
 
+         in_source_interval = true;
+    }q
     // check if the target time ids of a link include the time slice if of the selected interval
-    if (
-      !(target_time_ids === null || typeof target_time_ids === "undefined") &&
-      target_time_ids.includes(interval)
-    ) {
-      in_target_interval = true;
+    if (!(target_time_ids === null || typeof target_time_ids === "undefined") &&
+        target_time_ids.includes(interval)) {
+
+        in_target_interval = true;
     }
 
     // the link only has opacity 1.0 if both source and target are in the selected time slice

@@ -246,7 +246,7 @@ Vue.component("frame-sidebargraph", {
         <!-- h5 class="sidebar-section__title"> Hello </h5-->
         <b-form-group class="ml-2 mr-2 mb-2">
             <b-form-radio-group size="sm" v-model="left_selected" :options="left_options" buttons
-                button-variant="info" name="radios-btn-default"></b-form-radio-group>
+                button-variant="info" name="radios-btn-default" ></b-form-radio-group>
         </b-form-group>
         <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR-LEFT CREATE GRAPH XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
         <div class="ml-2 mr-2 mb-2" v-if="left_selected === 'graph_data'">
