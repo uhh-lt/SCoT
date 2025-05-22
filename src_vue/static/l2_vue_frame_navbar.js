@@ -43,7 +43,7 @@ Vue.component("frame-navbar", {
   },
   template: `
     <div>
-        <b-navbar type="dark" variant="secondary" toggleable="lg" fixed="top">
+        <b-navbar type="dark" variant="dark" toggleable="lg" fixed="top" >
             <b-navbar-brand tag="h1" class="header">{{title}}
             </b-navbar-brand>
 
@@ -51,12 +51,34 @@ Vue.component("frame-navbar", {
             <b-collapse id="nav-collapse" is-nav>
 
             <!-- buttons to create graph and analyse clusters -->
-            <b-navbar-nav class="ml-auto">
+            <!--b-navbar-nav class="ml-auto">
               <b-button size="sm" class="lrmargin_button" v-b-toggle.sidebar-left variant="success">Create Graph
               </b-button>
-              <b-button size="sm" class="lrmargin_button" variant="info" :disabled="!graph_rendered" @click="toggleSidebar_right">Analyse Clusters
+              <b-button size="sm" class="lrmargin_button" variant="info" :disabled="!graph_rendered" v-b-toggle.sidebar-right @click="toggleSidebar_right">Analyse Clusters
               </b-button>
-            </b-navbar-nav>
+            </b-navbar-nav!-->
+            <!-- buttons to load and save graph -->
+            <b-navbar-nav class="ml-auto" align="right">
+                <b-nav-item href="#" v-b-toggle.sidebar-left>Create Graph</b-nav-item>
+                <b-nav-item href="#" :disabled="!graph_rendered" @click="toggleSidebar_right">Analyse Clusters</b-nav-item>
+                <b-nav-item href="#" id="loadbtn_json" v-b-modal.modal-20><em class="fas fa-upload"></em> Example</b-nav-item>
+
+                <!-- Save and Load Graph buttons :disabled="time_diff == 1" -->
+                <b-nav-item-dropdown text="Load & Save" right >
+                  <!--b-dropdown-item id="loadbtn_json" variant="success" v-b-modal.modal-20><em class="fas fa-upload"></em> Example</b-dropdown-item!-->
+                  <b-dropdown-item id="loadbtn_json" variant="success" v-b-modal.modal-19><em class="fas fa-upload"></em> Load as Json</b-dropdown-item>
+                  <b-dropdown-item id="savebtn_json" variant="success" :disabled="!graph_rendered" v-on:click="saveGraph" download="graph.json" href=""><em class="fas fa-download"></em> Save as Json</b-dropdown-item>
+                  <b-dropdown-item id="savebtn_svg" v-b-tooltip.hover title="SVG and PNG have been tested for Chrome only" variant="info" :disabled="!graph_rendered" v-on:click="saveGraphSVG"><em class="fas fa-download"></em>
+                  Save as SVG <sup style="font-size: 8px; color:red">
+                    *</sup></b-dropdown-item>
+                  <b-dropdown-item id="savebtn_png" v-b-tooltip.hover title="SVG and PNG have been tested for Chrome only" variant="info" :disabled="!graph_rendered" v-on:click="saveGraphPNG"><em class="fas fa-download"></em>
+                  Save as PNG<sup style="font-size: 8px; color:red">
+                    *</sup> </b-dropdown-item>
+
+                    <!--span style="font-size: 8px; color:red; text-align: right;">
+                       *tested for Chrome only</span-->
+                </b-nav-item-dropdown>
+			</b-navbar-nav>
             <!-- input node and reset highlight option -->
             <b-navbar-nav class="ml-auto">
                 <b-nav-form v-on:submit.prevent>
@@ -74,41 +96,7 @@ Vue.component("frame-navbar", {
                     </b-input-group>
                 </b-nav-form>
             </b-navbar-nav>
-            <!-- buttons to load and save graph -->
-            <b-navbar-nav class="ml-auto">
-                <!-- Save and Load Graph buttons :disabled="time_diff == 1" -->
 
-                <!--
-                 <b-button size="sm" class="lrmargin_button" variant="success" v-b-modal.modal-20>
-                    <em class="fas fa-upload"></em> Example
-                </b-button>
-                <b-button size="sm" class="lrmargin_button" variant="success" v-b-modal.modal-19>
-                    <em class="fas fa-upload"></em> Load Graph
-                </b-button>
-                <b-button id="savebtn_json" class="lrmargin_button"  size="sm" variant="success" :disabled="!graph_rendered" v-on:click="saveGraph" download="graph.json" href="">
-                    <em class="fas fa-download"></em> Save Graph
-                </b-button>
-                <b-button id="savebtn_svg" class="lrmargin_button"  size="sm" variant="info" :disabled="!graph_rendered" v-on:click="saveGraphSVG">
-                    <em class="fas fa-download"></em> Save SVG
-                </b-button>
-                <b-button id="savebtn_png" class="lrmargin_button"  size="sm" variant="info" :disabled="!graph_rendered" v-on:click="saveGraphPNG">
-                    <em class="fas fa-download"></em> Save PNG
-                </b-button> -->
-                <b-nav-item-dropdown text="Load & Save" right >
-                  <b-dropdown-item id="loadbtn_json" variant="success" v-b-modal.modal-20><em class="fas fa-upload"></em> Example</b-dropdown-item>
-                  <b-dropdown-item id="loadbtn_json" variant="success" v-b-modal.modal-19><em class="fas fa-upload"></em> Load as Json</b-dropdown-item>
-                  <b-dropdown-item id="savebtn_json" variant="success" :disabled="!graph_rendered" v-on:click="saveGraph" download="graph.json" href=""><em class="fas fa-download"></em> Save as Json</b-dropdown-item>
-                  <b-dropdown-item id="savebtn_svg" v-b-tooltip.hover title="SVG and PNG have been tested for Chrome only" variant="info" :disabled="!graph_rendered" v-on:click="saveGraphSVG"><em class="fas fa-download"></em>
-                  Save as SVG <sup style="font-size: 8px; color:red">
-                    *</sup></b-dropdown-item>
-                  <b-dropdown-item id="savebtn_png" v-b-tooltip.hover title="SVG and PNG have been tested for Chrome only" variant="info" :disabled="!graph_rendered" v-on:click="saveGraphPNG"><em class="fas fa-download"></em>
-                  Save as PNG<sup style="font-size: 8px; color:red">
-                    *</sup> </b-dropdown-item>
-
-                    <!--span style="font-size: 8px; color:red; text-align: right;">
-                       *tested for Chrome only</span-->
-                </b-nav-item-dropdown>
-			</b-navbar-nav>
 
       </b-navbar>
       <b-modal id="modal-19" title="Load">

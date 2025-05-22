@@ -226,21 +226,46 @@ Vue.component("frame-sidebargraph", {
     nonevent(e) {
       //do nothing
     },
+
+    fetchSuggestions: async function() {
+      const query = this.target_word;
+      this.wordInvalid = false
+//      console.log(query)
+      if (!query || query.length < 1) {
+        this.suggestions = [];
+        return;
+      }
+      this.suggestions = await autocomplete_io(query)
+      this.showSuggestions = true;
+      if (this.suggestions.length == 0){
+        this.wordInvalid = true
+      }
+//      console.log(this.suggestions)
+    },
+
+    selectSuggestion(word) {
+      this.target_word = word;
+      this.showSuggestions = false;
+    },
+
+    hideSuggestions() {
+      setTimeout(() => (this.showSuggestions = false), 200);
+    },
   },
 
   template: `
     <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR-LEFT XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
     <!-- Column with input parameters (left column) -->
 //			<b-sidebar id="sidebar-left" title="Sense graph over time" bg-variant="secondary" text-variant="light"
-    <b-sidebar id="sidebar-left" bg-variant="secondary" text-variant="light"
-        style="opacity: 0.9;" width="22%" left shadow title="Graph Properties">
-        <template v-slot:footer="{ hide }">
+    <b-sidebar id="sidebar-left"  title="Graph Properties" bg-variant="secondary" text-variant="light"
+        style="opacity: 0.9;" width="22%" left shadow backdrop>
+        <!--template v-slot:footer="{ hide }">
             <div class="d-flex bg-dark align-items-center px-4 py-2">
             <b-button block class="lmmargin_button" size="sm" variant="success"
                     v-on:click="getDataAndRenderNew()">
                     Create and Cluster Graph</b-button>
             </div>
-        </template>
+        </template!-->
         <br>
 
         <!-- h5 class="sidebar-section__title"> Hello </h5-->
@@ -272,9 +297,36 @@ Vue.component("frame-sidebargraph", {
                 <h5>Graph over Time</h5>
                 <!-- Enter target word -->
                 <b-form-group class="input" label="Target word">
-                    <b-form-input v-model="target_word" placeholder="target word" size="sm">
-                    </b-form-input>
+                  <div class="position-relative">
+                    <b-form-input
+                      v-model="target_word"
+                      placeholder="target word"
+                      size="sm"
+                      @input="fetchSuggestions"
+                      @focus="showSuggestions = true"
+                      @blur="hideSuggestions"
+                      autocomplete="off"
+                    ></b-form-input>
+
+                    <ul
+                      v-if="showSuggestions && suggestions.length"
+                      class="dropdown-menu show"
+                      style="width: 100%; z-index: 1000;"
+                    >
+                      <li
+                        v-for="(item, index) in suggestions"
+                        :key="index"
+                        class="dropdown-item"
+                        @mousedown.prevent="selectSuggestion(item)"
+                      >
+                        {{ item }}
+                      </li>
+                    </ul>
+                  </div>
                 </b-form-group>
+                <b-form-invalid-feedback v-if="wordInvalid">
+                    This word is not present in the database.
+                </b-form-invalid-feedback>
                 <!-- Enter number of neighbouring nodes -->
                 <small>{{node_info}}</small>
                 <b-form-group class="input">
@@ -294,9 +346,9 @@ Vue.component("frame-sidebargraph", {
                 </b-form-group>
                 <!-- Render button -->
                 <hr style="border: 1px solid gray;" />
-                <!--b-button class="lmmargin_button" size="sm" variant="success"
+                <b-button class="lmmargin_button" size="sm" variant="success"
                     v-on:click="getDataAndRenderNew()">
-                    Create and Cluster Graph</b-button-->
+                    Create and Cluster Graph</b-button>
                 <!-- <b-button id="update_button" size="sm" class="lrmargin_button" variant="success" >Update Graph</b-button> -->
 
 

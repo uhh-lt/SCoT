@@ -1,10 +1,9 @@
 import time
 from persistence.documentdb import Documentdb
-from persistence.db import Database, get_url
+from persistence.db import Database
 from model.ngot_model import NGOTLink, NGOTNode
 from model.ngot_mapper import map_nodes_dic_2_ngot, map_edges_dic_2_ngot
 import dataclasses
-
 import json
 import uuid
 
@@ -83,7 +82,7 @@ def get_graph(config, ngot):
     # Postcondition: valid graph in valid json-format
     # Resolve start and end year -> time-ids
     props = ngot.props
-    db = Database(props.collection_key, get_url(config, props.collection_key))
+    db = Database(props.collection_key, config["collections"][props.collection_key]["db"])
     # derive props time_ids from start and end year
     props.selected_time_ids = []
     props.selected_time_ids.extend(

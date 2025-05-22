@@ -108,15 +108,15 @@ Vue.component("feature-sidebarcluster", {
 
   template: `
   <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR LEFT 2 - Cluster CONTEXT ANALYSIS VIEW XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
-  <b-sidebar v-show="showSidebar_cluster" id="sidebar-right2" title="Cluster Shared Words" width="22%"
-    bg-variant="secondary" text-variant="light" style="opacity: 0.99;" no-header left shadow>
+  <b-sidebar v-model="showSidebar_cluster" id="sidebar-right2" title="Cluster Shared Context-Words" width="22%"
+    bg-variant="secondary" text-variant="light" style="opacity: 0.99;" left shadow>
     <template>
-      <div class="mx-2 my-3" >
+      <!--div class="mx-2 my-3" >
         <h5 class="d-inline pl-1 pr-3" id="sidebar-no-header-title" style="text-align: left" >Cluster Shared Context-Words</h5>
         <b-button class="d-inline px-1 py-1" style="float: right; height:30px; width:30px;" @click="toggleSidebarContext2">
          <b-icon icon="x-lg" class="px-0 py-0"  scale="0.70"></b-icon>
         </b-button>
-      </div>
+      </div!-->
       <!--b-button size="sm" variant="danger" @click="toggleSidebarContext2">Close</b-button> -->
     </template>
     <div class="ml-2 mr-2 mb-1">

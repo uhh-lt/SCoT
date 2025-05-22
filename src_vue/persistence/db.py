@@ -8,13 +8,6 @@ from model.ngot_model import NGOTLink, NGOTNode, NGOT
 from model.ngot_mapper import map_nodes_dic_2_ngot, map_edges_dic_2_ngot
 import time
 
-def get_url(config, collection):
-    # if collection != "" and collection != None and collection in config["collections_info_backend"]:
-    #     return collection
-    # else:
-    #     return "default"
-    return config["collections"][collection]["url"]
-
 class Database():
     def __init__(self, key, url, echo=False) -> None:
         # print(f"{key} --> {url}")
@@ -884,17 +877,19 @@ class Database():
         return ngot
 
 
-    def get_words(self, ngot, substr: str,) -> Dict[int, int]:
-        time_ids = ngot.props.selected_time_ids;
-        word_list = []
-        query = f"""SELECT word1 FROM similar_words
-                    WHERE time_id in {time_ids}
+    def get_word_suggestions(self, query_text: str,) -> Dict[int, int]:
+        # time_ids = ngot.props.selected_time_ids;
+        import pymysql
+        escaped_query_text = pymysql.converters.escape_string(query_text + '%')
+        query = f"""
+                    SELECT DISTINCT word1 FROM similar_words 
+                    WHERE word1 LIKE '{escaped_query_text}' and word1!=word2
+                    LIMIT 10
                 """
-        f = self.db.query(query)
-        for row in f:
-            word_list.append(str(row['word1']))
-        #     print("--------------------------------------")
 
-        return word_list
+        f = self.db.query(query)
+        suggestions = [row[0] for row in f]
+
+        return suggestions
 
 

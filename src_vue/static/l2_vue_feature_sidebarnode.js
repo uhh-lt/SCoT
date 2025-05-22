@@ -78,15 +78,15 @@ Vue.component("feature-sidebarnode", {
   template: `
   <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR RIGHT 3 - Node CONTEXT ANALYSIS VIEW  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
       <div>
-        <b-sidebar v-show="showSidebar_node" id="sidebar-right3" title="Shared Context-Words" width="23%"
-                bg-variant="secondary" text-variant="light" style="opacity: 0.9;" no-header right shadow>
+        <b-sidebar v-model="showSidebar_node" id="sidebar-right3" title="Shared Context-Words" width="23%"
+                bg-variant="secondary" text-variant="light" style="opacity: 0.9;" right shadow >
             <template>
-                <div class="mx-2 my-3" >
+                <!--div class="mx-2 my-3" >
                     <b-button class="d-inline px-1 py-1" style="text-align:right; height:30px;width:30px; vertical-align: top;" @click="toggleSidebarContext3">
                        <b-icon icon="x-lg" class="px-0 py-0"  scale="0.70"></b-icon>
                     </b-button>
                     <h5 class="d-inline px-2" id="sidebar-no-header-title" style="text-align: left" > Shared Context-Words</h5>
-                </div>
+                </div !-->
                 <!--
                 <div class="px-2 py-2 mt-2">
                     <b-button size="sm" variant="success" @click="nodeContextSearchNodeOne">Search N1/Edge</b-button>

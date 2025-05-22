@@ -69,12 +69,13 @@ async function graph_init() {
     )
     .attr("preserveAspectRatio", "xMidYMid meet")
     .call(
-      d3.zoom().on("zoom", function () {
+      d3.zoom()
+//      .scaleExtent([0.5, 5])
+      .on("zoom", function () {
         d_svg.attr("transform", d3.event.transform);
       })
     )
     .append("g");
-
     // ---- add target text, with drag
     let dragTargetText = d3.drag()
   .on('drag', function(){
@@ -133,7 +134,7 @@ async function graph_init() {
     )
     .force("charge", d3.forceManyBody(vueData.charge))
     .force("collide", d3.forceCollide().radius(vueData.radius * 3))
-    .force("center", d3.forceCenter(viewbox_width / 2.2, viewbox_height / 2.2))
+    .force("center", d3.forceCenter(viewbox_width / 2, viewbox_height / 2))
     ;
 
   // initi drag
@@ -442,10 +443,10 @@ async function graph_crud(dnodes, dlinks, dcluster) {
     })
     .on("mouseover", d3Data.time_diff_tip_link.show)
     .on("mouseout", d3Data.time_diff_tip_link.hide);
-
     d_simulation.nodes(dnodes).on("tick", d_ticked);
     d_simulation.force("link").links(dlinks);
     d_simulation.restart();
+    resizeNodes_d3("avg_all") // set with average similarity
     return "end";
 }
 // ############################################# SVG - MAIN ELEMENT FUNCTIONS ########################################
@@ -1185,7 +1186,7 @@ function skip_through_time_slices_d3() {
          source_time_ids.includes(interval)) {
 
          in_source_interval = true;
-    }q
+    }
     // check if the target time ids of a link include the time slice if of the selected interval
     if (!(target_time_ids === null || typeof target_time_ids === "undefined") &&
         target_time_ids.includes(interval)) {
@@ -1434,11 +1435,11 @@ function resizeNodes_d3(measure)
       if (d.tagName == "circle") {
 
         let weight = parseInt(d.getAttribute(attr))
-        console.log(measure, weight)
+//        console.log(measure, weight)
         if (! isNaN(weight)) {
             let new_r = (weight-rmin) / (rmax-rmin) * (tmax-tmin) + tmin;
             d.setAttribute("r", Math.round(new_r));
-            console.log('new r:', d.getAttribute("r"))
+//            console.log('new r:', d.getAttribute("r"))
         }
       }
     });

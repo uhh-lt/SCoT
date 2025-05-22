@@ -1,5 +1,5 @@
 from persistence.documentdb import Documentdb
-from persistence.db import Database, get_url
+from persistence.db import Database
 from model.ngot_model import NGOTStats
 import pandas as pd
 import json
@@ -8,13 +8,11 @@ import itertools
 
 def collections_info(config):
     # add information about intervals
-    # print(config)
-
     collections = {}
     for key in config["available_collections"]:
         # print(key)
         # print(config["collections"][key])
-        url = config["collections"][key]["url"]
+        url = config["collections"][key]["db"]
         print(f"accessing {key} -- {url}")
         db = Database(key, url)
         displayname = config["collections"][key]["displayname"]
@@ -24,16 +22,22 @@ def collections_info(config):
         collections[displayname]['start_years'] = db.get_all_years("start_year")
         collections[displayname]['end_years'] = db.get_all_years("end_year")
         collections[displayname]['es_info'] = config["collections"][key]["es_info"]
-        collections[displayname]['is_ES_available'] = config["collections"][key]["es_info"]!=None
+        collections[displayname]['is_ES_available'] = config["collections"][key]["es_info"] is not None
 
-    return json.dumps(collections)
+    return json.dumps(collections, indent=2)
 
 
 def get_es_info (config, collection):
-    es_host = config["collections"][collection]["es_info"]["es_host"]
-    es_port = config["collections"][collection]["es_info"]["es_port"]
-    es_index = config["collections"][collection]["es_info"]["es_index"]
+    print(config["collections"][collection])
+    es_host = config["collections"][collection]["es_info"]["host"]
+    es_port = config["collections"][collection]["es_info"]["port"]
+    es_index = config["collections"][collection]["es_info"]["index"]
     return es_host, es_port, es_index
+
+
+def get_db_url(config, collection):
+    return config["collections"][collection]["db"]
+
 
 def get_edge_info(config, collection, word1, word2, time_id):
     # See Mitra(2015)
@@ -285,7 +289,7 @@ def documents_scroll(config, data):
 def wordfeature_timeids(config, collection, word, feature):
 
     print(f'word: {word}, feature {feature}')
-    db = Database(collection, config["collections"][collection]["url"])
+    db = Database(collection, config["collections"][collection]["db"])
 
     res1_dic = db.get_wordfeature_counts(word, feature)
     print(f'word1: {word}, word-feature counts: {res1_dic}')
@@ -294,7 +298,7 @@ def wordfeature_timeids(config, collection, word, feature):
 def wordfeature_counts(config, collection, word1, word2, feature):
 
     print(f'word1: {word1}, word2: {word2} feature {feature}')
-    db = Database(collection, config["collections"][collection]["url"])
+    db = Database(collection, config["collections"][collection]["db"])
     res1_dic = db.get_wordfeature_counts(word1, feature)
     res2_dic = db.get_wordfeature_counts(word2, feature)
     # combine time_ids, fill the missing ones and then do a final sort

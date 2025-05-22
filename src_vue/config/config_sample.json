@@ -1,22 +1,31 @@
 {
   "flask_host": "127.0.0.1",
-  "available_collections": {
-    "test":["de70", "en_gbooks_42"]
+
+  "environments": {
+    "dev": ["de_70", "en_gbooks_42"]
+  },
+
+  "defaults": {
+    "frontend_info": {"target": "Krise#NN", "p": 50, "d": 8},
+    "es_info": {
+      "host": "localhost",
+      "port": 9292
+    }
   },
 
   "collections": {
     "de70": {
       "displayname": "German--Online News-Dependency--1995-2010 ",
-      "url": "mysql+pymysql://user:pwd@localhost:3306/DT_de70mlcc_dependency",
+      "sentences": "70 Million Sentences",
+      "db": "mysql+pymysql://user:pwd@localhost:port/DT_de70mlcc_dependency",
       "frontend_info": {"target": "Krise#NN", "p": 50, "d": 8},
-      "es_info": {"es_index": "de70", "es_host": "localhost", "es_port": 9200},
-      "sentences": "70 Million Sentences"
+      "es_info": {"es_index": "de70"},
     },
 
     "en_gbooks_42": {
       "displayname": "English--Google Books-Syntactic Ngrams, 1520-2008--42 Slices",
-      "url": "mysql+pymysql://user:pwd@localhost:3306/DT_google_syntactic_ngrams_42",
-      "frontend_info": {"target": "bar/NN", "p": 50, "d": 20},
+      "db": "mysql+pymysql://user:pwd@localhost:port/DT_google_syntactic_ngrams_42",
+      "frontend_info": {"target": "bar/NN"},
       "es_info": null
     }
 

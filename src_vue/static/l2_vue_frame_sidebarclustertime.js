@@ -649,20 +649,20 @@ Vue.component("frame-sidebarclustertime", {
 
   template: `
     <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR-RIGHT ANALYSIS CLUSTERING XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
-		<b-sidebar v-show="showSidebar_right" width="23%" id="sidebar-right" bg-variant="secondary"
-				text-variant="light" style="opacity: 0.9;" no-header right shadow >
+		<b-sidebar v-model="showSidebar_right" id="sidebar-right" title="Cluster Analysis" width="23%"
+		    bg-variant="secondary" text-variant="light" style="opacity: 0.9;" right shadow >
 			<template v-slot:footer="{ hide }">
              <div class="d-flex bg-dark align-items-center px-4 py-2">
                 <!-- Button to apply changes to graph  -->
                 <b-button block v-show="right_selected === 'cluster_basic'" id="apply_settings_button" size="sm" class="lrmargin_button" variant="warning" @click="applyClusterSettings()">Update Clusters</b-button>
              </div>
 			</template>
-          <div class="mx-2 my-3" >
+          <!--div class="mx-2 my-3" >
                <b-button class="d-inline px-1 py-1" style="text-align:right; height:30px;width:30px; vertical-align: top;" @click="showSidebar_right=false">
                  <b-icon icon="x-lg" class="px-0 py-0"  scale="0.70"></b-icon>
               </b-button>
               <h5 class="d-inline px-2" id="sidebar-no-header-title" style="text-align: right" >Cluster Analysis</h5>
-          </div>
+          </div!-->
       <div class="px-2 py-2 mt-1">
 				<!-- options buttons-->
 				<b-form-group class="ml-2" variant="info">

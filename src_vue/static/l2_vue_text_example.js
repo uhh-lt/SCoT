@@ -19,7 +19,7 @@ Vue.component("text-example", {
   },
   template: `
   <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR LEFT 3 - document CONTEXT ANALYSIS VIEW XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
-  <b-sidebar v-show="showSidebar_docs" id="sidebar-right4" no-header width="22%"
+  <b-sidebar v-model="showSidebar_docs" id="sidebar-right4" no-header width="22%"
     bg-variant="secondary" text-variant="light" style="opacity: 0.9;" left shadow>
     <template>
       <div class="mx-2 my-3" >

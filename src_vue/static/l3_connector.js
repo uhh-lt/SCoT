@@ -33,6 +33,11 @@ async function getCollections_io() {
 // create
 // Graph create - get initial data (you need to send the props to the backend for creating it)
 async function getData_io() {
+  suggestions = await autocomplete_io(graph.props.target_word)
+  if (suggestions.length == 0){
+    alert(graph.props.target_word+ " is not present in the database.\nPlease try a different target word.");
+    return;
+  }
   const url = "./api/collections/sense_graph";
   try {
     let res = await axios.post(url, graph.props);
@@ -82,7 +87,7 @@ async function getData_io() {
   } catch (error) {
     console.log(error);
     if (error.response.status >= 500) {
-      alert(error + "\nPlease try a different target word.");
+      alert(error);
     }
   }
   return "ok";
@@ -623,6 +628,23 @@ async function wordFeatureCounts_io(word1, word2, feature) {
                         'counts': Object.values(res_data[key])};
       }
       vueApp.jobim_counts = jobim_counts
+
+  }
+    catch(error){
+      console.error(error);
+    }
+}
+
+async function autocomplete_io(query) {
+
+  let data = {};
+  data["query"] = query;
+  let url = "/api/collections/" + vueApp.collection_key + "/autocomplete";
+  try
+  {
+      let res = await axios.post(url, data);
+      res_data = res.data;
+      return res_data
 
   }
     catch(error){

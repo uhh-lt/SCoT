@@ -129,6 +129,9 @@ let vueData = {
   },
   // User Values - Input
   target_word: "",
+  suggestions: [],
+  showSuggestions: false,
+  wordInvalid:false,
   // n - number of nearest neighbour nodes [as defined by graph algo]
   n_nodes: 0,
   // d: density - [as defined by graph algo]
