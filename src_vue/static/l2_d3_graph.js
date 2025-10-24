@@ -12,61 +12,56 @@ let d_node;
 let d_simulation;
 let d_drag_node;
 let brush;
-//// general svg
-//let viewbox_pan_horizontal = -screen.width * 0.01;
+// general svg
+//let viewbox_pan_horizontal = -window.innerWidth * 0.05;
 //// increase -> down
-//let viewbox_pan_vertical = -screen.height * 0.07;
+//let viewbox_pan_vertical = -window.innerHeight * 0.05;
 //// larger viewbox height and width -> zoom out / smaller viewbox - > zoom in
-//let viewbox_height = screen.height * 1.2;
-//let viewbox_width = screen.width * 1.8;
+//let viewbox_height = window.innerHeight * 0.8 //* 1.2; or 0.825
+//let viewbox_width = window.innerWidth * 0.99 //* 1.2;
 //// for setting the svg size for the graph
 //// THIS IS THE VIEWPORT
-//let svg_height = screen.height * 1;
+//let svg_height = viewbox_height; // screen.height * 0.8
 //// it needs to be wider than screen.width - otherwise it does
-//let svg_width = screen.width * 1.3;
-// general svg
-let viewbox_pan_horizontal = -screen.width * 0.05;
-// increase -> down
-let viewbox_pan_vertical = -screen.height * 0.05;
-// larger viewbox height and width -> zoom out / smaller viewbox - > zoom in
-let viewbox_height = screen.height * 0.8 //* 1.2; or 0.825
-let viewbox_width = screen.width * 0.99 //* 1.2;
-// for setting the svg size for the graph
-// THIS IS THE VIEWPORT
-let svg_height = viewbox_height; // screen.height * 0.8
-// it needs to be wider than screen.width - otherwise it does
-let svg_width = viewbox_width; //screen.width * 0.99
+//let svg_width = viewbox_width; //screen.width * 0.99
+
+function calculateDimensions() {
+//  vueData.node_text_font_size = window.innerHeight * 0.015;
+  return {
+    viewbox_pan_horizontal: -window.innerWidth * 0.05,
+    viewbox_pan_vertical: -window.innerHeight * 0.05,
+    viewbox_height: window.innerHeight * 0.95,
+    viewbox_width: window.innerWidth * 0.99,
+    svg_height: window.innerHeight * 0.95,
+    svg_width: window.innerWidth * 0.99
+  };
+}
 
 async function graph_init() {
   /**
    * graph init prepares the svg-dom-graph before the data is bound to it in graph-crud
    */
 
+   let {
+    viewbox_pan_horizontal,
+    viewbox_pan_vertical,
+    viewbox_height,
+    viewbox_width,
+    svg_height,
+    svg_width
+  } = calculateDimensions();
+
   /**
    * build svg d3 - dom graph upper part
    */
   d_svg = d3
     .select("#graph2")
-//    .on("keydown.brush", keydowned)
-//    .on("keyup.brush", keyupped)
-//    .each(function () {
-//      this.focus();
-//    })
     .append("svg")
     .classed("svg-content", true)
     .attr("id", "svg")
     .attr("width", svg_width)
     .attr("height", svg_height)
-    .attr(
-      "viewBox",
-        viewbox_pan_horizontal +
-        " " +
-        viewbox_pan_vertical +
-        " " +
-        viewbox_width +
-        " " +
-        viewbox_height
-    )
+    .attr("viewBox", `${viewbox_pan_horizontal} ${viewbox_pan_vertical} ${viewbox_width} ${viewbox_height}`)
     .attr("preserveAspectRatio", "xMidYMid meet")
     .call(
       d3.zoom()
@@ -78,8 +73,8 @@ async function graph_init() {
     .append("g");
     // ---- add target text, with drag
     let dragTargetText = d3.drag()
-  .on('drag', function(){
-      e = d3.event;
+    .on('drag', function(){
+        e = d3.event;
         x =  parseFloat(d3.select(this).attr("x"))
         y = parseFloat(d3.select(this).attr("y"))
         d3.select(this)
@@ -125,21 +120,36 @@ async function graph_init() {
    */
   d_simulation = d3
     .forceSimulation()
-    .force("link", d3.forceLink().id(function (d) {
-          return d.id;
-        })
-        .distance(function (d) {
-          return vueData.linkdistance;
-        })
-    )
+    .force("link", d3.forceLink().id(d => d.id).distance(vueData.linkdistance))
     .force("charge", d3.forceManyBody(vueData.charge))
     .force("collide", d3.forceCollide().radius(vueData.radius * 3))
+//    .force("x", d3.forceX(viewbox_width / 2).strength(0.05))
+//  .force("y", d3.forceY(viewbox_height / 2).strength(0.05));
     .force("center", d3.forceCenter(viewbox_width / 2, viewbox_height / 2))
     ;
 
-  // initi drag
-  d_drag_node = d3.drag();
+  // Handle resize
+  window.addEventListener("resize", () => {
+    let {
+      viewbox_pan_horizontal,
+      viewbox_pan_vertical,
+      viewbox_height,
+      viewbox_width,
+      svg_height,
+      svg_width
+    } = calculateDimensions();
 
+    d3.select("#svg")
+      .attr("width", svg_width)
+      .attr("height", svg_height)
+      .attr("viewBox", `${viewbox_pan_horizontal} ${viewbox_pan_vertical} ${viewbox_width} ${viewbox_height}`);
+
+    d_simulation.force("center", d3.forceCenter(viewbox_width / 2, viewbox_height / 2));
+    d_simulation.alpha(0.3).restart(); // reheat simulation so nodes re-center
+  });
+
+  // init drag
+  d_drag_node = d3.drag();
   return "end";
 }
 
@@ -169,20 +179,6 @@ async function graph_crud(dnodes, dlinks, dcluster) {
   d3.selectAll(".link").selectAll("line").remove();
   // remove all nodes
   d3.selectAll(".node").selectAll("g").remove();
-  // remove target word
-//  d3.selectAll(".target").remove();
-
-  // append the target word to the center of the svg
-//  d_svg
-//    .append("text")
-//    .attr("class", "target")
-//    .attr("x", viewbox_width / 2.2)
-//    .attr("y", viewbox_height / 2.2)
-//    .style("font-family", "helvetica, arial, sans-serif")
-//    .style("font-size", vueData.svg_target_text_font_size)
-//    .style("font-weight", "bold")
-//    .style("opacity", vueData.svg_target_text_opacity)
-//    .text(graph.props.target_word);
 
   // initialize the tooltip for nodes
   d3Data.time_diff_tip = d3
@@ -478,18 +474,24 @@ function d_ticked() {
 
 function positionNode(d) {
   // keep the node within the boundaries of the svg
-  if (d.x < 0) {
-    d.x = 0;
-  }
-  if (d.y < 0) {
-    d.y = 0;
-  }
-  if (d.x > svg_width) {
-    d.x = svg_width - 50;
-  }
-  if (d.y > svg_height) {
-    d.y = svg_height - 50;
-  }
+  let { svg_width, svg_height } = calculateDimensions();
+  const radius = vueData.radius;
+
+  d.x = Math.max(radius, Math.min(svg_width - radius, d.x));
+  d.y = Math.max(radius, Math.min(svg_height - radius, d.y));
+
+//  if (d.x < 0) {
+//    d.x = 0;
+//  }
+//  if (d.y < 0) {
+//    d.y = 0;
+//  }
+//  if (d.x > svg_width) {
+//    d.x = svg_width - 50;
+//  }
+//  if (d.y > svg_height) {
+//    d.y = svg_height - 50;
+//  }
   return "translate(" + d.x + "," + d.y + ")";
 }
 
@@ -708,6 +710,7 @@ function restart() {
 function sticky_change_d3() {
   // console.log("sticky_change triggered", vueData.sticky_mode);
   let brush = d3.select("#graph2").select("#svg").select("g").select("g");
+  let { svg_width, svg_height } = calculateDimensions();
 
   if (vueData.sticky_mode === "false") {
     brush.style("display", "inline");
@@ -1422,7 +1425,7 @@ function resizeNodes_d3(measure)
     tmin = vueData.radius; tmax = 50;
     attr = {"max": "weight", "avg":"weight_average", "avg_all": "weight_average_all"}[measure]
 
-    console.log(measure, attr)
+//    console.log(measure, attr)
     let nodes = d3.selectAll(".node").selectAll("g");
     let texts = d3.selectAll(".node").selectAll("g").select("text");
 

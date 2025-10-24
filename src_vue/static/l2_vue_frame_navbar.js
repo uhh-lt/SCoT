@@ -86,8 +86,13 @@ Vue.component("frame-navbar", {
                         <b-input-group-prepend is-text>
                             <b-icon icon="search"></b-icon>
                         </b-input-group-prepend>
-                        <b-form-input v-model="searchterm" @change="search_node()" type="search"
-                            placeholder="Input Node & Enter" > </b-form-input>
+                        <b-form-input
+                            v-model="searchterm"
+                            placeholder="Input Node & Enter"
+                            @change="search_node()"
+                            type="search"
+
+                        ></b-form-input>
                         <b-input-group-append>
                             <b-button class="lrmargin_button" variant="danger" @click="unsearch_nodes()">
                                 Reset Highlighting <em class="fas fa-times"></em>

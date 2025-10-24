@@ -4,26 +4,41 @@ from model.ngot_model import NGOTStats
 import pandas as pd
 import json
 import itertools
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+import logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+def fetch_collection_info(key, config):
+    url = config["collections"][key]["db"]
+    logging.info(f"accessing {key} -- {url}")
+    db = Database(key, url)
+    displayname = config["collections"][key]["displayname"]
+    info = config["collections"][key]["frontend_info"].copy()
+    info['key'] = key
+    info['is_public'] = config["collections"][key]["access"] != "private"
+    info['is_ES_available'] = config["collections"][key]["es_info"] is not None
+    info['es_info'] = config["collections"][key]["es_info"]
+    # fetch years
+    info['start_years'] = db.get_all_years("start_year")
+    info['end_years'] = db.get_all_years("end_year")
+    return displayname, info
 
 
 def collections_info(config):
     # add information about intervals
+    temp_results = {}
+    logging.info(f"formatting collections...")
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        futures = {executor.submit(fetch_collection_info, key, config): key for key in config["available_collections"]}
+        for future in as_completed(futures):
+            displayname, info = future.result()
+            temp_results[displayname] = info
+
     collections = {}
     for key in config["available_collections"]:
-        # print(key)
-        # print(config["collections"][key])
-        url = config["collections"][key]["db"]
-        print(f"accessing {key} -- {url}")
-        db = Database(key, url)
         displayname = config["collections"][key]["displayname"]
-
-        collections[displayname] = config["collections"][key]["frontend_info"]
-        collections[displayname]['key'] = key
-        collections[displayname]['start_years'] = db.get_all_years("start_year")
-        collections[displayname]['end_years'] = db.get_all_years("end_year")
-        collections[displayname]['es_info'] = config["collections"][key]["es_info"]
-        collections[displayname]['is_ES_available'] = config["collections"][key]["es_info"] is not None
-
+        collections[displayname] = temp_results[displayname]
     return json.dumps(collections, indent=2)
 
 
@@ -53,7 +68,7 @@ def get_edge_info(config, collection, word1, word2, time_id):
     # intersection set of keys (str) (nullable - there may not be any overlap)
     # max values 1 und 2 (nullable )
     # print(f'word1: {word1}, word2: {word2} time_id {time_id}')
-    db = Database(collection, get_url(config, collection))
+    db = Database(collection, get_db_url(config, collection))
     res1_dic = db.get_features(word1, time_id)
     res2_dic = db.get_features(word2, time_id)
 
@@ -142,7 +157,7 @@ def cluster_information(config, data):
     print("-------------------------------------------------------")
     print("in cluster_info (1)")# anzahl unique nodes - alle nodes ", len(nodes))
     # get features (ie context word2 and score) for all unique nodes in all time-ids
-    db = Database(data["collection"], get_url(config, data["collection"]))
+    db = Database(data["collection"], get_db_url(config, data["collection"]))
     feature_dic = {}
     for node in nodes:
         label = node[0]
@@ -330,7 +345,6 @@ def add_target_weight_stats(nodes):
 
 
 def add_cluster_stats(ngot):
-    print("getting cluster stats")
     clusters = ngot.clusters
     ngot_nodes = ngot.nodes
     selected_time_ids = ngot.props.selected_time_ids

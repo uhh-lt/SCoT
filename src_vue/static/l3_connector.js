@@ -13,11 +13,26 @@ async function getCollections_io() {
   try {
     const res = await axios.get("./api/collections");
     vueApp.collections = res.data;
-    vueApp.collections_names = Object.keys(vueApp.collections);
-    vueApp.collection_name = vueApp.collections_names[0];
-    vueApp.collection_name_short = vueApp.collection_name.split('--').slice(0,-1).join('--')
+//    vueApp.collections_names = Object.keys(vueApp.collections);
+
+    vueApp.collections_names = Object.keys(vueApp.collections).map(name => {
+      const col = vueApp.collections[name];
+      return {
+        value: name,
+        text: name.split("--").slice(0, -1).join("--"), // display name
+        private: !col.is_public
+      };
+    });
+
+    // Default selection
+    vueApp.first_public_collection = vueApp.collections_names[0].value;
+    vueApp.collection_name = vueApp.collections_names[0].value;
+    vueApp.collection_name_short = vueApp.collections_names[0].text;
+//    vueApp.collection_name = vueApp.collections_names[0];
+//    vueApp.collection_name_short = vueApp.collection_name.split('--').slice(0,-1).join('--')
 
     vueApp.is_ES_available = vueApp.collections[vueApp.collection_name].is_ES_available;
+    vueApp.is_public = vueApp.collections[vueApp.collection_name].is_public;
 
     vueApp.getGraphTypes();
     vueApp.onChangeDb();
@@ -538,31 +553,47 @@ function loadGraph_io() {
 
 function saveGraphSVG_io() {
 
-        const filename = base_filename() +  timediff_info() ;
-         saveSvg(document.querySelector("#svg"), filename + ".svg",
-            {
-              left: viewbox_pan_horizontal,
-              top: viewbox_pan_vertical,
-              height: svg_height,
-              width: svg_width,
-              scale: 0.95,
-              excludeCss: false
-            });
+     let {
+    viewbox_pan_horizontal,
+    viewbox_pan_vertical,
+    viewbox_height,
+    viewbox_width,
+    svg_height,
+    svg_width
+  } = calculateDimensions();
+  const filename = base_filename() +  timediff_info() ;
+  saveSvg(document.querySelector("#svg"), filename + ".svg",
+    {
+      left: viewbox_pan_horizontal,
+      top: viewbox_pan_vertical,
+      height: svg_height,
+      width: svg_width,
+      scale: 0.95,
+      excludeCss: false
+    });
 
 }
 
 function saveGraphPNG_io() {
 
-        const filename = base_filename() +  timediff_info() ;
-        saveSvgAsPng(document.querySelector("#svg"), filename + ".png",
-            {
-              left: viewbox_pan_horizontal,
-              top: viewbox_pan_vertical,
-              height: svg_height,
-              width: svg_width,
-              scale: 5,
-              backgroundColor: 'White'
-            });
+     let {
+    viewbox_pan_horizontal,
+    viewbox_pan_vertical,
+    viewbox_height,
+    viewbox_width,
+    svg_height,
+    svg_width
+  } = calculateDimensions();
+  const filename = base_filename() +  timediff_info() ;
+  saveSvgAsPng(document.querySelector("#svg"), filename + ".png",
+    {
+      left: viewbox_pan_horizontal,
+      top: viewbox_pan_vertical,
+      height: svg_height,
+      width: svg_width,
+      scale: 5,
+      backgroundColor: 'White'
+    });
 
 }
 
@@ -650,5 +681,18 @@ async function autocomplete_io(query) {
     catch(error){
       console.error(error);
     }
+}
+
+async function verifyLogin(access_key) {
+  try {
+    const res = await axios.post('/api/verify-key', {
+      key: access_key
+    });
+    return res.data.valid
+
+  } catch (err) {
+    console.error(err);
+    this.loginError = 'Error verifying key. Please try again later.';
+  }
 }
 

@@ -15,6 +15,10 @@ from model.ngot_model import NGOT, NGOTCluster, NGOTLink, NGOTProperties, NGOTNo
 from model.ngot_mapper import map_ngot_links_2_dic, map_ngot_nodes_2_dic
 from persistence.db import Database
 
+import logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+
 class CustomFlask(Flask):
     jinja_options = Flask.jinja_options.copy()
     jinja_options.update(dict(
@@ -58,11 +62,15 @@ def apply_defaults(configs):
             merged_es = defaults.get("es_info", {}).copy()
             merged_es.update(collection_es)
             collection["es_info"] = merged_es
-        # print(f'{collection}--{collection["es_info"]}')
+        collection_access = collection.get("access")
+        if collection_access == "default" or collection_access is None:
+            collection_access = defaults.get("access", {})
+            collection["access"] = collection_access
+
     return configs
 
 
-@app.route('/api/config')
+# @app.route('/api/config')
 def get_config():
     CONFIG_PATHS = {
         "ltdocker": 'config/config.yaml',  # for development/final demo
@@ -73,7 +81,7 @@ def get_config():
     env = "dev"
 
     config_path = CONFIG_PATHS[server]
-    print(f"Configuration file: {config_path}")
+    logging.info(f"Configuration file: {config_path}")
     if config_path.endswith(".yaml"):
         with open(config_path) as config_file:
             configs = yaml.safe_load(config_file)  #
@@ -82,6 +90,7 @@ def get_config():
             configs = json.load(config_file)
 
     configs["available_collections"] = configs["environments"][env]
+    logging.info(f"Applying default configs")
     configs = apply_defaults(configs)
     return configs
 
@@ -253,7 +262,22 @@ def autocomplete_target(collection="default"):
         suggestions = db.get_word_suggestions(query_text)
         return jsonify(suggestions)
 
+@app.route('/api/verify-key', methods=['POST'])
+def verify_key():
+    data = request.json
+    key = data['key']
+    access_keys = get_access_keys()['access_keys']
+    if key in access_keys:
+        return jsonify({"valid": True})
+    else:
+        return jsonify({"valid": False})
 
+def get_access_keys():
+    config_path = 'config/access_keys.yaml'
+    if config_path.endswith(".yaml"):
+        with open(config_path) as config_file:
+            configs = yaml.safe_load(config_file)  #
+    return configs
 
 if __name__ == '__main__':
     # init packaging system parent

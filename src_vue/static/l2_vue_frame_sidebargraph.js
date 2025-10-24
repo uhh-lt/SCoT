@@ -50,15 +50,15 @@ Vue.component("frame-sidebargraph", {
       let grapht = this.graph_type_keys[this.graph_type];
 
       if (grapht == "ngot_interval") {
-        return "N [number of static nodes per interval]";
+        return "[number of static nodes per interval]";
       } else if (grapht == "ngot_overlay") {
-        return "N [number of NGoT nodes]";
+        return "[number of NGoT nodes]";
       } else if (grapht == "scot_scaled") {
-        return "N [number of NGoT nodes]";
+        return "[number of NGoT nodes]";
       } else if (grapht == "ngot_global") {
-        return "N [number of static nodes globally - multiplied by I]";
+        return "[number of static nodes globally - multiplied by I]";
       } else {
-        return "N [number of NGoT nodes]";
+        return "[number of NGoT nodes]";
       }
     },
 
@@ -251,11 +251,36 @@ Vue.component("frame-sidebargraph", {
     hideSuggestions() {
       setTimeout(() => (this.showSuggestions = false), 200);
     },
+
+    async handleLogin() {
+        login_valid = await verifyLogin(this.accessKey)
+        if (login_valid) {
+          this.loginError = '';
+          this.loginModalActive = false
+          this.$bvModal.hide("login-modal");
+          this.privateCollectionsUnlocked=true
+          vueApp.changeDB(this.collection_name)
+        }
+        else {
+          this.loginError = 'Incorrect access key. Please try again.';
+        }
+    },
+
+    onLoginModalClosed() {
+        if (this.loginError || this.loginModalActive) {
+          this.collection_name = this.first_public_collection;
+          this.loginError = '';
+          this.accessKey = '';
+          this.loginModalActive = false;
+          vueApp.changeDB(this.collection_name)
+        }
+    }
   },
 
   template: `
     <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR-LEFT XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
     <!-- Column with input parameters (left column) -->
+    <div>
 //			<b-sidebar id="sidebar-left" title="Sense graph over time" bg-variant="secondary" text-variant="light"
     <b-sidebar id="sidebar-left"  title="Graph Properties" bg-variant="secondary" text-variant="light"
         style="opacity: 0.9;" width="22%" left shadow backdrop>
@@ -280,8 +305,19 @@ Vue.component("frame-sidebargraph", {
                 <hr class="mb-2" style="border: 1px solid gray;" />
                 <!-- Enter database -->
                 <b-form-group class="input" label="Collection">
-                    <b-form-select v-on:change="onChangeDb" v-model="collection_name"
-                        :options="collections_names" size="sm"></b-form-select>
+                    <!--b-form-select size="sm"  v-model="collection_name" @change="onChangeDb"
+                        :options="collections_names"  >
+                    </b-form-select -->
+                    <b-form-select size="sm" v-model="collection_name"  @change="onChangeDb">
+                       <option disabled value="">fetching data...</option>
+                       <option
+                        v-for="col in collections_names"
+                        :key="col.value"
+                        :value="col.value"
+                      >
+                        {{ col.private ? '🔐 ' + col.text : col.text }}
+                      </option>
+                    </b-form-select>
                 </b-form-group>
 
                 <!-- Enter an start year -->
@@ -289,11 +325,11 @@ Vue.component("frame-sidebargraph", {
                     <b-form-select v-model="start_year" :options="start_years" size="sm"></b-form-select>
                 </b-form-group>
                 <!-- Enter an end year -->
-                <b-form-group class="mb-0 input" label="End of last interval">
+                <b-form-group class="input" label="End of last interval">
                     <b-form-select v-model="end_year" :options="end_years" size="sm"></b-form-select>
                 </b-form-group>
                 <small>You have selected: {{number_of_intervals}} {{number_of_intervals > 1 ? "intervals" : "interval"}}</small>
-                <hr class="mb-2" style="border: 1px solid gray;" />
+                <hr class="mb-2 mt-2" style="border: 1px solid gray;" />
                 <h5>Graph over Time</h5>
                 <!-- Enter target word -->
                 <b-form-group class="input" label="Target word">
@@ -328,7 +364,7 @@ Vue.component("frame-sidebargraph", {
                     This word is not present in the database.
                 </b-form-invalid-feedback>
                 <!-- Enter number of neighbouring nodes -->
-                <small>{{node_info}}</small>
+                N <small>{{node_info}}</small>
                 <b-form-group class="input">
                     <b-form-input type="number" v-model="n_nodes" min="0" placeholder="number of neighbours"
                         size="sm"></b-form-input>
@@ -346,12 +382,9 @@ Vue.component("frame-sidebargraph", {
                 </b-form-group>
                 <!-- Render button -->
                 <hr style="border: 1px solid gray;" />
-                <b-button class="lmmargin_button" size="sm" variant="success"
+                <b-button class="lrmargin_button" size="sm" variant="success"
                     v-on:click="getDataAndRenderNew()">
                     Create and Cluster Graph</b-button>
-                <!-- <b-button id="update_button" size="sm" class="lrmargin_button" variant="success" >Update Graph</b-button> -->
-
-
             </b-overlay>
         </div>
 
@@ -417,6 +450,26 @@ Vue.component("frame-sidebargraph", {
             <hr style="border: 1px solid gray;" />
         </div>
     </b-sidebar>
+        <b-modal id="login-modal"
+            title="Collections with Restricted Access "
+            @hidden="onLoginModalClosed"
+            hide-footer>
+            <b-form @submit.prevent="handleLogin">
+            <b-form-group label="Access Key">
+            <b-form-input v-model="accessKey" type="password" placeholder="Enter access key"></b-form-input>
+            </b-form-group>
+            <b-alert
+              v-if="loginError"
+              variant="danger"
+              show
+              class="mb-2"
+            >
+              Invalid access key
+            </b-alert>
+            <b-button type="submit" variant="primary">Submit</b-button>
+            </b-form>
+        </b-modal>
+    </div>
 
     `,
 });

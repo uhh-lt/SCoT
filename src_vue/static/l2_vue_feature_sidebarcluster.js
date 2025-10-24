@@ -21,6 +21,13 @@ Vue.component("feature-sidebarcluster", {
   methods: {
     // CLUSTER INFO - ADDITIONAL
 
+    updateTableHeight() {
+        const headerHeight = 100;
+        const footerHeight = 50;
+        const availableHeight = window.innerHeight - headerHeight - footerHeight;
+        this.clusterTableHeight = availableHeight * 0.7 + 'px';
+    },
+
     toggleSidebarContext2() {
       this.showSidebar_cluster = !this.showSidebar_cluster;
       // console.log("in toggle2", this.showSidebar_cluster);
@@ -105,6 +112,13 @@ Vue.component("feature-sidebarcluster", {
             }
       },
   },
+  mounted() {
+    this.updateTableHeight(); // set initial height
+    window.addEventListener('resize', this.updateTableHeight); // handle resize
+  },
+  beforeDestroy() {
+    window.removeEventListener('resize', this.updateTableHeight); // cleanup
+  },
 
   template: `
   <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SIDEBAR LEFT 2 - Cluster CONTEXT ANALYSIS VIEW XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-->
@@ -131,7 +145,7 @@ Vue.component("feature-sidebarcluster", {
     <div class="mx-1 px-1 pt-1 pb-2"  v-bind:style="{ 'background-color': !cluster_selected ? selected_cluster.colour: null }">
         <b-input class="mb-2" v-model="filter_clusterbims" placeholder="Filter context..." type="search"></b-input>
         <b-table class="mb-0" small striped hover selectable head-variant="dark" table-variant="light"
-            sticky-header="350px" style="color: white;font-size:12px"
+            :sticky-header="clusterTableHeight" style="color: white;font-size:12px"
             :busy="busy_right_cluster" :fields="fields_cluster" :items="cluster_shared_object"
             v-model="table_records"  ref="selectableTable" :select-mode="'multi'" selected-variant="info"
             @row-selected="onRowSelected"

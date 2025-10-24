@@ -165,16 +165,33 @@ let vueApp = new Vue({
 
     // on change database in frontend - update function
     onChangeDb() {
-      this.collection_key = this.collections[this.collection_name]["key"];
-      this.target_word = this.collections[this.collection_name]["target"];
-      this.n_nodes = this.collections[this.collection_name]["p"];
-      this.density = this.collections[this.collection_name]["d"];
-      this.collection_info = this.collections[this.collection_name]["info"];
-      this.is_ES_available = this.collections[this.collection_name]["is_ES_available"];
-      // console.log("in onchange db" + this.collection_key);
-      // console.log("in onchange db" + this.collection_name);
 
-      // async
+      this.is_public = this.collections[this.collection_name]["is_public"];
+      if (!this.is_public) {
+        if (!this.privateCollectionsUnlocked){
+          this.loginModalActive = true;
+          this.$bvModal.show('login-modal');
+        }
+        else{
+            this.changeDB(this.collection_name)
+        }
+      }
+      else{
+        this.changeDB(this.collection_name)
+      }
+
+    },
+    changeDB(collection_name){
+      this.collection_key = this.collections[collection_name]["key"];
+      this.target_word = this.collections[collection_name]["target"];
+      this.n_nodes = this.collections[collection_name]["p"];
+      this.density = this.collections[collection_name]["d"];
+      this.collection_info = this.collections[collection_name]["info"];
+      this.is_ES_available = this.collections[collection_name]["is_ES_available"];
+
+//       console.log("in onchange db: " + this.collection_key);
+//       console.log("in onchange db: " + this.collection_name);
+//       console.log("in onchange db: " + this.is_public);
       this.getStartYears();
       this.getEndYears();
     },
@@ -819,7 +836,6 @@ let vueApp = new Vue({
         };
 
         Plotly.newPlot(div_id, data, layout, config);
-
     },
 
     show_clusterContextFrequency_plot(div_id){

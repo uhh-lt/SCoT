@@ -1,0 +1,36 @@
+# Server Configuration
+flask_host: "127.0.0.1"
+
+# Environment-specific collections
+environments:
+  dev:
+    - de70
+    - en_gbooks_42_v3
+
+
+# Default values to avoid repetition
+defaults:
+  frontend_info:
+    target: "Krise#NN"
+    p: 30
+    d: 15
+  es_info:
+    host: "localhost"
+    port: 9292
+  access: "public"
+# Collection configurations
+collections:
+  de70:
+    displayname: "German--Online News-Dependency--1995-2010"
+    sentences: "70 Million Sentences"
+    db: "mysql+pymysql://user:pwd@localhost:port/DT_de70mlcc_dependency"
+    frontend_info: default
+    es_info:
+      index: "de70"
+
+  en_gbooks_42:
+    displayname: "English--Google Books-Syntactic Ngrams--1520-2008--42 Slices"
+    db: "mysql+pymysql://user:pwd@localhost:port/DT_google_syntactic_ngrams_42"
+    frontend_info:
+      target: "bar/NN"
+    es_info: null

@@ -138,7 +138,6 @@ Vue.component("frame-sidebarclustertime", {
 		  Send all the nodes and edges to the backend, recluster them, delete and restart graph
 		  */
     recluster: async function () {
-    console.log("in recluster")
       vueApp.overlay_main = true;
       vueApp.graph_rendered = false;
       vueApp.wait_rendering = true;

@@ -368,10 +368,6 @@ class Database():
             node_list.append(node[0])
             node_dic[node[0]] = node[1]
 
-
-        print("node_list:", node_list)
-        print("time_ids:", time_ids)
-
         # -------------------------------------------------------------CASE_SENSITIVE?
         # QUERY ALL DIRECTED EDGES THAT FULFIL BASIC CRITERIA (WORD1, WORD2, in Selected Time-ids) in ALL SELECTED TIME-IDS
         query = f"""SELECT word1, word2, score, time_id

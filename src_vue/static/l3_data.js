@@ -97,7 +97,7 @@ let vueData = {
   collections: {},
   //Selected User Values for frontend- suggestions from collections
   // the title for description in the frontend
-  collection_name: "fetching data...",
+  collection_name: "", //"fetching data...",
   // dropdown list
   collections_names: ["fetching data..."],
   // Displayed in Info
@@ -181,7 +181,7 @@ let vueData = {
   // reduced opacity for hovering over node
   node_reduced_opacity: 0.2,
   // font-size of displayed node text
-  node_text_font_size: 12,
+  node_text_font_size: 13,
   // radius of cluter nodes
   clusterNodeRadius: 20,
   // radius of nodes
@@ -424,5 +424,11 @@ let vueData = {
   allClustersSelected:false,
   clusters_for_graph:[],
   show_plot:false,
-  show_plot_btn:"Show"
+  show_plot_btn:"Show",
+  clusterTableHeight:"350px",
+  accessKey:"",
+  loginError:"",
+  loginModalActive:"",
+  privateCollectionsUnlocked:false,
+  first_public_collection:""
 };

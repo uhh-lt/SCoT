@@ -48,12 +48,10 @@ def ngot_dynamic_global(db, ngot):
 
 
 def ngot_add_word_counts(db, ngot):
-    print("getting word counts")
     ngot = db.get_word_counts(ngot)
     return ngot
 
 def ngot_add_node_stats(db, ngot):
-    print("getting node stats for max, average scores")
     ngot_nodes = ngot.nodes
     selected_time_ids = ngot.props.selected_time_ids
     for node in ngot_nodes:
@@ -66,7 +64,6 @@ def ngot_add_node_stats(db, ngot):
 
 
 def ngot_add_similarities(db, ngot):
-    print("getting node similarities with target node, for all time intervals")
     ngot = db.get_word_similarities(ngot)
     return ngot
 
