@@ -16,6 +16,7 @@ from model.ngot_mapper import map_ngot_links_2_dic, map_ngot_nodes_2_dic
 from persistence.db import Database
 
 import logging
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
@@ -67,6 +68,12 @@ def apply_defaults(configs):
             collection_access = defaults.get("access", {})
             collection["access"] = collection_access
 
+        collection_db_url = collection.get("db_url")
+        if collection_db_url == "default" or collection_db_url is None:
+            collection["db"] = defaults.get("db_url", {}) + "/" + collection["db"]
+        else:
+            collection["db"] = collection["db_url"] + "/" + collection["db"]
+
     return configs
 
 
@@ -93,6 +100,7 @@ def get_config():
     logging.info(f"Applying default configs")
     configs = apply_defaults(configs)
     return configs
+
 
 # # Load and cache config globally
 # CONFIG_CACHE = load_config()
@@ -245,6 +253,7 @@ def wordfeaturecounts_get(collection="default"):
         feature = str(data["feature"])
         return wordfeature_counts(get_config(), collection, word1, word2, feature)
 
+
 # @app.route('/autocomplete/<string:collection>', methods=['GET'])
 
 @app.route('/api/collections/<string:collection>/autocomplete', methods=['POST'])
@@ -262,6 +271,7 @@ def autocomplete_target(collection="default"):
         suggestions = db.get_word_suggestions(query_text)
         return jsonify(suggestions)
 
+
 @app.route('/api/verify-key', methods=['POST'])
 def verify_key():
     data = request.json
@@ -272,6 +282,7 @@ def verify_key():
     else:
         return jsonify({"valid": False})
 
+
 def get_access_keys():
     config_path = 'config/access_keys.yaml'
     if config_path.endswith(".yaml"):
@@ -279,10 +290,11 @@ def get_access_keys():
             configs = yaml.safe_load(config_file)  #
     return configs
 
+
 if __name__ == '__main__':
     # init packaging system parent
     # this is not permanent (this is why we do it again and again ...)
     sys.path.append(str(Path(__file__).parent.absolute()))
     # use the config file to get host and database parameters
     # app.run(host=get_config()['flask_host'])
-    app.run(port=5001, debug=False)
+    app.run(port=5005, debug=False)

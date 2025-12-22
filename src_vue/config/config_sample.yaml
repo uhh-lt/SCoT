@@ -5,7 +5,7 @@ flask_host: "127.0.0.1"
 environments:
   dev:
     - de70
-    - en_gbooks_42_v3
+    - en_gbooks_42
 
 
 # Default values to avoid repetition
@@ -16,21 +16,24 @@ defaults:
     d: 15
   es_info:
     host: "localhost"
-    port: 9292
+    port: 9200
+    user: "USER"
+    pwd: "PWD"
+  db_url: "mysql+pymysql://user:pwd@localhost:3306"
   access: "public"
 # Collection configurations
 collections:
   de70:
     displayname: "German--Online News-Dependency--1995-2010"
     sentences: "70 Million Sentences"
-    db: "mysql+pymysql://user:pwd@localhost:port/DT_de70mlcc_dependency"
+    db: "DT_de70mlcc_dependency"
     frontend_info: default
     es_info:
       index: "de70"
 
   en_gbooks_42:
     displayname: "English--Google Books-Syntactic Ngrams--1520-2008--42 Slices"
-    db: "mysql+pymysql://user:pwd@localhost:port/DT_google_syntactic_ngrams_42"
+    db: "DT_google_syntactic_ngrams_42"
     frontend_info:
       target: "bar/NN"
     es_info: null

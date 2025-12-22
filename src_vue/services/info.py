@@ -43,11 +43,13 @@ def collections_info(config):
 
 
 def get_es_info (config, collection):
-    print(config["collections"][collection])
+    logging.info(config["collections"][collection])
     es_host = config["collections"][collection]["es_info"]["host"]
     es_port = config["collections"][collection]["es_info"]["port"]
     es_index = config["collections"][collection]["es_info"]["index"]
-    return es_host, es_port, es_index
+    es_auth = (config["collections"][collection]["es_info"]["user"],
+               config["collections"][collection]["es_info"]["pwd"])
+    return es_host, es_port, es_index, es_auth
 
 
 def get_db_url(config, collection):
@@ -229,11 +231,11 @@ def documents(config, data):
     time_slices = [data["time_slices"][idx-1] for idx in time_ids]
     print(f"filtered_timeslices: {time_slices}")
     # get host, port and index from config
-    es_host, es_port, es_index = get_es_info(config, collection_key)
-    # print(es_index, es_host, es_port)
+    es_host, es_port, es_index, es_auth = get_es_info(config, collection_key)
+    print(es_index, es_host, es_port, es_auth)
 
     # init with host, port
-    documentdb = Documentdb(es_host, es_port)
+    documentdb = Documentdb(es_host, es_port, es_auth)
 
     # Todo search with specific index instead of collection_key
     ret = []
@@ -277,11 +279,11 @@ def documents_scroll(config, data):
     print(f"filtered_timeslices: {time_slices}")
 
     # get host, port and index from config
-    es_host, es_port, es_index = get_es_info(config, collection_key)
+    es_host, es_port, es_index, es_auth = get_es_info(config, collection_key)
     # print(es_index, es_host, es_port)
 
     # init with host, port
-    documentdb = Documentdb(es_host, es_port)
+    documentdb = Documentdb(es_host, es_port, es_auth)
 
     # Todo search with specific index instead of collection_key
     ret = []

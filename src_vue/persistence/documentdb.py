@@ -2,7 +2,8 @@ from datetime import datetime
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import scan
 import json
-
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def construct_query(jo, bim, time_slices=None):
     if time_slices is None:
@@ -48,13 +49,17 @@ def construct_query(jo, bim, time_slices=None):
 
 class Documentdb:
 
-    def __init__(self, el_host, el_port):
+    def __init__(self, el_host, el_port, el_auth):
 
         try:
-            self.es = Elasticsearch([{'host': el_host, 'port': el_port}],
-                                    timeout=30, max_retries=3, retry_on_timeout=True)
-        except:
-            print("in documentdb init exception occured in es")
+            self.es = Elasticsearch(f"https://{el_host}:{el_port}",
+                                    basic_auth=el_auth,
+                                    verify_certs=False,
+                                    request_timeout=30, max_retries=3, retry_on_timeout=True)
+
+        except Exception as ex:
+            print("in documentdb init exception occurred in es")
+            print("Exception: ", ex)
 
     def search(self, jo, bim, time_slices=None, es_index="corona_news"):
 
