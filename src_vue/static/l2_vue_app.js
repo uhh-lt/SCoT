@@ -82,7 +82,7 @@ let vueApp = new Vue({
         graph.props.graph_type
       );
       console.log(vueApp.graph_type);
-      vueApp.onChangeDb();
+      // vueApp.onChangeDb();
       vueApp.n_nodes = graph.props["n_nodes"];
       vueApp.density = graph.props["density"];
 
