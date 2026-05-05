@@ -505,7 +505,27 @@ function timediff_info(){
 }
 
 function base_filename(){
-    const filename = vueApp.collection_name_short + '--' +
+    // added logic for correct collection name when user downloads
+    const collections = vueApp.collections || {};
+    console.log("base_filename props", graph.props);
+    console.log("base_filename collections loaded", Object.keys(collections).length);
+
+    for (let collection_obj_key in collections) {
+        console.log("iterating col obj keys", collection_obj_key);
+        if (
+          collections[collection_obj_key].key ===
+          graph.props.collection_key
+        ) {
+          vueApp.collection_name = collection_obj_key;
+          vueApp.collection_key = graph.props.collection_key;
+          break;
+        }
+    }
+    // console.log("collection name for filename", vueApp.collection_name);
+    // console.log("Old collection name for filename", vueApp.collection_name_short);
+  
+    // const filename = vueApp.collection_name_short + '--' +
+    const filename = vueApp.collection_name + '--' +
     graph.props.start_year + "-" + graph.props.end_year + '--' +
     graph.props.target_word +
     "_" +
@@ -522,22 +542,29 @@ function base_filename(){
 function saveGraph_io() {
   // harmonize all cluster colors
 
-  let data = JSON.stringify(graph, null, 2);
-  let blob = new Blob([data], { type: "text/plain" });
-  console.log(blob);
+  try {
+    let data = JSON.stringify(graph, null, 2);
+    let blob = new Blob([data], { type: "text/plain" });
+    console.log(blob);
 
-  const a = document.createElement("a");
-  document.body.appendChild(a);
-  const url = window.URL.createObjectURL(blob);
-  console.log(url)
-  a.href = url;
-  a.download = base_filename() + ".json";
-  a.click();
-  setTimeout(() => {
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
-  }, 0);
+    const a = document.createElement("a");
+    document.body.appendChild(a);
+    const url = window.URL.createObjectURL(blob);
+    console.log(url);
+    a.href = url;
+    const filename = base_filename() + ".json";
+    console.log("filename", filename);
+    a.download = filename;
+    a.click();
+    setTimeout(() => {
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    }, 0);
+  } catch (error) {
+    console.error("saveGraph_io failed", error);
+  }
 }
+
 
 function loadGraph_io() {
   const reader = new FileReader();
@@ -546,6 +573,23 @@ function loadGraph_io() {
     let data_from_db;
     data_from_db = JSON.parse(reader.result);
     console.log("in parsed with", data_from_db);
+
+    // console.log("keys", Object.keys(data_from_db));
+    // console.log("has props", Object.prototype.hasOwnProperty.call(data_from_db, "props"));
+    // console.log("props raw", JSON.stringify(data_from_db.props));
+    // debugger;
+
+    if (data_from_db.props) {
+      console.log("target word", data_from_db.props.target_word);
+      vueApp.target_word = data_from_db.props.target_word;
+      if (data_from_db.props.collection_key !== undefined) vueApp.collection_key = data_from_db.props.collection_key;
+      if (data_from_db.props.start_year !== undefined) vueApp.start_year = data_from_db.props.start_year;
+      if (data_from_db.props.end_year !== undefined) vueApp.end_year = data_from_db.props.end_year;
+      if (data_from_db.props.target_word !== undefined) vueApp.target_word = data_from_db.props.target_word;
+      if (data_from_db.props.n_nodes !== undefined) vueApp.n_nodes = data_from_db.props.n_nodes;
+      if (data_from_db.props.density !== undefined) vueApp.density = data_from_db.props.density;
+      console.log("target word changed");
+    }
     vueApp.loadNew(data_from_db);
   };
   reader.readAsText(vueApp.file);
