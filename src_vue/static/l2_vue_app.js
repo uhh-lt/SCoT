@@ -189,9 +189,6 @@ let vueApp = new Vue({
       this.collection_info = this.collections[collection_name]["info"];
       this.is_ES_available = this.collections[collection_name]["is_ES_available"];
 
-//       console.log("in onchange db: " + this.collection_key);
-//       console.log("in onchange db: " + this.collection_name);
-//       console.log("in onchange db: " + this.is_public);
       this.getStartYears();
       this.getEndYears();
     },

@@ -1002,7 +1002,6 @@ function show_time_diff_d3() {
     big_time_interval.push(ind);
   }
 
-  // console.log("in startindx", vueData.interval_start, vueData.interval_end);
   let small_time_interval = [];
   let startindex2 = vueData.start_years.find(
     (startind) => startind.text === vueData.interval_start

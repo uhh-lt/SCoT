@@ -18,18 +18,14 @@ async function getCollections_io() {
     vueApp.collections_names = Object.keys(vueApp.collections).map(name => {
       const col = vueApp.collections[name];
       return {
-        value: name,
-        text: name.split("--").slice(0, -1).join("--"), // display name
+//        value: name,
+        text: name,
         private: !col.is_public
       };
     });
-
     // Default selection
     vueApp.first_public_collection = vueApp.collections_names[0].value;
     vueApp.collection_name = vueApp.collections_names[0].value;
-    vueApp.collection_name_short = vueApp.collections_names[0].text;
-//    vueApp.collection_name = vueApp.collections_names[0];
-//    vueApp.collection_name_short = vueApp.collection_name.split('--').slice(0,-1).join('--')
 
     vueApp.is_ES_available = vueApp.collections[vueApp.collection_name].is_ES_available;
     vueApp.is_public = vueApp.collections[vueApp.collection_name].is_public;
@@ -488,6 +484,7 @@ function docSearch_io(wort1, wort2) {
  * LOAD AND SAVE GRAPH TO JSON --------------------------------------------------------------------------------------
  */
 function timediff_info(){
+    // to add info if user performed cluster analysis for timediff/interval etc
     let interval_timediff_info = ""
     if (vueApp.interval_start != 0){
         interval_timediff_info += '-interval-' +
@@ -505,27 +502,7 @@ function timediff_info(){
 }
 
 function base_filename(){
-    // added logic for correct collection name when user downloads
-    const collections = vueApp.collections || {};
-    console.log("base_filename props", graph.props);
-    console.log("base_filename collections loaded", Object.keys(collections).length);
-
-    for (let collection_obj_key in collections) {
-        console.log("iterating col obj keys", collection_obj_key);
-        if (
-          collections[collection_obj_key].key ===
-          graph.props.collection_key
-        ) {
-          vueApp.collection_name = collection_obj_key;
-          vueApp.collection_key = graph.props.collection_key;
-          break;
-        }
-    }
-    // console.log("collection name for filename", vueApp.collection_name);
-    // console.log("Old collection name for filename", vueApp.collection_name_short);
-  
-    // const filename = vueApp.collection_name_short + '--' +
-    const filename = vueApp.collection_name + '--' +
+    const filename = vueApp.collection_name.split("--").slice(0, 3).join("--") + '--' +
     graph.props.start_year + "-" + graph.props.end_year + '--' +
     graph.props.target_word +
     "_" +
@@ -534,8 +511,7 @@ function base_filename(){
     graph.props.density +
     "_" +
     graph.props.graph_type;
-//        "_" +
-//        graph.props.start_year + "_" + graph.props.end_year +
+
     return filename;
 }
 
@@ -545,12 +521,9 @@ function saveGraph_io() {
   try {
     let data = JSON.stringify(graph, null, 2);
     let blob = new Blob([data], { type: "text/plain" });
-    console.log(blob);
-
     const a = document.createElement("a");
     document.body.appendChild(a);
     const url = window.URL.createObjectURL(blob);
-    console.log(url);
     a.href = url;
     const filename = base_filename() + ".json";
     console.log("filename", filename);
@@ -580,7 +553,7 @@ function loadGraph_io() {
     // debugger;
 
     if (data_from_db.props) {
-      console.log("target word", data_from_db.props.target_word);
+//      console.log("target word", data_from_db.props.target_word);
       vueApp.target_word = data_from_db.props.target_word;
       if (data_from_db.props.collection_key !== undefined) vueApp.collection_key = data_from_db.props.collection_key;
       if (data_from_db.props.start_year !== undefined) vueApp.start_year = data_from_db.props.start_year;
@@ -654,21 +627,19 @@ function saveDocs_io(jo, bim) {
   data["bim"] = bim;
   data["collection_key"] = vueApp.collection_key;
   data["time_slices"] = graph.props.selected_time_ids.map(vueApp.time_id_text);
-//  console.log("selected", data["jo"], data["bim"]);
   let url = "./api/collections/" + vueApp.collection_key + "/documents_scroll";
 //  console.log(url);
   axios.post(url, data).then((res) => {
-    console.log(res);
     json_docs = res.data["json_docs"];
     data2 = JSON.stringify(json_docs, null, 2)
-    console.log(json_docs.length);
     let blob = new Blob([json_docs], { type: "text/csv" });
-//    console.log(blob);
     const a = document.createElement("a");
     document.body.appendChild(a);
     const url2 = window.URL.createObjectURL(blob);
     a.href = url2;
-    a.download = vueApp.collection_name_short + '--' +
+    const filename = vueApp.collection_name.split("--").slice(0, 2).join("--")
+    console.log(filename)
+    a.download = filename + '--' +
                 graph.props.start_year + "-" + graph.props.end_year + '--' +
                 vueApp.bim_fields[0]["label"] + '_' + bim + '_' + vueApp.bim_fields[2]["label"]
                 + '_' + 'Sentences'

@@ -297,4 +297,4 @@ if __name__ == '__main__':
     sys.path.append(str(Path(__file__).parent.absolute()))
     # use the config file to get host and database parameters
     # app.run(host=get_config()['flask_host'])
-    app.run(port=5005, debug=False)
+    app.run(port=5006, debug=False)
