@@ -18,7 +18,7 @@ async function getCollections_io() {
     vueApp.collections_names = Object.keys(vueApp.collections).map(name => {
       const col = vueApp.collections[name];
       return {
-//        value: name,
+        value: name,
         text: name,
         private: !col.is_public
       };
