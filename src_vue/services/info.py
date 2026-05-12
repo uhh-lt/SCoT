@@ -224,15 +224,37 @@ def documents(config, data):
     jo = str(data["jo"])
     bim = str(data["bim"])
     time_slices = data["time_slices"]
-    print(data)
+
     collection_key = str(data["collection_key"])
+
     # filter time_slices to match with word-feature table
     time_ids = wordfeature_timeids(config, collection_key, jo, bim)
-    time_slices = [data["time_slices"][idx-1] for idx in time_ids]
-    print(f"filtered_timeslices: {time_slices}")
+    # logging.info(f"time_ids: {time_ids}")
+    
+    # time_ids contains ALL database time IDs for the jo-bim pair
+    # but data["time_slices"] only contains the currently selected slices (which can be less than the total time IDs in the database)
+    # thus, it would give an error if we try to access data["time_slices"][idx-1] for a time_id that is not in the currently selected time slices
+    # time_slices = [data["time_slices"][idx-1] for idx in time_ids]
+
+    selected_time_ids = data["time_ids"] # IDs of the currently selected time slices
+    # logging.info(f"selected_time_ids: {selected_time_ids}")
+    selected_time_slices = data["time_slices"] # time slices selected via frontend
+    # logging.info(f"selected_time_slices: {selected_time_slices}")
+    available_time_ids = set(time_ids) # time IDs available in the database for the jo-bim pair
+    # logging.info(f"available_time_ids: {available_time_ids}")
+
+    # Look at each selected (time_id, time_slice) pair, 
+    # and keep the time slice only if its time ID is present in the available DB time ID
+    time_slices = [
+        ts for tid, ts in zip(selected_time_ids, selected_time_slices)
+        if tid in available_time_ids
+    ]
+    logging.info(f"filtered_time_slices: {time_slices}")
+
+
     # get host, port and index from config
     es_host, es_port, es_index, es_auth = get_es_info(config, collection_key)
-    print(es_index, es_host, es_port, es_auth)
+    # print(es_index, es_host, es_port)
 
     # init with host, port
     documentdb = Documentdb(es_host, es_port, es_auth)
@@ -273,10 +295,21 @@ def documents_scroll(config, data):
     time_slices = data["time_slices"]
     print(data)
     collection_key = str(data["collection_key"])
+
     # filter time_slices to match with word-feature table
     time_ids = wordfeature_timeids(config, collection_key, jo, bim)
-    time_slices = [data["time_slices"][idx - 1] for idx in time_ids]
-    print(f"filtered_timeslices: {time_slices}")
+    # logging.info(f"time_ids: {time_ids}")
+
+    selected_time_ids = data["time_ids"] 
+    selected_time_slices = data["time_slices"] 
+    available_time_ids = set(time_ids) 
+    # logging.info(f"available_time_ids: {available_time_ids}")
+
+    time_slices = [
+        ts for tid, ts in zip(selected_time_ids, selected_time_slices)
+        if tid in available_time_ids
+    ]
+    logging.info(f"filtered_time_slices: {time_slices}")
 
     # get host, port and index from config
     es_host, es_port, es_index, es_auth = get_es_info(config, collection_key)
