@@ -564,6 +564,13 @@ function loadGraph_io() {
       console.log("target word changed");
     }
     vueApp.loadNew(data_from_db);
+
+    // close old sidebars after successful load
+    vueApp.showSidebar_node = false;
+    vueApp.showSidebar_right = false;
+    vueApp.showSidebar_docs = false;
+    vueApp.showSidebar_cluster = false;
+    
   };
   reader.readAsText(vueApp.file);
 }

@@ -444,7 +444,7 @@ Vue.component("frame-sidebargraph", {
             <hr style="border: 1px solid gray;" />
             You will find the source code here:
             <br>
-            <a href="https://github.com/chrishaase/SCoT" style="color:white; text-decoration:underline;font-size:140%">Source code</a>
+            <a href="https://github.com/uhh-lt/SCoT" style="color:white; text-decoration:underline;font-size:140%">Source code</a>
             <hr style="border: 1px solid gray;" />
             You can click on the top-right button EXAMPLE to see a pre-analysed graph.
             <hr style="border: 1px solid gray;" />
