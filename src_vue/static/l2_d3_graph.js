@@ -628,12 +628,30 @@ function mouseOver(opacity) {
     });
   };
 }
+
 // fade everything back in
+// function mouseOut() {
+//   d_node.style("stroke-opacity", 1);
+//   d_node.style("fill-opacity", 1);
+//   d_link.style("stroke-opacity", this.base_link_opacity);
+//   //link.style("stroke", "#ddd");
+// }
+
+// Set the opacity of nodes and links back to the base opacity, which is stored in the attribute base_stroke_opacity and base_fill_opacity of each node and link element rather than being hardcoded. 
+// This is necessary because the opacity of nodes and links can be changed in various ways (e.g. by hovering over a node, by selecting a time interval etc.) 
+// and we want to make sure that we can always reset it to the original value when the mouse is moved out of a node.
 function mouseOut() {
-  d_node.style("stroke-opacity", 1);
-  d_node.style("fill-opacity", 1);
-  d_link.style("stroke-opacity", this.base_link_opacity);
-  //link.style("stroke", "#ddd");
+  d_node.style("stroke-opacity", function () {                //restore node outline opacity
+    return this.getAttribute("base_stroke_opacity") || 1;
+  });
+
+  d_node.style("fill-opacity", function () {                //restore node fill opacity
+    return this.getAttribute("base_fill_opacity") || 1;
+  });
+
+  d_link.style("stroke-opacity", function () {              //restore edge/link opacity 
+    return this.getAttribute("base_stroke_opacity") || vueData.base_link_opacity;
+  });
 }
 
 function reset_opacity_d3() {
@@ -1155,6 +1173,16 @@ function skip_through_time_slices_d3() {
     if (in_interval === false) {
       this.style.strokeOpacity = 0.2;
       this.style.fillOpacity = 0.2;
+
+      this.setAttribute("base_stroke_opacity", 0.2);
+      this.setAttribute("base_fill_opacity", 0.2);
+
+    } else {
+      this.style.strokeOpacity = 1.0;
+      this.style.fillOpacity = 1.0;
+
+      this.setAttribute("base_stroke_opacity", 1.0);
+      this.setAttribute("base_fill_opacity", 1.0);
     }
   });
 
@@ -1199,6 +1227,10 @@ function skip_through_time_slices_d3() {
     // the link only has opacity 1.0 if both source and target are in the selected time slice
     if (in_source_interval === false || in_target_interval === false) {
       this.style.strokeOpacity = vueData.reduced_link_opacity;
+      this.setAttribute("base_stroke_opacity", vueData.reduced_link_opacity);
+    } else {
+      this.style.strokeOpacity = vueData.base_link_opacity;
+      this.setAttribute("base_stroke_opacity", vueData.base_link_opacity);
     }
   });
 }
