@@ -2,7 +2,23 @@ Vue.component("frame-navbar", {
   data: function () {
     return this.$root.$data;
   },
+  mounted() {
+    window.addEventListener("keydown", this.handleKeydown);
+  },
+
+  beforeDestroy() {
+    window.removeEventListener("keydown", this.handleKeydown);
+  },
+
   methods: {
+    handleKeydown(event) {
+      // Press Escape to reset highlighting
+      if (event.key === "Escape") {
+        event.preventDefault();
+        this.unsearch_nodes();
+      }
+    },
+    
     unsearch_nodes() {
       unsearch_nodes_d3();
     },
@@ -94,7 +110,7 @@ Vue.component("frame-navbar", {
 
                         ></b-form-input>
                         <b-input-group-append>
-                            <b-button class="lrmargin_button" variant="danger" @click="unsearch_nodes()">
+							<b-button class="lrmargin_button" variant="danger" v-b-tooltip.hover title="Shortcut: press Esc key" @click="unsearch_nodes()">
                                 Reset Highlighting <em class="fas fa-times"></em>
                             </b-button>
                         </b-input-group-append>
