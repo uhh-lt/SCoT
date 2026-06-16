@@ -1367,6 +1367,15 @@ function highlightWobblyCandidates_d3() {
 
 function unsearch_nodes_d3() {
   vueData.highlightWobblies = false;
+  // Hide node tooltip if it is currently visible
+  if (d3Data.time_diff_tip) {
+    d3Data.time_diff_tip.hide();
+  }
+
+  // Hide edge tooltip if it is currently visible
+  if (d3Data.time_diff_tip_link) {
+    d3Data.time_diff_tip_link.hide();
+  }
   restart();
 }
 
