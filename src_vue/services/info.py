@@ -18,7 +18,6 @@ def fetch_collection_info(key, config):
     info['key'] = key
     info['is_public'] = config["collections"][key]["access"] != "private"
     info['is_ES_available'] = config["collections"][key]["es_info"] is not None
-    info['es_info'] = config["collections"][key]["es_info"]
     # fetch years
     info['start_years'] = db.get_all_years("start_year")
     info['end_years'] = db.get_all_years("end_year")

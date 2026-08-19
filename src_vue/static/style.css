@@ -368,6 +368,12 @@ svg .edge_selected {
     left: 0;
     /*border: 1px solid blue;*/
 }
+
+/*For main screen to not be gray when Graph Properties bar is active*/
+.b-sidebar-backdrop {
+    background-color: transparent !important;
+  }
+
 :root {
     overflow: hidden;
 }
