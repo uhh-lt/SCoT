@@ -47,6 +47,56 @@ def construct_query(jo, bim, time_slices=None):
              }
 
 
+
+# newly added funtion to retrieve documents where any requested node occurs as jobim.jo
+def construct_node_query(nodes, time_slices=None):
+
+    node_conditions = [
+        {
+            "match_phrase": {
+                "jobim.jo": node
+            }
+        }
+        for node in nodes
+    ]
+
+    filters = [
+        {
+            "nested": {
+                "path": "jobim",
+                "query": {
+                    "bool": {
+                        "should": node_conditions,
+                        "minimum_should_match": 1
+                    }
+                }
+            }
+        }
+    ]
+
+    if time_slices:
+        filters.append({
+            "bool": {
+                "should": [
+                    {
+                        "match_phrase": {
+                            "time_slice": time_slice
+                        }
+                    }
+                    for time_slice in time_slices
+                ],
+                "minimum_should_match": 1
+            }
+        })
+
+    return {
+        "bool": {
+            "filter": filters
+        }
+    }
+
+
+
 class Documentdb:
 
     def __init__(self, el_host, el_port, el_auth):
@@ -86,3 +136,32 @@ class Documentdb:
           #   yield hit["_source"]
         # print(res)
         return res
+
+
+    def scroll_nodes(self,nodes,time_slices=None,es_index="corona_news"):
+    
+        query = construct_node_query(nodes=nodes,time_slices=time_slices)
+
+        print("Searching documents for ", len(nodes), " nodes in index= ", es_index)
+
+        try:
+            for hit in scan(
+                self.es,
+                index=es_index,
+                query={
+                    "_source": [
+                        "jobim",
+                        "sentence",
+                        "source",
+                        "date",
+                        "time_slice"
+                    ],
+                    "query": query
+                },
+                preserve_order=False
+            ):
+                yield hit
+
+        except Exception as ex:
+            print("Elasticsearch node search failed for index= ", es_index)
+
