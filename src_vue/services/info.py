@@ -500,7 +500,7 @@ def documents_per_node(config, ngot, data):
 
     es_host, es_port, es_index, es_auth = get_es_info(config,collection)
 
-    logger.debug(
+    logging.info(
         "Elasticsearch index=%s host=%s port=%s",
         es_index,
         es_host,
@@ -555,7 +555,7 @@ def documents_per_node(config, ngot, data):
                 break
 
     else:
-        logger.info(
+        logging.info(
             "No Elasticsearch index available for collection=%s",
             collection
         )
