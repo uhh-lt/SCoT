@@ -5,6 +5,7 @@ import pandas as pd
 import json
 import itertools
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from collections import defaultdict
 
 import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -399,3 +400,191 @@ def add_cluster_stats(ngot):
         cl.nodes_weights = weights_map
 
     return ngot
+
+
+
+def documents_per_node(config, ngot, data):
+
+    # print("ngot.props:", ngot.props)
+
+    ## Get required parameters and group nodes cluster wise
+    ## Clusters = {cluster1: [nodes], cluster2: [nodes], ..}
+    ## singletons = [nodes]
+
+    props = ngot.props
+    collection = str(props.collection_key)
+
+    target_word = props.target_word
+    start_year = props.start_year
+    end_year = props.end_year
+
+    grouped = defaultdict(list)
+
+    for node in ngot.nodes:
+        if node.cluster_node:
+            continue
+
+        grouped[node.cluster_id].append(node.id)
+
+    clusters = {}
+    singletons = []
+
+    for cluster_id, nodes in grouped.items():
+        if len(nodes) == 1:
+            singletons.append(nodes[0])
+        else:
+            clusters[cluster_id] = nodes
+
+    # if target_word not in singletons:
+    #     singletons.append(target_word)
+
+    
+    ### Convert selected time IDs into year ranges
+
+    selected_time_ids = props.selected_time_ids
+
+    db = Database(collection, config["collections"][collection]["db"])
+
+    start_years = db.get_all_years("start_year")
+    end_years = db.get_all_years("end_year")
+
+    start_year_by_id = {
+    item["id"]: item["value"]
+    for item in start_years
+    }
+
+    end_year_by_id = {
+        item["id"]: item["value"]
+        for item in end_years
+    }
+
+    time_slices = []
+
+    for time_id in selected_time_ids:
+        if time_id not in start_year_by_id or time_id not in end_year_by_id:
+            continue
+
+        slice_start = start_year_by_id[time_id]
+        slice_end = end_year_by_id[time_id]
+
+        t_slice = str(slice_start)+"-"+str(slice_end)
+
+        time_slices.append(t_slice)
+
+    ### Collect all nodes into one set
+
+    all_nodes = set(singletons)
+
+    for nodes_in_cluster in clusters.values():
+        all_nodes.update(nodes_in_cluster)
+
+    all_nodes = sorted(all_nodes)
+    all_nodes_set = set(all_nodes)
+
+    # Temporary lookup:
+    # node -> list of documents
+    documents_by_node = {
+        node: []
+        for node in all_nodes
+    }
+
+    # Can change the limit if needed
+    max_documents_per_node = 200
+
+    # Keep track of nodes that still need documents
+    unfinished_nodes = set(all_nodes)
+
+
+    # if es  available for this collection, only then return the docs
+    ### Perform Elasticsearch request
+
+    es_host, es_port, es_index, es_auth = get_es_info(config,collection)
+
+    logger.debug(
+        "Elasticsearch index=%s host=%s port=%s",
+        es_index,
+        es_host,
+        es_port
+    )
+
+    if es_index and es_index != "null":
+        documentdb = Documentdb(es_host,es_port,es_auth)
+
+        for hit in documentdb.scroll_nodes(nodes=all_nodes,time_slices=time_slices,es_index=es_index):
+            
+            source_data = hit.get("_source", {})
+
+            # A node can appear several times with different bims.
+            # The set prevents duplicate insertion for the same sentence.
+            matching_nodes = {
+                jobim.get("jo")
+                for jobim in source_data.get("jobim", [])
+                if jobim.get("jo") in all_nodes_set
+            }
+
+            if not matching_nodes:
+                continue
+
+            document = {
+                # "es_id": hit.get("_id"),
+                "date": source_data.get("date"),
+                "sentence": source_data.get("sentence"),
+                "source": source_data.get("source")
+            }
+
+            for node in matching_nodes:
+                if (
+                    max_documents_per_node is None
+                    or len(documents_by_node[node])
+                    < max_documents_per_node
+                ):
+                    documents_by_node[node].append(document)
+
+                if (
+                    max_documents_per_node is not None
+                    and len(documents_by_node[node])
+                    >= max_documents_per_node
+                ):
+                    unfinished_nodes.discard(node)
+
+            # Stop reading ES results when every node has enough documents
+            if (
+                max_documents_per_node is not None
+                and not unfinished_nodes
+            ):
+                break
+
+    else:
+        logger.info(
+            "No Elasticsearch index available for collection=%s",
+            collection
+        )
+
+    ### Reconstruct the required JSON format
+
+    cluster_documents = {
+        str(cluster_id): {
+            node: documents_by_node[node]
+            for node in nodes
+        }
+        for cluster_id, nodes in clusters.items()
+    }
+
+    singleton_documents = {
+        node: documents_by_node[node]
+        for node in singletons
+    }
+
+    return {
+    "time_slices": time_slices,
+
+    "clusters": {
+        "info": clusters,
+        "documents": cluster_documents
+    },
+
+    "singletons": {
+        "info": singletons,
+        "documents": singleton_documents
+    }
+    }
