@@ -11,6 +11,7 @@ from services.cluster import chinese_whispers, manual_recluster
 from services.graphs import get_graph
 from services.info import collections_info, get_edge_info, simbim, cluster_information, documents, documents_scroll, \
     add_target_weight_stats, wordfeature_counts, add_cluster_stats
+from services.info import documents_per_node
 from model.ngot_model import NGOT, NGOTCluster, NGOTLink, NGOTProperties, NGOTNode
 from model.ngot_mapper import map_ngot_links_2_dic, map_ngot_nodes_2_dic
 from persistence.db import Database
@@ -270,6 +271,37 @@ def autocomplete_target(collection="default"):
         db = Database(collection, config["collections"][collection]["db"])
         suggestions = db.get_word_suggestions(query_text)
         return jsonify(suggestions)
+
+
+
+@app.route('/api/collections/fetch_docs', methods=['POST'])
+# builds a clustered graph and then fetches the documents for each node
+def fetch_docs():
+    ngot = NGOT()
+    if request.method == 'POST':
+        data = json.loads(request.data)
+        ngot.props = NGOTProperties.from_json(request.data)
+
+    ngot = get_graph(get_config(), ngot)
+    ngot.props.weight_stats = add_target_weight_stats(ngot.nodes)
+    
+    old_graph, ngot = chinese_whispers(ngot)
+    ngot = add_cluster_stats(ngot)
+    # delete information that was only used for the backend
+    ngot.nodes_dic = None
+    ngot.links_dic = None
+    # serialize dataclass-structure to json
+    ngot_json = ngot.to_json()
+
+
+    # Get documents for all the nodes in each cluster and singletons
+    res = documents_per_node(get_config(), ngot, data)
+
+    return Response(
+    app.json.dumps(res, sort_keys=False),
+    mimetype="application/json"
+    )
+    # return(jsonify(res))
 
 
 @app.route('/api/verify-key', methods=['POST'])
